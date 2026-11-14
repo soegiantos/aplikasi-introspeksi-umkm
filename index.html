@@ -285,6 +285,17 @@
       .coach-box .coach-answer:empty{display:none}
       .coach-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
       .coach-row input{flex:1 1 220px}
+      .chat-log{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;margin-top:14px;padding:6px 4px}
+      #wizCoachChat{max-height:260px}
+      .chat-empty{color:var(--ink-soft);font-size:.93rem}
+      .chat-msg{max-width:88%;padding:11px 14px;border-radius:14px;font-size:.96rem;line-height:1.55;white-space:pre-line;overflow-wrap:anywhere}
+      .chat-msg .chat-who{display:block;font-size:.74rem;font-weight:800;margin-bottom:3px;opacity:.85}
+      .chat-msg.user{align-self:flex-end;background:var(--gold-soft);border:1.5px solid var(--gold);border-bottom-right-radius:5px}
+      .chat-msg.ai{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:5px}
+      .chat-msg.thinking{color:var(--ink-soft);font-style:italic}
+      .chat-hint{align-self:flex-start;font-size:.84rem;font-weight:700;color:var(--gold)}
+      .chat-input-row{position:sticky;bottom:0;background:var(--teal-soft);padding-top:10px;align-items:stretch}
+      .chat-send{font-size:1.05rem;font-weight:800;padding:10px 28px;min-width:112px}
       .btn-explain{margin-top:12px;background:transparent;color:#8fd3dc;border:1px solid var(--teal);font:inherit;font-weight:700;font-size:.88rem;padding:9px 14px;border-radius:9px;cursor:pointer;min-height:44px}
       .explain-answer{margin-top:10px;font-size:.93rem;background:var(--surface-2);border-radius:10px;padding:12px 14px;white-space:pre-line}
       .explain-answer:empty{display:none}
@@ -857,11 +868,14 @@
         <div class="coach-box" id="coachBox">
           <h3><span aria-hidden="true">✦</span> Modul 9 · Tanya AI Coach</h3>
           <p style="margin-top:6px">Tulis pertanyaan dengan bahasa sehari-hari, misalnya “Kenapa skor investasi saya rendah?” atau “Apa yang harus saya perbaiki dulu?”. AI Coach hanya menjelaskan angka hasil perhitungan aplikasi — angka valuasi, skor, HPP, dan BEP tetap dihitung oleh rumus aplikasi, bukan oleh AI.</p>
-          <div class="coach-row">
-            <input type="text" id="coachQ" placeholder="contoh: Apa yang paling perlu saya perbaiki bulan ini?" aria-label="Pertanyaan untuk AI Coach" />
-            <button class="btn" id="btnCoachAsk" type="button">Tanya AI Coach</button>
+          <div class="chat-log" id="coachChat" aria-live="polite" aria-label="Riwayat percakapan dengan AI Coach">
+            <p class="chat-empty" id="coachChatEmpty">Belum ada percakapan. Tulis pertanyaan pertama Anda di kolom paling bawah — misalnya “Kenapa skor investasi saya rendah?”. Bila AI membalas dengan pertanyaan, jawab saja di kolom yang sama.</p>
           </div>
-          <p class="coach-answer" id="coachAnswer" role="status"></p>
+          <div class="coach-row chat-input-row">
+            <input type="text" id="coachQ" placeholder="Tulis jawaban atau pertanyaan Anda di sini…" aria-label="Tulis jawaban atau pertanyaan untuk AI Coach" />
+            <button class="btn chat-send" id="btnCoachAsk" type="button">Kirim</button>
+          </div>
+          <p class="coach-answer" id="coachAnswer" role="status" hidden></p>
         </div>
         <div class="grid-3">
           <div class="card advice"><h3><span class="ic" style="background:var(--gold-soft);color:var(--gold)">▣</span> Pemaketan barang</h3><div id="advPack"></div></div>
@@ -1273,11 +1287,14 @@
           <div class="coach-box">
             <h3><span aria-hidden="true">✦</span> Tanya AI Coach</h3>
             <p style="margin-top:6px">Masih ada yang membingungkan? Tulis pertanyaan Anda dengan bahasa sehari-hari.</p>
-            <div class="coach-row">
-              <input type="text" id="wizCoachQ" placeholder="contoh: Kenapa nilai usaha saya segini?" aria-label="Pertanyaan untuk AI Coach dari hasil wizard" />
-              <button class="btn" id="btnWizCoachAsk" type="button">Tanya AI Coach</button>
+            <div class="chat-log" id="wizCoachChat" aria-live="polite" aria-label="Riwayat percakapan dengan AI Coach">
+              <p class="chat-empty" id="wizCoachChatEmpty">Belum ada percakapan. Tulis pertanyaan pertama Anda di kolom paling bawah. Bila AI membalas dengan pertanyaan, jawab saja di kolom yang sama.</p>
             </div>
-            <p class="coach-answer" id="wizCoachAnswer" role="status"></p>
+            <div class="coach-row chat-input-row">
+              <input type="text" id="wizCoachQ" placeholder="Tulis jawaban atau pertanyaan Anda di sini…" aria-label="Tulis jawaban atau pertanyaan untuk AI Coach dari hasil wizard" />
+              <button class="btn chat-send" id="btnWizCoachAsk" type="button">Kirim</button>
+            </div>
+            <p class="coach-answer" id="wizCoachAnswer" role="status" hidden></p>
           </div>
           <div class="wiz-actions">
             <button class="wiz-skip" type="button" id="btnWizRestart">Ulangi dari awal</button>
@@ -2976,12 +2993,60 @@
         }
         window.__askAICoach=askAI;
 
-        /* ---------- Tanya AI Coach (Modul 9) ---------- */
-        var btnCoach=gid("btnCoachAsk");
-        function coachAsk(){
-          var q=(gid("coachQ").value||"").trim() || "Apa yang paling perlu saya perbaiki bulan ini?";
-          askAI(q, gid("coachAnswer"));
+        /* ---------- Percakapan AI Coach (gelembung chat, riwayat TIDAK tertimpa) ----------
+           Lapisan percakapan di atas jalur yang sama (POST /api/ai-chat). askAI() di atas
+           tetap dipakai apa adanya untuk penjelasan satu kali (tombol "Jelaskan ini" dan
+           "Tanya AI" pada penjelasan kolom lewat window.__askAICoach).
+           Riwayat hanya hidup di halaman selama sesi ini — tidak disimpan ke cloud/snapshot. */
+        function makeCoachChat(logId, inputId, emptyId, defaultQ){
+          var log=gid(logId), input=gid(inputId);
+          if(!log || !input) return function(){};
+          var history=[];
+          function scrollBottom(){ try{ log.scrollTop=log.scrollHeight; }catch(e){} }
+          function bubble(cls, who, text){
+            var wrap=document.createElement("div"); wrap.className="chat-msg "+cls;
+            if(who){ var w=document.createElement("span"); w.className="chat-who"; w.textContent=who; wrap.appendChild(w); }
+            var t=document.createElement("span"); t.className="chat-text"; t.textContent=text; wrap.appendChild(t);
+            log.appendChild(wrap); scrollBottom();
+            return {wrap:wrap, textEl:t};
+          }
+          function send(){
+            var q=(input.value||"").trim() || defaultQ;
+            var empty=gid(emptyId); if(empty) empty.style.display="none";
+            bubble("user","Anda",q);
+            input.value="";
+            var thinking=bubble("ai thinking","AI Coach","Sedang berpikir…");
+            function done(ans){
+              thinking.wrap.classList.remove("thinking");
+              thinking.textEl.textContent=ans;
+              history.push({dari:"pengguna",teks:q});
+              history.push({dari:"ai",teks:ans});
+              if(history.length>12) history=history.slice(history.length-12);
+              if(ans.indexOf("?")>=0){
+                var hint=document.createElement("p"); hint.className="chat-hint";
+                hint.textContent="AI bertanya — jawab di kolom bawah ini.";
+                log.appendChild(hint);
+              }
+              scrollBottom();
+              try{ input.focus(); }catch(e){}
+            }
+            function fallback(){ done(localExplain(q)+"\n\nAI online belum tersambung — ini penjelasan dari perhitungan aplikasi."); }
+            try{
+              fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:q, question:q, context:aiContext(), history:history.slice(), petunjuk:"Bila perlu bertanya balik, ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."})})
+                .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
+                .then(function(data){
+                  var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
+                  if(ans && String(ans).trim()) done(String(ans).trim()); else fallback();
+                })
+                .catch(function(){ fallback(); });
+            }catch(e){ fallback(); }
+          }
+          return send;
         }
+
+        /* ---------- Tanya AI Coach (Modul 9) ---------- */
+        var coachAsk=makeCoachChat("coachChat","coachQ","coachChatEmpty","Apa yang paling perlu saya perbaiki bulan ini?");
+        var btnCoach=gid("btnCoachAsk");
         if(btnCoach) btnCoach.addEventListener("click", coachAsk);
         if(gid("coachQ")) gid("coachQ").addEventListener("keydown", function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); coachAsk(); } });
 
@@ -3117,11 +3182,8 @@
           var d=gid("data"); if(d) d.scrollIntoView({behavior:"smooth"});
         });
 
-        /* Tanya AI Coach di hasil wizard */
-        function wizCoachAsk(){
-          var q=(gid("wizCoachQ").value||"").trim() || "Kenapa hasil usaha saya seperti ini?";
-          askAI(q, gid("wizCoachAnswer"));
-        }
+        /* Tanya AI Coach di hasil wizard — pola percakapan yang sama dengan Modul 9 */
+        var wizCoachAsk=makeCoachChat("wizCoachChat","wizCoachQ","wizCoachChatEmpty","Kenapa hasil usaha saya seperti ini?");
         gid("btnWizCoachAsk").addEventListener("click", wizCoachAsk);
         gid("wizCoachQ").addEventListener("keydown", function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); wizCoachAsk(); } });
 
