@@ -138,8 +138,9 @@
 
       /* ---------- Layar per menu (navigasi berbasis layar) ----------
          Satu layar penuh terlihat dalam satu waktu: layar Hari Ini memuat
-         hero + sapaan + Hari Ini + Perlu Perhatian; layar lain memuat satu
-         bagian saja. Aturan ini HANYA MENYEMBUNYIKAN layar yang tidak aktif
+         hero + sapaan + Hari Ini; Perlu Perhatian dan Langkah berikutnya
+         punya layar sendiri; bagian panjang (Pembukuan, Kemasan, Saran,
+         Keuangan, Introspeksi) dipecah jadi layar menu + sub-layar. Aturan ini HANYA MENYEMBUNYIKAN layar yang tidak aktif
          (!important supaya menang atas display inline) dan tidak pernah
          memaksa apa pun tampil — visibilitas di dalam layar tetap diatur
          logika masing-masing (lipatan formulir, kartu sapaan, dsb). Tanpa
@@ -148,7 +149,7 @@
       body[data-layar]:not([data-layar="hariini"]) header.hero,
       body[data-layar]:not([data-layar="hariini"]) #sapaNudgeCard,
       body[data-layar]:not([data-layar="hariini"]) #hariini,
-      body[data-layar]:not([data-layar="hariini"]) #proaktifWrap{display:none!important}
+      body[data-layar]:not([data-layar="hariini"]):not([data-layar="perhatian"]) #proaktifWrap{display:none!important}
       body[data-layar]:not([data-layar="data"]) #data{display:none!important}
       body[data-layar]:not([data-layar="dashboard"]) #dashboard{display:none!important}
       body[data-layar]:not([data-layar="valuasi"]) #valuasi{display:none!important}
@@ -164,7 +165,31 @@
       body[data-layar]:not([data-layar="portal"]) #portal{display:none!important}
       body[data-layar]:not([data-layar="paket"]) #paket{display:none!important}
       body[data-layar]:not([data-layar="adminmarketing"]) #adminmarketing{display:none!important}
+      body[data-layar]:not([data-layar="langkah"]) #langkah{display:none!important}
+      body[data-layar]:not([data-layar="perhatian"]) #perhatian{display:none!important}
+      body[data-layar]:not([data-layar="introspeksi-fin"]) #introspeksi-fin{display:none!important}
+      body[data-layar]:not([data-layar="introspeksi-ops"]) #introspeksi-ops{display:none!important}
+      body[data-layar]:not([data-layar="introspeksi-mkt"]) #introspeksi-mkt{display:none!important}
+      body[data-layar]:not([data-layar="introspeksi-tech"]) #introspeksi-tech{display:none!important}
+      body[data-layar]:not([data-layar="investasi"]) #investasi{display:none!important}
+      body[data-layar]:not([data-layar="saran-rencana"]) #saran-rencana{display:none!important}
+      body[data-layar]:not([data-layar="kemasan-sudut"]) #kemasan-sudut{display:none!important}
+      body[data-layar]:not([data-layar="kemasan-label"]) #kemasan-label{display:none!important}
+      body[data-layar]:not([data-layar="buku-transaksi"]) #buku-transaksi{display:none!important}
+      body[data-layar]:not([data-layar="buku-qris"]) #buku-qris{display:none!important}
+      body[data-layar]:not([data-layar="buku-stok"]) #buku-stok{display:none!important}
+      body[data-layar]:not([data-layar="buku-hutang"]) #buku-hutang{display:none!important}
+      body[data-layar]:not([data-layar="buku-laporan"]) #buku-laporan{display:none!important}
       .btn-kembali-layar{margin:0 0 10px}
+
+      /* ---------- baris menu antar-layar (induk → sub-layar) ---------- */
+      .menu-list{display:grid;gap:10px;margin-top:14px}
+      .menu-row{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;text-decoration:none;color:var(--ink)}
+      .menu-row:hover{border-color:var(--accent)}
+      .menu-row b{display:block;font-size:.98rem}
+      .menu-row .sub{display:block;font-size:.85rem;color:var(--ink-soft);margin-top:2px}
+      .menu-row .arr{font-weight:800;color:var(--accent);flex:none;font-size:1.2rem}
+      .menu-row .pill{flex:none}
 
       /* ---------- scores ---------- */
       .score-card .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
@@ -822,6 +847,17 @@
           <div id="hiEmpty" class="empty-note">Belum ada catatan hari ini — mulai dari penjualan pertama Anda.</div>
           <table class="mini-table" id="hiTable" style="display:none"><thead><tr><th>Keterangan</th><th>Jumlah</th><th></th></tr></thead><tbody id="hiBody"></tbody></table>
         </div>
+      <div class="menu-list">
+        <a class="menu-row" href="#langkah"><span><b>Langkah berikutnya</b><span class="sub">Satu langkah saja setiap kali — lihat yang harus diisi dulu.</span></span><span class="arr">›</span></a>
+        <a class="menu-row" href="#perhatian"><span><b>Perlu Perhatian</b><span class="sub">Saran proaktif dari data usaha Anda sendiri.</span></span><span class="arr">›</span></a>
+      </div>
+      </section>
+
+
+      <!-- ============ LANGKAH BERIKUTNYA (dari layar Hari Ini) ============ -->
+      <section id="langkah">
+        <div class="sec-head"><span class="sec-num">☀</span><h2>Langkah berikutnya</h2></div>
+        <p class="sec-sub">Langkah paling penting berikutnya untuk usaha Anda.</p>
         <div class="card" style="margin-top:14px" id="hiLangkahCard">
           <h3>Langkah berikutnya</h3>
           <p style="margin-top:8px" id="hiLangkahTeks">—</p>
@@ -830,9 +866,10 @@
         </div>
       </section>
 
-      <!-- Perlu Perhatian tinggal di layar Hari Ini (bukan di Dasbor lagi):
-           saran proaktif dari data usaha sendiri — diperiksa otomatis setiap
-           aplikasi dibuka dan setiap angka berubah. -->
+      <!-- ============ PERLU PERHATIAN (dari layar Hari Ini) ============ -->
+      <section id="perhatian">
+        <div class="sec-head"><span class="sec-num">⚠</span><h2>Perlu Perhatian</h2></div>
+        <p class="sec-sub">Saran proaktif dari data usaha Anda sendiri — diperiksa otomatis setiap aplikasi dibuka dan setiap angka berubah.</p>
       <div id="proaktifWrap" style="margin-top:14px">
         <div id="proaktifSummary"></div>
         <div class="card pro-panel" id="proaktifPanel">
@@ -847,6 +884,7 @@
           <div id="proaktifDue"></div>
         </div>
       </div>
+      </section>
 
       <!-- ============ 1. DATA USAHA ============ -->
       <section id="data">
@@ -1026,11 +1064,44 @@
       <section id="introspeksi">
         <div class="sec-head"><span class="sec-num">04</span><h2>Introspeksi usaha — 12 pertanyaan jujur</h2></div>
         <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dasbor, pengali valuasi, dan isi rencana perbaikan di bawah.</p>
-        <div class="card" id="quizCard"></div>
+      <div class="menu-list" id="quizMenu">
+        <a class="menu-row" href="#introspeksi-fin"><span><b>Keuangan</b><span class="sub">3 pertanyaan · uang usaha, HPP, dan pencatatan.</span></span><span class="pill mid" id="menu-dim-fin">—</span></a>
+        <a class="menu-row" href="#introspeksi-ops"><span><b>Operasional</b><span class="sub">3 pertanyaan · SOP, ketergantungan, dan tim.</span></span><span class="pill mid" id="menu-dim-ops">—</span></a>
+        <a class="menu-row" href="#introspeksi-mkt"><span><b>Pasar & kemasan</b><span class="sub">3 pertanyaan · label, foto produk, dan kanal online.</span></span><span class="pill mid" id="menu-dim-mkt">—</span></a>
+        <a class="menu-row" href="#introspeksi-tech"><span><b>Teknologi & legalitas</b><span class="sub">3 pertanyaan · QRIS, izin, dan aplikasi kasir.</span></span><span class="pill mid" id="menu-dim-tech">—</span></a>
+      </div>
         <div class="grid-2" style="margin-top:14px">
           <div class="card"><h3 style="color:var(--accent)">Kekuatan Anda</h3><ul class="tick good" id="strengthList"></ul></div>
           <div class="card"><h3 style="color:var(--bad)">Yang paling menahan nilai usaha</h3><ul class="tick weak" id="weakList"></ul></div>
         </div>
+      </section>
+
+      <!-- ============ 4fin. INTROSPEKSI — Keuangan ============ -->
+      <section id="introspeksi-fin">
+        <div class="sec-head"><span class="sec-num">04</span><h2>Introspeksi — Keuangan</h2></div>
+        <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dasbor, pengali valuasi, dan isi rencana perbaikan.</p>
+        <div class="card" id="quiz-fin"></div>
+      </section>
+
+      <!-- ============ 4ops. INTROSPEKSI — Operasional ============ -->
+      <section id="introspeksi-ops">
+        <div class="sec-head"><span class="sec-num">04</span><h2>Introspeksi — Operasional</h2></div>
+        <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dasbor, pengali valuasi, dan isi rencana perbaikan.</p>
+        <div class="card" id="quiz-ops"></div>
+      </section>
+
+      <!-- ============ 4mkt. INTROSPEKSI — Pasar & kemasan ============ -->
+      <section id="introspeksi-mkt">
+        <div class="sec-head"><span class="sec-num">04</span><h2>Introspeksi — Pasar & kemasan</h2></div>
+        <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dasbor, pengali valuasi, dan isi rencana perbaikan.</p>
+        <div class="card" id="quiz-mkt"></div>
+      </section>
+
+      <!-- ============ 4tech. INTROSPEKSI — Teknologi & legalitas ============ -->
+      <section id="introspeksi-tech">
+        <div class="sec-head"><span class="sec-num">04</span><h2>Introspeksi — Teknologi & legalitas</h2></div>
+        <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dasbor, pengali valuasi, dan isi rencana perbaikan.</p>
+        <div class="card" id="quiz-tech"></div>
       </section>
 
       <!-- ============ 5. KEUANGAN ============ -->
@@ -1059,6 +1130,18 @@
             <p class="note" style="margin-top:10px">HPP per porsi: <b id="hppTotal">—</b>. Harga dihitung agar margin Anda tetap utuh setelah komisi dipotong. *Perkiraan komisi umum — periksa angka pasti di aplikasi tempat Anda berjualan.</p>
             <p class="note" id="stockHppNote" style="margin-top:8px">Hubungkan stok: catat stok barang di Modul Keuangan — biaya pokok tersirat dari stok (harga beli ÷ harga jual) akan tampil di sini dan bisa diterapkan ke kolom HPP Data Usaha.</p>
           </div>
+
+        </div>
+      <div class="menu-list">
+        <a class="menu-row" href="#investasi"><span><b>Simulasi dana investasi</b><span class="sub">Dana yang dibutuhkan, jangka waktu, dan Rasio Kemampuan Bagi Hasil.</span></span><span class="arr">›</span></a>
+      </div>
+      </section>
+
+      <!-- ============ 5b. SIMULASI DANA INVESTASI (dari Keuangan) ============ -->
+      <section id="investasi">
+        <div class="sec-head"><span class="sec-num">05</span><h2>Simulasi dana investasi</h2></div>
+        <p class="sec-sub">Uji kemampuan bagi hasil sebelum menawarkan kerjasama investasi.</p>
+        <div class="grid-2">
           <div class="card">
             <h3>Simulasi dana investasi &amp; uji kemampuan bagi hasil</h3>
             <p class="note" style="margin:6px 0 14px">Bagi hasil untuk investor diasumsikan setara 6% per tahun dari dana investasi. Rasio Kemampuan Bagi Hasil membandingkan laba operasional bulanan dengan bagi hasil bulanan yang diharapkan: kerjasama umumnya sehat di angka ≥ 1,25.</p>
@@ -1125,6 +1208,15 @@
           </div>
           <p class="coach-answer" id="coachAnswer" role="status" hidden></p>
         </div>
+      <div class="menu-list">
+        <a class="menu-row" href="#saran-rencana"><span><b>Rencana perbaikan 30–60–90 hari</b><span class="sub">Tiga saran penguatan dan rencana langkah demi langkah.</span></span><span class="arr">›</span></a>
+      </div>
+      </section>
+
+      <!-- ============ 6b. RENCANA PERBAIKAN (dari Saran) ============ -->
+      <section id="saran-rencana">
+        <div class="sec-head"><span class="sec-num">06</span><h2>Rencana perbaikan 30–60–90 hari</h2></div>
+        <p class="sec-sub">Saran penguatan dan rencana perbaikan yang disusun dari sektor, level, dan jawaban introspeksi Anda.</p>
         <div class="grid-3">
           <div class="card advice"><h3><span class="ic" style="background:var(--gold-soft);color:var(--gold)">▣</span> Pemaketan barang</h3><div id="advPack"></div></div>
           <div class="card advice"><h3><span class="ic" style="background:var(--accent-soft);color:var(--accent)">Rp</span> Keuangan &amp; ekonomi</h3><div id="advFin"></div></div>
@@ -1159,6 +1251,16 @@
           </div>
           <div class="card" id="packCheckCard"><h3>6 periksa label &amp; kemasan</h3><div id="packChecks"></div></div>
         </div>
+      <div class="menu-list">
+        <a class="menu-row" href="#kemasan-sudut"><span><b>Foto 3 sudut & penilaian terbantu</b><span class="sub">Tampak atas, kemasan tertutup, dan isi/label dari dekat.</span></span><span class="arr">›</span></a>
+        <a class="menu-row" href="#kemasan-label"><span><b>Contoh label & pemasok</b><span class="sub">Label siap cetak dan direktori jenis pemasok kemasan.</span></span><span class="arr">›</span></a>
+      </div>
+      </section>
+
+      <!-- ============ 7b. FOTO 3 SUDUT (dari Kemasan) ============ -->
+      <section id="kemasan-sudut">
+        <div class="sec-head"><span class="sec-num">07</span><h2>Foto 3 sudut &amp; penilaian terbantu</h2></div>
+        <p class="sec-sub">Penilaian kemasan yang utuh memakai 3 sudut: tampak atas, kemasan tertutup, dan isi/label dari dekat.</p>
         <div class="card" style="margin-top:14px">
           <h3>Foto 3 sudut (untuk penilaian kemasan lengkap)</h3>
           <p class="note" style="margin:6px 0 10px">Penilaian kemasan yang utuh memakai 3 sudut: tampak atas, kemasan tertutup, dan isi/label dari dekat. Unggah ketiganya — kelengkapan 3 sudut menambah skor kemasan.</p>
@@ -1179,6 +1281,12 @@
           <p class="note" style="margin-top:8px">Tombol ini mengirim <b>fakta terukur dan jawaban periksa saja</b> ke AI Coach — fotonya sendiri tidak dikirim ke mana pun.</p>
           <p class="note" id="packAIAnswer" role="status" style="margin-top:10px;white-space:pre-line"></p>
         </div>
+      </section>
+
+      <!-- ============ 7c. LABEL & PEMASOK (dari Kemasan) ============ -->
+      <section id="kemasan-label">
+        <div class="sec-head"><span class="sec-num">07</span><h2>Contoh label &amp; pemasok kemasan</h2></div>
+        <p class="sec-sub">Contoh label produk siap cetak dan direktori jenis pemasok kemasan.</p>
         <div class="grid-2" style="margin-top:14px">
           <div class="card">
             <h3>Contoh label produk (siap cetak)</h3>
@@ -1211,6 +1319,19 @@
       <section id="buku">
         <div class="sec-head"><span class="sec-num">08</span><h2>Pembukuan harian, stok, piutang &amp; laporan SAK EMKM</h2></div>
         <p class="sec-sub">Catat transaksi seperti buku kas digital. Semua catatan tersimpan ke cloud akun Anda dan termuat lagi saat Anda masuk berikutnya. Transaksi ikut menghitung Laba Rugi, BEP, prediksi arus kas, dan laporan SAK EMKM — bukan hanya tampil sebagai daftar. Foto nota membantu mengisi keterangan, dan tombol suara bisa mengisi keterangan, jumlah, dan jenis sekaligus dari satu ucapan — contoh: 'penjualan lima puluh ribu'. <b>Peringatan: periksa kembali angkanya sebelum menambah transaksi</b>, terutama angka hasil ucapan suara.</p>
+        <div class="menu-list">
+        <a class="menu-row" href="#buku-transaksi"><span><b>Tambah transaksi</b><span class="sub">Catat penjualan & pengeluaran, foto nota, dan suara.</span></span><span class="arr">›</span></a>
+        <a class="menu-row" href="#buku-qris"><span><b>Terima Pembayaran QRIS</b><span class="sub">Kode QRIS usaha dan tandai pembayaran pembeli.</span></span><span class="arr">›</span></a>
+        <a class="menu-row" href="#buku-stok"><span><b>Stok barang</b><span class="sub">Daftar stok, nilai stok, dan biaya pokok tersirat.</span></span><span class="arr">›</span></a>
+        <a class="menu-row" href="#buku-hutang"><span><b>Piutang & utang</b><span class="sub">Tagihan pelanggan dan daftar utang usaha.</span></span><span class="arr">›</span></a>
+        <a class="menu-row" href="#buku-laporan"><span><b>Laporan SAK EMKM</b><span class="sub">Laba Rugi, Posisi Keuangan, dan Arus Kas.</span></span><span class="arr">›</span></a>
+      </div>
+      </section>
+
+      <!-- ============ 8b. TAMBAH TRANSAKSI (dari Pembukuan) ============ -->
+      <section id="buku-transaksi">
+        <div class="sec-head"><span class="sec-num">08</span><h2>Tambah transaksi</h2></div>
+        <p class="sec-sub">Catat transaksi seperti buku kas digital. <b>Periksa kembali angkanya sebelum menambah transaksi</b>, terutama angka hasil ucapan suara.</p>
         <div class="card">
           <h3>Tambah transaksi</h3>
           <div class="photo-box">
@@ -1237,6 +1358,12 @@
             <div class="stat" style="box-shadow:none"><div class="k">Saldo catatan</div><div class="v" id="txSaldo">Rp 0</div></div>
           </div>
         </div>
+      </section>
+
+      <!-- ============ 8c. QRIS (dari Pembukuan) ============ -->
+      <section id="buku-qris">
+        <div class="sec-head"><span class="sec-num">08</span><h2>Terima Pembayaran QRIS</h2></div>
+        <p class="sec-sub">Tunjukkan kode QRIS usaha Anda ke pembeli, lalu tandai pembayarannya.</p>
         <div class="card" style="margin-top:14px" id="qrisCard">
           <h3>Terima Pembayaran QRIS</h3>
           <p class="note" id="qrisIntro" style="margin-top:6px">Unggah foto kode QRIS usaha Anda (dari penyedia QRIS tempat Anda mendaftar QRIS). Kode ini milik Anda — uang pembeli langsung masuk ke rekening Anda, tidak lewat aplikasi ini.</p>
@@ -1279,7 +1406,13 @@
           <p class="qris-tagihan" id="qrisTagihanFull" style="display:none"></p>
           <button class="btn" id="btnQrisCloseFull" type="button">Tutup</button>
         </div>
-        <div class="grid-2" style="margin-top:14px">
+      </section>
+
+      <!-- ============ 8d. STOK (dari Pembukuan) ============ -->
+      <section id="buku-stok">
+        <div class="sec-head"><span class="sec-num">08</span><h2>Stok barang</h2></div>
+        <p class="sec-sub">Stok yang tercatat ikut menghitung biaya pokok tersirat di Kalkulator HPP.</p>
+        <div class="grid-2">
           <div class="card">
             <h3>Stok barang</h3>
             <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:10px">
@@ -1293,6 +1426,14 @@
             <table class="mini-table" id="stockTable" style="display:none"><thead><tr><th>Barang</th><th>Stok</th><th>Nilai stok</th><th></th></tr></thead><tbody id="stockBody"></tbody></table>
             <p class="note" style="margin-top:8px">Total nilai stok (harga beli): <b id="stockTotal">Rp 0</b></p>
           </div>
+        </div>
+      </section>
+
+      <!-- ============ 8e. PIUTANG & UTANG (dari Pembukuan) ============ -->
+      <section id="buku-hutang">
+        <div class="sec-head"><span class="sec-num">08</span><h2>Piutang &amp; utang usaha</h2></div>
+        <p class="sec-sub">Tagihan pelanggan yang belum dibayar dan daftar utang usaha.</p>
+        <div class="grid-2">
           <div class="card">
             <h3>Piutang pelanggan</h3>
             <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:10px">
@@ -1319,6 +1460,12 @@
           <table class="mini-table" id="utTable" style="display:none"><thead><tr><th>Keterangan</th><th>Jatuh tempo</th><th>Jumlah</th><th></th></tr></thead><tbody id="utBody"></tbody></table>
           <p class="note" style="margin-top:8px">Total utang dari daftar: <b id="utTotal">Rp 0</b></p>
         </div>
+      </section>
+
+      <!-- ============ 8f. LAPORAN SAK EMKM (dari Pembukuan) ============ -->
+      <section id="buku-laporan">
+        <div class="sec-head"><span class="sec-num">08</span><h2>Laporan sederhana format SAK EMKM</h2></div>
+        <p class="sec-sub">Disusun otomatis dari Data Usaha + catatan transaksi.</p>
         <div class="card" style="margin-top:14px">
           <h3>Laporan sederhana format SAK EMKM</h3>
           <p class="note" style="margin:6px 0 10px">Disusun otomatis dari <b>Data Usaha + catatan transaksi</b> di atas: transaksi masuk menambah pendapatan, pengeluaran kategori Bahan baku/Kemasan menambah HPP, dan pengeluaran lain menambah biaya operasional. Format mengikuti struktur SAK EMKM: Laporan Laba Rugi, Laporan Posisi Keuangan, dan Laporan Arus Kas.</p>
@@ -1842,11 +1989,15 @@
       // sensible defaults for the demo business
       Object.assign(answers, {"fin-0":1,"fin-1":1,"fin-2":0,"ops-0":1,"ops-1":0,"ops-2":1,"mkt-0":0,"mkt-1":1,"mkt-2":2,"tech-0":2,"tech-1":1,"tech-2":0});
 
+      /* Tiap dimensi dirender di layar sub-introspeksi sendiri
+         (#quiz-fin / #quiz-ops / #quiz-mkt / #quiz-tech); bila wadah
+         dimensi tidak ada, jatuh kembali ke #quizCard. */
       const quizCard = $("quizCard");
       DIMS.forEach(d=>{
+        const wadahDimensi = $("quiz-"+d.key) || quizCard;
         const head=document.createElement("div"); head.className="dim-head"; head.style.marginTop="14px";
         head.innerHTML='<h3>'+d.name+'</h3><span class="pill mid" id="dim-'+d.key+'">—</span>';
-        quizCard.appendChild(head);
+        wadahDimensi.appendChild(head);
         d.qs.forEach((q,i)=>{
           const row=document.createElement("div"); row.className="q-row";
           const qd=document.createElement("div"); qd.className="q"; qd.innerHTML=q[0]+"<small>"+q[1]+"</small>";
@@ -1858,7 +2009,7 @@
             b.addEventListener("click",()=>{ answers[d.key+"-"+i]=v; seg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b?"true":"false")); recalc(); if(typeof window.__picuDiskusiJawaban==="function"){ try{ window.__picuDiskusiJawaban(d.key+"-"+i, v, row); }catch(e){} } });
             seg.appendChild(b);
           });
-          row.appendChild(qd); row.appendChild(seg); quizCard.appendChild(row);
+          row.appendChild(qd); row.appendChild(seg); wadahDimensi.appendChild(row);
         });
       });
 
@@ -1911,7 +2062,9 @@
         const dimScore={};
         DIMS.forEach(d=>{ let s=0; d.qs.forEach((_,i)=> s+=answers[d.key+"-"+i]); dimScore[d.key]=Math.round(s/6*100);
           const pill=$("dim-"+d.key); pill.textContent=dimScore[d.key]+"/100";
-          pill.className="pill "+(dimScore[d.key]>=66?"good":dimScore[d.key]>=34?"mid":"low"); });
+          pill.className="pill "+(dimScore[d.key]>=66?"good":dimScore[d.key]>=34?"mid":"low");
+          /* Cermin skor ke kartu menu di layar induk introspeksi. */
+          const mp=$("menu-dim-"+d.key); if(mp){ mp.textContent=dimScore[d.key]+"/100"; mp.className=pill.className; } });
 
         /* skor-skor */
         const margin = omzetBln>0 ? labaBersihBln/omzetBln : 0;
@@ -2766,7 +2919,8 @@
       /* ================= NAVIGASI BERBASIS LAYAR =================
          Satu layar penuh terlihat dalam satu waktu — bukan satu halaman
          panjang yang digulir. Layar Hari Ini memuat hero + sapaan + Hari
-         Ini + Perlu Perhatian; layar lain memuat satu bagian saja.
+         Ini; Perlu Perhatian dan Langkah berikutnya punya layar sendiri;
+         bagian panjang dipecah jadi layar menu + sub-layar.
          Aturan tampil diatur CSS (body[data-layar] hanya MENYEMBUNYIKAN
          layar yang tidak aktif); skrip ini yang memilih layarnya. Tanpa
          data-layar (mode portal berbagi, hash pemulihan kata sandi, atau
@@ -2774,12 +2928,18 @@
       (function(){
         "use strict";
         function gid(id){ return document.getElementById(id); }
-        /* Semua layar: satu layar per bagian. "hariini" istimewa karena
-           memuat hero + sapaan + #hariini + #proaktifWrap. "langganan"
+        /* Semua layar: satu layar per bagian; bagian panjang dipecah —
+           induknya layar menu, isinya pindah ke sub-layar (lihat
+           LAYAR_INDUK). "hariini" istimewa karena memuat hero + sapaan +
+           #hariini. "langganan"
            sengaja TIDAK masuk daftar (fitur langganan mati — saklar
            LANGGANAN_AKTIF false; bila suatu hari dinyalakan, daftarkan
            sebagai layar di sini). */
-        var LAYAR_DAFTAR=["hariini","data","dashboard","valuasi","introspeksi","keuangan","saran","kemasan","buku","cekdata","legalitas","pemasaran","sop","portal","paket","adminmarketing"];
+        var LAYAR_DAFTAR=["hariini","langkah","perhatian","data","dashboard","valuasi","introspeksi","introspeksi-fin","introspeksi-ops","introspeksi-mkt","introspeksi-tech","keuangan","investasi","saran","saran-rencana","kemasan","kemasan-sudut","kemasan-label","buku","buku-transaksi","buku-qris","buku-stok","buku-hutang","buku-laporan","cekdata","legalitas","pemasaran","sop","portal","paket","adminmarketing"];
+        /* Induk tiap sub-layar (untuk tombol "← Kembali" dan sorotan
+           nav bawah). Layar tanpa induk kembali ke Hari Ini. */
+        var LAYAR_INDUK={langkah:"hariini",perhatian:"hariini","introspeksi-fin":"introspeksi","introspeksi-ops":"introspeksi","introspeksi-mkt":"introspeksi","introspeksi-tech":"introspeksi",investasi:"keuangan","saran-rencana":"saran","kemasan-sudut":"kemasan","kemasan-label":"kemasan","buku-transaksi":"buku","buku-qris":"buku","buku-stok":"buku","buku-hutang":"buku","buku-laporan":"buku"};
+        var LAYAR_JUDUL={hariini:"Hari Ini",data:"Data Usaha",dashboard:"Dasbor Level",valuasi:"Valuasi",introspeksi:"Introspeksi",keuangan:"Keuangan & Ekonomi",saran:"Saran",kemasan:"Produk & Pemaketan",buku:"Pembukuan",cekdata:"Cek Data",legalitas:"Legalitas",pemasaran:"Pemasaran",sop:"Orang & SOP",portal:"Portal Investor",paket:"Paket & Layanan",adminmarketing:"Admin Marketing"};
         /* Alias tautan dalam yang bukan nama bagian (mis. #coach untuk
            AI Coach, #ekonomi untuk Ekonomi & Investasi): dibuka layarnya
            yang sesuai, hash lalu menjadi nama layar yang baku. */
@@ -2832,8 +2992,12 @@
             }
           }
           try{
+            /* Sub-layar menyorot item nav induknya (mis. sub-layar
+               introspeksi menyorot "Cek Diri"); induk tanpa item nav
+               (Pembukuan, Kemasan) tidak menyorot apa pun. */
+            var navUntuk=LAYAR_INDUK[nama]||nama;
             document.querySelectorAll(".bottom-nav a").forEach(function(a){
-              a.classList.toggle("active", a.getAttribute("data-nav")===nama);
+              a.classList.toggle("active", a.getAttribute("data-nav")===navUntuk);
             });
           }catch(e){}
           if(opsi.scroll!==false){ try{ window.scrollTo(0,0); }catch(e){} }
@@ -2848,7 +3012,7 @@
           while(n){
             if(n.id){
               if(n.id==="dataFormWrap") return "data";
-              if(n.id==="proaktifWrap") return "hariini";
+              if(n.id==="proaktifWrap") return "perhatian";
               if(n.id==="sapaNudgeCard") return "hariini";
               if(LAYAR_DAFTAR.indexOf(n.id)>=0) return n.id;
             }
@@ -2861,18 +3025,21 @@
           var h=layarDariHash();
           return tampilkanLayar(h||"hariini", {scroll:false});
         }
-        /* Tombol "← Kembali" di atas tiap layar selain Hari Ini. */
+        /* Tombol "← Kembali" di atas tiap layar selain Hari Ini:
+           sub-layar kembali ke layar induknya, layar tingkat atas
+           kembali ke Hari Ini. */
         function pasangTombolKembali(){
           LAYAR_DAFTAR.forEach(function(nama){
             if(nama==="hariini") return;
             var sec=gid(nama); if(!sec) return;
             if(sec.querySelector(".btn-kembali-layar")) return;
+            var kembaliKe=LAYAR_INDUK[nama]||"hariini";
             var b=document.createElement("button");
             b.type="button";
             b.className="btn ghost small btn-kembali-layar";
             b.textContent="← Kembali";
-            b.setAttribute("aria-label","Kembali ke Hari Ini");
-            b.addEventListener("click", function(){ tampilkanLayar("hariini"); });
+            b.setAttribute("aria-label","Kembali ke "+(LAYAR_JUDUL[kembaliKe]||"Hari Ini"));
+            b.addEventListener("click", function(){ tampilkanLayar(kembaliKe); });
             sec.insertBefore(b, sec.firstChild);
           });
         }
@@ -2909,7 +3076,7 @@
             var unit=[];
             if(nama==="hariini"){
               var hero=document.querySelector("header.hero"); if(hero) unit.push(hero);
-              ["sapaNudgeCard","hariini","proaktifWrap"].forEach(function(id){ var e=gid(id); if(e) unit.push(e); });
+              ["sapaNudgeCard","hariini"].forEach(function(id){ var e=gid(id); if(e) unit.push(e); });
             } else {
               var s=gid(nama); if(s) unit.push(s);
             }
@@ -2920,7 +3087,10 @@
               try{ baris+=u.querySelectorAll(".check-row,.pro-item,.q-row").length; }catch(e){}
               try{ input+=u.querySelectorAll("input,select,textarea").length; }catch(e){}
             });
-            hasil[nama]={anak:anak, blok:blok, baris:baris, input:input};
+            /* Perkiraan kasar tinggi layar (px) + jumlah viewport HP
+               (±700 px): dipakai harness + laporan, bukan fitur pengguna. */
+            var estPx=anak*40+blok*90+baris*55+input*56;
+            hasil[nama]={anak:anak, blok:blok, baris:baris, input:input, estPx:estPx, estLayar:Math.round(estPx/700*10)/10};
           });
           return hasil;
         }
@@ -3685,7 +3855,7 @@
           if(snap.answers) Object.assign(answers, snap.answers);
           [["pack",packState],["cons",consState],["legal",legalState],["chan",chanState]].forEach(function(pair){ var src=snap[pair[0]]; if(Array.isArray(src)){ pair[1].splice(0,pair[1].length); src.forEach(function(v){ pair[1].push(v); }); } });
           var quizVals=[]; DIMS.forEach(function(d){ d.qs.forEach(function(_,i){ quizVals.push(answers[d.key+"-"+i]); }); });
-          refreshSegs("quizCard", quizVals); refreshSegs("packChecks", packState); refreshSegs("consChecks", consState); refreshSegs("legalChecks", legalState); refreshSegs("channelChecks", chanState);
+          (function(){ var off=0; DIMS.forEach(function(d){ refreshSegs("quiz-"+d.key, quizVals.slice(off, off+d.qs.length)); off+=d.qs.length; }); refreshSegs("quizCard", quizVals); })(); refreshSegs("packChecks", packState); refreshSegs("consChecks", consState); refreshSegs("legalChecks", legalState); refreshSegs("channelChecks", chanState);
           var sw=gid("sopSteps"); if(sw){ sw.innerHTML=""; sopCount=0; var steps=(snap.sopSteps&&snap.sopSteps.length)?snap.sopSteps:["","",""]; steps.forEach(function(v){ addSopStep(v||""); }); }
           txs.splice(0,txs.length); (snap.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||uuid(), tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0}); });
           stocks.splice(0,stocks.length); (snap.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||uuid(), nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0}); });
@@ -4880,7 +5050,7 @@
           aksi.appendChild(bDiskusi); aksi.appendChild(bTutup);
           el.appendChild(teks); el.appendChild(aksi);
           if(rowEl && rowEl.parentNode){ rowEl.parentNode.insertBefore(el, rowEl.nextSibling); }
-          else { var qc=gid("quizCard"); if(qc) qc.appendChild(el); }
+          else { var qc=gid("quiz-"+String(qid).split("-")[0]) || gid("quizCard"); if(qc) qc.appendChild(el); }
           diskusiKartuEl[qid]=el;
           return el;
         }
@@ -6680,6 +6850,10 @@
         }
         var SEG_HINT = {
           quizCard:"Pilih jawaban yang paling jujur untuk keadaan sekarang: Belum berarti belum dilakukan, Sebagian berarti kadang-kadang atau belum lengkap, Sudah berarti selalu dilakukan.",
+          "quiz-fin":"Pilih jawaban yang paling jujur untuk keadaan sekarang: Belum berarti belum dilakukan, Sebagian berarti kadang-kadang atau belum lengkap, Sudah berarti selalu dilakukan.",
+          "quiz-ops":"Pilih jawaban yang paling jujur untuk keadaan sekarang: Belum berarti belum dilakukan, Sebagian berarti kadang-kadang atau belum lengkap, Sudah berarti selalu dilakukan.",
+          "quiz-mkt":"Pilih jawaban yang paling jujur untuk keadaan sekarang: Belum berarti belum dilakukan, Sebagian berarti kadang-kadang atau belum lengkap, Sudah berarti selalu dilakukan.",
+          "quiz-tech":"Pilih jawaban yang paling jujur untuk keadaan sekarang: Belum berarti belum dilakukan, Sebagian berarti kadang-kadang atau belum lengkap, Sudah berarti selalu dilakukan.",
           packChecks:"Untuk tiap baris, pilih Sudah bila hal itu benar-benar sudah ada di kemasan Anda, dan Belum bila belum ada.",
           consChecks:"Untuk tiap sumber, buka dan bandingkan datanya dengan data usaha Anda, lalu tandai: Sesuai, Beda, atau Belum dicek.",
           legalChecks:"Untuk tiap izin, tandai status yang benar saat ini supaya aplikasi bisa menunjukkan izin mana yang perlu diurus berikutnya.",
