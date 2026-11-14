@@ -103,6 +103,7 @@
       @keyframes suaraDenyut{0%{box-shadow:0 0 0 0 rgba(227,185,89,.55)}70%{box-shadow:0 0 0 14px rgba(227,185,89,0)}100%{box-shadow:0 0 0 0 rgba(227,185,89,0)}}
       .suara-status{font-weight:700;font-size:.98rem}
       .suara-teks{margin-top:10px;font-size:.95rem;line-height:1.5}
+      .suara-tanya{margin-top:10px;font-size:.95rem;line-height:1.5;color:var(--gold);font-weight:700}
       .suara-catatan{margin-top:8px;font-size:.92rem;line-height:1.5;color:var(--ink-soft)}
       .suara-meter{display:flex;gap:4px;margin-top:12px}
       .suara-seg{flex:1;height:12px;border-radius:3px;background:var(--field-border);opacity:.55}
@@ -2505,6 +2506,10 @@
         }
       });
       $("btnVoiceKoreksi").addEventListener("click",function(){
+        /* Dialog tanya-jawab sedang berjalan: Koreksi membatalkannya —
+           suara dihentikan, rekaman berhenti, nilai terbaik tetap masuk
+           ke kolom lalu bisa diubah dengan tangan di menu Isian. */
+        if(window.__suaraDialog && window.__suaraDialog.aktif && window.__suaraDialog.aktif()) window.__suaraDialog.batalkan();
         if(window.__aturMenuTx) window.__aturMenuTx("isian");
         else $("btnTxModeIsian").click();
       });
@@ -2586,7 +2591,12 @@
           total=pertama.seSkala; lastScale=pertama.seSkala; j=pertama.akhir;
         } else {
           total=pertama.nilai; j=pertama.akhir;
-          if(j<n && (tokens[j] in UC_SCALE)){ lastScale=UC_SCALE[tokens[j]]; total=pertama.nilai*lastScale; j++; }
+          /* "<angka> ratus" hasil jawaban lisan ("105 ratus" -> 10500):
+             "ratus" di sini mengalikan segmen angka polos dengan 100.
+             Bentuk kata ("dua ratus") sudah dihabiskan seg() di atas,
+             jadi pemeriksaan ini tidak menghitung ganda. */
+          if(j<n && tokens[j]==="ratus"){ total=total*100; j++; }
+          if(j<n && (tokens[j] in UC_SCALE)){ lastScale=UC_SCALE[tokens[j]]; total=total*lastScale; j++; }
         }
         /* segmen lanjutan berskala menurun ("1 juta 500 ribu",
            "satu juta dua ratus ribu", "50 ribu 250"), atau satu ekor
@@ -2610,7 +2620,7 @@
       }
       function parseUcapanTransaksi(teks){
         var tokens=ucTokens(teks);
-        var hasil={keterangan:"",jumlah:null,jenis:null,jenisJelas:false,kategori:null,mentah:String(teks||"").trim()};
+        var hasil={keterangan:"",jumlah:null,jenis:null,jenisJelas:false,kategori:null,mentah:String(teks||"").trim(),jumlahBare:false,jumlahDari:-1};
         if(!tokens.length) return hasil;
         /* cari angka pertama: putaran pertama hanya angka "kuat" (berawalan
            Rp, bertitik ribuan, atau diikuti kata skala) dan kata angka —
@@ -2642,6 +2652,22 @@
           sisa.push(tokens[t]);
         }
         if(span) hasil.jumlah=span.jumlah;
+        /* Tandai jumlah "polos": angka tanpa kata besaran (ribu/juta/
+           miliar, seribu/sejuta/semiliar), tanpa awalan Rp, dan tanpa
+           titik ribuan ("105", "lima puluh"). Jumlah seperti inilah yang
+           ditanyakan dialog ("Apakah maksudnya 105 ribu rupiah?").
+           Jumlah berformat ("Rp50.000", "lima puluh ribu") bukan polos.
+           jumlahDari = indeks token angka pertama, dipakai menilai
+           apakah angka polos itu mirip hitungan barang, bukan uang. */
+        if(span){
+          hasil.jumlahDari=span.dari;
+          var jBare=true;
+          for(var bi=span.dari;bi<span.sampai;bi++){
+            var bt=tokens[bi];
+            if((bt in UC_SCALE)||bt==="seribu"||bt==="sejuta"||bt==="semiliar"||bt==="rp"||bt==="rupiah"||bt.indexOf("rp")===0||bt.indexOf(".")>=0){ jBare=false; break; }
+          }
+          hasil.jumlahBare=jBare;
+        }
         /* jenis dari kata petunjuk pertama yang muncul dalam ucapan
            ("bayar" = keluar, "dibayar"/"terima" = masuk). Bila tidak ada
            kata petunjuk, jenis dibiarkan apa adanya — tidak ditebak. */
@@ -2671,6 +2697,292 @@
         return hasil;
       }
       window.parseUcapanTransaksi=parseUcapanTransaksi;
+      /* ===== DIALOG TANYA-JAWAB SUARA =====
+         Bertanya hanya bila hasil urai pertama masih meragukan, memakai
+         suara peramban (speechSynthesis, bahasa Indonesia, tanpa server
+         dan tanpa biaya) plus baris teks pertanyaan di dalam panel,
+         supaya pengguna yang mematikan suara tetap membaca pertanyaannya.
+         Pertanyaan dibuat dari templat lokal berdasarkan nilai yang sudah
+         terurai — angka tidak pernah datang dari tempat lain, dan jalur
+         suara ini tidak pernah memanggil layanan AI apa pun.
+         Urutan tanya: hitungan dulu, lalu jumlah polos, lalu jenis, lalu
+         keterangan. Jawaban didengarkan lewat pengenal yang sama (jeda
+         hening 4 detik + tenggang 2,8 detik seperti rekaman biasa) dan
+         diterapkan pada hasil urai yang TERTUNDA — bukan transaksi baru.
+         Paling banyak 1 pertanyaan awal + 2 pertanyaan lanjutan; sesudah
+         itu nilai terbaik dipakai dan pengguna bisa memperbaiki lewat
+         tombol Koreksi. Tidak pernah menyimpan otomatis. */
+      var __dialogSuara={aktif:false,pending:null,konteks:null,pertanyaan:null,teksTanya:"",tanyaKe:0,fase:null,r:null,timerJawab:null};
+      var __dialogUnit={kilo:"kg",kg:"kg",kilogram:"kg",gram:"gram",bungkus:"bungkus",pcs:"pcs",biji:"biji",porsi:"porsi",liter:"liter"};
+      var __dialogFungsi={masuk:1,keluar:1,jual:1,terima:1,dapat:1,dapet:1,beli:1,bayar:1,iya:1,iyaa:1,betul:1,benar:1,ya:1,bukan:1,tidak:1,uang:1};
+      /* Periksa hasil urai pertama: kembalikan {macam, angka} atau null.
+         macam: "kuantitas" (angka polos kecil mirip hitungan barang,
+         contoh: "beli gula 3", "jumlah 3"), "jumlah" (angka polos,
+         contoh: "105" tanpa kata besaran), "jenis" (tidak ada kata
+         petunjuk masuk/keluar), "keterangan" (hanya angka yang terucap).
+         lewati berisi macam yang sudah ditanyakan dan tidak berubah
+         oleh jawaban — supaya pertanyaan yang sama tidak diulang. */
+      function __dialogAmbBerikut(p, lewati){
+        if(!p) return null;
+        lewati=lewati||{};
+        if(p.jumlah!==null && p.jumlahBare && p.jumlah>0){
+          var toks=ucTokens(p.mentah||"");
+          var idx=(typeof p.jumlahDari==="number")?p.jumlahDari:-1;
+          var seblm=idx>0?toks[idx-1]:null;
+          var miripHitungan=false;
+          if(seblm==="jumlah") miripHitungan=true;
+          else if(p.jumlah<=20 && idx>0 && seblm && seblm!=="rp" && seblm!=="rupiah" && !(seblm in UC_UNIT) && seblm!=="puluh" && seblm!=="belas" && seblm!=="ratus" && seblm!=="seratus" && !(seblm in UC_SCALE)) miripHitungan=true;
+          if(miripHitungan){
+            if(!lewati.kuantitas) return {macam:"kuantitas",angka:p.jumlah};
+            if(!lewati.jumlah) return {macam:"jumlah",angka:p.jumlah};
+          } else if(!lewati.jumlah) return {macam:"jumlah",angka:p.jumlah};
+        }
+        if(!p.jenisJelas && !lewati.jenis) return {macam:"jenis"};
+        if(!p.keterangan && !lewati.keterangan) return {macam:"keterangan"};
+        return null;
+      }
+      function __dialogAnalisis(p){ return __dialogAmbBerikut(p, null); }
+      function __dialogBuatTanya(a){
+        if(!a) return "";
+        if(a.macam==="jumlah") return "Apakah maksudnya "+a.angka+" ribu rupiah?";
+        if(a.macam==="kuantitas") return a.angka+" apa — "+a.angka+" kilo, "+a.angka+" bungkus, atau "+a.angka+" ribu?";
+        if(a.macam==="jenis") return "Ini uang masuk atau uang keluar?";
+        if(a.macam==="keterangan") return "Uang ini untuk apa?";
+        return "";
+      }
+      /* Baris pertanyaan di dalam panel (teks emas di bawah "Terdengar: …").
+         Kosongkan untuk menyembunyikannya. */
+      function __dialogTampilTanya(teks){
+        if(typeof __suaraPanel==="undefined"||!__suaraPanel) return;
+        var el=__suaraPanel.querySelector("#voiceTanya");
+        if(!el) return;
+        if(teks){ el.textContent=teks; el.style.display="block"; }
+        else { el.textContent=""; el.style.display="none"; }
+      }
+      /* Ucapkan pertanyaan lewat suara peramban. Kembalikan false bila
+         suara tidak tersedia — penelepon tetap melanjutkan dengan teks. */
+      function __dialogUcapkan(teks){
+        try{
+          var ss=window.speechSynthesis;
+          if(!ss||typeof ss.speak!=="function") return false;
+          var Ucap=window.SpeechSynthesisUtterance;
+          if(typeof Ucap!=="function") return false;
+          var u=new Ucap(teks);
+          u.lang="id-ID";
+          u.onend=function(){ if(__dialogSuara.aktif&&__dialogSuara.fase==="tanya"&&__dialogSuara.teksTanya===teks){ __dialogMulaiJawab(); } };
+          u.onerror=function(){ if(__dialogSuara.aktif&&__dialogSuara.fase==="tanya"&&__dialogSuara.teksTanya===teks){ __dialogMulaiJawab(); } };
+          ss.speak(u);
+          return true;
+        }catch(e){ return false; }
+      }
+      /* Mulai mendengarkan jawaban: hentikan suara dulu (wajib, supaya
+         pengenal tidak menangkap suara pertanyaan sendiri), lalu buka
+         sesi pengenal baru dengan penghitung jeda dan tenggang yang sama
+         seperti rekaman biasa. Teks akhir sesi sebelumnya dibersihkan
+         supaya tidak terbaca sebagai jawaban. */
+      function __dialogMulaiJawab(){
+        if(!__dialogSuara.aktif||__dialogSuara.fase!=="tanya") return;
+        if(__dialogSuara.timerJawab!==null){ try{ clearTimeout(__dialogSuara.timerJawab); }catch(e){} __dialogSuara.timerJawab=null; }
+        __dialogSuara.fase="jawab";
+        try{ if(window.speechSynthesis&&window.speechSynthesis.cancel) window.speechSynthesis.cancel(); }catch(e){}
+        __suaraAkhirTeks=""; __suaraTeksTerakhir="";
+        var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+        if(!SR){ __dialogSelesai(""); return; }
+        var r;
+        try{ r=new SR(); }catch(e){ __dialogSelesai(""); return; }
+        r.lang="id-ID"; r.interimResults=true; r.continuous=true;
+        __dialogSuara.r=r; __suaraR=r;
+        __suaraSelesaiFlag=false; __suaraMenungguFinal=false;
+        __suaraBatalTunggu(); __suaraBatalJeda();
+        if(window.__panelSuara&&window.__panelSuara.aturFinalkan) window.__panelSuara.aturFinalkan(__dialogJawabFinalkan);
+        try{ __suaraSetStatus(false, "Mendengarkan jawaban Anda…"); }catch(e){}
+        r.onspeechstart=function(){ if(!__dialogSuara.aktif) return; if(__suaraMenungguFinal) return; if(__suaraSelesaiFlag) return; __suaraBatalJeda(); __suaraSetStatus(true); };
+        r.onspeechend=function(){ if(!__dialogSuara.aktif) return; if(__suaraMenungguFinal) return; if(__suaraSelesaiFlag) return; __suaraSetStatus(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); __suaraMulaiJeda(); };
+        r.onend=function(){ __suaraAkhir(); };
+        r.onaudioend=function(){ __suaraAkhir(); };
+        r.onresult=function(ev){
+          if(__suaraSelesaiFlag) return;
+          var h=__suaraRangkumHasil(ev);
+          __suaraCatatHasil(h);
+          var teksAkhir=__suaraAkhirTeks||"";
+          if(h.final&&!teksAkhir&&!h.teks){ __dialogJawabFinalkan("hasil akhir kosong"); return; }
+          if(__suaraMenungguFinal&&teksAkhir){ __dialogJawabFinalkan("Berhenti"); return; }
+        };
+        r.onerror=function(ev){ if(__suaraMenungguFinal){ __suaraTungguFinalHabis(); return; } __dialogBatalkan(); };
+        try{ r.start(); }catch(e){}
+      }
+      /* Ajukan satu pertanyaan (teks + suara). Bila suara tidak
+         tersedia, langsung mulai mendengarkan jawabannya. */
+      function __dialogTanyakan(a){
+        __dialogSuara.tanyaKe++; __dialogSuara.pertanyaan=a; __dialogSuara.fase="tanya";
+        var q=__dialogBuatTanya(a);
+        __dialogSuara.teksTanya=q;
+        __dialogTampilTanya(q);
+        try{ __suaraSetStatus(false, "Menanyakan kejelasan…"); }catch(e){}
+        var ok=false;
+        try{ ok=__dialogUcapkan(q); }catch(e){ ok=false; }
+        if(ok){
+          /* Pengaman bila akhir ucapan tidak pernah dilaporkan: tetap
+             mulai mendengarkan setelah pertanyaan selesai diucapkan. */
+          __dialogSuara.timerJawab=setTimeout(function(){ __dialogMulaiJawab(); }, 20000);
+        } else {
+          __dialogMulaiJawab();
+        }
+      }
+      function __dialogBersihKet(ket){
+        var kata=String(ket||"").split(/\s+/).filter(function(w){ return w && !(w in __dialogFungsi); });
+        return kata.join(" ");
+      }
+      /* Terapkan jawaban lisan pada hasil urai yang tertunda. */
+      function __dialogTerapkan(pending, amb, teks){
+        if(!pending||!amb) return;
+        var toks=ucTokens(teks);
+        var pj=parseUcapanTransaksi(teks);
+        var adaSetuju=toks.indexOf("iya")>=0||toks.indexOf("iyaa")>=0||toks.indexOf("betul")>=0||toks.indexOf("benar")>=0||toks.indexOf("ya")>=0;
+        var adaBukan=toks.indexOf("bukan")>=0||toks.indexOf("tidak")>=0||toks.indexOf("enggak")>=0||toks.indexOf("nggak")>=0;
+        /* Satuan di jawaban ("3 kilo", "bungkus") -> hitungan masuk
+           keterangan, bukan jumlah. */
+        var satuan=null;
+        for(var i=0;i<toks.length;i++){ if(toks[i] in __dialogUnit){ satuan=__dialogUnit[toks[i]]; break; } }
+        if(satuan){
+          var nHitung=(pj.jumlah!==null)?pj.jumlah:pending.jumlah;
+          if(nHitung!==null&&nHitung>0){
+            pending.keterangan=((pending.keterangan||"")+" "+nHitung+" "+satuan).replace(/\s+/g," ").trim();
+            pending.jumlah=null; pending.jumlahBare=false;
+          }
+          /* Jenis dari jawaban hanya dipakai bila pertanyaan memang
+             menanyakan jenis, atau jenis belum jelas — kata kerja di
+             jawaban lain tidak boleh menimpa jenis yang sudah dipastikan. */
+          if(pj.jenisJelas&&(amb.macam==="jenis"||!pending.jenisJelas)){ pending.jenis=pj.jenis; pending.jenisJelas=true; }
+          return;
+        }
+        if(amb.macam==="jumlah"||amb.macam==="kuantitas"){
+          if(adaBukan){
+            /* Koreksi eksplisit ("bukan, …") dianggap pasti: angka hasil
+               koreksi dipakai apa adanya, tidak ditanyakan lagi. */
+            if(pj.jumlah!==null){ pending.jumlah=pj.jumlah; pending.jumlahBare=false; }
+          } else if(adaSetuju&&pj.jumlah===null){
+            /* "iya" saja: anggapan awal dibenarkan (N -> N x 1000). */
+            pending.jumlah=amb.angka*1000; pending.jumlahBare=false;
+          } else if(pj.jumlah!==null&&!pj.jumlahBare){
+            pending.jumlah=pj.jumlah; pending.jumlahBare=false;
+          } else if(pj.jumlah!==null){
+            pending.jumlah=pj.jumlah; pending.jumlahBare=true;
+          }
+        } else if(pj.jumlah!==null&&!pj.jumlahBare){
+          /* Jawaban atas pertanyaan jenis/keterangan yang menyebut jumlah
+             berbesaran ("lima puluh ribu") juga dipakai. */
+          pending.jumlah=pj.jumlah; pending.jumlahBare=false;
+        }
+        if(pj.jenisJelas&&(amb.macam==="jenis"||!pending.jenisJelas)){ pending.jenis=pj.jenis; pending.jenisJelas=true; }
+        /* Keterangan dari jawaban: kata fungsi saja ("masuk", "iya")
+           bukan keterangan. Bila pertanyaan memang menanyakan keterangan,
+           pakai kalimat jawaban apa adanya; bila bukan, pakai kata
+           isinya saja. */
+        var ketJawab=pj.keterangan||"";
+        var ketBersih=__dialogBersihKet(ketJawab);
+        if(ketBersih&&!pending.keterangan){
+          pending.keterangan=(amb.macam==="keterangan")?ketJawab:ketBersih;
+        }
+        if(pj.kategori&&!pending.kategori) pending.kategori=pj.kategori;
+      }
+      /* Penyelesaian sesi jawaban (pemicu: jeda, Berhenti, atau pengenalan
+         selesai sendiri). Bila jawaban masih menyisakan keraguan dan
+         jatah pertanyaan lanjutan masih ada, tanyakan lagi; bila tidak,
+         isi kolom dengan nilai akhir. */
+      function __dialogJawabFinalkan(pemicu){
+        if(!__dialogSuara.aktif) return;
+        /* Penyelesaian tiba sebelum sesi jawaban dimulai (contoh: hasil
+           akhir lama menyusul saat pertanyaan masih diucapkan): jangan
+           jadikan teks lama sebagai jawaban — pakai nilai terbaik. */
+        if(__dialogSuara.fase!=="jawab"){ __dialogSelesai(""); return; }
+        __dialogSuara.aktif=false;
+        var teks="";
+        try{ teks=__suaraAkhirTeks||""; }catch(e){}
+        var adaJawaban=!!(teks&&String(teks).trim());
+        var keadaanAwal=JSON.stringify([__dialogSuara.pending.keterangan,__dialogSuara.pending.jumlah,__dialogSuara.pending.jumlahBare,__dialogSuara.pending.jenis,__dialogSuara.pending.jenisJelas,__dialogSuara.pending.kategori]);
+        if(adaJawaban){ try{ __dialogTerapkan(__dialogSuara.pending, __dialogSuara.pertanyaan, teks); }catch(e){} }
+        var keadaanAkhir=JSON.stringify([__dialogSuara.pending.keterangan,__dialogSuara.pending.jumlah,__dialogSuara.pending.jumlahBare,__dialogSuara.pending.jenis,__dialogSuara.pending.jenisJelas,__dialogSuara.pending.kategori]);
+        var amb=null;
+        try{ amb=__dialogAnalisis(__dialogSuara.pending); }catch(e){}
+        if(adaJawaban&&amb&&__dialogSuara.tanyaKe<3){
+          /* Jawaban tidak mengubah apa pun (contoh: "iya" untuk
+             pertanyaan jenis): jangan ulangi pertanyaan yang sama —
+             lanjut ke keraguan berikutnya, atau selesai bila tidak ada. */
+          if(keadaanAwal===keadaanAkhir&&amb.macam===__dialogSuara.pertanyaan.macam){
+            var lewati={}; lewati[__dialogSuara.pertanyaan.macam]=true;
+            try{ amb=__dialogAmbBerikut(__dialogSuara.pending, lewati); }catch(e){ amb=null; }
+          }
+          if(amb){
+            __dialogSuara.aktif=true;
+            __dialogTanyakan(amb);
+            return;
+          }
+        }
+        var catatan="";
+        if(!adaJawaban) catatan="Jawaban tidak tertangkap — nilai yang sudah terdengar tetap dipakai. Bila ada yang kurang tepat, ketuk Koreksi untuk memperbaiki.";
+        else if(amb) catatan="Masih ada yang belum jelas — nilai terbaik tetap dipakai. Bila ada yang kurang tepat, ketuk Koreksi untuk memperbaiki.";
+        __dialogSelesai(catatan);
+      }
+      /* Selesaikan dialog: isi kolom dengan nilai akhir, tampilkan
+         "Didengar: …" seperti biasa, dan alihkan panel ke keadaan selesai. */
+      function __dialogSelesai(catatan){
+        var pending=__dialogSuara.pending, konteks=__dialogSuara.konteks;
+        if(!pending) return;
+        __dialogSuara.aktif=false; __dialogSuara.fase=null; __dialogSuara.pertanyaan=null;
+        __dialogSuara.pending=null; __dialogSuara.konteks=null;
+        var r=__dialogSuara.r; __dialogSuara.r=null;
+        if(__dialogSuara.timerJawab!==null){ try{ clearTimeout(__dialogSuara.timerJawab); }catch(e){} __dialogSuara.timerJawab=null; }
+        try{ if(__suaraR) __suaraR.stop(); }catch(e){}
+        try{ if(r&&r!==__suaraR) r.stop(); }catch(e){}
+        try{ if(window.speechSynthesis&&window.speechSynthesis.cancel) window.speechSynthesis.cancel(); }catch(e){}
+        try{ if(window.__panelSuara&&window.__panelSuara.aturFinalkan) window.__panelSuara.aturFinalkan(null); }catch(e){}
+        __dialogTampilTanya(catatan||"");
+        try{ if(konteks&&typeof konteks.isi==="function") konteks.isi(pending); }catch(e){}
+        try{ if(window.__panelSuara&&window.__panelSuara.selesai) window.__panelSuara.selesai(); }catch(e){}
+      }
+      /* Batalkan dari tengah dialog (Berhenti / Koreksi): hentikan suara
+         dan rekaman, nilai terbaik tetap masuk ke kolom. */
+      function __dialogBatalkan(){
+        if(!__dialogSuara.aktif) return false;
+        __dialogSelesai("");
+        return true;
+      }
+      /* Hentikan dialog diam-diam tanpa mengisi kolom (dipakai saat panel
+         ditutup atau rekaman baru dimulai). */
+      function __dialogHentikanDiam(){
+        if(!__dialogSuara.aktif) return false;
+        __dialogSuara.aktif=false; __dialogSuara.fase=null; __dialogSuara.pertanyaan=null;
+        __dialogSuara.pending=null; __dialogSuara.konteks=null;
+        var r=__dialogSuara.r; __dialogSuara.r=null;
+        if(__dialogSuara.timerJawab!==null){ try{ clearTimeout(__dialogSuara.timerJawab); }catch(e){} __dialogSuara.timerJawab=null; }
+        try{ if(__suaraR) __suaraR.stop(); }catch(e){}
+        try{ if(r&&r!==__suaraR) r.stop(); }catch(e){}
+        try{ if(window.speechSynthesis&&window.speechSynthesis.cancel) window.speechSynthesis.cancel(); }catch(e){}
+        try{ if(window.__panelSuara&&window.__panelSuara.aturFinalkan) window.__panelSuara.aturFinalkan(null); }catch(e){}
+        __dialogTampilTanya("");
+        return true;
+      }
+      /* Mulai dialog bila hasil urai pertama meragukan. Kembalikan true
+         bila pertanyaan diajukan (penelepon menunda pengisian kolom),
+         false bila tidak ada yang perlu ditanyakan. */
+      function __dialogMulai(p, konteks){
+        if(__dialogSuara.aktif) return false;
+        var amb=null;
+        try{ amb=__dialogAnalisis(p); }catch(e){ amb=null; }
+        if(!amb) return false;
+        __dialogSuara.aktif=true; __dialogSuara.pending=p; __dialogSuara.konteks=konteks||null;
+        __dialogSuara.tanyaKe=0; __dialogSuara.pertanyaan=null; __dialogSuara.teksTanya="";
+        __dialogSuara.fase=null; __dialogSuara.r=null;
+        /* Rekaman lama sudah selesai: hentikan pengenalnya supaya hasil
+           akhirnya tidak menyusul ke tengah dialog, dan bersihkan
+           penantian hasil akhir dari ketukan Berhenti sebelumnya. */
+        try{ if(__suaraR) __suaraR.stop(); }catch(e){}
+        __suaraBatalTunggu(); __suaraBatalJeda();
+        __dialogTanyakan(amb);
+        return true;
+      }
+      window.__suaraDialog={mulai:__dialogMulai, batalkan:__dialogBatalkan, hentikanDiam:__dialogHentikanDiam, aktif:function(){ return !!__dialogSuara.aktif; }, analisis:__dialogAnalisis, buatTanya:__dialogBuatTanya, terapkan:__dialogTerapkan, ucapkan:__dialogUcapkan, tanyaKe:function(){ return __dialogSuara.tanyaKe; }, pending:function(){ return __dialogSuara.pending; }};
       /* ===== PANEL REKAMAN SUARA — bersama untuk Modul Keuangan + Hari Ini =====
          Satu panel yang sama tampilannya di kedua tombol suara, muncul saat
          rekaman mulai, tepat di atas baris hasil suara. Pengenalan berjalan
@@ -2888,6 +3200,7 @@
           +'<svg class="suara-mic-garis" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg>'
           +'</span><span class="suara-status" id="voiceStatusText">Mendengarkan… silakan bicara</span></div>'
           +'<div class="suara-teks" id="voiceTeks" style="display:none"></div>'
+          +'<div class="suara-tanya" id="voiceTanya" style="display:none"></div>'
           +'<div class="suara-catatan" id="voiceCatatan" style="display:none"></div>'
           +'<div class="suara-meter" aria-hidden="true"><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span></div>'
           +'<div class="suara-bawah"><span id="voiceLevelText">Suara: sangat lemah</span><button type="button" class="btn ghost suara-berhenti" id="voiceStopBtn">Berhenti</button></div>'
@@ -2895,6 +3208,10 @@
         document.body.appendChild(p);
         var b=p.querySelector("#voiceStopBtn");
         if(b) b.addEventListener("click", function(){
+          /* Dialog tanya-jawab sedang berjalan: "Berhenti" membatalkan
+             dialog — suara dihentikan, rekaman berhenti, nilai terbaik
+             tetap masuk ke kolom. */
+          if(window.__suaraDialog && window.__suaraDialog.aktif && window.__suaraDialog.aktif()){ window.__suaraDialog.batalkan(); return; }
           /* Keadaan selesai: tombol sudah jadi "Tutup" — menutup panel. */
           if(__suaraSelesaiFlag){ __suaraTutup(); return; }
           /* Ketukan ganda selagi menunggu hasil final — abaikan. */
@@ -2915,6 +3232,7 @@
         return p;
       }
       function __suaraTutup(){
+        if(window.__suaraDialog && window.__suaraDialog.aktif && window.__suaraDialog.aktif()) window.__suaraDialog.hentikanDiam();
         __suaraBatalTunggu();
         __suaraBatalJeda();
         __suaraBersihMeter();
@@ -2927,6 +3245,7 @@
         if(__suaraPanel) __suaraPanel.style.display="none";
       }
       function __suaraBuka(r, resEl){
+        if(window.__suaraDialog && window.__suaraDialog.aktif && window.__suaraDialog.aktif()) window.__suaraDialog.hentikanDiam();
         var p=__suaraBangunPanel();
         __suaraBersihMeter();
         __suaraSelesaiFlag=false;
@@ -2936,6 +3255,7 @@
         __suaraAkhirTeks="";
         __suaraFinalkanFn=null;
         __suaraCatatan("");
+        __dialogTampilTanya("");
         if(resEl && resEl.parentNode) resEl.parentNode.insertBefore(p, resEl);
         var m=p.querySelector(".suara-meter"); if(m) m.style.display="none";
         var lv=p.querySelector("#voiceLevelText"); if(lv) lv.style.display="none";
@@ -2961,21 +3281,9 @@
            segmen pertama saja. Bila belum ada teks akhir, cabang jujur
            di dalam panel (tangkapan sebagian / tidak ada ucapan). */
         var finalSudah=false;
-        function finalkanSuara(pemicu){
-          var PS=window.__panelSuara;
-          if(finalSudah) return; finalSudah=true;
-          if(!PS||PS.sudahSelesai()) return;
-          if(PS.batalJeda) PS.batalJeda();
-          var teks=PS.teksAkhir?PS.teksAkhir():"";
-          if(!teks){
-            if(pemicu==="hasil akhir kosong"){
-              PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return;
-            }
-            if(PS.tanpaFinal) PS.tanpaFinal(pemicu==="jeda"?"Jeda selesai":(pemicu==="pengenalan selesai sendiri"?"Pengenalan selesai":"Tenggang habis"));
-            return;
-          }
-          const p=parseUcapanTransaksi(teks);
-          if(!p.mentah){ PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
+        /* Isi kolom dari hasil urai (dipakai langsung bila tidak ada
+           yang meragukan, atau sesudah dialog tanya-jawab selesai). */
+        function isiDariSuara(p){
           if(p.keterangan) $("txKet").value=p.keterangan;
           var katEl=$("txKat");
           if(p.kategori && katEl) katEl.value=p.kategori;
@@ -2994,14 +3302,35 @@
             toast("Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.");
           }
           suaraTombolTampil();
+        }
+        function finalkanSuara(pemicu){
+          var PS=window.__panelSuara;
+          if(finalSudah) return; finalSudah=true;
+          if(!PS||PS.sudahSelesai()) return;
+          if(PS.batalJeda) PS.batalJeda();
+          var teks=PS.teksAkhir?PS.teksAkhir():"";
+          if(!teks){
+            if(pemicu==="hasil akhir kosong"){
+              PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return;
+            }
+            if(PS.tanpaFinal) PS.tanpaFinal(pemicu==="jeda"?"Jeda selesai":(pemicu==="pengenalan selesai sendiri"?"Pengenalan selesai":"Tenggang habis"));
+            return;
+          }
+          const p=parseUcapanTransaksi(teks);
+          if(!p.mentah){ PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
+          /* Bila hasil urai masih meragukan, dialog tanya-jawab mengambil
+             alih: pengisian kolom menunggu jawaban pengguna. */
+          if(window.__suaraDialog && window.__suaraDialog.mulai(p, {sumber:"keuangan", isi:isiDariSuara, resEl:resEl})) return;
+          isiDariSuara(p);
           PS.selesai();
         }
         if(window.__panelSuara && window.__panelSuara.aturFinalkan) window.__panelSuara.aturFinalkan(finalkanSuara);
-        r.onspeechstart=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; if(PS.batalJeda) PS.batalJeda(); PS.bicara(true); };
-        r.onspeechend=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; PS.bicara(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); if(PS.mulaiJeda) PS.mulaiJeda(); };
-        r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
-        r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
+        r.onspeechstart=function(){ if(window.__suaraDialog && window.__suaraDialog.aktif()) return; var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; if(PS.batalJeda) PS.batalJeda(); PS.bicara(true); };
+        r.onspeechend=function(){ if(window.__suaraDialog && window.__suaraDialog.aktif()) return; var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; PS.bicara(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); if(PS.mulaiJeda) PS.mulaiJeda(); };
+        r.onend=function(){ if(window.__suaraDialog && window.__suaraDialog.aktif()) return; if(window.__panelSuara) window.__panelSuara.akhir(); };
+        r.onaudioend=function(){ if(window.__suaraDialog && window.__suaraDialog.aktif()) return; if(window.__panelSuara) window.__panelSuara.akhir(); };
         r.onresult=function(ev){
+          if(window.__suaraDialog && window.__suaraDialog.aktif()) return;
           var PS=window.__panelSuara;
           if(PS && PS.sudahSelesai()) return;
           var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
@@ -3016,7 +3345,7 @@
           /* Selain itu hasil hanya dikumpulkan — jeda berhenti sebentar
              di tengah kalimat TIDAK menyelesaikan apa-apa. */
         };
-        r.onerror=function(ev){ var PS=window.__panelSuara; if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
+        r.onerror=function(ev){ if(window.__suaraDialog && window.__suaraDialog.aktif()) return; var PS=window.__panelSuara; if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
         r.start(); toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
       });
 
@@ -7027,6 +7356,20 @@
              seperti Modul Keuangan (lihat finalkanSuara di sana); hanya
              pengisian kolomnya yang berbeda (form Hari Ini). */
           var finalSudah=false;
+          /* Isi kolom Hari Ini dari hasil urai (dipakai langsung bila
+             tidak ada yang meragukan, atau sesudah dialog selesai). */
+          function isiDariSuara(p){
+            var f=gid("hiForm"); if(!f) return;
+            var ket=f.querySelector('[name="ket"]'), jml=f.querySelector('[name="jumlah"]');
+            if(p.keterangan && ket) ket.value=p.keterangan;
+            if(p.jumlah!==null && jml) jml.value=p.jumlah;
+            if(resEl){
+              if(p.jumlah!==null) resEl.textContent="Didengar: "+(p.keterangan||"—")+" — "+fmtRp(p.jumlah)+(p.jenisJelas?(" — "+(p.jenis==="masuk"?"Masuk":"Keluar")):"")+". Periksa, lalu tekan Uang masuk atau Uang keluar.";
+              else resEl.textContent="Didengar: "+(p.keterangan||"—")+". Angka tidak terdengar — isi jumlahnya, lalu tekan Uang masuk atau Uang keluar.";
+              resEl.style.display="block";
+            }
+            toast("Keterangan dan jumlah terisi dari suara — periksa kembali angkanya");
+          }
           function finalkanSuara(pemicu){
             var PS=window.__panelSuara;
             if(finalSudah) return; finalSudah=true;
@@ -7044,23 +7387,19 @@
             }
             var p=parseUcapanTransaksi(teks);
             var f=gid("hiForm"); if(!f) return;
-            var ket=f.querySelector('[name="ket"]'), jml=f.querySelector('[name="jumlah"]');
-            if(p.keterangan && ket) ket.value=p.keterangan;
-            if(p.jumlah!==null && jml) jml.value=p.jumlah;
-            if(resEl){
-              if(p.jumlah!==null) resEl.textContent="Didengar: "+(p.keterangan||"—")+" — "+fmtRp(p.jumlah)+(p.jenisJelas?(" — "+(p.jenis==="masuk"?"Masuk":"Keluar")):"")+". Periksa, lalu tekan Uang masuk atau Uang keluar.";
-              else resEl.textContent="Didengar: "+(p.keterangan||"—")+". Angka tidak terdengar — isi jumlahnya, lalu tekan Uang masuk atau Uang keluar.";
-              resEl.style.display="block";
-            }
-            toast("Keterangan dan jumlah terisi dari suara — periksa kembali angkanya");
+            /* Bila hasil urai masih meragukan, dialog tanya-jawab
+               mengambil alih: pengisian kolom menunggu jawaban pengguna. */
+            if(window.__suaraDialog && window.__suaraDialog.mulai(p, {sumber:"hariini", isi:isiDariSuara, resEl:resEl})) return;
+            isiDariSuara(p);
             PS.selesai();
           }
           if(window.__panelSuara && window.__panelSuara.aturFinalkan) window.__panelSuara.aturFinalkan(finalkanSuara);
-          r.onspeechstart=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; if(PS.batalJeda) PS.batalJeda(); PS.bicara(true); };
-          r.onspeechend=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; PS.bicara(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); if(PS.mulaiJeda) PS.mulaiJeda(); };
-          r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
-          r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
+          r.onspeechstart=function(){ if(window.__suaraDialog && window.__suaraDialog.aktif()) return; var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; if(PS.batalJeda) PS.batalJeda(); PS.bicara(true); };
+          r.onspeechend=function(){ if(window.__suaraDialog && window.__suaraDialog.aktif()) return; var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; PS.bicara(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); if(PS.mulaiJeda) PS.mulaiJeda(); };
+          r.onend=function(){ if(window.__suaraDialog && window.__suaraDialog.aktif()) return; if(window.__panelSuara) window.__panelSuara.akhir(); };
+          r.onaudioend=function(){ if(window.__suaraDialog && window.__suaraDialog.aktif()) return; if(window.__panelSuara) window.__panelSuara.akhir(); };
           r.onresult=function(ev){
+            if(window.__suaraDialog && window.__suaraDialog.aktif()) return;
             var PS=window.__panelSuara;
             if(PS && PS.sudahSelesai()) return;
             var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
@@ -7071,7 +7410,7 @@
             /* Selain itu hasil hanya dikumpulkan — jeda berhenti sebentar
                di tengah kalimat TIDAK menyelesaikan apa-apa. */
           };
-          r.onerror=function(ev){ var PS=window.__panelSuara; if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
+          r.onerror=function(ev){ if(window.__suaraDialog && window.__suaraDialog.aktif()) return; var PS=window.__panelSuara; if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
           try{ r.start(); }catch(e){}
           toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
         });
