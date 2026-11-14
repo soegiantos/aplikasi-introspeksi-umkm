@@ -506,6 +506,18 @@
           <p class="note" style="margin-top:6px">Tautan atur ulang hanya bisa dipakai satu kali dan berlaku terbatas. Minta tautan baru, lalu segera buka email Anda dan klik tautan terbarunya.</p>
           <button class="btn" id="btnExpiredForgot" type="button" style="width:100%;margin-top:12px">Minta tautan baru</button>
         </div>
+        <div class="forgot-panel" id="pendingConfirmPanel" style="display:none">
+          <h3>Menunggu konfirmasi email</h3>
+          <p style="margin-top:6px">Tautan konfirmasi sudah dikirim ke <b id="pendingConfirmEmail"></b>. Buka email Anda — periksa juga folder Spam — lalu klik tautannya. Setelah itu kembali ke sini dan pilih Masuk.</p>
+          <p class="note" style="margin-top:8px">Jangan menekan Daftar lagi dengan email ini — pendaftaran Anda sudah diterima, tinggal dikonfirmasi lewat email. Menekan Daftar berulang-ulang hanya mengulang hitungan waktu tunggu pengiriman email dari awal.</p>
+          <button class="btn" id="btnResendConfirm" type="button" style="width:100%;margin-top:14px">Kirim ulang tautan</button>
+          <div style="margin-top:10px;text-align:center">
+            <button class="forgot-link" id="btnPendingGoLogin" type="button">Saya sudah konfirmasi — buka Masuk</button>
+          </div>
+          <div style="text-align:center">
+            <button class="forgot-link" id="btnPendingOtherEmail" type="button">Daftar dengan email lain</button>
+          </div>
+        </div>
         <p class="note" style="margin-top:14px">Belum pernah masuk? Pilih <b>Daftar baru</b> — formulir aplikasi akan tampil kosong, siap diisi data usaha Anda. Bila pendaftaran meminta konfirmasi, periksa kotak masuk email Anda lalu kembali ke sini untuk masuk.</p>
         <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px">
           <button class="btn ghost" id="btnBackToApp" type="button" style="width:100%;display:none">Kembali ke mode coba</button>
@@ -2249,7 +2261,7 @@
         function detikRateLimitAuth(err){ var raw=pesanMentahAuth(err); var m=raw.match(/after\s+(\d+)\s*second/i)||raw.match(/(\d+)\s*seconds?/i)||raw.match(/(\d+)\s*detik/i); if(m){ var n=parseInt(m[1],10); if(n&&!isNaN(n)&&n>0) return n; } return 60; }
         function pesanAuthRamah(err, konteks){
           var raw=pesanMentahAuth(err);
-          if(apakahRateLimitAuth(raw)){ var n=detikRateLimitAuth(err); return "Terlalu sering mencoba — tunggu "+n+" detik, lalu tekan tombolnya sekali lagi."; }
+          if(apakahRateLimitAuth(raw)){ var n=detikRateLimitAuth(err); return "Terlalu sering mencoba — tautan konfirmasi sudah dikirim sebelumnya. Periksa kotak masuk dan folder Spam Anda. Jangan menekan Daftar berulang-ulang, karena setiap percobaan mengulang hitungan waktunya. Bila email belum tiba setelah beberapa menit, gunakan 'Kirim ulang tautan'. Tunggu "+n+" detik sebelum mencoba lagi."; }
           if(/already registered/i.test(raw)||/already exists/i.test(raw)){ return "Email ini sudah terdaftar — silakan pilih Masuk. Bila lupa kata sandinya, tekan 'Lupa kata sandi?'."; }
           if(/invalid login/i.test(raw)||/invalid credentials/i.test(raw)){ return "Email atau kata sandi salah — periksa lagi. Bila lupa kata sandinya, tekan 'Lupa kata sandi?'."; }
           if(/not confirmed/i.test(raw)){ return "Email belum dikonfirmasi — buka kotak masuk email Anda, klik tautan konfirmasinya, lalu kembali ke sini dan pilih Masuk."; }
@@ -2294,6 +2306,116 @@
           return teks;
         }
         window.__tanganiErrorAuth = tanganiErrorAuth;
+        /* ---------- Keadaan "menunggu konfirmasi email" ----------
+           Setelah pendaftaran pertama berhasil, email konfirmasi SUDAH terkirim.
+           Menekan "Daftar & masuk" lagi dengan email yang sama hanya memicu
+           pengiriman email lagi dan MENGULANG hitungan batas pengiriman server
+           dari awal — pengguna terjebak "tunggu 60 detik" selamanya. Karena itu
+           email yang menunggu konfirmasi disimpan lokal; selama tersimpan,
+           formulir daftar untuk email itu diganti panel khusus dengan tombol
+           "Kirim ulang tautan" (memakai resend, BUKAN signUp lagi). Kunci
+           dihapus begitu pengguna berhasil masuk pertama kali (enterApp). */
+        var PENDING_CONFIRM_KEY = "umkm-introspeksi-pending-confirm:v1";
+        var suppressPendingCheck = false;
+        function pendingConfirmEmail(){ try{ var v=localStorage.getItem(PENDING_CONFIRM_KEY); return v?String(v).trim():""; }catch(e){ return ""; } }
+        function setPendingConfirm(email){ try{ if(email) localStorage.setItem(PENDING_CONFIRM_KEY, String(email).trim()); }catch(e){} }
+        function clearPendingConfirm(){ try{ localStorage.removeItem(PENDING_CONFIRM_KEY); }catch(e){} }
+        window.__pendingConfirmEmail = pendingConfirmEmail;
+        window.__setPendingConfirm = setPendingConfirm;
+        window.__clearPendingConfirm = clearPendingConfirm;
+        function showPendingConfirm(email){
+          email = email || pendingConfirmEmail(); if(!email) return false;
+          var p=gid("pendingConfirmPanel"); if(!p) return false;
+          var em=gid("pendingConfirmEmail"); if(em) em.textContent=email;
+          setAuthChromeVisible(false);
+          var fw=gid("forgotWrap"); if(fw) fw.style.display="none";
+          var fp=gid("forgotPanel"); if(fp) fp.style.display="none";
+          gid("authTitle").textContent="Menunggu konfirmasi email";
+          authMsg("");
+          p.style.display="block";
+          return true;
+        }
+        window.__showPendingConfirm = showPendingConfirm;
+        function hidePendingConfirm(){
+          suppressPendingCheck=true;
+          var p=gid("pendingConfirmPanel"); if(p) p.style.display="none";
+          setAuthChromeVisible(true);
+          suppressPendingCheck=false;
+        }
+        function maybeShowPendingConfirm(){
+          if(suppressPendingCheck) return false;
+          if(authMode!=="reg") return false;
+          var pe=pendingConfirmEmail(); if(!pe) return false;
+          var ae=gid("authEmail"); var cur=ae?ae.value.trim():"";
+          var p=gid("pendingConfirmPanel");
+          if(p && p.style.display==="block"){
+            /* Panel sedang tampil tapi email di formulir sudah diganti ke alamat
+               lain: keadaan menunggu konfirmasi tidak lagi relevan — kembalikan
+               formulir biasa. */
+            if(cur && cur.toLowerCase()!==pe.toLowerCase()){ hidePendingConfirm(); return false; }
+            return true;
+          }
+          if(cur && cur.toLowerCase()!==pe.toLowerCase()) return false;
+          return showPendingConfirm(pe);
+        }
+        window.__maybeShowPendingConfirm = maybeShowPendingConfirm;
+        /* ---------- Kirim ulang tautan konfirmasi (resend, BUKAN signUp) ---------- */
+        var resendCooldownTimer=null, resendCooldownSisa=0;
+        function mulaiCooldownResend(detik){
+          var btn=gid("btnResendConfirm"); if(!btn) return;
+          var n=parseInt(detik,10); if(!n||isNaN(n)||n<1) n=60;
+          resendCooldownSisa=n;
+          if(resendCooldownTimer) clearInterval(resendCooldownTimer);
+          btn.disabled=true; btn.textContent="Kirim ulang ("+resendCooldownSisa+")";
+          resendCooldownTimer=setInterval(function(){
+            resendCooldownSisa--;
+            if(resendCooldownSisa<=0){ clearInterval(resendCooldownTimer); resendCooldownTimer=null; resendCooldownSisa=0; var b=gid("btnResendConfirm"); if(b){ b.disabled=false; b.textContent="Kirim ulang tautan"; } }
+            else { var b2=gid("btnResendConfirm"); if(b2) b2.textContent="Kirim ulang ("+resendCooldownSisa+")"; }
+          },1000);
+        }
+        window.__resendCooldownAktif = function(){ return !!resendCooldownTimer; };
+        var btnResendConfirm=gid("btnResendConfirm");
+        if(btnResendConfirm) btnResendConfirm.addEventListener("click", async function(){
+          if(resendCooldownTimer) return; /* masih dalam hitungan mundur — jangan kirim lagi */
+          var email=pendingConfirmEmail();
+          if(!email){ popupAuth("Email yang menunggu konfirmasi tidak ditemukan — silakan isi formulir daftar seperti biasa.", "Belum ada pendaftaran menunggu"); hidePendingConfirm(); setAuthMode("reg"); return; }
+          if(!sb){ popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi.", "Tidak bisa terhubung"); return; }
+          btnResendConfirm.disabled=true; btnResendConfirm.textContent="Mengirim...";
+          try{
+            var r=await sb.auth.resend({type:"signup", email:email});
+            if(r && r.error){
+              btnResendConfirm.disabled=false; btnResendConfirm.textContent="Kirim ulang tautan";
+              if(apakahRateLimitAuth(pesanMentahAuth(r.error))) mulaiCooldownResend(detikRateLimitAuth(r.error));
+              tanganiErrorAuth(r.error, "daftar");
+            } else {
+              if(window.tampilPopupRamah) window.tampilPopupRamah("Tautan baru dikirim","Tautan baru dikirim ke "+email+" — periksa kotak masuk dan folder Spam Anda.","");
+              mulaiCooldownResend(60);
+            }
+          }catch(e){
+            btnResendConfirm.disabled=false; btnResendConfirm.textContent="Kirim ulang tautan";
+            popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi.", "Tidak bisa terhubung");
+          }
+        });
+        var btnPendingGoLogin=gid("btnPendingGoLogin");
+        if(btnPendingGoLogin) btnPendingGoLogin.addEventListener("click",function(){
+          var em=pendingConfirmEmail();
+          hidePendingConfirm();
+          setAuthMode("login");
+          var ae=gid("authEmail"); if(ae && em) ae.value=em;
+          var ap=gid("authPass"); if(ap && ap.focus) ap.focus();
+        });
+        var btnPendingOtherEmail=gid("btnPendingOtherEmail");
+        if(btnPendingOtherEmail) btnPendingOtherEmail.addEventListener("click",function(){
+          clearPendingConfirm();
+          hidePendingConfirm();
+          setAuthMode("reg");
+          var ae=gid("authEmail"); if(ae){ ae.value=""; if(ae.focus) ae.focus(); }
+        });
+        var aeWatch=gid("authEmail");
+        if(aeWatch){
+          aeWatch.addEventListener("input",function(){ maybeShowPendingConfirm(); });
+          aeWatch.addEventListener("change",function(){ maybeShowPendingConfirm(); });
+        }
         /* Pop-up gagal simpan/muat cloud — ditahan sekali sampai ada simpan yang
            berhasil, supaya autosave tidak memunculkan pop-up berulang-ulang. */
         var popupSimpanSudah=false;
@@ -2565,6 +2687,10 @@
           if(entered && !isGuest) return;
           // bila sebelumnya tamu, izinkan masuk sebagai user terdaftar (migrasi)
           entered=true; isGuest=false; localMode=false; currentUser=user;
+          /* Masuk berhasil = email sudah terkonfirmasi: hapus penanda
+             "menunggu konfirmasi" dan sembunyikan panelnya. */
+          clearPendingConfirm();
+          var pcp=gid("pendingConfirmPanel"); if(pcp) pcp.style.display="none";
           gid("authGate").style.display="none";
           var gb=gid("guestBanner"); if(gb) gb.classList.remove("show");
           var gr=gid("btnGuestRegister"); if(gr) gr.style.display="none";
@@ -2634,6 +2760,10 @@
           var ehr=gid("authEmailHintReg"); if(ehr) ehr.style.display=(m==="reg")?"block":"none";
           var ehl=gid("authEmailHintLogin"); if(ehl) ehl.style.display=(m==="login")?"block":"none";
           authMsg("");
+          /* Bila ada pendaftaran yang masih menunggu konfirmasi untuk email ini,
+             tampilkan keadaan "menunggu konfirmasi" — bukan formulir daftar lagi,
+             supaya pengguna tidak menekan Daftar berulang-ulang. */
+          if(m==="reg") maybeShowPendingConfirm();
         }
         /* ---------- Lupa kata sandi: kirim tautan & layar kata sandi baru ---------- */
         function forgotMsg(txt, ok){ var el=gid("forgotMsg"); if(el){ el.textContent=txt||""; el.className="auth-msg "+(ok?"ok":"err"); } }
@@ -2787,7 +2917,7 @@
         var regAlreadyOverlay=gid("regAlreadyOverlay");
         if(regAlreadyOverlay) regAlreadyOverlay.addEventListener("click",function(ev){ if(ev.target===regAlreadyOverlay) hideRegAlreadyPopup(); });
         gid("tabReg").addEventListener("click",function(){
-          if(authMode==="reg"){ showRegAlreadyPopup(); return; }
+          if(authMode==="reg"){ if(maybeShowPendingConfirm()) return; showRegAlreadyPopup(); return; }
           setAuthMode("reg");
         });
         gid("authForm").addEventListener("submit", async function(ev){
@@ -2809,7 +2939,14 @@
                 authMsg(""); enterApp(r.data.user); toast(isGuest||migrateSnapshot?"Data coba Anda sudah tersimpan.":"Selamat datang! Formulir masih kosong — silakan isi data usaha Anda.");
               } else {
                 if(isGuest){ try{ var gs=collectSnapshot(); localStorage.setItem("umkm-introspeksi-pending-migration", JSON.stringify(gs)); persistLocal(gs); }catch(e){} }
-                authMsg("Pendaftaran diterima. Konfirmasi email diperlukan: buka kotak masuk "+email+", klik tautan konfirmasinya, lalu kembali ke sini dan pilih Masuk. Data coba Anda sudah tersimpan di HP ini dan akan dipindahkan ke cloud setelah Anda masuk pertama kali.", "ok");
+                /* Pendaftaran diterima & email konfirmasi sudah dikirim: simpan
+                   email sebagai "menunggu konfirmasi" dan tampilkan keadaan
+                   khusus itu — BUKAN formulir daftar lagi, supaya pengguna tidak
+                   menekan Daftar berulang-ulang (setiap percobaan mengulang
+                   hitungan batas pengiriman email server dari awal). */
+                authMsg("");
+                setPendingConfirm(email);
+                showPendingConfirm(email);
               }
             } else {
               var r2=await sb.auth.signInWithPassword({email:email, password:pass});
@@ -2977,6 +3114,30 @@
           return ans;
         }
 
+        /* Pembersih jawaban AI: pengguna awam tidak boleh pernah melihat tanda
+           markdown seperti **, ##, atau ` — semua jawaban dari /api/ai-chat WAJIB
+           lewat fungsi ini sebelum ditampilkan. Isi kata, angka, dan tanda baca
+           biasa (termasuk "?" dan ":") tidak diubah sama sekali. */
+        function bersihkanJawabanAI(teks){
+          var t=String(teks==null?"":teks);
+          t=t.replace(/\[([^\]]+)\]\([^)]*\)/g,"$1");              /* [teks](tautan) -> teks saja */
+          t=t.replace(/#{1,6}[ \t]+/g,"");                         /* "## Judul" -> "Judul" */
+          t=t.replace(/^[ \t]*#{2,}[ \t]*/gm,"");                  /* "##Judul" di awal baris */
+          t=t.replace(/^[ \t]*>[ \t]?/gm,"");                      /* tanda kutip ">" di awal baris */
+          t=t.replace(/^[ \t]*(-{3,}|_{3,}|\*{3,})[ \t]*$/gm,"");  /* garis pemisah --- / *** */
+          t=t.replace(/\*\*([^*]+)\*\*/g,"$1");                    /* **tebal** -> tebal */
+          t=t.replace(/__([^_]+)__/g,"$1");                        /* __tebal__ -> tebal */
+          t=t.replace(/\*([^*\n]+)\*/g,"$1");                      /* *miring* -> miring */
+          t=t.replace(/\*\*/g,"").replace(/__/g,"");               /* sisa penanda tebal */
+          t=t.replace(/`/g,"");                                    /* semua backtick hilang */
+          t=t.replace(/^[ \t]*[-*+][ \t]+/gm,"• ");                /* daftar "- " -> "• " */
+          t=t.replace(/[ \t]+$/gm,"");                             /* spasi di akhir baris */
+          t=t.replace(/[ \t]{2,}/g," ");                           /* spasi ganda -> satu */
+          t=t.replace(/\n{3,}/g,"\n\n");                           /* maksimal satu baris kosong */
+          return t.trim();
+        }
+        window.__bersihkanJawabanAI=bersihkanJawabanAI;
+
         function askAI(prompt, target){
           if(!target) return;
           target.textContent="Sedang berpikir… AI Coach sedang menyiapkan penjelasan sederhana untuk Anda.";
@@ -2986,7 +3147,7 @@
               .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
               .then(function(data){
                 var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
-                if(ans && String(ans).trim()) target.textContent=String(ans).trim(); else fallback();
+                if(ans && String(ans).trim()) target.textContent=bersihkanJawabanAI(String(ans).trim()); else fallback();
               })
               .catch(function(){ fallback(); });
           }catch(e){ fallback(); }
@@ -3017,6 +3178,7 @@
             input.value="";
             var thinking=bubble("ai thinking","AI Coach","Sedang berpikir…");
             function done(ans){
+              ans=bersihkanJawabanAI(ans);
               thinking.wrap.classList.remove("thinking");
               thinking.textEl.textContent=ans;
               history.push({dari:"pengguna",teks:q});
@@ -3875,7 +4037,7 @@
                 .then(function(r){ if(!r.ok) throw new Error("belum tersambung"); return r.json(); })
                 .then(function(data){
                   var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
-                  if(ans && String(ans).trim()) target.textContent=String(ans).trim(); else lokal();
+                  if(ans && String(ans).trim()) target.textContent=(window.__bersihkanJawabanAI?window.__bersihkanJawabanAI(String(ans).trim()):String(ans).trim()); else lokal();
                 })
                 .catch(function(){ lokal(); });
             }catch(e){ lokal(); }
