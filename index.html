@@ -959,6 +959,9 @@
               <label class="f"><span>Kemasan (Rp)</span><input type="number" id="hKemasan" placeholder="contoh: 1200" min="0" step="100" /></label>
               <label class="f"><span>Gas &amp; listrik (Rp)</span><input type="number" id="hEnergi" placeholder="contoh: 600" min="0" step="100" /></label>
               <label class="f"><span>Tenaga kerja (Rp)</span><input type="number" id="hTenaga" placeholder="contoh: 1800" min="0" step="100" /></label>
+              <label class="f"><span>Air (Rp)</span><input type="number" id="hAir" placeholder="contoh: 200" min="0" step="100" /></label>
+              <label class="f"><span>Penyusutan alat (Rp)</span><input type="number" id="hSusut" placeholder="contoh: 100" min="0" step="100" /></label>
+              <label class="f"><span>Sewa tempat (Rp)</span><input type="number" id="hSewa" placeholder="contoh: 500" min="0" step="100" /></label>
               <label class="f"><span>Biaya lain (Rp)</span><input type="number" id="hLain" placeholder="contoh: 400" min="0" step="100" /></label>
               <label class="f"><span>Target margin (%)</span><input type="number" id="hMargin" placeholder="contoh: 40" min="5" max="80" step="1" /></label>
             </div>
@@ -1022,6 +1025,9 @@
               <label class="f"><span>Kemasan per porsi (Rp)</span><input type="number" id="hpKemasan" placeholder="contoh: 1200" min="0" step="100" /></label>
               <label class="f"><span>Gas &amp; listrik per porsi (Rp)</span><input type="number" id="hpEnergi" placeholder="contoh: 600" min="0" step="100" /></label>
               <label class="f"><span>Tenaga kerja per porsi (Rp)</span><input type="number" id="hpTenaga" placeholder="contoh: 1800" min="0" step="100" /></label>
+              <label class="f"><span>Air per porsi (Rp)</span><input type="number" id="hpAir" placeholder="contoh: 200" min="0" step="100" /></label>
+              <label class="f"><span>Penyusutan alat per porsi (Rp)</span><input type="number" id="hpSusut" placeholder="contoh: 100" min="0" step="100" /></label>
+              <label class="f"><span>Sewa tempat per porsi (Rp)</span><input type="number" id="hpSewa" placeholder="contoh: 500" min="0" step="100" /></label>
               <label class="f"><span>Biaya lain per porsi (Rp)</span><input type="number" id="hpLain" placeholder="contoh: 400" min="0" step="100" /></label>
               <label class="f"><span>Target margin (%)</span><input type="number" id="hpMargin" placeholder="contoh: 40" min="5" max="80" step="1" /></label>
               <label class="f"><span>Harga jual per porsi (Rp)</span><input type="number" id="hpJual" placeholder="contoh: 15000" min="0" step="100" /></label>
@@ -1869,7 +1875,7 @@
       }
 
       function recalcFinance(sdeBln, labaBln){
-        const hpp=num("hBahan")+num("hKemasan")+num("hEnergi")+num("hTenaga")+num("hLain");
+        const hpp=num("hBahan")+num("hKemasan")+num("hEnergi")+num("hAir")+num("hTenaga")+num("hSusut")+num("hSewa")+num("hLain");
         const margin=Math.min(0.8,Math.max(0.05,num("hMargin")/100));
         const base=hpp/(1-margin);
         const channels=[["Jual langsung di tempat",0],["GoFood",0.20],["GrabFood",0.20],["ShopeeFood",0.20],["Marketplace (Shopee/Tokopedia)",0.065]];
@@ -4290,16 +4296,16 @@
 
         /* ---------- Panel Hitung HPP di dalam diskusi (hanya topik fin-2) ----------
            Panel memakai rumus yang SAMA dengan Kalkulator HPP di bagian Keuangan &
-           ekonomi (recalcFinance): kelima kolom biayanya disinkronkan dua arah
+           ekonomi (recalcFinance): kedelapan kolom biayanya disinkronkan dua arah
            dengan kolom hBahan..hMargin, lalu recalc() dijalankan. AI tidak pernah
            menghitung atau menulis angka — semua angka di panel berasal dari rumus
            aplikasi dan dari isian pengguna sendiri. Tombol simpan menulis HPP%
            hasil hitungan ke inHpp dan mengubah jawaban HPP jadi "Sudah". */
-        var HP_PANEL={bahan:"hpBahan",kemasan:"hpKemasan",energi:"hpEnergi",tenaga:"hpTenaga",lain:"hpLain",margin:"hpMargin"};
-        var HP_SEC05={bahan:"hBahan",kemasan:"hKemasan",energi:"hEnergi",tenaga:"hTenaga",lain:"hLain",margin:"hMargin"};
+        var HP_PANEL={bahan:"hpBahan",kemasan:"hpKemasan",energi:"hpEnergi",air:"hpAir",tenaga:"hpTenaga",susut:"hpSusut",sewa:"hpSewa",lain:"hpLain",margin:"hpMargin"};
+        var HP_SEC05={bahan:"hBahan",kemasan:"hKemasan",energi:"hEnergi",air:"hAir",tenaga:"hTenaga",susut:"hSusut",sewa:"hSewa",lain:"hLain",margin:"hMargin"};
         function hppPanelTerlihat(){ var el=gid("panelHppDiskusi"); return !!el && el.style.display!=="none"; }
         function hppPanelKosong(){
-          return ["hpBahan","hpKemasan","hpEnergi","hpTenaga","hpLain"].every(function(id){ var el=gid(id); return !el || !String(el.value||"").trim(); });
+          return ["hpBahan","hpKemasan","hpEnergi","hpAir","hpTenaga","hpSusut","hpSewa","hpLain"].every(function(id){ var el=gid(id); return !el || !String(el.value||"").trim(); });
         }
         function isiPemilihProdukHpp(){
           var sel=gid("hpProduk"); if(!sel) return;
@@ -4345,7 +4351,7 @@
         }
         function hitungHppDiskusi(){
           function n(id){ var el=gid(id); var v=el?parseFloat(el.value):0; return isNaN(v)?0:v; }
-          var hpp=n("hpBahan")+n("hpKemasan")+n("hpEnergi")+n("hpTenaga")+n("hpLain");
+          var hpp=n("hpBahan")+n("hpKemasan")+n("hpEnergi")+n("hpAir")+n("hpTenaga")+n("hpSusut")+n("hpSewa")+n("hpLain");
           var jual=n("hpJual");
           var pr=produkHppTerpilih();
           return {produk:(pr&&pr.nama)||"", harga_jual:Math.round(jual), hpp_per_porsi:Math.round(hpp),
@@ -4395,7 +4401,7 @@
              lewat kode tidak memicu event input, jadi tidak ada putaran. */
           var selProduk=gid("hpProduk");
           if(selProduk) selProduk.addEventListener("change", terapkanProdukHpp);
-          ["hpBahan","hpKemasan","hpEnergi","hpTenaga","hpLain","hpMargin"].forEach(function(id){
+          ["hpBahan","hpKemasan","hpEnergi","hpAir","hpTenaga","hpSusut","hpSewa","hpLain","hpMargin"].forEach(function(id){
             var el=gid(id); if(!el) return;
             el.addEventListener("input", function(){
               var kunci=id.replace("hp","").toLowerCase();
@@ -4406,7 +4412,7 @@
           });
           var hj=gid("hpJual"); if(hj) hj.addEventListener("input", segarkanHppDiskusi);
           var nl=gid("hpNamaLain"); if(nl) nl.addEventListener("input", segarkanHppDiskusi);
-          ["hBahan","hKemasan","hEnergi","hTenaga","hLain","hMargin"].forEach(function(id){
+          ["hBahan","hKemasan","hEnergi","hAir","hTenaga","hSusut","hSewa","hLain","hMargin"].forEach(function(id){
             var el=gid(id); if(!el) return;
             el.addEventListener("input", function(){
               if(!hppPanelTerlihat()) return;
@@ -5431,7 +5437,7 @@
           wizJualHari:{s:"Perkiraan total uang penjualan dalam satu hari biasa — hari yang tidak terlalu ramai dan tidak terlalu sepi.",e:"Satu hari biasa masuk Rp1.500.000 — isi 1500000.",h:"Ingat hari kemarin atau hari biasa terakhir, lalu jumlahkan semua pembayarannya."},
           wizHariJual:{s:"Dalam satu bulan, berapa hari usaha Anda buka dan jualan.",e:"Buka Senin sampai Sabtu, libur Minggu — sekitar 26 hari.",h:"Hitung hari buka dalam seminggu, lalu kalikan kurang lebih 4 minggu."},
           inTumbuh:{s:"Perkiraan naik atau turunnya omzet Anda dalam setahun, dalam persen. Kolom ini menilai apakah penjualan sedang membesar atau mengecil.",e:"Tahun lalu omzet Rp30 juta/bulan, sekarang Rp33 juta/bulan — naik sekitar 10, isi 10. Turun — isi angka negatif, misalnya -5.",h:"Tidak perlu tepat. Isi 0 bila penjualan terasa tetap."},
-          inHpp:{s:"Bagian dari omzet yang habis untuk bahan atau barang yang terjual, dalam persen. Sisanya adalah ruang untuk biaya lain dan keuntungan.",e:"Omzet Rp10.000.000 dan bahan yang terpakai Rp4.200.000 — isi 42.",h:"Cara hitung: total biaya bahan sebulan dibagi omzet sebulan, lalu kali 100."},
+          inHpp:{s:"Bagian dari omzet yang habis untuk membuat dan menjual produk, dalam persen — termasuk bahan, gas dan listrik, air, tenaga kerja, penyusutan alat, dan sewa. Sisanya adalah ruang untuk biaya lain dan keuntungan.",e:"Omzet Rp10.000.000 dan biaya membuat produk Rp4.200.000 sebulan — isi 42.",h:"Cara hitung: total biaya membuat produk sebulan dibagi omzet sebulan, lalu kali 100."},
           wizBahan:{s:"Total uang yang Anda keluarkan dalam sebulan untuk membeli bahan baku yang dipakai membuat produk atau layanan.",e:"Belanja beras, ayam, sayur, gas untuk dapur total Rp18.000.000 sebulan — isi 18000000.",h:"Jumlahkan semua belanja bahan dalam sebulan. Dari angka ini aplikasi menghitung persentase bahan dari omzet Anda."},
           inOpex:{s:"Biaya rutin setiap bulan untuk menjalankan usaha, di luar bahan dan di luar gaji Anda sebagai pemilik.",e:"Sewa tempat, gaji karyawan, listrik, air, transport, pulsa usaha.",h:"Jumlahkan biaya rutin satu bulan. Gaji pemilik diisi di kolom terpisah, jangan digabung di sini."},
           wizOpex:{s:"Biaya rutin setiap bulan untuk menjalankan usaha, di luar bahan dan di luar gaji Anda sebagai pemilik.",e:"Sewa Rp3 juta + gaji karyawan Rp6 juta + listrik dan transport Rp2 juta = isi 11000000.",h:"Jumlahkan sewa, gaji karyawan, listrik, air, dan transport dalam sebulan."},
@@ -5446,8 +5452,11 @@
           hKemasan:{s:"Biaya kemasan untuk satu porsi atau satu produk: plastik, kotak, botol, stiker, dan penutupnya.",e:"Satu kotak + stiker Rp1.200 — isi 1200. Jualan tanpa kemasan — isi 0.",h:"Hitung harga beli kemasan per buah, bukan per pak."},
           hEnergi:{s:"Bagian biaya gas dan listrik untuk membuat satu porsi atau satu produk.",e:"Gas dan listrik sebulan Rp600.000 untuk 1.000 porsi — per porsi sekitar Rp600, isi 600.",h:"Bila sulit dihitung tepat, isi perkiraan yang masuk akal."},
           hTenaga:{s:"Bagian upah tenaga kerja untuk membuat satu porsi atau satu produk.",e:"Upah juru masak sebulan dibagi jumlah porsi sebulan, misalnya Rp1.800 per porsi — isi 1800.",h:"Dikerjakan sendiri tanpa upah terpisah? Isi perkiraan nilai pekerjaan itu, atau isi 0 dulu."},
-          hLain:{s:"Biaya kecil lain untuk satu porsi yang belum masuk kolom lain: es, sedotan, kantong, bumbu tambahan, dan sejenisnya.",e:"Sekitar Rp400 per porsi — isi 400. Tidak ada — isi 0.",h:"Lebih baik terisi perkiraan daripada kosong, supaya harga jual tidak kemurahan."},
-          hMargin:{s:"Keuntungan kotor yang Anda inginkan dari harga jual, dalam persen — sebelum biaya sewa dan biaya rutin lain.",e:"Ingin sisa 40 dari setiap 100 rupiah harga jual — isi 40.",h:"Umumnya usaha makanan memakai 30 sampai 50. Makin besar margin, makin tinggi harga yang disarankan."},
+          hAir:{s:"Bagian biaya air untuk membuat satu porsi atau satu produk.",e:"Tagihan air sebulan Rp200.000 untuk 1.000 porsi — per porsi sekitar Rp200, isi 200. Tidak pakai air berbayar — isi 0.",h:"Tagihan air sebulan dibagi jumlah porsi sebulan."},
+          hSusut:{s:"Bagian penurunan nilai alat untuk satu porsi atau satu produk.",e:"Kompor Rp1.500.000 dipakai 2 tahun untuk sekitar 24.000 porsi — per porsi sekitar Rp60, isi 60.",h:"Harga alat dibagi jumlah porsi yang dihasilkan selama alat itu dipakai."},
+          hSewa:{s:"Bagian sewa tempat untuk satu porsi atau satu produk.",e:"Sewa Rp1.500.000 sebulan untuk 3.000 porsi — per porsi Rp500, isi 500. Usaha di rumah sendiri tanpa sewa — isi 0.",h:"Sewa sebulan dibagi jumlah porsi sebulan."},
+          hLain:{s:"Biaya kecil lain untuk satu porsi yang belum masuk kolom lain — air, sewa tempat, dan penyusutan alat sudah punya kolom sendiri: es, sedotan, kantong, bumbu tambahan, dan sejenisnya.",e:"Sekitar Rp400 per porsi — isi 400. Tidak ada — isi 0.",h:"Lebih baik terisi perkiraan daripada kosong, supaya harga jual tidak kemurahan."},
+          hMargin:{s:"Keuntungan kotor yang Anda inginkan dari harga jual, dalam persen — setelah semua biaya di atas dihitung, termasuk sewa dan penyusutan alat. Sisanya untuk biaya rutin lain dan keuntungan.",e:"Ingin sisa 40 dari setiap 100 rupiah harga jual — isi 40.",h:"Umumnya usaha makanan memakai 30 sampai 50. Makin besar margin, makin tinggi harga yang disarankan."},
           invDana:{s:"Jumlah dana kerjasama investasi yang Anda butuhkan untuk mengembangkan usaha.",e:"Butuh Rp50.000.000 untuk alat dan stok — isi 50000000.",h:"Isi sesuai rencana pemakaian yang jelas, bukan angka sebesar-besarnya."},
           invJangka:{s:"Lama kerjasama investasi dalam bulan. Jangka lebih lama membuat bagian hasil yang dibagi setiap bulan lebih ringan.",e:"Kerjasama 24 bulan berarti hasil dibagi selama 24 kali.",h:"Pilih jangka yang membuat bagian per bulan tidak memberatkan laba bulanan Anda."},
           packPhoto:{s:"Foto produk atau kemasan utama Anda. Foto ini dinilai bersama daftar periksa label di halaman ini.",e:"Foto dengan cahaya terang, latar bersih, dan label menghadap kamera.",h:"Ketuk kolom ini, lalu pilih foto dari HP Anda. Foto hanya tampil di halaman ini untuk Anda nilai."},
