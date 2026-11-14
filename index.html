@@ -69,6 +69,9 @@
       .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
       .paket-tier{cursor:pointer}
       .paket-tier-aktif{border-color:var(--accent)!important;box-shadow:0 0 0 2px var(--accent)}
+      .paket-tier ul{margin:10px 0 0;padding-left:19px}
+      .paket-tier li{margin-top:4px}
+      .paket-chip{font-size:.8rem;color:var(--ink-soft)}
       .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
       .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
       @media(max-width:900px){.grid-3{grid-template-columns:1fr}}
@@ -1654,16 +1657,31 @@
           <div class="card paket-tier" data-tier="mikro" style="margin:12px 0 0">
             <h3>Mikro — Rp35.000 per bulan</h3>
             <p>AI Coach menjawab 300 pertanyaan per bulan. Transaksi, stok, piutang, dan utang tanpa batas data. Anda bisa membagikan tautan Portal investor ke calon mitra.</p>
+            <ul>
+              <li>1 usaha</li>
+              <li>Dukungan standar</li>
+            </ul>
             <p class="note paket-tier-label" style="display:none"><b>Dipilih</b></p>
           </div>
           <div class="card paket-tier" data-tier="kecil" style="margin:12px 0 0">
             <h3>Kecil — Rp75.000 per bulan</h3>
             <p>AI Coach menjawab 600 pertanyaan per bulan. Transaksi, stok, piutang, dan utang tanpa batas data. Anda bisa membagikan tautan Portal investor ke calon mitra.</p>
+            <ul>
+              <li>Sampai 3 usaha dalam satu akun <span class="paket-chip">Menyusul</span></li>
+              <li>Lencana dan urutan prioritas di Portal investor <span class="paket-chip">Menyusul bersama FASE 2</span></li>
+              <li>Dukungan prioritas via WhatsApp <span class="paket-chip">Saat penagihan aktif</span></li>
+            </ul>
             <p class="note paket-tier-label" style="display:none"><b>Dipilih</b></p>
           </div>
           <div class="card paket-tier" data-tier="menengah" style="margin:12px 0 0">
             <h3>Menengah — Rp150.000 per bulan</h3>
             <p>AI Coach menjawab 1.000 pertanyaan per bulan. Transaksi, stok, piutang, dan utang tanpa batas data. Anda bisa membagikan tautan Portal investor ke calon mitra.</p>
+            <ul>
+              <li>Sampai 10 usaha <span class="paket-chip">Menyusul</span></li>
+              <li>Laporan triwulan dan perbandingan antar-periode <span class="paket-chip">Menyusul</span></li>
+              <li>3 anggota tim bisa ikut mencatat <span class="paket-chip">Menyusul</span></li>
+              <li>Dukungan prioritas, termasuk panggilan <span class="paket-chip">Saat penagihan aktif</span></li>
+            </ul>
             <p class="note paket-tier-label" style="display:none"><b>Dipilih</b></p>
           </div>
           <p class="note" id="paketProBelum">Pendaftaran langganan belum dibuka.</p>
