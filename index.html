@@ -87,6 +87,27 @@
       .range-row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--ink-soft)}
       .note{font-size:.85rem;color:var(--ink-soft)}
       .voice-result{display:none;background:var(--accent-soft);border:1px solid var(--accent);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.95rem;font-weight:600;margin-top:12px}
+      /* Panel rekaman suara (dipakai tombol suara Modul Keuangan + Hari Ini):
+         ikon mikrofon menunjukkan kapan pengguna bicara (emas + denyut) dan
+         kapan suara berhenti (garis abu-abu), meter 10 segmen menunjukkan
+         keras suara. Panel dibuat sekali oleh JS dan dipindah ke dekat tombol
+         suara yang sedang dipakai. */
+      .suara-panel{margin-top:12px;background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:12px;padding:14px}
+      .suara-atas{display:flex;align-items:center;gap:14px}
+      .suara-ikon{position:relative;width:56px;height:56px;flex:0 0 56px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--field-bg);border:2px solid var(--line)}
+      .suara-panel.suara-bicara .suara-ikon{border-color:var(--gold);animation:suaraDenyut 1.1s ease-out infinite}
+      .suara-panel.suara-bicara .suara-mic-isi{display:block;fill:var(--gold)}
+      .suara-panel.suara-bicara .suara-mic-garis{display:none}
+      .suara-panel.suara-diam .suara-mic-isi{display:none}
+      .suara-panel.suara-diam .suara-mic-garis{display:block;color:var(--ink-soft)}
+      @keyframes suaraDenyut{0%{box-shadow:0 0 0 0 rgba(227,185,89,.55)}70%{box-shadow:0 0 0 14px rgba(227,185,89,0)}100%{box-shadow:0 0 0 0 rgba(227,185,89,0)}}
+      .suara-status{font-weight:700;font-size:.98rem}
+      .suara-meter{display:flex;gap:4px;margin-top:12px}
+      .suara-seg{flex:1;height:12px;border-radius:3px;background:var(--field-border);opacity:.55}
+      .suara-seg.nyala{background:var(--gold);opacity:1}
+      .suara-bawah{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+      .suara-bawah span{font-size:.9rem;color:var(--ink-soft);font-weight:600}
+      .suara-berhenti{min-height:40px}
       .voice-warn{background:var(--warn-soft);border:1.5px solid var(--warn);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.93rem;font-weight:600;margin-top:12px}
       .demo-tag{display:inline-block;background:var(--gold-soft);color:var(--gold);font-weight:700;font-size:.8rem;padding:4px 10px;border-radius:999px;margin-bottom:12px}
       /* Ringkasan data usaha (tampil saat formulir dilipat karena sudah terisi). */
@@ -2370,11 +2391,118 @@
         return hasil;
       }
       window.parseUcapanTransaksi=parseUcapanTransaksi;
+      /* ===== PANEL REKAMAN SUARA — bersama untuk Modul Keuangan + Hari Ini =====
+         Satu panel yang sama tampilannya di kedua tombol suara, muncul saat
+         rekaman mulai, tepat di atas baris hasil suara. Ikon mikrofon berubah
+         lewat event SpeechRecognition: onspeechstart → sedang bicara (emas +
+         denyut), onspeechend → suara berhenti (garis abu-abu). Meter 10 segmen
+         hidup dari Web Audio API (getUserMedia → AudioContext → AnalyserNode,
+         RMS tiap frame). Bila analyser tidak bisa jalan (izin ditolak, tidak
+         tersedia), meter disembunyikan diam-diam — ikon tetap jalan dan alur
+         suara tidak terganggu, tanpa popup apa pun. Stream dan loop animasi
+         selalu ditutup saat rekaman selesai/berhenti agar mikrofon tidak
+         terus terbuka. */
+      var __suaraPanel=null, __suaraR=null, __suaraRaf=null, __suaraStream=null, __suaraCtx=null, __suaraAnalyser=null, __suaraData=null;
+      function __suaraSetStatus(bicara){
+        if(!__suaraPanel) return;
+        var st=__suaraPanel.querySelector("#voiceStatusText");
+        __suaraPanel.classList.toggle("suara-bicara", !!bicara);
+        __suaraPanel.classList.toggle("suara-diam", !bicara);
+        if(st) st.textContent=bicara ? "Anda sedang berbicara…" : "Suara berhenti — bicara lagi, atau tekan Berhenti";
+      }
+      function __suaraSetLevel(rms){
+        if(!__suaraPanel) return;
+        var r=Math.max(0, Math.min(1, (rms||0)/0.30));
+        var nyala=Math.round(r*10);
+        var segs=__suaraPanel.querySelectorAll(".suara-seg");
+        for(var i=0;i<segs.length;i++) segs[i].classList.toggle("nyala", i<nyala);
+        var lab=__suaraPanel.querySelector("#voiceLevelText");
+        if(lab) lab.textContent="Suara: "+((rms||0)<0.02?"sangat lemah":(rms||0)<0.08?"lemah":(rms||0)<0.25?"sedang":"kuat");
+      }
+      function __suaraBersihMeter(){
+        if(__suaraRaf!==null){ try{ cancelAnimationFrame(__suaraRaf); }catch(e){} __suaraRaf=null; }
+        if(__suaraStream){ try{ __suaraStream.getTracks().forEach(function(t){ try{ t.stop(); }catch(e){} }); }catch(e){} __suaraStream=null; }
+        if(__suaraCtx){ try{ __suaraCtx.close(); }catch(e){} __suaraCtx=null; }
+        __suaraAnalyser=null; __suaraData=null;
+        if(__suaraPanel){ var m=__suaraPanel.querySelector(".suara-meter"); if(m) m.style.display="none"; }
+      }
+      function __suaraMulaiMeter(){
+        try{
+          if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ __suaraBersihMeter(); return; }
+          var AC=window.AudioContext||window.webkitAudioContext;
+          if(!AC){ __suaraBersihMeter(); return; }
+          var pr=navigator.mediaDevices.getUserMedia({audio:true});
+          if(!pr || typeof pr.then!=="function"){ __suaraBersihMeter(); return; }
+          pr.then(function(stream){
+            if(!__suaraPanel || __suaraPanel.style.display==="none"){ try{ stream.getTracks().forEach(function(t){ try{ t.stop(); }catch(e){} }); }catch(e){} return; }
+            try{
+              __suaraStream=stream;
+              __suaraCtx=new AC();
+              var src=__suaraCtx.createMediaStreamSource(stream);
+              __suaraAnalyser=__suaraCtx.createAnalyser();
+              __suaraAnalyser.fftSize=512;
+              src.connect(__suaraAnalyser);
+              __suaraData=new Uint8Array(__suaraAnalyser.fftSize);
+              var mm=__suaraPanel.querySelector(".suara-meter"); if(mm) mm.style.display="";
+              var putar=function(){
+                if(!__suaraAnalyser) return;
+                try{ __suaraAnalyser.getByteTimeDomainData(__suaraData); }catch(e){ __suaraBersihMeter(); return; }
+                var sum=0; for(var i=0;i<__suaraData.length;i++){ var v=(__suaraData[i]-128)/128; sum+=v*v; }
+                __suaraSetLevel(Math.sqrt(sum/__suaraData.length));
+                __suaraRaf=requestAnimationFrame(putar);
+              };
+              __suaraRaf=requestAnimationFrame(putar);
+            }catch(e){ __suaraBersihMeter(); }
+          }).catch(function(){ __suaraBersihMeter(); });
+        }catch(e){ __suaraBersihMeter(); }
+      }
+      function __suaraBangunPanel(){
+        if(__suaraPanel) return __suaraPanel;
+        var p=document.createElement("div");
+        p.id="voicePanel"; p.className="suara-panel suara-diam"; p.style.display="none";
+        p.setAttribute("role","status"); p.setAttribute("aria-live","polite");
+        p.innerHTML='<div class="suara-atas"><span class="suara-ikon" aria-hidden="true">'
+          +'<svg class="suara-mic-isi" viewBox="0 0 24 24" width="40" height="40"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V23h2v-3.06A9 9 0 0 0 21 11h-2z"/></svg>'
+          +'<svg class="suara-mic-garis" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg>'
+          +'</span><span class="suara-status" id="voiceStatusText">Suara berhenti — bicara lagi, atau tekan Berhenti</span></div>'
+          +'<div class="suara-meter" aria-hidden="true"><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span></div>'
+          +'<div class="suara-bawah"><span id="voiceLevelText">Suara: sangat lemah</span><button type="button" class="btn ghost suara-berhenti" id="voiceStopBtn">Berhenti</button></div>';
+        document.body.appendChild(p);
+        var b=p.querySelector("#voiceStopBtn");
+        if(b) b.addEventListener("click", function(){
+          if(__suaraR){ try{ __suaraR.stop(); }catch(e){} }
+          __suaraTutup();
+        });
+        __suaraPanel=p;
+        return p;
+      }
+      function __suaraTutup(){
+        __suaraBersihMeter();
+        __suaraR=null;
+        if(__suaraPanel) __suaraPanel.style.display="none";
+      }
+      function __suaraBuka(r, resEl){
+        var p=__suaraBangunPanel();
+        __suaraBersihMeter();
+        if(resEl && resEl.parentNode) resEl.parentNode.insertBefore(p, resEl);
+        var m=p.querySelector(".suara-meter"); if(m) m.style.display="";
+        __suaraSetLevel(0);
+        __suaraSetStatus(false);
+        p.style.display="block";
+        __suaraR=r||null;
+        __suaraMulaiMeter();
+      }
+      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter};
       $("btnVoice").addEventListener("click",function(){
         const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
         const resEl=$("voiceResult");
         if(!SR){ popupRamah("Suara belum bisa dipakai","Input suara tidak didukung peramban ini.","Ketik keterangannya seperti biasa — catatan tetap bisa disimpan. Suara umumnya jalan di peramban Chrome pada HP Android."); return; }
         const r=new SR(); r.lang="id-ID";
+        if(window.__panelSuara) window.__panelSuara.buka(r, resEl);
+        r.onspeechstart=function(){ if(window.__panelSuara) window.__panelSuara.bicara(true); };
+        r.onspeechend=function(){ if(window.__panelSuara) window.__panelSuara.bicara(false); };
+        r.onend=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); };
+        r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); };
         r.onresult=function(ev){
           const teks=ev.results[0][0].transcript;
           const p=parseUcapanTransaksi(teks);
@@ -2394,7 +2522,7 @@
             toast("Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.");
           }
         };
-        r.onerror=function(){ popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
+        r.onerror=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
         r.start(); toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
       });
 
@@ -6332,6 +6460,11 @@
           var resEl=gid("hiVoiceResult");
           if(!SR){ popupRamah("Suara belum bisa dipakai","Input suara tidak didukung peramban ini.","Ketik keterangannya seperti biasa — catatan tetap bisa disimpan. Suara umumnya jalan di peramban Chrome pada HP Android."); return; }
           var r=new SR(); r.lang="id-ID";
+          if(window.__panelSuara) window.__panelSuara.buka(r, resEl);
+          r.onspeechstart=function(){ if(window.__panelSuara) window.__panelSuara.bicara(true); };
+          r.onspeechend=function(){ if(window.__panelSuara) window.__panelSuara.bicara(false); };
+          r.onend=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); };
+          r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); };
           r.onresult=function(ev){
             var teks=ev.results[0][0].transcript;
             var p=parseUcapanTransaksi(teks);
@@ -6346,7 +6479,7 @@
             }
             toast("Keterangan dan jumlah terisi dari suara — periksa kembali angkanya");
           };
-          r.onerror=function(){ popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
+          r.onerror=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
           try{ r.start(); }catch(e){}
           toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
         });
