@@ -501,6 +501,7 @@
       .help-kicker{font-size:.78rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8fd3dc}
       .help-card h3{font-size:1.22rem;margin-top:6px;line-height:1.3}
       .help-simple{margin-top:10px;font-size:1rem}
+      .help-simple p{margin:6px 0}
       .help-example{margin-top:12px;background:var(--surface-2);border-radius:10px;padding:12px 14px;font-size:.94rem}
       .help-example b{color:var(--gold)}
       .help-how{margin-top:10px;font-size:.94rem;color:var(--ink-soft)}
@@ -1717,8 +1718,7 @@
       </section>
 
       <footer>
-        <p><b>Tentang angka di halaman ini.</b> Valuasi adalah <b>estimasi nilai wajar</b> untuk introspeksi dan bahan diskusi awal dengan calon investor atau calon mitra kerjasama investasi — <b>bukan appraisal resmi</b> dan tidak menggantikan penilaian KJPP (Kantor Jasa Penilai Publik). Pengali, tingkat diskonto, dan komisi kanal adalah asumsi umum pasar UMKM yang ditampilkan terbuka agar bisa Anda periksa dan perdebatkan.</p>
-        <p>Aplikasi Introspeksi UMKM versi multi-user: akun dan data tiap pengguna tersimpan aman di cloud — setiap pengguna hanya dapat mengakses data miliknya sendiri. Perubahan tersimpan otomatis ke cloud saat Anda terhubung internet; saat tidak ada internet, data tersimpan sementara di perangkat dan disinkronkan begitu internet kembali.</p>
+        <p>Tentang angka di halaman ini dan penyimpanan data. <button type="button" class="field-help-btn" id="btnFooterHelp" aria-label="Penjelasan tentang angka di halaman ini">?</button></p>
       </footer>
     </div>
 
@@ -1881,7 +1881,7 @@
           <button class="btn ghost small" id="btnFieldHelpCloseTop" type="button">Tutup</button>
         </div>
         <h3 id="fieldHelpTitle">—</h3>
-        <p class="help-simple" id="fieldHelpSimple"></p>
+        <div class="help-simple" id="fieldHelpSimple"></div>
         <div class="help-example" id="fieldHelpExample" style="display:none"></div>
         <p class="help-how" id="fieldHelpHow" style="display:none"></p>
         <div class="help-ask">
@@ -5887,6 +5887,12 @@
         }
         function bukaPenjelasan(el, teksChip){
           if(!el) return;
+          /* Aturan satu-"?"-terbuka: overlay "Penjelasan kolom" bukan
+             bagian aturan lipatan, jadi tutup dulu bila sedang terbuka
+             (hanya hapus class "show" — tanpa memanggil closeHelp, supaya
+             tidak ada efek fokus dari blok bantuan kolom). */
+          var ovBantuan=document.getElementById("fieldHelpOverlay");
+          if(ovBantuan) ovBantuan.classList.remove("show");
           if(teksChip) el.__lipatTeks=teksChip;
           if(lipatTerbuka && lipatTerbuka!==el) lipatPenjelasan(lipatTerbuka);
           var chip=el.__lipatChip; if(chip) chip.style.display="none";
@@ -7641,11 +7647,22 @@
         function openHelp(info, btn){
           current=info; lastBtn=btn||null;
           titleEl.textContent=info.title||"Penjelasan kolom";
-          simpleEl.textContent=info.simple||"";
+          if(info.html){
+            /* Topik dengan isi HTML statis aplikasi sendiri (bukan masukan
+               pengguna): tampilkan apa adanya supaya penebalan (<b>) tetap
+               utuh, dan turunkan versi teks polosnya untuk konteks Tanya AI. */
+            simpleEl.innerHTML=info.html;
+            if(!info.simple){ var tmp=document.createElement("div"); tmp.innerHTML=info.html; info.simple=Array.prototype.map.call(tmp.querySelectorAll("p"), function(p){ return p.textContent; }).join(" "); }
+          }
+          else simpleEl.textContent=info.simple||"";
           if(info.example){ exEl.style.display="block"; exEl.innerHTML=""; var b=document.createElement("b"); b.textContent="Contoh: "; exEl.appendChild(b); exEl.appendChild(document.createTextNode(info.example)); }
           else exEl.style.display="none";
           if(info.how){ howEl.style.display="block"; howEl.textContent="Cara mengisi: "+info.how; } else howEl.style.display="none";
           qEl.value=""; ansEl.textContent="";
+          /* Aturan satu-"?"-terbuka: lipat dulu penjelasan diskusi /
+             "Jelaskan ini" yang sedang terbuka (chip lipatannya boleh
+             tetap ada — chip bukan penjelasan terbuka). */
+          if(window.__lipatUji && typeof window.__lipatUji.lipatSekarang==="function") window.__lipatUji.lipatSekarang();
           overlay.classList.add("show"); overlay.scrollTop=0;
         }
         function closeHelp(){ overlay.classList.remove("show"); if(lastBtn && lastBtn.focus) lastBtn.focus(); }
@@ -7653,6 +7670,16 @@
         gid("btnFieldHelpCloseTop").addEventListener("click", closeHelp);
         overlay.addEventListener("click", function(ev){ if(ev.target===overlay) closeHelp(); });
         document.addEventListener("keydown", function(ev){ if(ev.key==="Escape" && overlay.classList.contains("show")) closeHelp(); });
+
+        /* Footer: dua paragraf penjelasan (tentang angka + penyimpanan data)
+           hanya tampil di balik tombol "?" footer — teksnya string statis
+           aplikasi sendiri, bukan masukan pengguna. */
+        var FOOTER_HELP_HTML="<p><b>Tentang angka di halaman ini.</b> Valuasi adalah <b>estimasi nilai wajar</b> untuk introspeksi dan bahan diskusi awal dengan calon investor atau calon mitra kerjasama investasi — <b>bukan appraisal resmi</b> dan tidak menggantikan penilaian KJPP (Kantor Jasa Penilai Publik). Pengali, tingkat diskonto, dan komisi kanal adalah asumsi umum pasar UMKM yang ditampilkan terbuka agar bisa Anda periksa dan perdebatkan.</p>"
+          +"<p>Aplikasi Introspeksi UMKM versi multi-user: akun dan data tiap pengguna tersimpan aman di cloud — setiap pengguna hanya dapat mengakses data miliknya sendiri. Perubahan tersimpan otomatis ke cloud saat Anda terhubung internet; saat tidak ada internet, data tersimpan sementara di perangkat dan disinkronkan begitu internet kembali.</p>";
+        function bukaBantuanFooter(btn){ openHelp({title:"Tentang angka di halaman ini", html:FOOTER_HELP_HTML}, btn||gid("btnFooterHelp")); }
+        window.__bukaBantuanFooter=bukaBantuanFooter;
+        var btnFooterHelp=gid("btnFooterHelp");
+        if(btnFooterHelp) btnFooterHelp.addEventListener("click", function(ev){ ev.preventDefault(); ev.stopPropagation(); bukaBantuanFooter(btnFooterHelp); });
 
         function localFieldAnswer(userQ){
           if(!current) return "";
