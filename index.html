@@ -113,6 +113,9 @@
       .suara-debug{margin-top:10px}
       .suara-debug-tombol{min-height:32px;padding:4px 10px;font-size:.82rem}
       .suara-debug-log{margin-top:8px;max-height:120px;overflow-y:auto;background:var(--field-bg);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.8rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+      .suara-debug-tanpa-meter{margin-top:8px;font-size:.88rem;line-height:1.5;color:var(--ink-soft)}
+      .suara-debug-tanpa-meter label{display:flex;align-items:flex-start;gap:8px;cursor:pointer}
+      .suara-debug-tanpa-meter input{width:18px;height:18px;margin-top:2px;flex:none;accent-color:var(--gold)}
       .voice-warn{background:var(--warn-soft);border:1.5px solid var(--warn);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.93rem;font-weight:600;margin-top:12px}
       .demo-tag{display:inline-block;background:var(--gold-soft);color:var(--gold);font-weight:700;font-size:.8rem;padding:4px 10px;border-radius:999px;margin-bottom:12px}
       /* Ringkasan data usaha (tampil saat formulir dilipat karena sudah terisi). */
@@ -2588,8 +2591,27 @@
          terus terbuka. Catatan debug di bawah panel mencatat tiap kejadian
          (termasuk mode terus-menerus, tiap segmen akhir, mulai/batal/habis
          penghitung jeda, dan pemicu penyelesaian) — dibersihkan tiap buka
-         baru, dibatasi 30 baris, tertutup awalnya. */
+         baru, dibatasi 30 baris, tertutup awalnya. Di dalam area debug
+         ada pilihan "Rekam tanpa meter suara (tes pengenal suara)": bila
+         dicentang, meter tidak dibuka sama sekali pada rekaman berikutnya
+         (getUserMedia meter tidak dipanggil) supaya pemilik bisa menguji
+         apakah meter yang membuat pengenal suara kehabisan audio. */
       var __suaraPanel=null, __suaraR=null, __suaraRaf=null, __suaraStream=null, __suaraCtx=null, __suaraAnalyser=null, __suaraData=null, __suaraSelesaiFlag=false, __suaraMenungguFinal=false, __suaraTungguFinal=null, __suaraTeksTerakhir="", __suaraAkhirDicatat=false, __suaraAkhirTeks="", __suaraJedaTimer=null, __suaraFinalkanFn=null;
+      /* Pilihan diagnostik tanpa-meter: dibaca tiap kali panel dibuka
+         (bukan sekali saat muat) supaya perubahan pilihan berlaku mulai
+         rekaman berikutnya. Bawaan mati (meter hidup seperti biasa). */
+      var __suaraTanpaMeterKey="umkm-introspeksi-debug-tanpa-meter";
+      function __suaraTanpaMeter(){
+        try{ return localStorage.getItem(__suaraTanpaMeterKey)==="1"; }catch(e){ return false; }
+      }
+      function __suaraSimpanTanpaMeter(nyala){
+        try{ if(nyala) localStorage.setItem(__suaraTanpaMeterKey,"1"); else localStorage.removeItem(__suaraTanpaMeterKey); }catch(e){}
+      }
+      function __suaraSamakanTanpaMeter(){
+        if(!__suaraPanel) return;
+        var cb=__suaraPanel.querySelector("#voiceTanpaMeter");
+        if(cb) cb.checked=__suaraTanpaMeter();
+      }
       function __suaraSetStatus(bicara, teks){
         if(!__suaraPanel) return;
         var st=__suaraPanel.querySelector("#voiceStatusText");
@@ -2708,6 +2730,8 @@
         if(!__suaraPanel) return;
         var log=__suaraPanel.querySelector("#voiceDebugLog");
         if(log) log.style.display="none";
+        var tw=__suaraPanel.querySelector("#voiceTanpaMeterWrap");
+        if(tw) tw.style.display="none";
         var b=__suaraPanel.querySelector("#voiceDebugBtn");
         if(b){ b.textContent="Lihat debug"; b.setAttribute("aria-expanded","false"); }
       }
@@ -2807,6 +2831,9 @@
         if(__suaraPanel){ var m=__suaraPanel.querySelector(".suara-meter"); if(m) m.style.display="none"; }
       }
       function __suaraMulaiMeter(){
+        /* Diagnostik tanpa-meter: jangan buka stream meter sama sekali
+           (tidak ada izin mikrofon tambahan, tidak ada analyser). */
+        if(__suaraTanpaMeter()) return;
         try{
           if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ __suaraBersihMeter(); return; }
           var AC=window.AudioContext||window.webkitAudioContext;
@@ -2849,7 +2876,7 @@
           +'<div class="suara-catatan" id="voiceCatatan" style="display:none"></div>'
           +'<div class="suara-meter" aria-hidden="true"><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span></div>'
           +'<div class="suara-bawah"><span id="voiceLevelText">Suara: sangat lemah</span><button type="button" class="btn ghost suara-berhenti" id="voiceStopBtn">Berhenti</button></div>'
-          +'<div class="suara-debug"><button type="button" class="btn ghost suara-debug-tombol" id="voiceDebugBtn" aria-expanded="false">Lihat debug</button><div class="suara-debug-log" id="voiceDebugLog" style="display:none"></div></div>';
+          +'<div class="suara-debug"><button type="button" class="btn ghost suara-debug-tombol" id="voiceDebugBtn" aria-expanded="false">Lihat debug</button><div class="suara-debug-log" id="voiceDebugLog" style="display:none"></div><div class="suara-debug-tanpa-meter" id="voiceTanpaMeterWrap" style="display:none"><label><input type="checkbox" id="voiceTanpaMeter"> Rekam tanpa meter suara (tes pengenal suara)</label></div></div>';
         document.body.appendChild(p);
         var b=p.querySelector("#voiceStopBtn");
         if(b) b.addEventListener("click", function(){
@@ -2870,16 +2897,28 @@
           if(__suaraTungguFinal!==null){ try{ clearTimeout(__suaraTungguFinal); }catch(e){} }
           __suaraTungguFinal=setTimeout(__suaraTungguFinalHabis, 2800);
         });
-        /* Tombol debug: melipat/membuka catatan kejadian rekaman ini saja. */
+        /* Tombol debug: melipat/membuka catatan kejadian rekaman ini saja
+           beserta pilihan diagnostik tanpa-meter (pilihan hanya tampil
+           bila area debug dibuka). */
         var dg=p.querySelector("#voiceDebugBtn");
         if(dg) dg.addEventListener("click", function(){
           var log=p.querySelector("#voiceDebugLog");
           if(!log) return;
           var buka=log.style.display==="none";
           log.style.display=buka?"block":"none";
+          var tw=p.querySelector("#voiceTanpaMeterWrap");
+          if(tw) tw.style.display=buka?"block":"none";
           dg.textContent=buka?"Sembunyikan debug":"Lihat debug";
           dg.setAttribute("aria-expanded", buka?"true":"false");
         });
+        /* Pilihan diagnostik tanpa-meter: hanya menyimpan pilihan;
+           rekaman yang sedang berjalan tidak diganggu — pilihan baru
+           berlaku mulai rekaman berikutnya (dibaca saat panel dibuka). */
+        var tm=p.querySelector("#voiceTanpaMeter");
+        if(tm){
+          tm.checked=__suaraTanpaMeter();
+          tm.addEventListener("change", function(){ __suaraSimpanTanpaMeter(tm.checked); });
+        }
         __suaraPanel=p;
         return p;
       }
@@ -2908,10 +2947,12 @@
         __suaraCatatan("");
         __suaraDebugBersih();
         __suaraDebugTutup();
-        if(r){ __suaraDebug("Pengenalan suara: tersedia"); __suaraDebug("Bahasa: Indonesia ("+(r.lang||"id-ID")+")"); }
+        __suaraSamakanTanpaMeter();
+        if(r){ __suaraDebug("Pengenalan suara: tersedia"); __suaraDebug("Bahasa: Indonesia ("+(r.lang||"id-ID")+")"); __suaraDebug(__suaraTanpaMeter() ? "Meter suara: mati (tes)" : "Meter suara: hidup"); }
         else { __suaraDebug("Pengenalan suara: tidak didukung peramban ini"); }
         if(resEl && resEl.parentNode) resEl.parentNode.insertBefore(p, resEl);
-        var m=p.querySelector(".suara-meter"); if(m) m.style.display="";
+        var m=p.querySelector(".suara-meter"); if(m) m.style.display=__suaraTanpaMeter()?"none":"";
+        var lv=p.querySelector("#voiceLevelText"); if(lv) lv.style.display=__suaraTanpaMeter()?"none":"";
         var tx=p.querySelector("#voiceTeks"); if(tx){ tx.textContent=""; tx.style.display="none"; }
         var b=p.querySelector("#voiceStopBtn"); if(b) b.textContent="Berhenti";
         __suaraSetLevel(0);
@@ -2920,7 +2961,7 @@
         __suaraR=r||null;
         __suaraMulaiMeter();
       }
-      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter, teks:__suaraTeks, selesai:__suaraSelesai, akhir:__suaraAkhir, rangkum:__suaraRangkumHasil, statusTeks:__suaraSetStatusTeks, debug:__suaraDebug, debugSalah:__suaraDebugSalah, sudahSelesai:function(){ return !!__suaraSelesaiFlag; }, menunggu:function(){ return !!__suaraMenungguFinal; }, tungguHabis:__suaraTungguFinalHabis, mulaiJeda:__suaraMulaiJeda, batalJeda:__suaraBatalJeda, jedaAktif:function(){ return __suaraJedaTimer!==null; }, aturFinalkan:function(fn){ __suaraFinalkanFn=fn||null; }, teksAkhir:function(){ return __suaraAkhirTeks; }, catatHasil:__suaraCatatHasil, tanpaFinal:__suaraTanpaFinal};
+      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter, teks:__suaraTeks, selesai:__suaraSelesai, akhir:__suaraAkhir, rangkum:__suaraRangkumHasil, statusTeks:__suaraSetStatusTeks, debug:__suaraDebug, debugSalah:__suaraDebugSalah, tanpaMeter:__suaraTanpaMeter, sudahSelesai:function(){ return !!__suaraSelesaiFlag; }, menunggu:function(){ return !!__suaraMenungguFinal; }, tungguHabis:__suaraTungguFinalHabis, mulaiJeda:__suaraMulaiJeda, batalJeda:__suaraBatalJeda, jedaAktif:function(){ return __suaraJedaTimer!==null; }, aturFinalkan:function(fn){ __suaraFinalkanFn=fn||null; }, teksAkhir:function(){ return __suaraAkhirTeks; }, catatHasil:__suaraCatatHasil, tanpaFinal:__suaraTanpaFinal};
       $("btnVoice").addEventListener("click",function(){
         const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
         const resEl=$("voiceResult");
