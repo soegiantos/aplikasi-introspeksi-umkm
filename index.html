@@ -386,6 +386,7 @@
         <div class="account-bar" id="accountBar">
           <span class="who" id="userEmail"></span>
           <span class="sync-pill" id="syncStatus">Memuat…</span>
+          <button class="btn ghost small" id="btnUbahUsahaTop" type="button">Ubah usaha</button>
           <button class="btn ghost small" id="btnSaveCloud" type="button">Simpan sekarang</button>
           <button class="btn small" id="btnGuestRegister" type="button" style="display:none">Daftar untuk menyimpan</button>
           <button class="btn ghost small" id="btnLogout" type="button">Keluar</button>
@@ -441,7 +442,10 @@
         <div class="sec-head"><span class="sec-num">01</span><h2>Data usaha</h2></div>
         <p class="sec-sub">Sepuluh isian inti. Semua hitungan di halaman ini berubah langsung mengikuti angka yang Anda masukkan. Untuk user terdaftar, perubahan tersimpan otomatis ke akun cloud Anda — hanya Anda yang bisa mengaksesnya. Untuk mode coba, data hanya tersimpan di HP ini dan hilang saat halaman ditutup. Status penyimpanan tampil di bagian atas halaman.</p>
         <div class="card">
-          <span class="demo-tag">Formulir kosong — kolom berwarna keemasan siap diisi dengan data usaha Anda</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <span class="demo-tag" style="margin:0">Formulir kosong — kolom berwarna keemasan siap diisi dengan data usaha Anda</span>
+            <button class="btn ghost small" id="btnUbahUsahaData" type="button">Ubah usaha</button>
+          </div>
           <div class="form-grid">
             <label class="f"><span>Nama usaha</span><input type="text" id="inNama" placeholder="contoh: Dapur Bu Sari" autocomplete="off" /></label>
             <label class="f"><span>Jenis usaha</span>
@@ -1764,6 +1768,7 @@
         }
 
         /* ---------- gerbang masuk ---------- */
+        function hasUsaha(){ var nm=gid("inNama"); return !!(nm && nm.value && nm.value.trim()); }
         function enterApp(user){
           if(entered && !isGuest) return;
           // bila sebelumnya tamu, izinkan masuk sebagai user terdaftar (migrasi)
@@ -1774,11 +1779,21 @@
           gid("btnLogout").textContent="Keluar";
           gid("accountBar").classList.add("show");
           gid("userEmail").textContent=user.email||"";
-          loadData();
+          var lp=loadData();
+          if(lp && typeof lp.then==="function"){
+            lp.then(function(){
+              // Pengguna yang sudah punya data usaha di cloud langsung masuk
+              // dashboard tanpa ditanya lagi; wizard hanya untuk yang belum punya data.
+              if(!hasUsaha()){
+                if(window.__openWizard){ window.__openWizard(); }
+                else { window.__pendingWizardOpen=true; }
+              }
+            });
+          }
         }
         function enterGuest(){
-          if(entered && isGuest) { gid("authGate").style.display="none"; return; }
-          if(entered && !isGuest) return;
+          if(entered && isGuest) { gid("authGate").style.display="none"; return hasUsaha(); }
+          if(entered && !isGuest) return hasUsaha();
           entered=true; isGuest=true; localMode=true; currentUser=null;
           gid("authGate").style.display="none";
           gid("accountBar").classList.add("show");
@@ -1792,6 +1807,9 @@
           setSync("Mode coba — hanya di HP ini","warn");
           audit("Masuk sebagai tamu (mode coba tanpa daftar).");
           toast("Mode coba aktif — semua modul bisa dicoba, data hanya di HP ini.");
+          // Tamu yang kembali dengan data usaha tersimpan di perangkat ini
+          // tidak perlu ditanya lagi — langsung ke dashboard.
+          return hasUsaha();
         }
         window.__showRegisterGate=function(reason){
           if(!isGuest) return;
@@ -1894,11 +1912,15 @@
         });
 
         /* ---------- inisialisasi klien & sesi ----------
-           Aplikasi langsung dibuka: tanpa sesi -> masuk mode coba dan wizard
-           langkah 1 terbuka otomatis; dengan sesi -> langsung masuk aplikasi.
-           Layar daftar/masuk hanya muncul lewat __showRegisterGate (aksi simpan). */
+           Aplikasi langsung dibuka: pengguna yang sudah pernah memasukkan data
+           usaha (di cloud bila login, atau tersimpan di perangkat ini bila tamu)
+           langsung masuk dashboard tanpa ditanya lagi. Wizard langkah demi langkah
+           hanya terbuka bila belum ada data usaha sama sekali, atau lewat tombol
+           "Ubah usaha". Layar daftar/masuk hanya muncul lewat __showRegisterGate
+           (aksi simpan). */
         function autoStartGuest(){
-          enterGuest();
+          var sudahPunyaUsaha=enterGuest();
+          if(sudahPunyaUsaha) return;
           if(window.__openWizard){ window.__openWizard(); }
           else { window.__pendingWizardOpen=true; }
         }
@@ -2024,11 +2046,16 @@
           var ov=gid("wizardOverlay"); if(ov) ov.scrollTop=0;
         }
         function openWizard(){
-          // isi awal wizard dari formulir utama bila sudah ada isinya
-          if(gid("inNama") && gid("inNama").value && !gid("wizNama").value) gid("wizNama").value=gid("inNama").value;
-          if(gid("inSektor") && gid("inSektor").value && !gid("wizSektor").value) gid("wizSektor").value=gid("inSektor").value;
-          if(gid("inKota") && gid("inKota").value && !gid("wizKota").value) gid("wizKota").value=gid("inKota").value;
-          if(numOf("inOmzet")>0 && !gid("wizOmzet").value) gid("wizOmzet").value=numOf("inOmzet");
+          // Isi wizard dari formulir utama dengan jawaban yang ada sekarang,
+          // supaya pengguna yang menekan "Ubah usaha" tinggal mengubah yang perlu.
+          if(gid("inNama") && gid("inNama").value) gid("wizNama").value=gid("inNama").value;
+          if(gid("inSektor") && gid("inSektor").value) gid("wizSektor").value=gid("inSektor").value;
+          if(gid("inKota") && gid("inKota").value) gid("wizKota").value=gid("inKota").value;
+          var omz=numOf("inOmzet"), hpp=numOf("inHpp");
+          if(omz>0) gid("wizOmzet").value=omz;
+          if(omz>0 && hpp>0) gid("wizBahan").value=Math.round(omz*hpp/100);
+          if(numOf("inOpex")>0) gid("wizOpex").value=numOf("inOpex");
+          if(numOf("inGaji")>0) gid("wizGaji").value=numOf("inGaji");
           gid("wizardOverlay").classList.add("show");
           showWiz("1");
         }
@@ -2039,6 +2066,7 @@
         document.querySelectorAll("[data-wiz-back]").forEach(function(b){ b.addEventListener("click", function(){ showWiz(b.getAttribute("data-wiz-back")); }); });
         gid("btnWizardClose").addEventListener("click", closeWizard);
         gid("btnWizardHero").addEventListener("click", openWizard);
+        ["btnUbahUsahaTop","btnUbahUsahaData"].forEach(function(id){ var el=gid(id); if(el) el.addEventListener("click", openWizard); });
         ["navWizardTop","navWizardBottom"].forEach(function(id){ var el=gid(id); if(el) el.addEventListener("click", function(ev){ ev.preventDefault(); openWizard(); }); });
 
         /* perkiraan omzet dari 2 pertanyaan lanjutan */
