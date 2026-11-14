@@ -3027,6 +3027,68 @@
           if(authMode==="reg"){ if(maybeShowPendingConfirm()) return; showRegAlreadyPopup(); return; }
           setAuthMode("reg");
         });
+        /* ---------- Pemeriksaan email saat pendaftaran ----------
+           Empat lapis sebelum signUp — cabang MASUK tidak dicek, supaya
+           pengguna lama yang domain emailnya kemudian kehilangan catatan
+           suratnya tetap bisa masuk (tautan konfirmasi tetap menjadi
+           bukti akhir bahwa email itu benar-benar milik pendaftar). */
+        function emailFormatBenar(email){
+          return /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/.test(email||"");
+        }
+        function jarakLevenshtein(a,b){
+          a=a||""; b=b||"";
+          var m=a.length, n=b.length, d=[], i, j;
+          if(!m) return n; if(!n) return m;
+          for(i=0;i<=m;i++) d[i]=[i];
+          for(j=0;j<=n;j++) d[0][j]=j;
+          for(i=1;i<=m;i++) for(j=1;j<=n;j++){
+            var biaya=a.charAt(i-1)===b.charAt(j-1)?0:1;
+            d[i][j]=Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+biaya);
+          }
+          return d[m][n];
+        }
+        /* Domain umum yang benar (target saran). gmail.co.id sengaja TIDAK
+           ada di sini — itu bukan domain sungguhan, jadi pengetikannya
+           ditangkap oleh pemeriksaan MX di server. */
+        var DOMAIN_EMAIL_UMUM=["gmail.com","yahoo.com","yahoo.co.id","hotmail.com","outlook.com","outlook.co.id","live.com","icloud.com","proton.me","protonmail.com","unair.ac.id"];
+        function saranDomainEmail(domain){
+          domain=(domain||"").toLowerCase();
+          var terbaik="", jarakTerkecil=99, i, j;
+          for(i=0;i<DOMAIN_EMAIL_UMUM.length;i++){
+            j=jarakLevenshtein(domain, DOMAIN_EMAIL_UMUM[i]);
+            if(j<jarakTerkecil){ jarakTerkecil=j; terbaik=DOMAIN_EMAIL_UMUM[i]; }
+          }
+          if(terbaik && domain!==terbaik && jarakTerkecil>=1 && jarakTerkecil<=2) return terbaik;
+          return "";
+        }
+        function domainDariEmail(email){
+          var at=(email||"").lastIndexOf("@");
+          return at>=0 ? (email||"").slice(at+1).toLowerCase() : "";
+        }
+        var DOMAIN_EMAIL_SEMENTARA=["mailinator.com","tempmail.com","temp-mail.org","10minutemail.com","guerrillamail.com","guerrillamail.net","guerrillamail.org","yopmail.com","sharklasers.com","maildrop.cc","getnada.com","trashmail.com","dispostable.com","fakeinbox.com","mailnesia.com","mintemail.com","mytemp.email","tempail.com","throwawaymail.com","emailondeck.com","mohmal.com","discard.email"];
+        function emailSementara(domain){
+          return DOMAIN_EMAIL_SEMENTARA.indexOf((domain||"").toLowerCase())>=0;
+        }
+        async function cekEmailBisaTerima(email){
+          /* Server memeriksa catatan MX domainnya. Gagal jaringan / DNS /
+             waktu habis = TIDAK PASTI, bukan "tidak bisa" — pendaftaran
+             tetap lanjut (fail-open; email konfirmasi tetap bukti akhir). */
+          try{
+            var kendali=new AbortController();
+            var resp=await Promise.race([
+              fetch("/api/cek-email",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email}),signal:kendali.signal}),
+              new Promise(function(_, tolak){ setTimeout(function(){ kendali.abort(); tolak(new Error("waktu habis")); }, 8000); })
+            ]);
+            if(!resp || !resp.ok) return {bisa:true, takPasti:true};
+            var data=null; try{ data=await resp.json(); }catch(e){ return {bisa:true, takPasti:true}; }
+            if(!data || typeof data.bisa!=="boolean") return {bisa:true, takPasti:true};
+            return {bisa:data.bisa, takPasti:!!data.takPasti};
+          }catch(e){ return {bisa:true, takPasti:true}; }
+        }
+        window.__emailFormatBenar=emailFormatBenar;
+        window.__saranDomainEmail=saranDomainEmail;
+        window.__emailSementara=emailSementara;
+        window.__cekEmailBisaTerima=cekEmailBisaTerima;
         gid("authForm").addEventListener("submit", async function(ev){
           ev.preventDefault();
           if(!sb){ popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini.", "Tidak bisa terhubung"); return; }
@@ -3037,6 +3099,16 @@
             if(authMode==="reg"){
               var nama=gid("authNama").value.trim(), hp=gid("authHp").value.trim();
               if(!nama || !hp){ popupAuth("Untuk pendaftaran, isi juga nama usaha dan nomor HP — lengkapi kedua kolom itu, lalu tekan Daftar & masuk sekali lagi.", "Isian belum lengkap"); if(!authCooldownTimer) gid("authSubmit").disabled=false; return; }
+              /* Pemeriksaan email (hanya di pendaftaran, sebelum signUp). */
+              if(!emailFormatBenar(email)){ popupAuth("Tulis alamat email yang lengkap, contoh: nama@gmail.com — ada tanda @ dan titik di belakangnya, tanpa spasi.", "Alamat emailnya belum benar"); if(!authCooldownTimer) gid("authSubmit").disabled=false; return; }
+              var domE=domainDariEmail(email);
+              var saranE=saranDomainEmail(domE);
+              if(saranE){ var lokalE=email.slice(0, email.lastIndexOf("@")); popupAuth("Maksud Anda "+lokalE+"@"+saranE+"? Periksa lagi alamat emailnya, lalu tekan Daftar sekali lagi.", "Alamat emailnya mungkin salah ketik"); if(!authCooldownTimer) gid("authSubmit").disabled=false; return; }
+              if(emailSementara(domE)){ popupAuth("Alamat email sementara tidak bisa menerima tautan konfirmasi, jadi pendaftarannya tidak bisa selesai. Pakai email asli yang aktif, contoh: nama@gmail.com.", "Email sementara tidak bisa dipakai"); if(!authCooldownTimer) gid("authSubmit").disabled=false; return; }
+              authMsg("Memeriksa alamat email...","ok");
+              var cekE=await cekEmailBisaTerima(email);
+              if(!cekE.bisa){ popupAuth("Alamat emailnya terlihat tidak bisa menerima surat — mungkin domainnya salah ketik atau sudah tidak aktif. Periksa lagi tulisannya, atau pakai email lain yang masih aktif.", "Email ini sepertinya tidak bisa menerima surat"); if(!authCooldownTimer) gid("authSubmit").disabled=false; return; }
+              authMsg("Memproses...","ok");
               var r=await sb.auth.signUp({email:email, password:pass, options:{data:{nama_usaha:nama, no_hp:hp}}});
               if(r.error){ tanganiErrorAuth(r.error, "daftar"); }
               else if(r.data.session){
