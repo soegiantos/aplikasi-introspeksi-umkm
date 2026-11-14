@@ -890,6 +890,20 @@
           <button class="btn ghost small" id="btnWizardClose" type="button">Tutup</button>
         </div>
 
+        <div class="wiz-step" data-wiz="sapaan">
+          <h2><span id="greetTime">Selamat pagi</span></h2>
+          <p style="margin-top:10px;font-size:1.08rem;font-weight:700">Selamat datang di Aplikasi Introspeksi UMKM.</p>
+          <p class="hint" style="margin-top:8px">Aplikasi ini membantu pemilik usaha mengetahui nilai dan kesehatan usahanya serta apa yang perlu diperbaiki, langkah demi langkah, hanya dalam beberapa menit.</p>
+          <p style="margin-top:18px;font-weight:600">Apakah Anda berkenan mengisi data usaha Anda?</p>
+          <div class="wiz-actions">
+            <button class="btn" type="button" id="btnGreetStart">Mulai mengisi</button>
+          </div>
+          <div style="margin-top:12px">
+            <button class="wiz-skip" type="button" id="btnGreetBrowse" style="width:100%">Lihat dulu aplikasinya</button>
+          </div>
+          <p class="note" style="margin-top:12px;text-align:center">Anda bisa melihat dulu seluruh aplikasinya tanpa mengisi apa pun.</p>
+        </div>
+
         <div class="wiz-step" data-wiz="1">
           <h2>Apa usaha Anda?</h2>
           <p class="hint">Ceritakan sedikit saja — nama, jenis, dan kota tempat usaha Anda berjalan.</p>
@@ -1783,10 +1797,11 @@
           if(lp && typeof lp.then==="function"){
             lp.then(function(){
               // Pengguna yang sudah punya data usaha di cloud langsung masuk
-              // dashboard tanpa ditanya lagi; wizard hanya untuk yang belum punya data.
+              // dashboard tanpa ditanya lagi; sapaan + wizard hanya untuk yang belum punya data.
               if(!hasUsaha()){
-                if(window.__openWizard){ window.__openWizard(); }
-                else { window.__pendingWizardOpen=true; }
+                if(window.__openGreeting){ window.__openGreeting(); }
+                else if(window.__openWizard){ window.__pendingGreetingOpen=true; }
+                else { window.__pendingGreetingOpen=true; }
               }
             });
           }
@@ -1921,8 +1936,8 @@
         function autoStartGuest(){
           var sudahPunyaUsaha=enterGuest();
           if(sudahPunyaUsaha) return;
-          if(window.__openWizard){ window.__openWizard(); }
-          else { window.__pendingWizardOpen=true; }
+          if(window.__openGreeting){ window.__openGreeting(); }
+          else { window.__pendingGreetingOpen=true; }
         }
         if(window.supabase && window.supabase.createClient){
           sb=window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -2039,7 +2054,7 @@
 
         /* ---------- Wizard langkah demi langkah ---------- */
         var wizFokus="";
-        var PROGRESS={"1":"Langkah 1 dari 4","2":"Langkah 2 dari 4","3a":"Langkah 3 dari 4 — biaya (1 dari 3)","3b":"Langkah 3 dari 4 — biaya (2 dari 3)","3c":"Langkah 3 dari 4 — biaya (3 dari 3)","4":"Langkah 4 dari 4","hasil":"Hasil ringkas Anda"};
+        var PROGRESS={"sapaan":"Selamat datang","1":"Langkah 1 dari 4","2":"Langkah 2 dari 4","3a":"Langkah 3 dari 4 — biaya (1 dari 3)","3b":"Langkah 3 dari 4 — biaya (2 dari 3)","3c":"Langkah 3 dari 4 — biaya (3 dari 3)","4":"Langkah 4 dari 4","hasil":"Hasil ringkas Anda"};
         function showWiz(step){
           document.querySelectorAll(".wiz-step").forEach(function(el){ el.classList.toggle("on", el.getAttribute("data-wiz")===step); });
           var p=gid("wizProgress"); if(p) p.textContent=PROGRESS[step]||"";
@@ -2061,6 +2076,21 @@
         }
         function closeWizard(){ gid("wizardOverlay").classList.remove("show"); }
         window.__openWizard=openWizard;
+        function greetingByHour(){
+          var h=new Date().getHours();
+          if(h>=4 && h<11) return "Selamat pagi";
+          if(h>=11 && h<15) return "Selamat siang";
+          if(h>=15 && h<19) return "Selamat sore";
+          return "Selamat malam";
+        }
+        function openGreeting(){
+          var gt=gid("greetTime"); if(gt) gt.textContent=greetingByHour();
+          gid("wizardOverlay").classList.add("show");
+          showWiz("sapaan");
+        }
+        window.__openGreeting=openGreeting;
+        var bgStart=gid("btnGreetStart"); if(bgStart) bgStart.addEventListener("click", function(){ showWiz("1"); });
+        var bgBrowse=gid("btnGreetBrowse"); if(bgBrowse) bgBrowse.addEventListener("click", function(){ closeWizard(); });
 
         document.querySelectorAll("[data-wiz-next]").forEach(function(b){ b.addEventListener("click", function(){ showWiz(b.getAttribute("data-wiz-next")); }); });
         document.querySelectorAll("[data-wiz-back]").forEach(function(b){ b.addEventListener("click", function(){ showWiz(b.getAttribute("data-wiz-back")); }); });
@@ -2140,8 +2170,10 @@
         gid("wizCoachQ").addEventListener("keydown", function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); wizCoachAsk(); } });
 
         /* Buka otomatis: aplikasi dimulai sebagai tamu sebelum skrip wizard ini
-           termuat (mode tanpa sesi) — langsung tampilkan langkah 1. */
-        if(window.__pendingWizardOpen){ window.__pendingWizardOpen=false; openWizard(); }
+           termuat (mode tanpa sesi) — pengguna baru melihat sapaan dulu,
+           pengguna lama tidak sampai ke sini karena sudah punya data. */
+        if(window.__pendingGreetingOpen){ window.__pendingGreetingOpen=false; openGreeting(); }
+        else if(window.__pendingWizardOpen){ window.__pendingWizardOpen=false; openWizard(); }
       })();
     </script>
   </body>
