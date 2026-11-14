@@ -421,6 +421,8 @@
       .ditutup-card{max-width:560px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 24px;box-shadow:var(--shadow);text-align:center}
       .ditutup-card h2{font-size:1.4rem}
       .ditutup-card p{color:var(--ink-soft);margin-top:10px}
+      .ditutup-card .ditutup-hitung{margin-top:14px}
+      #hitungTutupAngka{font-weight:700;color:var(--ink)}
       .ditutup-card .btn{margin-top:22px;min-height:54px}
       body.aplikasi-ditutup .topbar, body.aplikasi-ditutup .wrap, body.aplikasi-ditutup .bottom-nav, body.aplikasi-ditutup .mobile-valbar, body.aplikasi-ditutup .wizard-overlay, body.aplikasi-ditutup .help-overlay, body.aplikasi-ditutup .toast, body.aplikasi-ditutup .auth-gate, body.aplikasi-ditutup .guest-banner, body.aplikasi-ditutup .account-bar, body.aplikasi-ditutup .sql-modal{display:none!important}
       .wizard-card{max-width:560px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
@@ -860,7 +862,7 @@
           <span class="who" id="userEmail"></span>
           <span class="sync-pill" id="syncStatus">Memuat…</span>
           <button class="btn ghost small" id="btnUbahUsahaTop" type="button">Ubah usaha</button>
-          <button class="btn ghost small" id="btnSaveCloud" type="button">Simpan sekarang</button>
+          <button class="btn ghost small" id="btnSaveCloud" type="button">Register</button>
           <button class="btn ghost small" id="btnAdminMarketing" type="button" style="display:none">Admin marketing</button>
           <button class="btn small" id="btnGuestRegister" type="button" style="display:none">Daftar untuk menyimpan</button>
           <button class="btn ghost small" id="btnLogout" type="button">Keluar</button>
@@ -1744,6 +1746,7 @@
           <h3>2. Terdaftar — Gratis</h3>
           <p>Setelah daftar dan konfirmasi email, data usaha tersimpan di cloud, aman, dan bisa dibuka di perangkat lain. Paket Gratis meliputi 50 transaksi per bulan berjalan, 20 barang stok, 10 piutang, dan 10 utang. AI Coach menjawab 20 pertanyaan per bulan.</p>
           <p>Data yang sudah ada tidak pernah dikunci — selalu bisa dibaca, diubah, dan dihapus. Bila ingin lebih, lihat tahap Berlangganan Pro di bawah.</p>
+          <p class="note" id="paketPaketAnda" style="display:none"><b>Paket Anda saat ini</b></p>
         </div>
         <div class="card" style="margin-top:14px">
           <h3>3. Berlangganan Pro</h3>
@@ -1971,6 +1974,7 @@
       <div class="ditutup-card">
         <h2>Aplikasi ditutup.</h2>
         <p>Terima kasih sudah mampir. Sampai jumpa lagi.</p>
+        <p class="ditutup-hitung" id="hitungTutup">Aplikasi ini akan ditutup dalam <span id="hitungTutupAngka">10</span> detik.</p>
         <button class="btn" type="button" id="btnBukaKembali">Buka kembali aplikasi</button>
       </div>
     </div>
@@ -5498,10 +5502,24 @@
           try{ if(sb && currentUser) await sb.auth.signOut(); }catch(e){}
           location.reload();
         });
+        /* Tombol ini berganti peran menurut status akun (labelnya diatur
+           di perbaruiStatusAkun): tamu -> "Register" (membuka gerbang
+           daftar); terdaftar -> "Upgrade" (membuka halaman Paket &
+           Layanan). Penentu di sini SAMA dengan penentu label — pengguna
+           aktif ADA berarti terdaftar; isGuest saja tidak cukup (di awal
+           muat isGuest=false sebelum masuk, sementara pengguna masih
+           null). Simpan manual tidak lagi diperlukan: autosave berkala
+           (interval 2 dtk membandingkan snapshot + debounce 800 mdtk)
+           sudah menyimpan setiap perubahan, dan pil sinkron (#syncStatus)
+           menunjukkan keadaan simpannya; mengklik tombol ini tidak
+           berpindah halaman sungguhan (layar yang sama), jadi autosave
+           tetap berjalan sesudahnya. */
         gid("btnSaveCloud").addEventListener("click",function(){
-          if(isGuest){ window.__showRegisterGate("Simpan sekarang / Simpan ke cloud"); return; }
-          tandaiSudahMengisi();
-          var snap=collectSnapshot(); saveData(snap, JSON.stringify(snap)); toast("Menyimpan data Anda...");
+          var u=null; try{ u=(window.__penggunaAktif && window.__penggunaAktif())||null; }catch(e){}
+          if(isGuest || !u){ window.__showRegisterGate("Simpan ke cloud"); return; }
+          if(typeof window.__bukaHalamanPaket==="function"){ try{ window.__bukaHalamanPaket(); return; }catch(e){} }
+          if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("paket"); return; }catch(e){} }
+          try{ document.body.setAttribute("data-layar","paket"); }catch(e){}
         });
 
         /* ---------- modal SQL ---------- */
@@ -7467,20 +7485,71 @@
            dibuka dari dalam aplikasi lewat "Ubah usaha"/"Mulai"), "Tutup" hanya
            menutup overlay seperti biasa.
            Layar tertutup HANYA sesi ini (in-memory; kelas body + atribut
-           hidden): muat ulang menampilkan sapaan lagi. window.close() tidak
-           dipakai — tidak berfungsi di tab biasa; layar tertutup INILAH tutupnya.
+           hidden): muat ulang menampilkan sapaan lagi. Bila layar tertutup
+           dibiarkan tanpa interaksi selama 10 detik, hitung mundur mencoba
+           menutup tab lewat window.close() — upaya terbaik saja: tab biasa
+           yang dibuka pengguna umumnya TIDAK bisa ditutup skrip, jadi layar
+           tertutup tetap tampil bila panggilan itu diabaikan peramban.
            "Buka kembali aplikasi" menampilkan sapaan lagi (bukan langsung
            Hari Ini sebagai tamu), sesuai tempat pengguna menutup. */
         function tutupAplikasi(){
           gid("wizardOverlay").classList.remove("show");
           var dt=gid("layarDitutup"); if(dt) dt.hidden=false;
           document.body.classList.add("aplikasi-ditutup");
+          mulaiHitungTutup();
         }
         function bukaKembaliAplikasi(){
+          hentikanHitungTutup();
           var dt=gid("layarDitutup"); if(dt) dt.hidden=true;
           document.body.classList.remove("aplikasi-ditutup");
           openGreeting();
         }
+        /* ---------- Hitung mundur tutup otomatis — HANYA layar tertutup ----------
+           BUKAN pengatur waktu diam global: timer hidup dan mati bersama layar
+           tertutup saja; layar lain tidak pernah memulainya. Satu detik sekali
+           angka berkurang 10 -> 0. Interaksi apa pun di layar tertutup (ketuk
+           atau tombol papan ketik) mengulang hitung dari 10. "Buka kembali
+           aplikasi" MEMBATALKAN timer seluruhnya (bukaKembaliAplikasi
+           menghentikannya; tidak ada upaya tutup sesudahnya). "Tutup" lagi
+           memulai hitung segar dari 10. Di angka 0, satu kali upaya
+           window.close() — tab biasa umumnya tidak bisa ditutup skrip, jadi
+           itu hanya UPAYA terbaik; layar tertutup tetap tampil bila peramban
+           mengabaikannya. Rantai setTimeout (bukan setInterval) supaya
+           harness bisa memajukan waktu secara deterministis. */
+        var timerTutup=null, sisaTutup=10;
+        function hentikanHitungTutup(){ if(timerTutup!==null){ try{ clearTimeout(timerTutup); }catch(e){} timerTutup=null; } }
+        function tampilHitungTutup(){ var a=gid("hitungTutupAngka"); if(a) a.textContent=String(sisaTutup); }
+        function detikHitungTutup(){
+          timerTutup=null;
+          /* Penjaga: bila layar tertutup sudah tidak tampil, berhenti — jangan
+             pernah menutup dari layar lain. */
+          if(!document.body.classList.contains("aplikasi-ditutup")) return;
+          var dt=gid("layarDitutup"); if(!dt || dt.hidden) return;
+          sisaTutup-=1;
+          if(sisaTutup<=0){
+            sisaTutup=0; tampilHitungTutup();
+            try{ window.close(); }catch(e){}
+            return; /* tepat satu upaya per hitung mundur; tidak dijadwalkan lagi */
+          }
+          tampilHitungTutup();
+          timerTutup=setTimeout(detikHitungTutup, 1000);
+        }
+        function mulaiHitungTutup(){
+          hentikanHitungTutup();
+          sisaTutup=10; tampilHitungTutup();
+          timerTutup=setTimeout(detikHitungTutup, 1000);
+        }
+        function resetHitungTutup(){
+          /* Hanya bila layar tertutup MASIH tampil. Penting untuk urutan
+             gelembung: klik "Buka kembali aplikasi" ditangani tombolnya dulu
+             (menyembunyikan layar + menghentikan timer), BARU gelembungnya
+             sampai ke pendengar wadah ini — tanpa penjaga ini, reset akan
+             menghidupkan lagi timer yang baru saja dibatalkan. */
+          if(!document.body.classList.contains("aplikasi-ditutup")) return;
+          var dt=gid("layarDitutup"); if(!dt || dt.hidden) return;
+          mulaiHitungTutup();
+        }
+        window.__tutupTimerAktif=function(){ return timerTutup!==null; };
         function tutupWizard(){
           var terdaftar=false, adaData=false;
           try{ terdaftar=!!(window.__penggunaAktif && window.__penggunaAktif()); }catch(e){}
@@ -7530,6 +7599,12 @@
         document.querySelectorAll("[data-wiz-back]").forEach(function(b){ b.addEventListener("click", function(){ showWiz(b.getAttribute("data-wiz-back")); }); });
         gid("btnWizardClose").addEventListener("click", tutupWizard);
         gid("btnBukaKembali").addEventListener("click", bukaKembaliAplikasi);
+        /* Ketuk atau tombol apa pun di layar tertutup mengulang hitung mundur
+           dari 10 (interaksi = tidak diam). Pendengar di wadah #layarDitutup
+           menerima gelembung klik tombol "Buka kembali aplikasi" sesudah
+           penangan tombol membatalkan timer — resetHitungTutup menolak
+           menghidupkan lagi karena layar sudah tersembunyi. */
+        (function(){ var dt=gid("layarDitutup"); if(dt){ dt.addEventListener("click", resetHitungTutup); dt.addEventListener("keydown", resetHitungTutup); } })();
         gid("btnWizardHero").addEventListener("click", openWizard);
         ["btnUbahUsahaTop","btnUbahUsahaData"].forEach(function(id){ var el=gid(id); if(el) el.addEventListener("click", openWizard); });
         ["navWizardTop","navWizardBottom"].forEach(function(id){ var el=gid(id); if(el) el.addEventListener("click", function(ev){ ev.preventDefault(); openWizard(); }); });
@@ -7690,6 +7765,18 @@
         if(sub) sub.textContent=subTxt;
         if(hint) hint.style.display=daftar?"none":"";
         if(daf) daf.style.display=daftar?"":"none";
+        /* Tombol #btnSaveCloud berganti label menurut status akun: tamu —
+           termasuk yang masih menunggu konfirmasi email (user null) —
+           melihat "Register"; pengguna terdaftar melihat "Upgrade".
+           Penentunya objek pengguna yang sama dengan penentu klik, jadi
+           label dan perilaku tidak pernah berbeda. */
+        var bsc=gid("btnSaveCloud"); if(bsc) bsc.textContent=user?"Upgrade":"Register";
+        /* Penanda paket saat ini di halaman Paket & Layanan: hanya untuk
+           pengguna terdaftar paket Gratis (billing belum aktif, jadi tidak
+           ada pengguna Pro di keadaan hidup; bila kelak ada, mode "pro"
+           menyembunyikan penanda Gratis ini dan tier Pro membawa "Dipilih"
+           lewat aturPaketPro). */
+        var pa=gid("paketPaketAnda"); if(pa) pa.style.display=(mode==="gratis")?"":"none";
         var pd=gid("btnPaketDaftar"); if(pd) pd.style.display=daftar?"":"none";
         strip.setAttribute("data-mode", mode);
         strip.setAttribute("aria-label","Status akun: "+pillTxt+". Ketuk untuk detail.");
