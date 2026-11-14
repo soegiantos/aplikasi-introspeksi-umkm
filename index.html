@@ -335,6 +335,12 @@
       .pro-summary ol{margin:8px 0 0;padding-left:20px}
       .pro-summary li{margin:5px 0;font-size:.94rem}
 
+      /* ---------- Kartu sapaan proaktif AI Coach (muncul setelah diam sesaat) ---------- */
+      .sapa-card{border:1.5px solid var(--gold);background:var(--gold-soft);border-radius:var(--radius);padding:16px 18px;margin:0 0 14px;box-shadow:var(--shadow)}
+      .sapa-card p{margin:0 0 6px}
+      .sapa-card .sapa-teks{font-weight:700;line-height:1.5}
+      .sapa-card .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+
       /* ---------- Ikon penjelasan di setiap isian + Tanya AI per kolom ---------- */
       .field-help-btn{display:inline-grid;place-items:center;width:28px;height:28px;min-height:28px;min-width:28px;border-radius:50%;background:var(--gold-soft);color:var(--gold);border:1.5px solid var(--gold);font:inherit;font-size:.88rem;font-weight:800;line-height:1;cursor:pointer;vertical-align:middle;margin-left:7px;padding:0;flex:none}
       .field-help-btn:hover,.field-help-btn:focus-visible{background:var(--gold);color:#171106;outline:2px solid var(--gold);outline-offset:1px}
@@ -664,6 +670,13 @@
           <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><div class="s" id="stValRange">rentang rendah – tinggi</div></div>
         </div>
       </header>
+
+      <!-- ============ SAPAAN PROAKTIF AI COACH (muncul setelah diam sesaat) ============ -->
+      <div class="sapa-card" id="sapaNudgeCard" style="display:none" role="status" aria-live="polite">
+        <p class="sapa-teks" id="sapaNudgeTeks"></p>
+        <div class="actions"><button class="btn" id="btnSapaIsi" type="button">Isi sekarang</button><button class="btn ghost" id="btnSapaNanti" type="button">Nanti saja</button></div>
+        <p class="note" style="margin-top:8px">Jawab juga bisa di AI Coach di bawah.</p>
+      </div>
 
       <!-- ============ 1. DATA USAHA ============ -->
       <section id="data">
@@ -2963,6 +2976,7 @@
           if(entered && !isGuest) return;
           // bila sebelumnya tamu, izinkan masuk sebagai user terdaftar (migrasi)
           entered=true; isGuest=false; localMode=false; currentUser=user;
+          if(typeof resetSapa==="function") resetSapa(); /* penghitung diam mulai dari nol saat masuk */
           /* Masuk berhasil = email sudah terkonfirmasi: hapus penanda
              "menunggu konfirmasi" dan sembunyikan panelnya. */
           clearPendingConfirm();
@@ -2993,6 +3007,7 @@
           if(entered && isGuest) { gid("authGate").style.display="none"; return sudahMengisiNyata(); }
           if(entered && !isGuest) return sudahMengisiNyata();
           entered=true; isGuest=true; localMode=true; currentUser=null;
+          if(typeof resetSapa==="function") resetSapa(); /* penghitung diam mulai dari nol saat masuk */
           gid("authGate").style.display="none";
           gid("accountBar").classList.add("show");
           gid("userEmail").textContent="Mode coba — tanpa daftar";
@@ -3408,6 +3423,190 @@
         }
         renderUtang(); updateStockHpp();
 
+        /* ================= SAPAAN PROAKTIF AI COACH (AI menyapa duluan) =================
+           Bila pengguna diam beberapa saat, AI bertanya lebih dulu tentang langkah
+           berikutnya yang belum diisi — AI tidak ikut diam. Semua aturan anti-ganggu
+           hidup di memori sesi ini saja (tidak disimpan ke cloud/lokal): jeda 10 menit
+           antar sapaan, maksimal 3 sapaan per sesi, satu topik tidak pernah diulang
+           dalam satu sesi. Sapaan TIDAK memakai kuota AI (data.ai_pakai) — kuota
+           hanya menghitung pertanyaan yang diajukan pengguna sendiri. Sapaan berlaku
+           untuk tamu dan pengguna terdaftar, terlepas dari LANGGANAN_AKTIF — ini
+           perilaku inti AI, bukan fitur berbayar. Langkah berikutnya ditentukan
+           dengan rumus dari snapshot saat ini (bukan ditebak AI) — AI hanya merangkai
+           pertanyaannya. */
+        var IDLE_SAPA_DETIK=60, JEDA_SAPA_MENIT=10, MAKS_SAPA_SESI=3;
+        /* sapaTimer sengaja TIDAK diisi null: enterGuest saat boot mungkin sudah
+           menjadwalkan satu timer lewat resetSapa (hoisting); mengisi null akan
+           mengasingkan timer itu sehingga jadwalkanSapa tidak bisa membatalkannya. */
+        var sapaTimer, sapaGenerasi=0, sapaTerakhirWaktu=0, sapaJumlah=0, sapaBerhenti=false, sapaTopikSudah={}, sapaTopikAktif=null, sapaTargetAktif=null;
+        /* Langkah berikutnya, urut prioritas. "contoh" dipakai sebagai konteks untuk
+           AI dan sebagai contoh di kalimat cadangan bila AI tidak tersambung.
+           "target" adalah id elemen untuk tombol Isi sekarang. */
+        var LANGKAH_SAPA=[
+          {topik:"nama", label:"nama usaha", contoh:"Dapur Bu Sari", target:"inNama"},
+          {topik:"omzet", label:"omzet per bulan", contoh:"45000000", target:"inOmzet"},
+          {topik:"hpp", label:"biaya bahan (HPP)", contoh:"42", target:"inHpp"},
+          {topik:"opex", label:"biaya operasional per bulan", contoh:"11000000", target:"inOpex"},
+          {topik:"transaksi", label:"transaksi pertama", contoh:"Penjualan nasi campur 40 porsi — Rp600.000", target:"txKet"},
+          {topik:"introspeksi", label:"jawaban introspeksi", contoh:"12 pertanyaan singkat di bagian Introspeksi", target:"introspeksi"},
+          {topik:"stok", label:"stok barang", contoh:"Beras 5 kg", target:"stNama"}
+        ];
+        function sapaNilaiKosong(v){
+          if(v==null) return true;
+          var s=String(v).trim(); if(s==="") return true;
+          var n=Number(s.replace(/\./g,"").replace(/,/g,"."));
+          return !isNaN(n) && n===0;
+        }
+        function langkahBerikutnya(){
+          var snap=null; try{ snap=collectSnapshot(); }catch(e){ return null; }
+          if(!snap) return null;
+          var inp=snap.inputs||{}, ans=snap.answers||{};
+          var sudah=[];
+          if(!sapaNilaiKosong(inp.inNama)) sudah.push("nama usaha");
+          if(!sapaNilaiKosong(inp.inOmzet)) sudah.push("omzet per bulan");
+          if(!sapaNilaiKosong(inp.inHpp)) sudah.push("biaya bahan (HPP)");
+          if(!sapaNilaiKosong(inp.inOpex)) sudah.push("biaya operasional per bulan");
+          if((snap.txs||[]).length>0) sudah.push("transaksi");
+          var jwb=Object.keys(ans).filter(function(k){ return ans[k]!==undefined && ans[k]!==null && String(ans[k]).trim()!==""; }).length;
+          /* Jawaban introspeksi punya nilai bawaan (preset campuran yang diisi
+             halaman saat boot); jumlah kunci saja tidak cukup. Introspeksi baru
+             terhitung diisi bila ada jawaban yang berbeda dari nilai bawaan. */
+          var JAWABAN_BAWAAN={"fin-0":1,"fin-1":1,"fin-2":0,"ops-0":1,"ops-1":0,"ops-2":1,"mkt-0":0,"mkt-1":1,"mkt-2":2,"tech-0":2,"tech-1":1,"tech-2":0};
+          var jwbNyata=Object.keys(JAWABAN_BAWAAN).filter(function(k){ return ans[k]!==undefined && ans[k]!==null && String(ans[k])!==String(JAWABAN_BAWAAN[k]); }).length;
+          if(jwb>=12 && jwbNyata>0) sudah.push("introspeksi");
+          if((snap.stocks||[]).length>0) sudah.push("stok");
+          function kosong(topik){
+            if(topik==="nama") return sapaNilaiKosong(inp.inNama);
+            if(topik==="omzet") return sapaNilaiKosong(inp.inOmzet);
+            if(topik==="hpp") return sapaNilaiKosong(inp.inHpp);
+            if(topik==="opex") return sapaNilaiKosong(inp.inOpex);
+            if(topik==="transaksi") return (snap.txs||[]).length===0;
+            if(topik==="introspeksi") return jwbNyata===0;
+            if(topik==="stok") return (snap.stocks||[]).length===0;
+            return false;
+          }
+          for(var i=0;i<LANGKAH_SAPA.length;i++){
+            var l=LANGKAH_SAPA[i];
+            if(sapaTopikSudah[l.topik]) continue;
+            if(kosong(l.topik)) return {topik:l.topik, label:l.label, contoh:l.contoh, target:l.target, sudah:sudah};
+          }
+          return null;
+        }
+        function tabTersembunyi(){
+          /* __sapaPaksaSembunyi hanya dipakai pengujian (jsdom) — di produksi
+             selalu undefined sehingga yang dipakai adalah document.hidden. */
+          if(typeof window.__sapaPaksaSembunyi!=="undefined") return !!window.__sapaPaksaSembunyi;
+          return !!document.hidden;
+        }
+        function overlayTerbuka(){
+          var ag=gid("authGate"); if(ag && ag.style.display==="block") return true;
+          var ids=["friendlyPopupOverlay","wizardOverlay","sqlModal","regAlreadyOverlay"];
+          for(var i=0;i<ids.length;i++){ var el=gid(ids[i]); if(el && el.classList && el.classList.contains("show")) return true; }
+          return false;
+        }
+        function bolehSapa(){
+          if(!entered) return false;
+          if(tabTersembunyi()) return false;
+          if(overlayTerbuka()) return false;
+          return true;
+        }
+        function sembunyikanSapa(){
+          var c=gid("sapaNudgeCard"); if(c) c.style.display="none";
+          sapaTopikAktif=null; sapaTargetAktif=null;
+        }
+        function tampilkanSapa(langkah, teks){
+          var c=gid("sapaNudgeCard"), t=gid("sapaNudgeTeks");
+          if(!c || !t) return;
+          t.textContent=teks;
+          sapaTopikAktif=langkah.topik; sapaTargetAktif=langkah.target;
+          c.style.display="block";
+          /* Pertanyaan yang sama tampil juga sebagai gelembung AI di riwayat
+             AI Coach, dengan perender yang sama persis (dipasang blok skrip
+             AI Coach). Sapaan tidak membuka Modul 9 dan tidak mencuri fokus. */
+          try{ if(typeof window.__tampilSapaAI==="function") window.__tampilSapaAI(teks); }catch(e){}
+        }
+        /* Jalur API khusus sapaan — sengaja TIDAK lewat askAI dan TIDAK memanggil
+           tambahHitunganAi, supaya sapaan tidak memakan kuota AI pengguna. */
+        function tanyaSapaAI(langkah, sudah){
+          var prompt="Dalam Bahasa Indonesia sederhana, ajak pengguna mengisi "+langkah.label+" usaha mereka (contoh: "+langkah.contoh+"). Sudah terisi: "+(sudah.length?sudah.join(", "):"belum ada")+".";
+          var body={prompt:prompt, question:prompt, context:{jenis:"sapa_proaktif", sudah_diisi:sudah, langkah_berikutnya:{label:langkah.label, contoh:langkah.contoh}}, petunjuk:"Ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."};
+          function batasWaktu(ms){ return new Promise(function(_, tolak){ setTimeout(function(){ tolak(new Error("waktu habis")); }, ms); }); }
+          function bersihkan(teks){
+            if(typeof window.__bersihkanJawabanAI==="function") return window.__bersihkanJawabanAI(teks);
+            return teks;
+          }
+          return Promise.race([
+            fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+              .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
+              .then(function(data){
+                var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
+                if(ans && String(ans).trim()) return bersihkan(String(ans).trim());
+                throw new Error("jawaban kosong");
+              }),
+            batasWaktu(8000)
+          ]);
+        }
+        function jadwalkanSapa(){
+          if(sapaTimer) clearTimeout(sapaTimer);
+          sapaTimer=null;
+          if(sapaBerhenti) return;
+          /* Jeda pengaman bila konstanta belum terisi (resetSapa dari enterGuest
+             saat boot jalan sebelum baris var di atas): pakai 60 dtk. */
+          var jeda=(typeof IDLE_SAPA_DETIK==="number" && IDLE_SAPA_DETIK>0)?IDLE_SAPA_DETIK:60;
+          sapaTimer=setTimeout(saatDiam, jeda*1000);
+        }
+        function resetSapa(){
+          sapaGenerasi=(sapaGenerasi||0)+1;
+          jadwalkanSapa();
+        }
+        function saatDiam(){
+          sapaTimer=null;
+          if(sapaBerhenti) return;
+          if(!bolehSapa()){ jadwalkanSapa(); return; }
+          var sekarang=Date.now();
+          if(sapaJumlah>0 && sekarang-sapaTerakhirWaktu < JEDA_SAPA_MENIT*60*1000){ jadwalkanSapa(); return; }
+          var langkah=langkahBerikutnya();
+          if(!langkah){ jadwalkanSapa(); return; }
+          var gen=sapaGenerasi;
+          function sapaSiap(teks){
+            if(gen!==sapaGenerasi) return; /* pengguna sudah aktif lagi selagi AI menjawab */
+            if(!bolehSapa()){ jadwalkanSapa(); return; }
+            sapaTopikSudah[langkah.topik]=true;
+            sapaJumlah++; sapaTerakhirWaktu=Date.now();
+            if(sapaJumlah>=MAKS_SAPA_SESI) sapaBerhenti=true;
+            tampilkanSapa(langkah, teks);
+            jadwalkanSapa();
+          }
+          tanyaSapaAI(langkah, langkah.sudah).then(function(teks){ sapaSiap(teks); }, function(){ sapaSiap("Halo! Saya lihat "+langkah.label+" belum diisi — mau isi sekarang?"); });
+        }
+        var btnSapaIsi=gid("btnSapaIsi");
+        if(btnSapaIsi) btnSapaIsi.addEventListener("click",function(){
+          var target=sapaTargetAktif; sembunyikanSapa();
+          if(!target) return;
+          var el=gid(target); if(!el) return;
+          try{ el.scrollIntoView({behavior:"smooth", block:"center"}); }catch(e){}
+          try{ var tag=(el.tagName||"").toLowerCase(); if(tag==="input"||tag==="select"||tag==="textarea") el.focus(); }catch(e){}
+        });
+        var btnSapaNanti=gid("btnSapaNanti");
+        if(btnSapaNanti) btnSapaNanti.addEventListener("click",function(){
+          if(sapaTopikAktif) sapaTopikSudah[sapaTopikAktif]=true;
+          sembunyikanSapa();
+        });
+        /* Aktivitas apa pun mengatur ulang penghitung diam. Guliran didengar di
+           dokumen juga karena guliran halaman tidak selalu sampai ke window. */
+        ["pointerdown","keydown","input","touchstart"].forEach(function(ev){
+          window.addEventListener(ev, resetSapa, {passive:true});
+        });
+        window.addEventListener("scroll", resetSapa, {passive:true});
+        document.addEventListener("scroll", resetSapa, {passive:true});
+        document.addEventListener("visibilitychange", function(){
+          if(tabTersembunyi()){ if(sapaTimer) clearTimeout(sapaTimer); sapaTimer=null; }
+          else resetSapa();
+        });
+        jadwalkanSapa();
+        /* Celah uji (jsdom): fungsi dalam dipakai harness, bukan fitur pengguna. */
+        window.__sapaUji={langkahBerikutnya:langkahBerikutnya, bolehSapa:bolehSapa, resetSapa:resetSapa, saatDiam:saatDiam, tampilkanSapa:tampilkanSapa, sembunyikanSapa:sembunyikanSapa, tanyaSapaAI:tanyaSapaAI, status:function(){ return {jumlah:sapaJumlah, terakhir:sapaTerakhirWaktu, berhenti:sapaBerhenti, topik:Object.keys(sapaTopikSudah)}; }};
+
         /* ---------- autosave berkala (debounced lewat perbandingan snapshot) ---------- */
         setInterval(function(){
           if(!entered || loading) return;
@@ -3564,6 +3763,23 @@
             log.appendChild(wrap); scrollBottom();
             return {wrap:wrap, textEl:t};
           }
+          /* Gelembung AI untuk sapaan proaktif: dipakai jalur sapaan (blok skrip
+             pertama) supaya pertanyaan AI muncul di riwayat yang sama, dengan
+             perender yang sama persis. Tanpa fokus paksa ke kolom chat — sapaan
+             tidak boleh mencuri fokus pengguna. */
+          /* Hanya chat utama yang memasang pengait ini; panggilan kedua untuk
+             wizCoachChat tidak boleh menimpa (gelembung sapaan harus masuk
+             #coachChat, bukan ke riwayat wizard yang tersembunyi). */
+          if(logId==="coachChat") window.__tampilSapaAI=function(teks){
+            var empty=gid(emptyId); if(empty) empty.style.display="none";
+            bubble("ai","AI Coach",bersihkanJawabanAI(teks));
+            if(String(teks).indexOf("?")>=0){
+              var hint=document.createElement("p"); hint.className="chat-hint";
+              hint.textContent="AI bertanya — jawab di kolom bawah ini.";
+              log.appendChild(hint);
+            }
+            scrollBottom();
+          };
           function send(){
             if(kuotaAiHabis()){ popupKuotaHabis(); return; }
             var q=(input.value||"").trim() || defaultQ;
