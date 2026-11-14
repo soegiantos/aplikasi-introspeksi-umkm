@@ -3792,8 +3792,9 @@
            tambahHitunganAi, supaya sapaan tidak memakan kuota AI pengguna. */
         function tanyaSapaAI(langkah, sudah){
           var prompt="Dalam Bahasa Indonesia sederhana, ajak pengguna mengisi "+langkah.label+" usaha mereka (contoh: "+langkah.contoh+"). Sudah terisi: "+(sudah.length?sudah.join(", "):"belum ada")+".";
-          var petunjukSapa="Ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."+(kalimatSapaan()?" "+kalimatSapaan():"");
-          var body={prompt:prompt, question:prompt, context:{jenis:"sapa_proaktif", sudah_diisi:sudah, langkah_berikutnya:{label:langkah.label, contoh:langkah.contoh}, sapaan:sapaanPengguna()}, petunjuk:petunjukSapa};
+          var petunjukSapa="Wajib: sebut kota pengguna (ambil dari konteks, contoh: Kota Surabaya) dalam jawaban. Ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."+(kalimatSapaan()?" "+kalimatSapaan():"");
+          var kotaSapa="", provSapa=""; try{ kotaSapa=(gid("inKota")&&gid("inKota").value)||""; provSapa=(gid("inProvinsi")&&gid("inProvinsi").value)||""; }catch(e){}
+          var body={prompt:prompt, question:prompt, context:{jenis:"sapa_proaktif", sudah_diisi:sudah, langkah_berikutnya:{label:langkah.label, contoh:langkah.contoh}, sapaan:sapaanPengguna(), kota:kotaSapa||null, provinsi:provSapa||null}, petunjuk:petunjukSapa};
           function batasWaktu(ms){ return new Promise(function(_, tolak){ setTimeout(function(){ tolak(new Error("waktu habis")); }, ms); }); }
           function bersihkan(teks){
             if(typeof window.__bersihkanJawabanAI==="function") return window.__bersihkanJawabanAI(teks);
@@ -4122,7 +4123,7 @@
         }
         function kalimatSapaan(){
           var s=sapaanPengguna();
-          return s ? ("Sapa pengguna dengan sebutan \""+s+"\" secara natural menggantikan kata \"Anda\" (contoh: \""+s+", coba ceritakan…\").") : "";
+          return s ? ("Wajib: sapa pengguna dengan sebutan \""+s+"\" di kalimat pertama dan seterusnya, jangan pakai kata \"Anda\" sebagai sapaan.") : "";
         }
         window.__sapaanPengguna=sapaanPengguna;
         function diskusiCadangan(qid, label){
@@ -4149,8 +4150,8 @@
           var p=PERTANYAAN_DISKUSI[qid]; if(!p) return Promise.reject(new Error("pertanyaan tidak dikenal"));
           var u=konteksUsahaDiskusi(qid);
           var prompt="Dalam Bahasa Indonesia sederhana, beri satu masukan singkat tentang jawaban introspeksi ini. Pertanyaan: \""+p.teks+"\". Jawaban pengguna sekarang: \""+label+"\". Skor dimensi "+p.namaDimensi+": "+skorDimensiDiskusi(p.dimensi)+"/100. Usaha ini: sektor "+(u.sektor||"belum diisi")+", di "+teksKotaDiskusi(u)+", omzet Rp"+Math.round(u.omzet_per_bulan).toLocaleString("id-ID")+" per bulan, HPP saat ini "+(u.hpp_saat_ini!=null?String(u.hpp_saat_ini).replace(".",",")+"%":"belum diisi")+". Produk di stok: "+teksProdukDiskusi(u)+". Data terkait pertanyaan ini: "+JSON.stringify(u.data_terkait||{})+". Tanyakan satu hal sederhana yang memakai data usaha ini dan membantu pengguna menceritakan keadaan sebenarnya di usaha mereka."
-            + (qid===HPP_QID ? " Bantu pengguna menghitung HPP produk mereka dengan angka sebenarnya dari data di atas — jangan memberi teori umum, dan jangan membuat-buat harga bahan." : "");
-          var petunjuk="Sebut data usaha pengguna di konteks dengan nama dan angka sebenarnya untuk pertanyaan ini (lihat data_terkait di konteks: produk, stok, kanal, skor, atau angka yang ada). Jangan memberi teori umum. Jangan pernah membuat-buat harga bahan, harga jual, atau angka yang tidak ada di konteks — bila datanya belum ada, tanyakan berapa yang sebenarnya. Beri maksimal satu masukan singkat, lalu ajukan maksimal satu pertanyaan sederhana yang memakai data usaha pengguna, dan tutup dengan SATU langkah nyata berikutnya yang menyebut nama modul atau formulir di aplikasi yang harus dibuka pengguna. Akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."
+            + (qid===HPP_QID ? " Bantu pengguna menghitung HPP produk mereka dengan angka sebenarnya dari data di atas — jangan memberi teori umum, dan jangan membuat-buat harga bahan." : "") + (sapaanPengguna() ? " Sapa pengguna dengan sebutan \""+sapaanPengguna()+"\"." : "");
+          var petunjuk="Wajib: sebut kota pengguna (ambil dari konteks, contoh: Kota Surabaya) dalam jawaban. Sebut data usaha pengguna di konteks dengan nama dan angka sebenarnya untuk pertanyaan ini (lihat data_terkait di konteks: produk, stok, kanal, skor, atau angka yang ada). Jangan memberi teori umum. Jangan pernah membuat-buat harga bahan, harga jual, atau angka yang tidak ada di konteks — bila datanya belum ada, tanyakan berapa yang sebenarnya. Beri maksimal satu masukan singkat, lalu ajukan maksimal satu pertanyaan sederhana yang memakai data usaha pengguna, dan tutup dengan SATU langkah nyata berikutnya yang menyebut nama modul atau formulir di aplikasi yang harus dibuka pengguna. Akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."
             + (qid===HPP_QID ? " Untuk HPP: ajak pengguna memakai panel Hitung HPP dan menyebut produknya dengan nama." : "")
             + (kalimatSapaan()?" "+kalimatSapaan():"");
           var body={prompt:prompt, question:prompt, context:{jenis:"diskusi_jawaban", pertanyaan_id:qid, pertanyaan:p.teks, jawaban:label, skor_dimensi:skorDimensiDiskusi(p.dimensi), sektor:u.sektor, kota:u.kota, provinsi:u.provinsi, omzet_per_bulan:u.omzet_per_bulan, hpp_saat_ini:u.hpp_saat_ini, produk:u.produk, data_terkait:u.data_terkait||{}, sapaan:sapaanPengguna()}, petunjuk:petunjuk};
@@ -4477,7 +4478,7 @@
         }
         function kalimatSapaanCoach(){
           var s=sapaanPenggunaCoach();
-          return s ? ("Sapa pengguna dengan sebutan \""+s+"\" secara natural menggantikan kata \"Anda\" (contoh: \""+s+", coba ceritakan…\").") : "";
+          return s ? ("Wajib: sapa pengguna dengan sebutan \""+s+"\" di kalimat pertama dan seterusnya, jangan pakai kata \"Anda\" sebagai sapaan.") : "";
         }
 
         function aiContext(){
@@ -4496,6 +4497,8 @@
             c.valuasi_tinggi = Math.round(S.valHigh||0);
             c.multiple_valuasi = S.mult || 0;
             var sel=gid("inSektor"); c.jenis_usaha = (sel && sel.value) ? sel.value : null;
+            var kEl=gid("inKota"); c.kota = (kEl && kEl.value) ? kEl.value : null;
+            var pEl=gid("inProvinsi"); c.provinsi = (pEl && pEl.value) ? pEl.value : null;
             c.sapaan=sapaanPenggunaCoach();
           }catch(e){}
           return c;
@@ -4587,10 +4590,9 @@
           target.textContent="Sedang berpikir… AI Coach sedang menyiapkan penjelasan sederhana untuk Anda.";
           function fallback(){ target.textContent=localExplain(prompt)+"\n\nAI belum tersambung — ini penjelasan dari perhitungan aplikasi."; }
           try{
-            /* Sebutan sapaan ikut sebagai petunjuk bila dipilih; bila belum
-               dipilih, kunci petunjuk dihilangkan (JSON membuang undefined)
-               supaya bentuk permintaan sama seperti sebelumnya. */
-            var petunjukAskAI=kalimatSapaanCoach();
+            /* Petunjuk menjawab: wajib sebut kota pengguna (ada di konteks
+               aiContext) dan sapa dengan sebutan bila dipilih. */
+            var petunjukAskAI="Wajib: sebut kota pengguna (ambil dari konteks, contoh: Kota Surabaya) dalam jawaban."+(kalimatSapaanCoach()?" "+kalimatSapaanCoach():"");
             fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt, question:prompt, context:aiContext(), petunjuk:petunjukAskAI||undefined})})
               .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
               .then(function(data){
@@ -4669,7 +4671,7 @@
                  ketukan pengguna pada tiga tombol di bawah kolom chat. */
               var topikDiskusi=(logId==="coachChat") ? window.__topikDiskusiAktif : null;
               var ctxDiskusi=aiContext();
-              var petunjukDiskusi="Bila perlu bertanya balik, ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."+(kalimatSapaanCoach()?" "+kalimatSapaanCoach():"");
+              var petunjukDiskusi="Wajib: sebut kota pengguna (ambil dari konteks, contoh: Kota Surabaya) dalam jawaban. Bila perlu bertanya balik, ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."+(kalimatSapaanCoach()?" "+kalimatSapaanCoach():"");
               if(topikDiskusi){
                 ctxDiskusi.topik_diskusi={pertanyaan_id:topikDiskusi.qid, pertanyaan:topikDiskusi.teks, jawaban:topikDiskusi.jawaban||null, sapaan:sapaanPenggunaCoach()};
                 /* Konteks diskusi memakai data usaha nyata (sektor, kota, omzet,
@@ -4694,7 +4696,7 @@
                     if(hDiskusi) ctxDiskusi.topik_diskusi.hpp_hitungan=hDiskusi;
                   }
                 }catch(e){}
-                petunjukDiskusi="Anda sedang membahas jawaban introspeksi \""+topikDiskusi.teks+"\" (jawaban sekarang: \""+(topikDiskusi.jawaban||"—")+"\"). Sebut data usaha pengguna di konteks dengan nama dan angka sebenarnya untuk pertanyaan ini (lihat data_terkait di konteks). Jangan memberi teori umum. Jangan pernah membuat-buat harga bahan, harga jual, atau angka yang tidak ada di konteks — bila datanya belum ada, tanyakan berapa yang sebenarnya."
+                petunjukDiskusi="Wajib: sebut kota pengguna (ambil dari konteks, contoh: Kota Surabaya) dalam jawaban. Anda sedang membahas jawaban introspeksi \""+topikDiskusi.teks+"\" (jawaban sekarang: \""+(topikDiskusi.jawaban||"—")+"\"). Sebut data usaha pengguna di konteks dengan nama dan angka sebenarnya untuk pertanyaan ini (lihat data_terkait di konteks). Jangan memberi teori umum. Jangan pernah membuat-buat harga bahan, harga jual, atau angka yang tidak ada di konteks — bila datanya belum ada, tanyakan berapa yang sebenarnya."
                   + (topikDiskusi.qid==="fin-2" ? " Untuk HPP: bila konteks berisi hpp_hitungan, sebutkan hasil hitungannya dengan angka sebenarnya (HPP per porsi, HPP% dari harga jual, margin) dan bantu pengguna menyesuaikan biayanya di panel Hitung HPP." : "")
                   + " Bila cerita pengguna menunjukkan jawabannya perlu berubah, sarankan SATU tingkat yang paling tepat dengan kalimat: Saya sarankan jawaban ini 'Sebagian' — ketuk tombolnya di bawah bila setuju. (Ganti 'Sebagian' dengan tingkat yang Anda sarankan: Belum, Sebagian, atau Sudah.) Tutup dengan SATU langkah nyata berikutnya yang menyebut nama modul atau formulir yang harus dibuka pengguna, lalu akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."
                   + (kalimatSapaanCoach()?" "+kalimatSapaanCoach():"");
