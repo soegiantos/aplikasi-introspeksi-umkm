@@ -83,7 +83,11 @@ export default async function handler(req, res) {
               "Jangan sebut kata bank, kredit, atau KUR. Gunakan istilah investasi dan kerjasama investasi. " +
               "Bila kamu perlu bertanya balik kepada pengguna, ajukan MAKSIMAL satu pertanyaan sederhana dalam satu jawaban, " +
               "pakai bahasa sehari-hari yang mudah dijawab, dan akhiri jawaban itu dengan kalimat persis ini: " +
-              "\"Silakan jawab di kolom chat di bawah ini.\"",
+              "\"Silakan jawab di kolom chat di bawah ini.\" " +
+              "Jawab hanya dengan teks biasa Bahasa Indonesia sederhana. " +
+              "JANGAN PERNAH memakai markdown atau simbol format apa pun: tidak ada **, tidak ada ##, " +
+              "tidak ada `, tidak ada garis bawah untuk penekanan, tidak ada tabel markdown, dan tidak ada emoji. " +
+              "Untuk daftar, tulis tiap butir di baris baru diawali angka 1. 2. 3. atau kata penghubung biasa.",
           },
           {
             role: "user",
