@@ -365,6 +365,16 @@
       .sapa-card .sapa-teks{font-weight:700;line-height:1.5}
       .sapa-card .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 
+      /* ---------- Kartu diskusi jawaban introspeksi (AI aktif saat klik Belum/Sebagian) ---------- */
+      .diskusi-card{border:1.5px solid var(--gold);background:var(--gold-soft);border-radius:var(--radius);padding:12px 14px;margin:10px 0 4px}
+      .diskusi-card p{margin:0 0 8px;line-height:1.5}
+      .diskusi-card .actions{display:flex;gap:10px;flex-wrap:wrap}
+      /* ---------- Baris topik diskusi yang disematkan di AI Coach ---------- */
+      #topikDiskusiBar{display:none;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid var(--gold);background:var(--gold-soft);border-radius:10px;padding:10px 12px;margin-top:12px;font-weight:700;line-height:1.45}
+      #topikDiskusiBar .btn{flex:0 0 auto}
+      #diskusiTombol{display:none;gap:10px;flex-wrap:wrap;margin-top:12px}
+      #diskusiTombol button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
       /* ---------- Layar Hari Ini: isian catat cepat (tanpa label.f, supaya
          tidak ikut dipasangi tombol "?" penjelasan kolom) ---------- */
       .hi-field{display:block}
@@ -980,9 +990,18 @@
           <div class="chat-log" id="coachChat" aria-live="polite" aria-label="Riwayat percakapan dengan AI Coach">
             <p class="chat-empty" id="coachChatEmpty">Belum ada percakapan. Tulis pertanyaan pertama Anda di kolom paling bawah — misalnya “Kenapa skor investasi saya rendah?”. Bila AI membalas dengan pertanyaan, jawab saja di kolom yang sama.</p>
           </div>
+          <div id="topikDiskusiBar" style="display:none" role="status">
+            <span id="topikDiskusiTeks"></span>
+            <button class="btn ghost small" id="btnTutupTopik" type="button" aria-label="Tutup topik diskusi">×</button>
+          </div>
           <div class="coach-row chat-input-row">
             <input type="text" id="coachQ" placeholder="Tulis jawaban atau pertanyaan Anda di sini…" aria-label="Tulis jawaban atau pertanyaan untuk AI Coach" />
             <button class="btn chat-send" id="btnCoachAsk" type="button">Kirim</button>
+          </div>
+          <div id="diskusiTombol" style="display:none" role="group" aria-label="Ubah jawaban introspeksi">
+            <button class="btn ghost" type="button" data-v="0" aria-pressed="false">Belum</button>
+            <button class="btn ghost" type="button" data-v="1" aria-pressed="false">Sebagian</button>
+            <button class="btn ghost" type="button" data-v="2" aria-pressed="false">Sudah</button>
           </div>
           <p class="coach-answer" id="coachAnswer" role="status" hidden></p>
         </div>
@@ -1658,7 +1677,7 @@
             const b=document.createElement("button"); b.type="button"; b.textContent=lbl;
             b.dataset.k=d.key+"-"+i; b.dataset.v=v;
             b.setAttribute("aria-pressed", answers[d.key+"-"+i]===v ? "true":"false");
-            b.addEventListener("click",()=>{ answers[d.key+"-"+i]=v; seg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b?"true":"false")); recalc(); });
+            b.addEventListener("click",()=>{ answers[d.key+"-"+i]=v; seg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed", x===b?"true":"false")); recalc(); if(typeof window.__picuDiskusiJawaban==="function"){ try{ window.__picuDiskusiJawaban(d.key+"-"+i, v, row); }catch(e){} } });
             seg.appendChild(b);
           });
           row.appendChild(qd); row.appendChild(seg); quizCard.appendChild(row);
@@ -3834,6 +3853,185 @@
         jadwalkanSapa();
         /* Celah uji (jsdom): fungsi dalam dipakai harness, bukan fitur pengguna. */
         window.__sapaUji={langkahBerikutnya:langkahBerikutnya, bolehSapa:bolehSapa, resetSapa:resetSapa, saatDiam:saatDiam, tampilkanSapa:tampilkanSapa, sembunyikanSapa:sembunyikanSapa, tanyaSapaAI:tanyaSapaAI, jadwalkanSapaAwal:jadwalkanSapaAwal, status:function(){ return {jumlah:sapaJumlah, terakhir:sapaTerakhirWaktu, berhenti:sapaBerhenti, awal:sapaAwalSudah, topik:Object.keys(sapaTopikSudah)}; }};
+
+        /* ================= DISKUSI JAWABAN INTROSPEKSI (AI aktif, bisa mengubah jawaban) =================
+           Bila pengguna mengklik "Belum" (0) atau "Sebagian" (1) pada satu dari
+           12 jawaban introspeksi, AI memberi satu masukan singkat langsung di
+           bawah pertanyaan itu (kartu emas). Kartu hanya muncul dari klik
+           sungguhan — nilai bawaan saat boot (preset) TIDAK pernah memicunya.
+           Masukan diambil SEKALI per pertanyaan per sesi (disimpan di cache);
+           klik ulang menampilkan cache tanpa panggilan API baru. Masukan TIDAK
+           memakai kuota AI (seperti sapaan proaktif). Bila API gagal / tidak
+           ada internet / waktu habis, tampil teks cadangan — tidak pernah ada
+           pesan kesalahan. AI TIDAK PERNAH mengubah jawaban sendiri: yang
+           mengubah hanya ketukan pengguna pada salah satu dari tiga tombol di
+           AI Coach saat topik disematkan. */
+        var LABEL_JAWABAN=["Belum","Sebagian","Sudah"];
+        var PERTANYAAN_DISKUSI={};
+        DIMS.forEach(function(d){ d.qs.forEach(function(q,i){ PERTANYAAN_DISKUSI[d.key+"-"+i]={teks:q[0], dimensi:d.key, namaDimensi:d.name}; }); });
+        var diskusiCache={}, diskusiDitutup={}, diskusiKartuEl={};
+        var topikDiskusiAktif=null; /* {qid, teks} — dicerminkan ke window untuk blok AI Coach */
+        var topikDiskusiGelembung=null; /* qid yang masukannya sudah diposting sebagai gelembung untuk sematan ini */
+        window.__topikDiskusiAktif=null;
+        function skorDimensiDiskusi(kunciDimensi){
+          try{ return (S && S.dimScore && typeof S.dimScore[kunciDimensi]==="number") ? S.dimScore[kunciDimensi] : 0; }catch(e){ return 0; }
+        }
+        function diskusiCadangan(qid, label){
+          var p=PERTANYAAN_DISKUSI[qid]; if(!p) return "";
+          return "Soal \""+p.teks+"\", jawaban Anda sekarang \""+label+"\". Ceritakan sedikit bagaimana keadaan sebenarnya di usaha Anda, supaya AI bisa menilai apakah jawaban ini sudah tepat. Silakan jawab di kolom chat di bawah ini.";
+        }
+        function tanyaDiskusiAI(qid, label){
+          var p=PERTANYAAN_DISKUSI[qid]; if(!p) return Promise.reject(new Error("pertanyaan tidak dikenal"));
+          var prompt="Dalam Bahasa Indonesia sederhana, beri satu masukan singkat tentang jawaban introspeksi ini. Pertanyaan: \""+p.teks+"\". Jawaban pengguna sekarang: \""+label+"\". Skor dimensi "+p.namaDimensi+": "+skorDimensiDiskusi(p.dimensi)+"/100. Tanyakan satu hal sederhana yang membantu pengguna menceritakan keadaan sebenarnya di usaha mereka.";
+          var body={prompt:prompt, question:prompt, context:{jenis:"diskusi_jawaban", pertanyaan_id:qid, pertanyaan:p.teks, jawaban:label, skor_dimensi:skorDimensiDiskusi(p.dimensi)}, petunjuk:"Beri maksimal satu masukan singkat, lalu ajukan maksimal satu pertanyaan sederhana, dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."};
+          function batasWaktu(ms){ return new Promise(function(_, tolak){ setTimeout(function(){ tolak(new Error("waktu habis")); }, ms); }); }
+          function bersihkan(teks){
+            if(typeof window.__bersihkanJawabanAI==="function") return window.__bersihkanJawabanAI(teks);
+            return teks;
+          }
+          /* Jalur API khusus diskusi — sengaja TIDAK lewat askAI dan TIDAK memanggil
+             tambahHitunganAi, supaya masukan proaktif ini tidak memakan kuota AI. */
+          return Promise.race([
+            fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+              .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
+              .then(function(data){
+                var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
+                if(ans && String(ans).trim()) return bersihkan(String(ans).trim());
+                throw new Error("jawaban kosong");
+              }),
+            batasWaktu(8000)
+          ]);
+        }
+        function buatKartuDiskusi(qid, rowEl){
+          var el=gid("diskusi-"+qid);
+          if(el) return el;
+          el=document.createElement("div");
+          el.className="diskusi-card"; el.id="diskusi-"+qid; el.style.display="none";
+          el.setAttribute("role","status");
+          var teks=document.createElement("p"); teks.className="diskusi-teks"; teks.textContent="Sedang meminta masukan AI…";
+          var aksi=document.createElement("div"); aksi.className="actions";
+          var bDiskusi=document.createElement("button"); bDiskusi.type="button"; bDiskusi.className="btn"; bDiskusi.textContent="Diskusi di AI Coach";
+          bDiskusi.addEventListener("click", function(){ bukaDiskusiCoach(qid); });
+          var bTutup=document.createElement("button"); bTutup.type="button"; bTutup.className="btn ghost"; bTutup.textContent="Tutup";
+          bTutup.addEventListener("click", function(){ diskusiDitutup[qid]=true; el.style.display="none"; });
+          aksi.appendChild(bDiskusi); aksi.appendChild(bTutup);
+          el.appendChild(teks); el.appendChild(aksi);
+          if(rowEl && rowEl.parentNode){ rowEl.parentNode.insertBefore(el, rowEl.nextSibling); }
+          else { var qc=gid("quizCard"); if(qc) qc.appendChild(el); }
+          diskusiKartuEl[qid]=el;
+          return el;
+        }
+        function isiKartuDiskusi(qid, teks){
+          var el=gid("diskusi-"+qid); if(!el) return;
+          var t=el.querySelector(".diskusi-teks"); if(t) t.textContent=teks;
+          el.style.display="block";
+        }
+        function postingGelembungDiskusi(qid){
+          if(topikDiskusiGelembung===qid) return;
+          if(!diskusiCache[qid]) return;
+          try{ if(typeof window.__tampilSapaAI==="function"){ window.__tampilSapaAI(diskusiCache[qid]); topikDiskusiGelembung=qid; } }catch(e){}
+        }
+        function picuDiskusiJawaban(qid, v, rowEl){
+          if(!PERTANYAAN_DISKUSI[qid]) return;
+          if(v===2){ var el2=gid("diskusi-"+qid); if(el2) el2.style.display="none"; }
+          else if(!diskusiDitutup[qid]){
+            var el=buatKartuDiskusi(qid, rowEl);
+            if(diskusiCache[qid]){ isiKartuDiskusi(qid, diskusiCache[qid]); }
+            else {
+              el.style.display="block";
+              var label=LABEL_JAWABAN[v];
+              tanyaDiskusiAI(qid, label).then(function(teks){
+                diskusiCache[qid]=teks; isiKartuDiskusi(qid, teks);
+                /* Bila topik ini sedang disematkan di AI Coach selagi masukan
+                   tiba, posting sebagai gelembung pertama di riwayat. */
+                if(topikDiskusiAktif && topikDiskusiAktif.qid===qid) postingGelembungDiskusi(qid);
+              }, function(){
+                var cadangan=diskusiCadangan(qid, label);
+                diskusiCache[qid]=cadangan; isiKartuDiskusi(qid, cadangan);
+                if(topikDiskusiAktif && topikDiskusiAktif.qid===qid) postingGelembungDiskusi(qid);
+              });
+            }
+          }
+          /* Bila topik ini sedang disematkan, baris sematan dan tombol di
+             AI Coach mengikuti jawaban terbaru (termasuk bila diubah dari
+             tombol jawaban langsung di sini). */
+          if(topikDiskusiAktif && topikDiskusiAktif.qid===qid){ perbaruiBarTopik(); tandaiTombolDiskusi(); }
+        }
+        function perbaruiBarTopik(){
+          var bar=gid("topikDiskusiBar"), teks=gid("topikDiskusiTeks");
+          if(!bar || !teks || !topikDiskusiAktif) return;
+          var p=PERTANYAAN_DISKUSI[topikDiskusiAktif.qid]; if(!p) return;
+          var label=LABEL_JAWABAN[answers[topikDiskusiAktif.qid]];
+          teks.textContent="Membahas: "+p.teks+" — jawaban sekarang: "+label;
+          if(window.__topikDiskusiAktif) window.__topikDiskusiAktif.jawaban=label;
+        }
+        function tandaiTombolDiskusi(){
+          var tb=gid("diskusiTombol"); if(!tb || !topikDiskusiAktif) return;
+          var v=answers[topikDiskusiAktif.qid];
+          tb.querySelectorAll("button").forEach(function(b){ b.setAttribute("aria-pressed", (+b.dataset.v===v)?"true":"false"); });
+        }
+        function bukaDiskusiCoach(qid){
+          var p=PERTANYAAN_DISKUSI[qid]; if(!p) return;
+          var baru=( !topikDiskusiAktif || topikDiskusiAktif.qid!==qid );
+          topikDiskusiAktif={qid:qid, teks:p.teks};
+          window.__topikDiskusiAktif={qid:qid, teks:p.teks, jawaban:LABEL_JAWABAN[answers[qid]]};
+          if(baru) topikDiskusiGelembung=null;
+          var bar=gid("topikDiskusiBar"); if(bar) bar.style.display="flex";
+          perbaruiBarTopik();
+          var tb=gid("diskusiTombol"); if(tb) tb.style.display="flex";
+          tandaiTombolDiskusi();
+          /* Masukan AI tampil sebagai gelembung pertama di riwayat AI Coach
+             (hanya saat topik baru disematkan — buka ulang topik yang sama
+             tidak mengulang gelembung). */
+          if(baru) postingGelembungDiskusi(qid);
+          var box=gid("coachBox"); if(box){ try{ box.scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){} }
+          var inp=gid("coachQ"); if(inp){ try{ inp.focus(); }catch(e){} }
+        }
+        function tutupTopikDiskusi(){
+          topikDiskusiAktif=null;
+          window.__topikDiskusiAktif=null;
+          topikDiskusiGelembung=null;
+          var bar=gid("topikDiskusiBar"); if(bar) bar.style.display="none";
+          var tb=gid("diskusiTombol"); if(tb) tb.style.display="none";
+        }
+        function sinkronKartuDiskusi(qid){
+          var v=answers[qid];
+          var el=gid("diskusi-"+qid);
+          if(el){ if(v===2) el.style.display="none"; else if(!diskusiDitutup[qid]) el.style.display="block"; }
+          perbaruiBarTopik();
+        }
+        function terapkanJawabanDiskusi(qid, v){
+          if(!PERTANYAAN_DISKUSI[qid]) return;
+          answers[qid]=v;
+          document.querySelectorAll('button[data-k="'+qid+'"]').forEach(function(x){ x.setAttribute("aria-pressed", (+x.dataset.v===v)?"true":"false"); });
+          recalc();
+          /* Jalur simpan normal: perubahan jawaban mengubah snapshot, jadi
+             interval autosave 2 detik menyimpannya seperti klik langsung
+             pada tombol jawaban (tidak ada jalur simpan khusus di sini). */
+          try{ if(typeof window.__tampilSapaAI==="function") window.__tampilSapaAI("Jawaban diubah jadi '"+LABEL_JAWABAN[v]+"'. Skor dan rencana diperbarui."); }catch(e){}
+          sinkronKartuDiskusi(qid);
+          tandaiTombolDiskusi();
+        }
+        (function(){
+          var bTutup=gid("btnTutupTopik");
+          if(bTutup) bTutup.addEventListener("click", tutupTopikDiskusi);
+          var tb=gid("diskusiTombol");
+          if(tb) tb.querySelectorAll("button").forEach(function(b){
+            b.addEventListener("click", function(){
+              if(!topikDiskusiAktif) return;
+              terapkanJawabanDiskusi(topikDiskusiAktif.qid, +b.dataset.v);
+            });
+          });
+        })();
+        /* Celah uji (jsdom): fungsi dalam dipakai harness, bukan fitur pengguna. */
+        window.__picuDiskusiJawaban=picuDiskusiJawaban;
+        window.__diskusiUji={
+          pertanyaan:PERTANYAAN_DISKUSI, cache:function(){ return diskusiCache; },
+          ditutup:function(){ return diskusiDitutup; },
+          picu:picuDiskusiJawaban, bukaCoach:bukaDiskusiCoach, tutupTopik:tutupTopikDiskusi,
+          terapkan:terapkanJawabanDiskusi, topikAktif:function(){ return topikDiskusiAktif; },
+          tanya:tanyaDiskusiAI, cadangan:diskusiCadangan
+        };
         /* Kartu "langkah berikutnya" di layar Hari Ini memakai penentu langkah
            yang sama dengan sapaan proaktif. */
         window.__langkahBerikutnya=langkahBerikutnya;
@@ -3953,6 +4151,10 @@
           return aiPakaiBulanIni() >= kuotaAiBatas();
         }
         function tambahHitunganAi(){
+          /* Celah uji: penghitung PANGGILAN (bukan kuota) — dipakai harness
+             untuk membuktikan jalur mana yang memanggil kuota; tidak mengubah
+             perilaku (bila saklar langganan mati, ai_pakai tetap 0). */
+          window.__kuotaHitungPanggilan=(window.__kuotaHitungPanggilan||0)+1;
           if(!LANGGANAN_AKTIF) return;
           var p=window.__aiPakai||{bulan:bulanSekarang(),jumlah:0};
           if(p.bulan!==bulanSekarang()) p={bulan:bulanSekarang(),jumlah:0};
@@ -4043,7 +4245,21 @@
             }
             function fallback(){ done(localExplain(q)+"\n\nAI belum tersambung — ini penjelasan dari perhitungan aplikasi."); }
             try{
-              fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:q, question:q, context:aiContext(), history:history.slice(), petunjuk:"Bila perlu bertanya balik, ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."})})
+              /* Bila sedang membahas satu jawaban introspeksi (topik disematkan
+                 dari kartu diskusi), konteks dan petunjuk diperkaya: AI tahu
+                 pertanyaan + jawaban sekarang, dan diminta menyarankan SATU
+                 tingkat bila cerita pengguna menunjukkan jawaban perlu berubah.
+                 Topik TIDAK bocor ke chat wizard (hanya logId coachChat). AI
+                 sendiri tidak pernah mengubah apa pun — yang mengubah hanya
+                 ketukan pengguna pada tiga tombol di bawah kolom chat. */
+              var topikDiskusi=(logId==="coachChat") ? window.__topikDiskusiAktif : null;
+              var ctxDiskusi=aiContext();
+              var petunjukDiskusi="Bila perlu bertanya balik, ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini.";
+              if(topikDiskusi){
+                ctxDiskusi.topik_diskusi={pertanyaan_id:topikDiskusi.qid, pertanyaan:topikDiskusi.teks, jawaban:topikDiskusi.jawaban||null};
+                petunjukDiskusi="Anda sedang membahas jawaban introspeksi \""+topikDiskusi.teks+"\" (jawaban sekarang: \""+(topikDiskusi.jawaban||"—")+"\"). Bila cerita pengguna menunjukkan jawabannya perlu berubah, sarankan SATU tingkat yang paling tepat dengan kalimat: Saya sarankan jawaban ini 'Sebagian' — ketuk tombolnya di bawah bila setuju. (Ganti 'Sebagian' dengan tingkat yang Anda sarankan: Belum, Sebagian, atau Sudah.) Lalu akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini.";
+              }
+              fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:q, question:q, context:ctxDiskusi, history:history.slice(), petunjuk:petunjukDiskusi})})
                 .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
                 .then(function(data){
                   var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
