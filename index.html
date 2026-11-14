@@ -95,6 +95,25 @@
       .data-ringkas p{margin-top:6px;color:var(--ink-soft)}
       .data-ringkas p b{color:var(--ink)}
 
+      /* ---------- Tampilan masuk kembali: pengguna TERDAFTAR yang sudah
+         punya data usaha melihat sedikit tulisan — AI yang memandu lewat
+         sapaan. Prosa panduan HANYA disembunyikan lewat kelas
+         body.masuk-kembali; markup hero tidak pernah dihapus dari DOM,
+         jadi tamu dan pengguna baru tetap melihat panduan lengkap.
+         Angka (stat-row) tetap tampil; hanya kalimat penjelas yang
+         panjang di bawah "Skor Kesehatan Usaha (keseluruhan)" yang
+         ikut disembunyikan. ---------- */
+      body.masuk-kembali .hero>h1,
+      body.masuk-kembali .hero>p.lede,
+      body.masuk-kembali .hero>p.note,
+      body.masuk-kembali .hero>.guided-cta,
+      body.masuk-kembali .hero>#demoBanner,
+      body.masuk-kembali .hero>.module-grid,
+      body.masuk-kembali #stHealthSub,
+      body.masuk-kembali #hiSaldoNote,
+      body.masuk-kembali #hiLangkahNote,
+      body.masuk-kembali #proaktifIntro{display:none}
+
       /* ---------- scores ---------- */
       .score-card .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
       .score-num{font-size:1.9rem;font-weight:800}
@@ -675,7 +694,7 @@
         </div>
         <div class="stat-row">
           <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div></div>
-          <div class="stat"><div class="k">Skor Kesehatan Usaha (keseluruhan)</div><div class="v" id="stHealth">—</div><div class="s">Gabungan keuangan, produk, pasar &amp; teknologi — bukan skor keuangan saja.</div></div>
+          <div class="stat"><div class="k">Skor Kesehatan Usaha (keseluruhan)</div><div class="v" id="stHealth">—</div><div class="s" id="stHealthSub">Gabungan keuangan, produk, pasar &amp; teknologi — bukan skor keuangan saja.</div></div>
           <div class="stat"><div class="k">Skor Siap Investasi</div><div class="v" id="stInvest">—</div><div class="s" id="stInvestSub">kelengkapan untuk penawaran kerjasama investasi</div></div>
           <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><div class="s" id="stValRange">rentang rendah – tinggi</div></div>
         </div>
@@ -698,7 +717,7 @@
             <div class="stat"><div class="k">Uang keluar hari ini</div><div class="v" id="hiOut">Rp 0</div></div>
             <div class="stat"><div class="k">Saldo kas</div><div class="v" id="hiSaldo">Rp 0</div></div>
           </div>
-          <p class="note" style="margin-top:10px">Saldo kas dihitung dari semua catatan Anda — total yang masuk dikurangi total yang keluar.</p>
+          <p class="note" id="hiSaldoNote" style="margin-top:10px">Saldo kas dihitung dari semua catatan Anda — total yang masuk dikurangi total yang keluar.</p>
         </div>
         <div class="card" style="margin-top:14px">
           <h3>Catat penjualan / pengeluaran</h3>
@@ -719,7 +738,7 @@
           <h3>Langkah berikutnya</h3>
           <p style="margin-top:8px" id="hiLangkahTeks">—</p>
           <div class="actions" style="margin-top:10px"><button class="btn" id="btnHiLangkah" type="button">Isi</button></div>
-          <p class="note" style="margin-top:8px">Satu langkah saja setiap kali — sisanya nanti, supaya tidak terasa banyak sekaligus.</p>
+          <p class="note" id="hiLangkahNote" style="margin-top:8px">Satu langkah saja setiap kali — sisanya nanti, supaya tidak terasa banyak sekaligus.</p>
         </div>
       </section>
 
@@ -861,7 +880,7 @@
             <div class="pro-head">
               <div>
                 <h3>Perlu Perhatian</h3>
-                <p class="note" style="margin-top:4px">Saran proaktif dari data usaha Anda sendiri — diperiksa otomatis setiap aplikasi dibuka dan setiap angka berubah. AI Coach hanya menjelaskan; semua angka dihitung rumus aplikasi dari data Anda.</p>
+                <p class="note" id="proaktifIntro" style="margin-top:4px">Saran proaktif dari data usaha Anda sendiri — diperiksa otomatis setiap aplikasi dibuka dan setiap angka berubah. AI Coach hanya menjelaskan; semua angka dihitung rumus aplikasi dari data Anda.</p>
               </div>
               <span class="pro-count ok" id="proaktifCount">Memeriksa…</span>
             </div>
@@ -2784,6 +2803,14 @@
         }
         function aturTampilanFormulir(){
           var ada=false; try{ ada=sudahMengisiNyata(); }catch(e){ ada=false; }
+          /* Tampilan masuk kembali: pengguna TERDAFTAR (bukan tamu) yang
+             sudah punya data usaha nyata melihat sedikit tulisan — kelas
+             body.masuk-kembali menyembunyikan prosa panduan di hero (lihat
+             CSS). Dievaluasi di setiap pemanggilan, sama seperti lipatan
+             formulir, supaya kelas selalu mengikuti keadaan data. */
+          var masukKembali=false;
+          try{ masukKembali = ada && entered && !isGuest; }catch(e){ masukKembali=false; }
+          try{ document.body.classList.toggle("masuk-kembali", masukKembali); }catch(e){}
           var wrap=gid("dataFormWrap"), ring=gid("dataRingkasan"), selesai=gid("btnDataSelesai");
           var pil=document.querySelector("#data .demo-tag");
           var banner=gid("demoBanner");
@@ -3155,7 +3182,13 @@
                 if(window.__openGreeting){ window.__openGreeting(); }
                 else if(window.__openWizard){ window.__pendingGreetingOpen=true; }
                 else { window.__pendingGreetingOpen=true; }
-              } else { tandaiSudahMengisi(); }
+              } else {
+                tandaiSudahMengisi();
+                /* Pengguna terdaftar yang kembali dengan data: AI menyapa
+                   sebentar setelah masuk — bukan menunggu 60 detik diam.
+                   Sekali per sesi (dijaga jadwalkanSapaAwal). */
+                if(typeof jadwalkanSapaAwal==="function"){ try{ jadwalkanSapaAwal(); }catch(e){} }
+              }
             });
           }
         }
@@ -3563,6 +3596,7 @@
         /* Corong masuk tamu — dipakai juga pengujian (jsdom) untuk
            mensimulasikan pengguna kembali tanpa sesi masuk. */
         window.__autoStartGuest=autoStartGuest;
+        window.__enterApp=enterApp; /* celah uji (jsdom): masuk terdaftar tanpa akun cloud — dipakai harness, bukan fitur pengguna */
         if(window.supabase && window.supabase.createClient){
           sb=window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
           if(recoveryMode){
@@ -3598,6 +3632,11 @@
            dengan rumus dari snapshot saat ini (bukan ditebak AI) — AI hanya merangkai
            pertanyaannya. */
         var IDLE_SAPA_DETIK=60, JEDA_SAPA_MENIT=10, MAKS_SAPA_SESI=3;
+        /* Sapaan AWAL hanya untuk pengguna terdaftar yang kembali dengan
+           data: ~5 detik setelah data selesai dimuat (bukan 60 detik
+           diam). sapaAwalSudah = sekali per sesi, tidak bisa dijadwalkan
+           ulang. */
+        var SAPAAWAL_DETIK=5, sapaAwalTimer=null, sapaAwalSudah=false;
         /* sapaTimer sengaja TIDAK diisi null: enterGuest saat boot mungkin sudah
            menjadwalkan satu timer lewat resetSapa (hoisting); mengisi null akan
            mengasingkan timer itu sehingga jadwalkanSapa tidak bisa membatalkannya. */
@@ -3721,6 +3760,28 @@
           var jeda=(typeof IDLE_SAPA_DETIK==="number" && IDLE_SAPA_DETIK>0)?IDLE_SAPA_DETIK:60;
           sapaTimer=setTimeout(saatDiam, jeda*1000);
         }
+        /* Sapaan AWAL untuk pengguna terdaftar yang kembali dengan data:
+           AI menyapa ~5 detik setelah data selesai dimuat — dipanggil dari
+           enterApp setelah loadData selesai dan sudahMengisiNyata() benar.
+           Memakai jalur yang sama dengan sapaan diam (saatDiam), jadi semua
+           aturan anti-gangguan berlaku: tidak tampil bila tab tersembunyi
+           atau ada popup/wizard/gerbang terbuka, tidak memakan kuota AI,
+           maksimal 3 kali per sesi dengan jeda ≥10 menit, topik yang
+           ditolak tidak diulang. Sapaan diam 60 detik tetap berlaku untuk
+           sapaan berikutnya dan untuk tamu/pengguna baru. Bila saat
+           timer berbunyi ternyata ada overlay terbuka, saatDiam
+           menjadwalkan ulang sapaan diam biasa dan sapaan awal tidak
+           dicoba lagi — sekali per sesi. */
+        function jadwalkanSapaAwal(){
+          if(sapaAwalSudah) return;
+          sapaAwalSudah=true;
+          if(sapaAwalTimer) clearTimeout(sapaAwalTimer);
+          sapaAwalTimer=setTimeout(function(){
+            sapaAwalTimer=null;
+            if(sapaBerhenti) return;
+            saatDiam();
+          }, SAPAAWAL_DETIK*1000);
+        }
         function resetSapa(){
           sapaGenerasi=(sapaGenerasi||0)+1;
           jadwalkanSapa();
@@ -3772,7 +3833,7 @@
         });
         jadwalkanSapa();
         /* Celah uji (jsdom): fungsi dalam dipakai harness, bukan fitur pengguna. */
-        window.__sapaUji={langkahBerikutnya:langkahBerikutnya, bolehSapa:bolehSapa, resetSapa:resetSapa, saatDiam:saatDiam, tampilkanSapa:tampilkanSapa, sembunyikanSapa:sembunyikanSapa, tanyaSapaAI:tanyaSapaAI, status:function(){ return {jumlah:sapaJumlah, terakhir:sapaTerakhirWaktu, berhenti:sapaBerhenti, topik:Object.keys(sapaTopikSudah)}; }};
+        window.__sapaUji={langkahBerikutnya:langkahBerikutnya, bolehSapa:bolehSapa, resetSapa:resetSapa, saatDiam:saatDiam, tampilkanSapa:tampilkanSapa, sembunyikanSapa:sembunyikanSapa, tanyaSapaAI:tanyaSapaAI, jadwalkanSapaAwal:jadwalkanSapaAwal, status:function(){ return {jumlah:sapaJumlah, terakhir:sapaTerakhirWaktu, berhenti:sapaBerhenti, awal:sapaAwalSudah, topik:Object.keys(sapaTopikSudah)}; }};
         /* Kartu "langkah berikutnya" di layar Hari Ini memakai penentu langkah
            yang sama dengan sapaan proaktif. */
         window.__langkahBerikutnya=langkahBerikutnya;
