@@ -1363,6 +1363,7 @@
               <button class="btn ghost" id="btnVoice" type="button" style="width:100%">Catat dengan suara (keterangan + jumlah)</button>
               <p class="voice-result" id="voiceResult" role="status"></p>
             </div>
+            <div class="actions" id="voiceTxActions" style="display:none;margin-top:10px"><button class="btn" id="btnVoiceTambah" type="button">Tambah transaksi</button><button class="btn ghost" id="btnVoiceKoreksi" type="button">Koreksi</button></div>
           </div>
           <div class="tx-menu" id="txMenuIsian" hidden>
             <div class="form-grid" style="margin-top:14px">
@@ -2481,6 +2482,31 @@
         var ok=await tambahTransaksi($("txKet").value, num("txJumlah"), $("txJenis").value, $("txKat").value, $("txTanggal").value);
         if(ok){ $("txKet").value=""; $("txJumlah").value=""; }
       });
+      /* --- Tombol Tambah + Koreksi di menu Suara ---
+         Muncul hanya setelah hasil suara mengisi kolom (lihat
+         finalkanSuara di handler btnVoice di bawah). "Tambah transaksi"
+         memakai jalur tambahTransaksi() yang SAMA dengan tombol Isian —
+         validasi, batas gratis, dan perilaku sukses (kolom dibersihkan,
+         total diperbarui) persis sama. "Koreksi" membuka menu Isian
+         dengan kolom terisi, supaya hasil ucapan yang salah dengar bisa
+         diperbaiki dengan tangan lalu disimpan lewat tombol Isian.
+         Tidak ada simpan otomatis: simpan hanya bila tombol Tambah
+         diketuk. */
+      function suaraTombolTampil(){ var a=$("voiceTxActions"); if(a) a.style.display="flex"; }
+      function suaraTombolSembunyi(){ var a=$("voiceTxActions"); if(a) a.style.display="none"; }
+      $("btnVoiceTambah").addEventListener("click",async function(){
+        var ok=await tambahTransaksi($("txKet").value, num("txJumlah"), $("txJenis").value, $("txKat").value, $("txTanggal").value);
+        if(ok){
+          $("txKet").value=""; $("txJumlah").value="";
+          suaraTombolSembunyi();
+          var resEl=$("voiceResult");
+          if(resEl){ resEl.textContent="Tersimpan."; resEl.style.display="block"; }
+        }
+      });
+      $("btnVoiceKoreksi").addEventListener("click",function(){
+        if(window.__aturMenuTx) window.__aturMenuTx("isian");
+        else $("btnTxModeIsian").click();
+      });
       $("notaPhoto").addEventListener("change",function(e){ const f=e.target.files[0]; if(!f) return; const img=$("notaPreview"); img.src=URL.createObjectURL(f); img.style.display="block"; audit("Foto nota diunggah sebagai bukti transaksi."); });
       /* --- Parser ucapan Bahasa Indonesia: satu kalimat -> keterangan + jumlah + jenis ---
          Contoh: "penjualan lima puluh ribu" -> ket "penjualan", Rp50.000, masuk.
@@ -2966,6 +2992,7 @@
             resEl.textContent=msg; resEl.style.display="block";
             toast("Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.");
           }
+          suaraTombolTampil();
           PS.selesai();
         }
         if(window.__panelSuara && window.__panelSuara.aturFinalkan) window.__panelSuara.aturFinalkan(finalkanSuara);
