@@ -201,6 +201,18 @@
       body[data-layar]:not([data-layar="buku-laporan"]) #buku-laporan{display:none!important}
       .btn-kembali-layar{margin:0 0 10px}
 
+      /* ---------- indikator lokasi + transisi geser antar-layar ----------
+         "Anda di sini": satu baris kecil di atas tiap layar (induk ›
+         sub-layar), diperbarui tampilkanLayar. Transisi geser 0,25 dtk:
+         maju masuk dari kanan, kembali masuk dari kiri; mati bila
+         pengguna memilih kurangi gerak (prefers-reduced-motion). */
+      .indikator-lokasi{font-size:.8rem;color:var(--ink-soft);margin:0 0 8px}
+      @keyframes layar-dari-kanan{from{transform:translateX(24px);opacity:.55}to{transform:translateX(0);opacity:1}}
+      @keyframes layar-dari-kiri{from{transform:translateX(-24px);opacity:.55}to{transform:translateX(0);opacity:1}}
+      .layar-geser-kanan{animation:layar-dari-kanan .25s ease}
+      .layar-geser-kiri{animation:layar-dari-kiri .25s ease}
+      @media (prefers-reduced-motion: reduce){.layar-geser-kanan,.layar-geser-kiri{animation:none}}
+
       /* ---------- baris menu antar-layar (induk → sub-layar) ---------- */
       .menu-list{display:grid;gap:10px;margin-top:14px}
       .menu-row{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
@@ -3698,7 +3710,10 @@
         /* Induk tiap sub-layar (untuk tombol "← Kembali" dan sorotan
            nav bawah). Layar tanpa induk kembali ke Hari Ini. */
         var LAYAR_INDUK={langkah:"hariini",perhatian:"hariini","introspeksi-fin":"introspeksi","introspeksi-ops":"introspeksi","introspeksi-mkt":"introspeksi","introspeksi-tech":"introspeksi",investasi:"keuangan","saran-rencana":"saran","kemasan-sudut":"kemasan","kemasan-label":"kemasan","buku-transaksi":"buku","buku-qris":"buku","buku-stok":"buku","buku-hutang":"buku","buku-laporan":"buku"};
-        var LAYAR_JUDUL={hariini:"Hari Ini",data:"Data Usaha",dashboard:"Dasbor Level",valuasi:"Valuasi",introspeksi:"Introspeksi",keuangan:"Keuangan & Ekonomi",saran:"Saran",kemasan:"Produk & Pemaketan",buku:"Pembukuan",cekdata:"Cek Data",legalitas:"Legalitas",pemasaran:"Pemasaran",sop:"Orang & SOP",portal:"Portal Investor",paket:"Paket & Layanan",adminmarketing:"Admin Marketing"};
+        var LAYAR_JUDUL={hariini:"Hari Ini",langkah:"Langkah Berikutnya",perhatian:"Perlu Perhatian",data:"Data Usaha",dashboard:"Dasbor Level UMKM",valuasi:"Valuasi",introspeksi:"Introspeksi","introspeksi-fin":"Keuangan","introspeksi-ops":"Operasional","introspeksi-mkt":"Pasar & Kemasan","introspeksi-tech":"Teknologi & Legalitas",keuangan:"Keuangan",investasi:"Simulasi Dana Investasi",saran:"Saran","saran-rencana":"Rencana Perbaikan",kemasan:"Produk & Pemaketan","kemasan-sudut":"Foto 3 Sudut","kemasan-label":"Contoh Label",buku:"Pembukuan","buku-transaksi":"Tambah Transaksi","buku-qris":"Pembayaran QRIS","buku-stok":"Stok Barang","buku-hutang":"Piutang & Utang","buku-laporan":"Laporan",cekdata:"Cek Data",legalitas:"Legalitas",pemasaran:"Pemasaran",sop:"Orang & SOP",portal:"Portal Investor",paket:"Paket & Layanan",adminmarketing:"Admin Marketing"};
+        /* Judul dipakai indikator "Anda di sini" dan label tombol Kembali;
+           sub-layar memakai judul pendeknya sendiri supaya jalurnya
+           tetap satu baris (mis. "Keuangan › Tambah Transaksi"). */
         /* Alias tautan dalam yang bukan nama bagian (mis. #coach untuk
            AI Coach, #ekonomi untuk Ekonomi & Investasi): dibuka layarnya
            yang sesuai, hash lalu menjadi nama layar yang baku. */
@@ -3757,6 +3772,27 @@
           if(LAYAR_DAFTAR.indexOf(nama)<0) return false;
           layarAktif=nama;
           try{ document.body.setAttribute("data-layar", nama); }catch(e){}
+          /* Indikator "Anda di sini" selalu mengikuti layar aktif
+             (SATU elemen bersama yang dipindah ke atas layar aktif —
+             tidak ada id ganda dan teksnya tidak bisa kedaluwarsa). */
+          perbaruiIndikatorLokasi(nama);
+          /* Transisi geser: maju masuk dari kanan, kembali dari kiri.
+             Layar awal tidak beranimasi (arah "awal"). Mati bila
+             pengguna memilih kurangi gerak. Kelas dibiarkan menempel
+             sampai navigasi berikutnya, lalu diganti — tanpa pewaktu,
+             supaya tidak ada keadaan yang kedaluwarsa. */
+          try{
+            var wadah=document.querySelector(".wrap");
+            if(wadah){
+              var kurangiGerak=false;
+              try{ if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) kurangiGerak=true; }catch(e){}
+              wadah.classList.remove("layar-geser-kanan","layar-geser-kiri");
+              if(!kurangiGerak && opsi.arah!=="awal"){
+                void wadah.offsetWidth;
+                wadah.classList.add(opsi.arah==="mundur"?"layar-geser-kiri":"layar-geser-kanan");
+              }
+            }
+          }catch(e){}
           /* Perbarui hash (replaceState — tombol kembali tidak menumpuk
              entri layar). Jangan sentuh hash bila hash saat ini bukan
              hash layar (mis. hash pemulihan kata sandi #type=recovery —
@@ -3812,13 +3848,43 @@
           }
           return null;
         }
+        /* Jalur lokasi layar ("Anda di sini"): "induk › sub-layar" untuk
+           sub-layar, judul sendiri untuk layar tingkat atas. */
+        function jalurLokasi(nama){
+          var judul=LAYAR_JUDUL[nama]||nama;
+          var induk=LAYAR_INDUK[nama];
+          if(induk) return (LAYAR_JUDUL[induk]||induk)+" › "+judul;
+          return judul;
+        }
+        function perbaruiIndikatorLokasi(nama){
+          try{
+            var el=gid("indikatorLokasi");
+            if(!el) return;
+            var jalur=jalurLokasi(nama);
+            el.textContent=jalur;
+            el.setAttribute("aria-label","Anda di sini: "+jalur);
+            var sec=gid(nama);
+            if(sec && el.parentElement!==sec) sec.insertBefore(el, sec.firstChild);
+          }catch(e){}
+        }
+        function pasangIndikatorLokasi(){
+          if(gid("indikatorLokasi")) return;
+          var p=document.createElement("p");
+          p.id="indikatorLokasi";
+          p.className="indikator-lokasi";
+          var awal=gid("hariini");
+          if(awal) awal.insertBefore(p, awal.firstChild);
+          else document.body.appendChild(p);
+        }
         function tampilkanLayarAwal(){
           var h=layarDariHash();
-          return tampilkanLayar(h||"hariini", {scroll:false});
+          return tampilkanLayar(h||"hariini", {scroll:false, arah:"awal"});
         }
         /* Tombol "← Kembali" di atas tiap layar selain Hari Ini:
            sub-layar kembali ke layar induknya, layar tingkat atas
-           kembali ke Hari Ini. */
+           kembali ke Hari Ini. Label yang terlihat menyebut tujuannya
+           ("← Kembali ke Keuangan"); ketukan kembali memakai arah
+           "mundur" supaya layar induk masuk dari kiri. */
         function pasangTombolKembali(){
           LAYAR_DAFTAR.forEach(function(nama){
             if(nama==="hariini") return;
@@ -3828,12 +3894,12 @@
             var b=document.createElement("button");
             b.type="button";
             b.className="btn ghost small btn-kembali-layar";
-            b.textContent="← Kembali";
+            b.textContent="← Kembali ke "+(LAYAR_JUDUL[kembaliKe]||"Hari Ini");
             /* Kunci stabil untuk warna "sudah diketuk": satu tombol per
                layar, dikunci oleh nama layarnya sendiri. */
             b.setAttribute("data-kembali-layar", nama);
             b.setAttribute("aria-label","Kembali ke "+(LAYAR_JUDUL[kembaliKe]||"Hari Ini"));
-            b.addEventListener("click", function(){ tampilkanLayar(kembaliKe); });
+            b.addEventListener("click", function(){ tampilkanLayar(kembaliKe, {arah:"mundur"}); });
             sec.insertBefore(b, sec.firstChild);
           });
         }
@@ -3900,13 +3966,14 @@
            berbagi dan hash pemulihan kata sandi tidak disentuh sama
            sekali — tidak ada data-layar, tidak ada perubahan hash. */
         try{
+          pasangIndikatorLokasi();
           pasangTombolKembali();
           Object.keys(TX_TOMBOL).forEach(function(k){
             var b=gid(TX_TOMBOL[k]);
             if(b) b.addEventListener("click", function(){ aturMenuTx(k); });
           });
           if(!modePortalBerbagi() && !hashAdalahPemulihan()){
-            tampilkanLayar(layarDariHash()||"hariini", {scroll:false});
+            tampilkanLayar(layarDariHash()||"hariini", {scroll:false, arah:"awal"});
           }
         }catch(e){}
 
