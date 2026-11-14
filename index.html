@@ -1323,7 +1323,7 @@
       <!-- ============ 8. PEMBUKUAN & SAK EMKM ============ -->
       <section id="buku">
         <div class="sec-head"><span class="sec-num">08</span><h2>Pembukuan harian, stok, piutang &amp; laporan SAK EMKM</h2></div>
-        <p class="sec-sub">Catat transaksi seperti buku kas digital. Semua catatan tersimpan ke cloud akun Anda dan termuat lagi saat Anda masuk berikutnya. Transaksi ikut menghitung Laba Rugi, BEP, prediksi arus kas, dan laporan SAK EMKM — bukan hanya tampil sebagai daftar. Foto nota membantu mengisi keterangan, dan tombol suara bisa mengisi keterangan, jumlah, dan jenis sekaligus dari satu ucapan — contoh: 'penjualan lima puluh ribu'. <b>Peringatan: periksa kembali angkanya sebelum menambah transaksi</b>, terutama angka hasil ucapan suara.</p>
+        <p class="sec-sub">Catat transaksi seperti buku kas digital. Semua catatan tersimpan ke cloud akun Anda dan termuat lagi saat Anda masuk berikutnya. Transaksi ikut menghitung Laba Rugi, BEP, prediksi arus kas, dan laporan SAK EMKM — bukan hanya tampil sebagai daftar. Foto nota membantu mengisi keterangan, dan tombol suara bisa mengisi keterangan, jumlah, jenis, dan kategori sekaligus dari satu ucapan — contoh: 'penjualan lima puluh ribu'. <b>Peringatan: periksa kembali angkanya sebelum menambah transaksi</b>, terutama angka hasil ucapan suara.</p>
         <div class="menu-list">
         <a class="menu-row" href="#buku-transaksi"><span><b>Tambah transaksi</b><span class="sub">Catat penjualan & pengeluaran, foto nota, dan suara.</span></span><span class="arr">›</span></a>
         <a class="menu-row" href="#buku-qris"><span><b>Terima Pembayaran QRIS</b><span class="sub">Kode QRIS usaha dan tandai pembayaran pembeli.</span></span><span class="arr">›</span></a>
@@ -2565,7 +2565,7 @@
       }
       function parseUcapanTransaksi(teks){
         var tokens=ucTokens(teks);
-        var hasil={keterangan:"",jumlah:null,jenis:null,jenisJelas:false,mentah:String(teks||"").trim()};
+        var hasil={keterangan:"",jumlah:null,jenis:null,jenisJelas:false,kategori:null,mentah:String(teks||"").trim()};
         if(!tokens.length) return hasil;
         /* cari angka pertama: putaran pertama hanya angka "kuat" (berawalan
            Rp, bertitik ribuan, atau diikuti kata skala) dan kata angka —
@@ -2604,6 +2604,22 @@
           if(UC_MASUK[tokens[u]]){ hasil.jenis="masuk"; hasil.jenisJelas=true; break; }
           if(UC_KELUAR[tokens[u]]){ hasil.jenis="keluar"; hasil.jenisJelas=true; break; }
         }
+        /* Kategori dari kata-kata ucapan (lokal, tanpa AI — angka dan
+           kategori tidak pernah datang dari AI). Urutan prioritas:
+           QRIS > Kemasan > Gaji > Transport > Operasional > Bahan baku
+           > Penjualan (bila jenis masuk). Bila tidak ada kata yang cocok,
+           kategori dibiarkan null — kolom tidak diisi, pengguna memilih
+           sendiri (tidak pernah ditebak). */
+        (function(){
+          function adaKata(daftar){ for(var i=0;i<tokens.length;i++){ if(daftar.indexOf(tokens[i])>=0) return true; } return false; }
+          if(adaKata(["qris"])) hasil.kategori="QRIS";
+          else if(adaKata(["kemasan","plastik","dus","box","kardus"])) hasil.kategori="Kemasan";
+          else if(adaKata(["gaji","upah"])) hasil.kategori="Gaji";
+          else if(adaKata(["bensin","ojek","kirim","ongkir","transport","antar"])) hasil.kategori="Transport";
+          else if(adaKata(["listrik","air","gas","wifi","internet","operasional"])) hasil.kategori="Operasional";
+          else if(adaKata(["gula","beras","tepung","minyak","telur","daging","ayam","sayur","buah","kopi","susu","garam","bahan","stok","cabai","bawang"])) hasil.kategori="Bahan baku";
+          else if(hasil.jenis==="masuk") hasil.kategori="Penjualan";
+        })();
         var isi=sisa.filter(function(w){ return !(w in UC_JENIS_NOMINA); });
         if(isi.length>0) sisa=isi;
         hasil.keterangan=sisa.join(" ");
@@ -2916,16 +2932,19 @@
           const p=parseUcapanTransaksi(teks);
           if(!p.mentah){ PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
           if(p.keterangan) $("txKet").value=p.keterangan;
+          var katEl=$("txKat");
+          if(p.kategori && katEl) katEl.value=p.kategori;
+          var katTeks=p.kategori?(" — Kategori: "+p.kategori):"";
           let msg;
           if(p.jumlah!==null){
             $("txJumlah").value=p.jumlah;
             if(p.jenisJelas) $("txJenis").value=p.jenis;
             const jenisTampil=p.jenisJelas ? (p.jenis==="masuk"?"Masuk":"Keluar") : ($("txJenis").value==="masuk"?"Masuk":($("txJenis").value==="keluar"?"Keluar":"belum dipilih"));
-            msg="Didengar: "+(p.keterangan||$("txKet").value||"—")+" — "+fmtFull(p.jumlah)+" — "+jenisTampil+(p.jenisJelas?"":". Jenis tidak terdengar jelas, jadi jenis yang sedang terpilih dipakai — ubah bila perlu")+". Periksa, lalu tekan Tambah.";
+            msg="Didengar: "+(p.keterangan||$("txKet").value||"—")+" — "+fmtFull(p.jumlah)+" — "+jenisTampil+katTeks+(p.jenisJelas?"":". Jenis tidak terdengar jelas, jadi jenis yang sedang terpilih dipakai — ubah bila perlu")+". Periksa, lalu tekan Tambah.";
             resEl.textContent=msg; resEl.style.display="block";
             toast("Keterangan, jumlah, dan jenis terisi dari suara — periksa kembali angkanya");
           } else {
-            msg="Didengar: "+(p.keterangan||$("txKet").value||"—")+". Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.";
+            msg="Didengar: "+(p.keterangan||$("txKet").value||"—")+katTeks+". Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.";
             resEl.textContent=msg; resEl.style.display="block";
             toast("Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.");
           }
@@ -3209,6 +3228,11 @@
             });
           }catch(e){}
           if(opsi.scroll!==false){ try{ window.scrollTo(0,0); }catch(e){} }
+          /* Masuk Tambah Transaksi selalu tanpa kolom terfokus: blok
+             rekaman suara di atas adalah pintu masuknya. Peramban biasanya
+             melepas fokus saat kolom disembunyikan, tapi jangan andalkan
+             itu — lepas eksplisit di sini. */
+          if(nama==="buku-transaksi"){ try{ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }catch(e){} }
           return true;
         }
         /* Layar yang memuat elemen tertentu (dipakai fokusKeKolom dan
@@ -3904,6 +3928,20 @@
               var layarTujuan=window.__layarUntukEl(el);
               if(layarTujuan) window.__tampilkanLayar(layarTujuan, {scroll:false});
             }catch(e){}
+          }
+          /* Tambah Transaksi selalu masuk dari ATAS: blok rekaman suara di
+             atas adalah pintu masuknya (pengguna merekam dulu, kolom terisi
+             di bawah) — jangan gulir ke kolom dan jangan fokuskan isian.
+             Berlaku untuk semua jalur masuk (sapaan "Isi sekarang", kartu
+             "Langkah berikutnya", tombol "Catat" Naik Level, aksi "Perlu
+             Perhatian", tombol aksi pop-up). Kolom di layar lain tetap
+             digulir + difokus seperti dulu. */
+          var layarElTujuan=null;
+          try{ if(typeof window.__layarUntukEl==="function") layarElTujuan=window.__layarUntukEl(el); }catch(e){}
+          if(layarElTujuan==="buku-transaksi"){
+            try{ if(typeof window.__tampilkanLayar==="function") window.__tampilkanLayar("buku-transaksi"); else window.scrollTo(0,0); }catch(e){}
+            try{ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }catch(e){}
+            return true;
           }
           /* Gulir + fokus langsung (sinkron): mengubah display lalu memanggil
              scrollIntoView memaksa peramban menata ulang dulu, jadi posisi
