@@ -785,6 +785,15 @@
                 <option value="lainnya">Lainnya</option>
               </select>
             </label>
+            <label class="f"><span>Panggilan</span>
+              <select id="inPanggilan">
+                <option value="" selected disabled>Pilih panggilan…</option>
+                <option value="Mas">Mas</option>
+                <option value="Mbak">Mbak</option>
+                <option value="Ibu">Ibu</option>
+                <option value="Ayah">Ayah</option>
+              </select>
+            </label>
             <label class="f"><span>Provinsi</span><select id="inProvinsi"><option value="" selected disabled>Pilih provinsi…</option></select></label>
             <label class="f"><span>Kota / kabupaten</span><select id="inKota" disabled><option value="" selected>Pilih provinsi dulu</option></select></label>
 
@@ -1002,6 +1011,24 @@
             <button class="btn ghost" type="button" data-v="0" aria-pressed="false">Belum</button>
             <button class="btn ghost" type="button" data-v="1" aria-pressed="false">Sebagian</button>
             <button class="btn ghost" type="button" data-v="2" aria-pressed="false">Sudah</button>
+          </div>
+          <div id="panelHppDiskusi" style="display:none" role="group" aria-label="Hitung HPP">
+            <h4 style="margin-top:14px">Hitung HPP</h4>
+            <p class="note">Hitung HPP satu produk dari biaya sebenarnya — hasilnya memakai rumus yang sama dengan Kalkulator HPP di bagian Keuangan &amp; ekonomi.</p>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr">
+              <label class="f"><span>Produk</span><select id="hpProduk"></select></label>
+              <label class="f" id="hpNamaLainWrap" style="display:none"><span>Nama produk</span><input type="text" id="hpNamaLain" placeholder="contoh: Nasi campur" autocomplete="off" /></label>
+              <label class="f"><span>Bahan baku per porsi (Rp)</span><input type="number" id="hpBahan" placeholder="contoh: 8000" min="0" step="100" /></label>
+              <label class="f"><span>Kemasan per porsi (Rp)</span><input type="number" id="hpKemasan" placeholder="contoh: 1200" min="0" step="100" /></label>
+              <label class="f"><span>Gas &amp; listrik per porsi (Rp)</span><input type="number" id="hpEnergi" placeholder="contoh: 600" min="0" step="100" /></label>
+              <label class="f"><span>Tenaga kerja per porsi (Rp)</span><input type="number" id="hpTenaga" placeholder="contoh: 1800" min="0" step="100" /></label>
+              <label class="f"><span>Biaya lain per porsi (Rp)</span><input type="number" id="hpLain" placeholder="contoh: 400" min="0" step="100" /></label>
+              <label class="f"><span>Target margin (%)</span><input type="number" id="hpMargin" placeholder="contoh: 40" min="5" max="80" step="1" /></label>
+              <label class="f"><span>Harga jual per porsi (Rp)</span><input type="number" id="hpJual" placeholder="contoh: 15000" min="0" step="100" /></label>
+            </div>
+            <p class="note" style="margin-top:10px">HPP per porsi: <b id="hppDiskusiTotal">—</b> · HPP: <b id="hppDiskusiPersen">—</b> dari harga jual · Margin: <b id="hppDiskusiMargin">—</b></p>
+            <p class="note" id="hppDiskusiPesan"></p>
+            <div class="actions"><button class="btn" id="btnSimpanHpp" type="button" disabled>Simpan HPP ini</button></div>
           </div>
           <p class="coach-answer" id="coachAnswer" role="status" hidden></p>
         </div>
@@ -1398,6 +1425,15 @@
               <option value="agribisnis">Agribisnis / peternakan</option>
               <option value="digital">Digital / kreatif</option>
               <option value="lainnya">Lainnya</option>
+            </select>
+          </label>
+          <label class="f" style="margin-top:12px"><span>Panggilan</span>
+            <select id="wizPanggilan">
+              <option value="" selected disabled>Pilih panggilan…</option>
+              <option value="Mas">Mas</option>
+              <option value="Mbak">Mbak</option>
+              <option value="Ibu">Ibu</option>
+              <option value="Ayah">Ayah</option>
             </select>
           </label>
           <label class="f" style="margin-top:12px"><span>Provinsi</span><select id="wizProvinsi"><option value="" selected disabled>Pilih provinsi…</option></select></label>
@@ -2786,6 +2822,7 @@
             if(seed && (k==="inNama"||k==="inOmzet")) return false; // pasangan seed contoh: abaikan
             if(k==="inTergantung" && String(inp[k]).trim()==="0") return false; // nilai bawaan slider (0), bukan isian
             if(k==="inKalibrasi") return false; // checkbox: el.value selalu "on"; status centang tidak tersimpan di snapshot
+            if(k==="inPanggilan") return false; // sebutan sapaan saja bukan data usaha inti — tidak boleh menghalangi migrasi
             var v=inp[k];
             return v!=null && String(v).trim()!=="";
           });
@@ -2937,6 +2974,8 @@
           };
         }
         window.__collectSnapshot=collectSnapshot;
+        window.__gabungkanSnapshot=gabungkanSnapshot;
+        window.__cloudAdaDataUsaha=cloudAdaDataUsaha;
         function refreshSegs(containerId, vals){
           var c=gid(containerId); if(!c) return;
           var segs=c.querySelectorAll(".seg");
@@ -3753,7 +3792,8 @@
            tambahHitunganAi, supaya sapaan tidak memakan kuota AI pengguna. */
         function tanyaSapaAI(langkah, sudah){
           var prompt="Dalam Bahasa Indonesia sederhana, ajak pengguna mengisi "+langkah.label+" usaha mereka (contoh: "+langkah.contoh+"). Sudah terisi: "+(sudah.length?sudah.join(", "):"belum ada")+".";
-          var body={prompt:prompt, question:prompt, context:{jenis:"sapa_proaktif", sudah_diisi:sudah, langkah_berikutnya:{label:langkah.label, contoh:langkah.contoh}}, petunjuk:"Ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."};
+          var petunjukSapa="Ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."+(kalimatSapaan()?" "+kalimatSapaan():"");
+          var body={prompt:prompt, question:prompt, context:{jenis:"sapa_proaktif", sudah_diisi:sudah, langkah_berikutnya:{label:langkah.label, contoh:langkah.contoh}, sapaan:sapaanPengguna()}, petunjuk:petunjukSapa};
           function batasWaktu(ms){ return new Promise(function(_, tolak){ setTimeout(function(){ tolak(new Error("waktu habis")); }, ms); }); }
           function bersihkan(teks){
             if(typeof window.__bersihkanJawabanAI==="function") return window.__bersihkanJawabanAI(teks);
@@ -3823,7 +3863,13 @@
             tampilkanSapa(langkah, teks);
             jadwalkanSapa();
           }
-          tanyaSapaAI(langkah, langkah.sudah).then(function(teks){ sapaSiap(teks); }, function(){ sapaSiap("Halo! Saya lihat "+langkah.label+" belum diisi — mau isi sekarang?"); });
+          tanyaSapaAI(langkah, langkah.sudah).then(function(teks){ sapaSiap(teks); }, function(){ sapaSiap(teksSapaCadangan(langkah)); });
+        }
+        /* Teks cadangan sapaan (bila AI tidak tersambung) — memakai sebutan
+           bila dipilih, bila tidak netral seperti sebelumnya. */
+        function teksSapaCadangan(langkah){
+          var sp=sapaanPengguna();
+          return sp?("Halo, "+sp+"! Saya lihat "+langkah.label+" belum diisi — mau isi sekarang?"):("Halo! Saya lihat "+langkah.label+" belum diisi — mau isi sekarang?");
         }
         var btnSapaIsi=gid("btnSapaIsi");
         if(btnSapaIsi) btnSapaIsi.addEventListener("click",function(){
@@ -3852,7 +3898,7 @@
         });
         jadwalkanSapa();
         /* Celah uji (jsdom): fungsi dalam dipakai harness, bukan fitur pengguna. */
-        window.__sapaUji={langkahBerikutnya:langkahBerikutnya, bolehSapa:bolehSapa, resetSapa:resetSapa, saatDiam:saatDiam, tampilkanSapa:tampilkanSapa, sembunyikanSapa:sembunyikanSapa, tanyaSapaAI:tanyaSapaAI, jadwalkanSapaAwal:jadwalkanSapaAwal, status:function(){ return {jumlah:sapaJumlah, terakhir:sapaTerakhirWaktu, berhenti:sapaBerhenti, awal:sapaAwalSudah, topik:Object.keys(sapaTopikSudah)}; }};
+        window.__sapaUji={langkahBerikutnya:langkahBerikutnya, bolehSapa:bolehSapa, resetSapa:resetSapa, saatDiam:saatDiam, tampilkanSapa:tampilkanSapa, sembunyikanSapa:sembunyikanSapa, tanyaSapaAI:tanyaSapaAI, jadwalkanSapaAwal:jadwalkanSapaAwal, cadangan:teksSapaCadangan, status:function(){ return {jumlah:sapaJumlah, terakhir:sapaTerakhirWaktu, berhenti:sapaBerhenti, awal:sapaAwalSudah, topik:Object.keys(sapaTopikSudah)}; }};
 
         /* ================= DISKUSI JAWABAN INTROSPEKSI (AI aktif, bisa mengubah jawaban) =================
            Bila pengguna mengklik "Belum" (0) atau "Sebagian" (1) pada satu dari
@@ -3876,14 +3922,238 @@
         function skorDimensiDiskusi(kunciDimensi){
           try{ return (S && S.dimScore && typeof S.dimScore[kunciDimensi]==="number") ? S.dimScore[kunciDimensi] : 0; }catch(e){ return 0; }
         }
+        /* ---------- konteks usaha untuk diskusi — jawaban AI harus spesifik ----------
+           Diskusi memakai data usaha nyata pengguna (sektor, kota, omzet, HPP%,
+           daftar produk dari stok) supaya AI tidak memberi teori umum dan tidak
+           membuat-buat harga. Nama, email, HP, dan lokasi GPS TIDAK PERNAH ikut. */
+        var HPP_QID="fin-2";
+        function sektorLabelDiskusi(){
+          var s=gid("inSektor"); if(!s || !s.value) return "";
+          try{ return (s.selectedOptions && s.selectedOptions[0]) ? s.selectedOptions[0].textContent.split(" /")[0] : s.value; }catch(e){ return s.value; }
+        }
+        function produkUsahaDiskusi(){
+          var out=[];
+          try{
+            ((typeof stocks!=="undefined")?stocks:[]).slice(0,5).forEach(function(s){
+              out.push({nama:s.nama||"", beli:Math.round(s.beli||0), jual:Math.round(s.jual||0)});
+            });
+          }catch(e){}
+          return out;
+        }
+        function konteksUsahaDiskusi(qid){
+          var kota="", prov="", omzet=0, hpp=null;
+          try{ kota=(gid("inKota")&&gid("inKota").value)||""; prov=(gid("inProvinsi")&&gid("inProvinsi").value)||""; }catch(e){}
+          try{ omzet=num("inOmzet"); }catch(e){}
+          try{ var h=parseFloat(gid("inHpp")&&gid("inHpp").value); hpp=isNaN(h)?null:h; }catch(e){}
+          var hasil={sektor:sektorLabelDiskusi()||null, kota:kota||null, provinsi:prov||null, omzet_per_bulan:Math.round(omzet||0), hpp_saat_ini:hpp, produk:produkUsahaDiskusi()};
+          /* Data terkait pertanyaan itu (bila qid diberikan) — lihat
+             dataTerkaitDiskusi di bawah. */
+          if(qid) hasil.data_terkait=dataTerkaitDiskusi(qid);
+          return hasil;
+        }
+        /* ---------- data terkait tiap pertanyaan introspeksi ----------
+           Untuk setiap qid, ambil data hidup yang relevan dengan pertanyaan
+           itu saja — bukan teori. Bila daftar terkait kosong, katakan jujur
+           ("belum ada ... tercatat") dan JANGAN membuat-buat angka. Nama,
+           email, HP, dan GPS tidak pernah ikut. */
+        var LABEL_BUKU_DISKUSI=["Belum dicatat / tercampur pribadi","Catatan manual / buku tulis","Spreadsheet teratur","Aplikasi kasir / akuntansi"];
+        var LABEL_LEGAL_FORM_DISKUSI=["Belum punya NIB","Punya NIB (OSS)","NIB + PIRT / halal / izin edar"];
+        var LABEL_PACK_DISKUSI=["Label memuat nama produk & merek","Komposisi / bahan tertulis jelas","Berat bersih & ukuran tercantum","Nomor izin tercantum (PIRT/halal/BPOM)","Tanggal produksi & kedaluwarsa tercantum","Kemasan kuat untuk kirim luar kota + kontak pemesanan"];
+        var LABEL_CHAN_DISKUSI=["Toko fisik / lapak / warung","WhatsApp Business + katalog","Marketplace","Pesan-antar makanan / layanan","Media sosial aktif","Google Maps / Profil Bisnis"];
+        var LABEL_LEGAL_DISKUSI=["NIB (Nomor Induk Berusaha)","NPWP pemilik / usaha","PIRT (untuk pangan olahan rumahan)","Sertifikasi Halal","Izin edar BPOM (bila produk wajib)","Merek terdaftar"];
+        var LABEL_CONS_DISKUSI=["OSS / NIB","Google Maps / Profil Bisnis Google","Tokopedia","Shopee","Aplikasi pesan-antar (GoFood/GrabFood/ShopeeFood)","Media sosial usaha (Instagram/TikTok/Facebook)","QRIS / rekening usaha","NPWP & data pajak","Ulasan pelanggan online"];
+        function bukuLabelDiskusi(){
+          var v; try{ v=num("inBuku"); }catch(e){ v=NaN; }
+          return (!isNaN(v) && v>=0 && v<=3) ? LABEL_BUKU_DISKUSI[v] : null;
+        }
+        function legalFormLabelDiskusi(){
+          var v; try{ v=num("inLegal"); }catch(e){ v=NaN; }
+          return (!isNaN(v) && v>=0 && v<=2) ? LABEL_LEGAL_FORM_DISKUSI[v] : null;
+        }
+        function skorTeksDiskusi(id){
+          var el=gid(id); if(!el) return null;
+          var m=String(el.textContent||"").match(/(\d+)/);
+          return m ? parseInt(m[1],10) : null;
+        }
+        function stokTerkaitDiskusi(){
+          var out=[];
+          try{
+            ((typeof stocks!=="undefined")?stocks:[]).slice(0,5).forEach(function(s){
+              var q=Math.round(s.qty||0);
+              out.push({nama:s.nama||"", jumlah:q, status:q<=0?"habis":(q<5?"menipis":"cukup")});
+            });
+          }catch(e){}
+          return out;
+        }
+        function txTerakhirDiskusi(){
+          try{
+            var arr=((typeof txs!=="undefined")?txs:[]);
+            var t=arr[arr.length-1];
+            if(!t) return null;
+            return {keterangan:t.ket||"", tanggal:t.tgl||"", jumlah:Math.round(t.jumlah||0), jenis:t.jenis||""};
+          }catch(e){ return null; }
+        }
+        function sopTerisiDiskusi(){
+          var out=[];
+          try{
+            document.querySelectorAll(".sop-step").forEach(function(ta){
+              var v=String(ta.value||"").trim(); if(v) out.push(v);
+            });
+          }catch(e){}
+          return out;
+        }
+        function dataTerkaitDiskusi(qid){
+          var d={};
+          try{
+            if(qid==="fin-0"){
+              d.pembukuan=bukuLabelDiskusi()||"belum dipilih";
+              d.transaksi_tercatat=((typeof txs!=="undefined")?txs.length:0);
+            } else if(qid==="fin-1"){
+              d.pembukuan=bukuLabelDiskusi()||"belum dipilih";
+              d.transaksi_bulan_ini=(typeof hitungTxBulanIni==="function")?hitungTxBulanIni():0;
+              d.transaksi_total=((typeof txs!=="undefined")?txs.length:0);
+              d.transaksi_terakhir=txTerakhirDiskusi()||"belum ada transaksi tercatat";
+            } else if(qid==="fin-2"){
+              d.hpp_saat_ini=(function(){ try{ var h=parseFloat(gid("inHpp")&&gid("inHpp").value); return isNaN(h)?null:h; }catch(e){ return null; } })();
+              d.produk_tercatat=((typeof stocks!=="undefined")?stocks.length:0);
+            } else if(qid==="ops-0"){
+              var sop=sopTerisiDiskusi();
+              d.langkah_sop_terisi=sop.length;
+              d.langkah_sop=sop.slice(0,3);
+            } else if(qid==="ops-1"){
+              var tg; try{ tg=num("inTergantung"); }catch(e){ tg=NaN; }
+              d.ketergantungan_pemilik_persen=(!isNaN(tg) && tg>0)?Math.round(tg):"belum diisi";
+            } else if(qid==="ops-2"){
+              var st=stokTerkaitDiskusi();
+              d.stok=st.length?st:"belum ada stok tercatat";
+              d.aset_usaha=(function(){ try{ var a=num("inAset"); return isNaN(a)?null:Math.round(a); }catch(e){ return null; } })();
+            } else if(qid==="mkt-0"){
+              var belum=[]; try{ packState.forEach(function(v,i){ if(!v) belum.push(LABEL_PACK_DISKUSI[i]); }); }catch(e){}
+              var sdh=0; try{ packState.forEach(function(v){ if(v) sdh++; }); }catch(e){}
+              d.label_belum=belum.length?belum:"semua label sudah lengkap";
+              d.label_sudah=sdh;
+              d.skor_kemasan=skorTeksDiskusi("packScore");
+            } else if(qid==="mkt-1"){
+              d.foto_kemasan=(function(){ try{ return packHasPhoto?"sudah diunggah":"belum ada foto kemasan diunggah"; }catch(e){ return "belum ada foto kemasan diunggah"; } })();
+              d.sudut_foto=(function(){ try{ return (typeof angleCount!=="undefined")?angleCount:0; }catch(e){ return 0; } })();
+              d.skor_kemasan=skorTeksDiskusi("packScore");
+            } else if(qid==="mkt-2"){
+              var aktif=[], belumK=[];
+              try{ chanState.forEach(function(v,i){ (v?aktif:belumK).push(LABEL_CHAN_DISKUSI[i]); }); }catch(e){}
+              var dicek=0, sesuai=[], beda=[];
+              try{ consState.forEach(function(v,i){ if(v>0) dicek++; if(v===2) sesuai.push(LABEL_CONS_DISKUSI[i]); if(v===1) beda.push(LABEL_CONS_DISKUSI[i]); }); }catch(e){}
+              d.kanal_aktif=aktif.length?aktif:"belum ada kanal aktif";
+              d.kanal_belum=belumK;
+              d.cek_online_dicek=dicek;
+              d.cek_online_sesuai=sesuai;
+              d.cek_online_beda=beda;
+            } else if(qid==="tech-0"){
+              d.qris=(function(){ try{ return window.__qrisImage?"sudah diunggah (QRIS aktif)":"belum ada kode QRIS diunggah"; }catch(e){ return "belum ada kode QRIS diunggah"; } })();
+              d.whatsapp_business=(function(){ try{ return chanState[1]===1?"Aktif":"Belum"; }catch(e){ return "Belum"; } })();
+            } else if(qid==="tech-1"){
+              var sdh2=[], prs=[], blm=[];
+              try{ legalState.forEach(function(v,i){ if(v===2) sdh2.push(LABEL_LEGAL_DISKUSI[i]); else if(v===1) prs.push(LABEL_LEGAL_DISKUSI[i]); else blm.push(LABEL_LEGAL_DISKUSI[i]); }); }catch(e){}
+              d.legalitas_form=legalFormLabelDiskusi()||"belum dipilih";
+              d.izin_sudah=sdh2.length?sdh2:"belum ada izin yang sudah";
+              d.izin_proses=prs;
+              d.izin_belum=blm;
+            } else if(qid==="tech-2"){
+              d.pembukuan=bukuLabelDiskusi()||"belum dipilih";
+            }
+          }catch(e){}
+          return d;
+        }
+        /* ---------- langkah nyata berikutnya per pertanyaan ----------
+           Dipakai teks cadangan (dan sebagai contoh bagi AI): menunjuk
+           modul/formulir yang harus dibuka pengguna — bukan teori umum. */
+        var LANGKAH_DISKUSI={
+          "fin-0":"Buka Modul Keuangan & ekonomi dan pisahkan uang usaha dari uang pribadi — mulai dari satu rekening atau dompet digital khusus usaha.",
+          "fin-1":"Buka Pembukuan harian di Modul Keuangan & ekonomi dan catat semua transaksi hari ini, sekecil apa pun.",
+          "fin-2":"Buka panel Hitung HPP di AI Coach dan isi biaya per porsi produk Anda.",
+          "ops-0":"Buka modul Orang & Pembuat SOP dan tulis langkah kerja pertama Anda di sana.",
+          "ops-1":"Buka modul Orang & Pembuat SOP dan tulis siapa yang bisa menjalankan usaha bila Anda tidak hadir.",
+          "ops-2":"Buka Pembukuan harian, stok, piutang & laporan dan catat stok yang tersisa, mulai dari produk yang paling laris.",
+          "mkt-0":"Buka modul Produk & pemaketan dan lengkapi periksa label yang masih 'Belum'.",
+          "mkt-1":"Buka modul Produk & pemaketan dan unggah foto produk dari tiga sudut dengan cahaya terang.",
+          "mkt-2":"Buka modul Pemasaran & kanal penjualan dan aktifkan satu kanal online — mulai dari WhatsApp Business yang gratis.",
+          "tech-0":"Buka Modul Keuangan & ekonomi dan unggah kode QRIS usaha Anda, lalu aktifkan WhatsApp Business di modul Pemasaran & kanal penjualan.",
+          "tech-1":"Buka modul Legalitas & perizinan dan urus NIB di oss.go.id — gratis.",
+          "tech-2":"Buka Data usaha dan pilih 'Aplikasi kasir / akuntansi' di kolom Pembukuan, lalu catat transaksi harian di Modul Keuangan & ekonomi."
+        };
+        /* Satu kalimat ringkas tentang data terkait — dipakai teks cadangan
+           supaya masukan tetap menyebut data nyata walau AI tidak tersambung. */
+        function kalimatDataTerkait(qid){
+          var d=dataTerkaitDiskusi(qid); if(!d) return "";
+          if(qid==="fin-0") return "Pembukuan "+(d.pembukuan==="belum dipilih"?"belum dipilih":("Anda sekarang: "+d.pembukuan))+". Transaksi yang sudah tercatat: "+d.transaksi_tercatat+".";
+          if(qid==="fin-1"){
+            var s="Bulan ini sudah ada "+d.transaksi_bulan_ini+" transaksi tercatat (total "+d.transaksi_total+").";
+            if(d.transaksi_terakhir && d.transaksi_terakhir!=="belum ada transaksi tercatat") s+=" Terakhir: "+d.transaksi_terakhir.keterangan+" Rp"+Math.round(d.transaksi_terakhir.jumlah).toLocaleString("id-ID")+" ("+d.transaksi_terakhir.tanggal+").";
+            else s+=" Belum ada transaksi tercatat.";
+            return s;
+          }
+          if(qid==="fin-2") return "";
+          if(qid==="ops-0") return d.langkah_sop_terisi?("SOP Anda sekarang ada "+d.langkah_sop_terisi+" langkah tertulis"+(d.langkah_sop.length?(" — contoh: \""+d.langkah_sop[0]+"\"."):"")+"."):"Belum ada langkah SOP yang tertulis.";
+          if(qid==="ops-1") return d.ketergantungan_pemilik_persen==="belum diisi"?"Kolom ketergantungan usaha pada pemilik belum diisi.":"Ketergantungan usaha pada Anda: "+d.ketergantungan_pemilik_persen+"% — bila Anda tidak hadir, kira-kira segitu kegiatan yang berhenti.";
+          if(qid==="ops-2") return d.stok==="belum ada stok tercatat"?"Belum ada stok tercatat.":"Stok Anda sekarang: "+d.stok.map(function(x){ return x.nama+" "+x.jumlah+" ("+x.status+")"; }).join(", ")+".";
+          if(qid==="mkt-0") return (d.label_belum==="semua label sudah lengkap"?"Semua label kemasan sudah lengkap.":"Label yang masih 'Belum': "+d.label_belum.join("; ")+".")+(d.skor_kemasan!=null?(" Skor kemasan: "+d.skor_kemasan+"/100."):"");
+          if(qid==="mkt-1") return "Foto kemasan: "+d.foto_kemasan+". Sudut foto yang sudah diunggah: "+d.sudut_foto+" dari 3.";
+          if(qid==="mkt-2") return (d.kanal_aktif==="belum ada kanal aktif"?"Belum ada kanal yang aktif.":"Kanal yang sudah aktif: "+d.kanal_aktif.join(", ")+".")+" Cek data online sudah dilakukan di "+d.cek_online_dicek+" dari 9 sumber.";
+          if(qid==="tech-0") return "Kode QRIS: "+d.qris+". WhatsApp Business: "+d.whatsapp_business+".";
+          if(qid==="tech-1") return "Legalitas di formulir: "+d.legalitas_form+"."+(d.izin_sudah==="belum ada izin yang sudah"?" Belum ada izin yang berstatus Sudah.":" Izin yang sudah: "+d.izin_sudah.join(", ")+".");
+          if(qid==="tech-2") return "Pembukuan "+(d.pembukuan==="belum dipilih"?"belum dipilih":("Anda sekarang: "+d.pembukuan))+".";
+          return "";
+        }
+        function teksProdukDiskusi(u){
+          if(!u || !u.produk || !u.produk.length) return "belum ada produk di stok";
+          return u.produk.map(function(x){ return x.nama+" (beli Rp"+Math.round(x.beli).toLocaleString("id-ID")+", jual Rp"+Math.round(x.jual).toLocaleString("id-ID")+")"; }).join("; ");
+        }
+        function teksKotaDiskusi(u){
+          return (u && [u.kota,u.provinsi].filter(Boolean).join(", ")) || "kota belum diisi";
+        }
+        /* ---------- sebutan sapaan (Mas/Mbak/Ibu/Ayah) ----------
+           Satu-satunya sumber: kolom Panggilan di formulir Data Usaha
+           (inPanggilan; wizard menulis ke sana lewat applyWizard). Bila belum
+           dipilih, kembalikan "" — AI memakai sapaan netral dan TIDAK PERNAH
+           menebak sebutan. */
+        function sapaanPengguna(){
+          var el=gid("inPanggilan");
+          var v=el?String(el.value||"").trim():"";
+          return (v==="Mas"||v==="Mbak"||v==="Ibu"||v==="Ayah") ? v : "";
+        }
+        function kalimatSapaan(){
+          var s=sapaanPengguna();
+          return s ? ("Sapa pengguna dengan sebutan \""+s+"\" secara natural menggantikan kata \"Anda\" (contoh: \""+s+", coba ceritakan…\").") : "";
+        }
+        window.__sapaanPengguna=sapaanPengguna;
         function diskusiCadangan(qid, label){
           var p=PERTANYAAN_DISKUSI[qid]; if(!p) return "";
-          return "Soal \""+p.teks+"\", jawaban Anda sekarang \""+label+"\". Ceritakan sedikit bagaimana keadaan sebenarnya di usaha Anda, supaya AI bisa menilai apakah jawaban ini sudah tepat. Silakan jawab di kolom chat di bawah ini.";
+          /* "A" adalah sebutan sapaan bila dipilih (Mas/Mbak/Ibu/Ayah),
+             bila tidak dipilih tetap "Anda" — teks cadangan netral. */
+          var sp=sapaanPengguna(); var A=sp||"Anda"; var awal=sp?sp+", ":"";
+          if(qid===HPP_QID){
+            var u=konteksUsahaDiskusi(qid);
+            if(u.produk.length){
+              var pr=u.produk[0];
+              return awal+"Soal \""+p.teks+"\", jawaban "+A+" sekarang \""+label+"\". Mari hitung HPP "+pr.nama+" di "+teksKotaDiskusi(u)+" bersama-sama: buka panel Hitung HPP di AI Coach, isi biaya bahan per porsi, lalu lihat hasilnya — harga jualnya sekarang Rp"+Math.round(pr.jual).toLocaleString("id-ID")+". Berapa biaya bahan untuk satu porsi "+pr.nama+" di tempat "+A+" biasa belanja? Silakan jawab di kolom chat di bawah ini.";
+            }
+            return awal+"Soal \""+p.teks+"\", jawaban "+A+" sekarang \""+label+"\". Sebutkan satu produk yang paling laris dan di kota mana "+A+" membeli bahannya — nanti kita hitung HPP-nya bersama di panel Hitung HPP. Produk apa yang mau dihitung dulu? Silakan jawab di kolom chat di bawah ini.";
+          }
+          /* 11 pertanyaan lain: teks cadangan menyebut data terkait yang nyata
+             (stok, kanal, skor, angka) + satu langkah nyata yang menunjuk
+             modul/formulir yang harus dibuka. */
+          var rincian=kalimatDataTerkait(qid);
+          var langkah=LANGKAH_DISKUSI[qid]||"";
+          return awal+"Soal \""+p.teks+"\", jawaban "+A+" sekarang \""+label+"\". "+(rincian?rincian+" ":"")+"Ceritakan sedikit keadaan sebenarnya di usaha "+A+", supaya AI bisa menilai apakah jawaban ini sudah tepat."+(langkah?(" Langkah nyata berikutnya: "+langkah):"")+" Silakan jawab di kolom chat di bawah ini.";
         }
         function tanyaDiskusiAI(qid, label){
           var p=PERTANYAAN_DISKUSI[qid]; if(!p) return Promise.reject(new Error("pertanyaan tidak dikenal"));
-          var prompt="Dalam Bahasa Indonesia sederhana, beri satu masukan singkat tentang jawaban introspeksi ini. Pertanyaan: \""+p.teks+"\". Jawaban pengguna sekarang: \""+label+"\". Skor dimensi "+p.namaDimensi+": "+skorDimensiDiskusi(p.dimensi)+"/100. Tanyakan satu hal sederhana yang membantu pengguna menceritakan keadaan sebenarnya di usaha mereka.";
-          var body={prompt:prompt, question:prompt, context:{jenis:"diskusi_jawaban", pertanyaan_id:qid, pertanyaan:p.teks, jawaban:label, skor_dimensi:skorDimensiDiskusi(p.dimensi)}, petunjuk:"Beri maksimal satu masukan singkat, lalu ajukan maksimal satu pertanyaan sederhana, dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."};
+          var u=konteksUsahaDiskusi(qid);
+          var prompt="Dalam Bahasa Indonesia sederhana, beri satu masukan singkat tentang jawaban introspeksi ini. Pertanyaan: \""+p.teks+"\". Jawaban pengguna sekarang: \""+label+"\". Skor dimensi "+p.namaDimensi+": "+skorDimensiDiskusi(p.dimensi)+"/100. Usaha ini: sektor "+(u.sektor||"belum diisi")+", di "+teksKotaDiskusi(u)+", omzet Rp"+Math.round(u.omzet_per_bulan).toLocaleString("id-ID")+" per bulan, HPP saat ini "+(u.hpp_saat_ini!=null?String(u.hpp_saat_ini).replace(".",",")+"%":"belum diisi")+". Produk di stok: "+teksProdukDiskusi(u)+". Data terkait pertanyaan ini: "+JSON.stringify(u.data_terkait||{})+". Tanyakan satu hal sederhana yang memakai data usaha ini dan membantu pengguna menceritakan keadaan sebenarnya di usaha mereka."
+            + (qid===HPP_QID ? " Bantu pengguna menghitung HPP produk mereka dengan angka sebenarnya dari data di atas — jangan memberi teori umum, dan jangan membuat-buat harga bahan." : "");
+          var petunjuk="Sebut data usaha pengguna di konteks dengan nama dan angka sebenarnya untuk pertanyaan ini (lihat data_terkait di konteks: produk, stok, kanal, skor, atau angka yang ada). Jangan memberi teori umum. Jangan pernah membuat-buat harga bahan, harga jual, atau angka yang tidak ada di konteks — bila datanya belum ada, tanyakan berapa yang sebenarnya. Beri maksimal satu masukan singkat, lalu ajukan maksimal satu pertanyaan sederhana yang memakai data usaha pengguna, dan tutup dengan SATU langkah nyata berikutnya yang menyebut nama modul atau formulir di aplikasi yang harus dibuka pengguna. Akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."
+            + (qid===HPP_QID ? " Untuk HPP: ajak pengguna memakai panel Hitung HPP dan menyebut produknya dengan nama." : "")
+            + (kalimatSapaan()?" "+kalimatSapaan():"");
+          var body={prompt:prompt, question:prompt, context:{jenis:"diskusi_jawaban", pertanyaan_id:qid, pertanyaan:p.teks, jawaban:label, skor_dimensi:skorDimensiDiskusi(p.dimensi), sektor:u.sektor, kota:u.kota, provinsi:u.provinsi, omzet_per_bulan:u.omzet_per_bulan, hpp_saat_ini:u.hpp_saat_ini, produk:u.produk, data_terkait:u.data_terkait||{}, sapaan:sapaanPengguna()}, petunjuk:petunjuk};
           function batasWaktu(ms){ return new Promise(function(_, tolak){ setTimeout(function(){ tolak(new Error("waktu habis")); }, ms); }); }
           function bersihkan(teks){
             if(typeof window.__bersihkanJawabanAI==="function") return window.__bersihkanJawabanAI(teks);
@@ -3980,6 +4250,9 @@
           perbaruiBarTopik();
           var tb=gid("diskusiTombol"); if(tb) tb.style.display="flex";
           tandaiTombolDiskusi();
+          /* Panel Hitung HPP hanya untuk topik HPP (fin-2); topik lain
+             menyembunyikannya. */
+          if(qid===HPP_QID) tampilkanPanelHpp(); else sembunyikanPanelHpp();
           /* Masukan AI tampil sebagai gelembung pertama di riwayat AI Coach
              (hanya saat topik baru disematkan — buka ulang topik yang sama
              tidak mengulang gelembung). */
@@ -3993,6 +4266,7 @@
           topikDiskusiGelembung=null;
           var bar=gid("topikDiskusiBar"); if(bar) bar.style.display="none";
           var tb=gid("diskusiTombol"); if(tb) tb.style.display="none";
+          sembunyikanPanelHpp();
         }
         function sinkronKartuDiskusi(qid){
           var v=answers[qid];
@@ -4000,7 +4274,7 @@
           if(el){ if(v===2) el.style.display="none"; else if(!diskusiDitutup[qid]) el.style.display="block"; }
           perbaruiBarTopik();
         }
-        function terapkanJawabanDiskusi(qid, v){
+        function terapkanJawabanDiskusi(qid, v, teksGelembung){
           if(!PERTANYAAN_DISKUSI[qid]) return;
           answers[qid]=v;
           document.querySelectorAll('button[data-k="'+qid+'"]').forEach(function(x){ x.setAttribute("aria-pressed", (+x.dataset.v===v)?"true":"false"); });
@@ -4008,9 +4282,102 @@
           /* Jalur simpan normal: perubahan jawaban mengubah snapshot, jadi
              interval autosave 2 detik menyimpannya seperti klik langsung
              pada tombol jawaban (tidak ada jalur simpan khusus di sini). */
-          try{ if(typeof window.__tampilSapaAI==="function") window.__tampilSapaAI("Jawaban diubah jadi '"+LABEL_JAWABAN[v]+"'. Skor dan rencana diperbarui."); }catch(e){}
+          try{ if(typeof window.__tampilSapaAI==="function") window.__tampilSapaAI(teksGelembung || ("Jawaban diubah jadi '"+LABEL_JAWABAN[v]+"'. Skor dan rencana diperbarui.")); }catch(e){}
           sinkronKartuDiskusi(qid);
           tandaiTombolDiskusi();
+        }
+
+        /* ---------- Panel Hitung HPP di dalam diskusi (hanya topik fin-2) ----------
+           Panel memakai rumus yang SAMA dengan Kalkulator HPP di bagian Keuangan &
+           ekonomi (recalcFinance): kelima kolom biayanya disinkronkan dua arah
+           dengan kolom hBahan..hMargin, lalu recalc() dijalankan. AI tidak pernah
+           menghitung atau menulis angka — semua angka di panel berasal dari rumus
+           aplikasi dan dari isian pengguna sendiri. Tombol simpan menulis HPP%
+           hasil hitungan ke inHpp dan mengubah jawaban HPP jadi "Sudah". */
+        var HP_PANEL={bahan:"hpBahan",kemasan:"hpKemasan",energi:"hpEnergi",tenaga:"hpTenaga",lain:"hpLain",margin:"hpMargin"};
+        var HP_SEC05={bahan:"hBahan",kemasan:"hKemasan",energi:"hEnergi",tenaga:"hTenaga",lain:"hLain",margin:"hMargin"};
+        function hppPanelTerlihat(){ var el=gid("panelHppDiskusi"); return !!el && el.style.display!=="none"; }
+        function hppPanelKosong(){
+          return ["hpBahan","hpKemasan","hpEnergi","hpTenaga","hpLain"].every(function(id){ var el=gid(id); return !el || !String(el.value||"").trim(); });
+        }
+        function isiPemilihProdukHpp(){
+          var sel=gid("hpProduk"); if(!sel) return;
+          var cur=sel.value;
+          sel.innerHTML="";
+          var daftar=((typeof stocks!=="undefined")?stocks:[]).slice(0,5);
+          daftar.forEach(function(s,i){
+            var o=document.createElement("option");
+            o.value=String(i);
+            o.textContent=(s.nama||"Produk")+" — beli Rp"+Math.round(s.beli||0).toLocaleString("id-ID")+" / jual Rp"+Math.round(s.jual||0).toLocaleString("id-ID");
+            sel.appendChild(o);
+          });
+          var oL=document.createElement("option"); oL.value="__lain"; oL.textContent="Produk lain (tulis nama sendiri)"; sel.appendChild(oL);
+          if(cur && sel.querySelector('option[value="'+cur+'"]')) sel.value=cur;
+          else if(daftar.length) sel.value="0";
+          else sel.value="__lain";
+        }
+        function produkHppTerpilih(){
+          var sel=gid("hpProduk"); if(!sel) return null;
+          if(sel.value==="__lain"){
+            var nm=(gid("hpNamaLain")?gid("hpNamaLain").value:"").trim();
+            return {nama:nm, jual:0, lain:true};
+          }
+          var idx=parseInt(sel.value,10); if(isNaN(idx)) return null;
+          var s=((typeof stocks!=="undefined")?stocks:[])[idx]; if(!s) return null;
+          return {nama:s.nama||"", jual:Math.round(s.jual||0), lain:false};
+        }
+        function terapkanProdukHpp(){
+          var sel=gid("hpProduk"); if(!sel) return;
+          var wrap=gid("hpNamaLainWrap");
+          if(sel.value==="__lain"){ if(wrap) wrap.style.display="block"; }
+          else{
+            if(wrap) wrap.style.display="none";
+            var s=((typeof stocks!=="undefined")?stocks:[])[parseInt(sel.value,10)];
+            if(s){
+              var hb=gid("hpBahan"); if(hb) hb.value=(s.beli||0)>0?Math.round(s.beli):"";
+              var hj=gid("hpJual"); if(hj) hj.value=(s.jual||0)>0?Math.round(s.jual):"";
+              var sb=gid("hBahan"); if(sb) sb.value=hb?hb.value:"";
+              if(typeof recalc==="function"){ try{ recalc(); }catch(e){} }
+            }
+          }
+          segarkanHppDiskusi();
+        }
+        function hitungHppDiskusi(){
+          function n(id){ var el=gid(id); var v=el?parseFloat(el.value):0; return isNaN(v)?0:v; }
+          var hpp=n("hpBahan")+n("hpKemasan")+n("hpEnergi")+n("hpTenaga")+n("hpLain");
+          var jual=n("hpJual");
+          var pr=produkHppTerpilih();
+          return {produk:(pr&&pr.nama)||"", harga_jual:Math.round(jual), hpp_per_porsi:Math.round(hpp),
+            hpp_persen: jual>0 ? Math.round(hpp/jual*1000)/10 : null,
+            margin_persen: jual>0 ? Math.round((jual-hpp)/jual*1000)/10 : null};
+        }
+        function segarkanHppDiskusi(){
+          var r=hitungHppDiskusi();
+          var t=gid("hppDiskusiTotal"), p=gid("hppDiskusiPersen"), m=gid("hppDiskusiMargin"), ps=gid("hppDiskusiPesan"), btn=gid("btnSimpanHpp");
+          if(t) t.textContent = r.hpp_per_porsi>0 ? fmtFull(r.hpp_per_porsi) : "—";
+          if(p) p.textContent = r.hpp_persen!=null ? String(r.hpp_persen).replace(".",",")+"%" : "—";
+          if(m) m.textContent = r.margin_persen!=null ? String(r.margin_persen).replace(".",",")+"%" : "—";
+          var bisa = r.hpp_per_porsi>0 && r.harga_jual>0;
+          if(btn) btn.disabled=!bisa;
+          if(ps) ps.textContent = bisa ? "" : (r.harga_jual<=0 ? "Isi harga jual dulu supaya HPP% bisa dihitung." : "Isi biaya-biaya di atas dulu supaya HPP bisa dihitung.");
+        }
+        function tampilkanPanelHpp(){
+          var el=gid("panelHppDiskusi"); if(!el) return;
+          el.style.display="block";
+          isiPemilihProdukHpp();
+          if(hppPanelKosong()) terapkanProdukHpp();
+          else segarkanHppDiskusi();
+        }
+        function sembunyikanPanelHpp(){
+          var el=gid("panelHppDiskusi"); if(el) el.style.display="none";
+        }
+        function simpanHppDiskusi(){
+          var r=hitungHppDiskusi();
+          if(!(r.hpp_per_porsi>0 && r.harga_jual>0)) return;
+          var pct=r.hpp_persen;
+          var inp=gid("inHpp"); if(inp) inp.value=pct;
+          var nama=r.produk||"produk";
+          terapkanJawabanDiskusi(HPP_QID, 2, "HPP "+nama+" Rp "+Math.round(r.hpp_per_porsi).toLocaleString("id-ID")+" per porsi ("+String(pct).replace(".",",")+"% dari harga jual Rp "+Math.round(r.harga_jual).toLocaleString("id-ID")+") sudah tersimpan. Jawaban HPP diubah jadi 'Sudah' — skor diperbarui.");
         }
         (function(){
           var bTutup=gid("btnTutupTopik");
@@ -4022,15 +4389,46 @@
               terapkanJawabanDiskusi(topikDiskusiAktif.qid, +b.dataset.v);
             });
           });
+          /* Panel Hitung HPP: sinkron dua arah dengan Kalkulator HPP bagian 05
+             (kolom hpBahan..hpMargin <-> hBahan..hMargin). Penyetelan nilai
+             lewat kode tidak memicu event input, jadi tidak ada putaran. */
+          var selProduk=gid("hpProduk");
+          if(selProduk) selProduk.addEventListener("change", terapkanProdukHpp);
+          ["hpBahan","hpKemasan","hpEnergi","hpTenaga","hpLain","hpMargin"].forEach(function(id){
+            var el=gid(id); if(!el) return;
+            el.addEventListener("input", function(){
+              var kunci=id.replace("hp","").toLowerCase();
+              var target=HP_SEC05[kunci]; if(target){ var s05=gid(target); if(s05) s05.value=el.value; }
+              if(typeof recalc==="function"){ try{ recalc(); }catch(e){} }
+              segarkanHppDiskusi();
+            });
+          });
+          var hj=gid("hpJual"); if(hj) hj.addEventListener("input", segarkanHppDiskusi);
+          var nl=gid("hpNamaLain"); if(nl) nl.addEventListener("input", segarkanHppDiskusi);
+          ["hBahan","hKemasan","hEnergi","hTenaga","hLain","hMargin"].forEach(function(id){
+            var el=gid(id); if(!el) return;
+            el.addEventListener("input", function(){
+              if(!hppPanelTerlihat()) return;
+              var kunci=id.replace("h","").toLowerCase();
+              var target=HP_PANEL[kunci]; if(target){ var p=gid(target); if(p) p.value=el.value; }
+              segarkanHppDiskusi();
+            });
+          });
+          var bSimpan=gid("btnSimpanHpp"); if(bSimpan) bSimpan.addEventListener("click", simpanHppDiskusi);
         })();
         /* Celah uji (jsdom): fungsi dalam dipakai harness, bukan fitur pengguna. */
         window.__picuDiskusiJawaban=picuDiskusiJawaban;
+        window.__konteksUsahaDiskusi=konteksUsahaDiskusi;
         window.__diskusiUji={
           pertanyaan:PERTANYAAN_DISKUSI, cache:function(){ return diskusiCache; },
           ditutup:function(){ return diskusiDitutup; },
           picu:picuDiskusiJawaban, bukaCoach:bukaDiskusiCoach, tutupTopik:tutupTopikDiskusi,
           terapkan:terapkanJawabanDiskusi, topikAktif:function(){ return topikDiskusiAktif; },
-          tanya:tanyaDiskusiAI, cadangan:diskusiCadangan
+          tanya:tanyaDiskusiAI, cadangan:diskusiCadangan,
+          konteksUsaha:konteksUsahaDiskusi, hppHitung:hitungHppDiskusi,
+          hppPanelTerlihat:hppPanelTerlihat, simpanHpp:simpanHppDiskusi,
+          hppQid:function(){ return HPP_QID; }, sapaan:sapaanPengguna,
+          dataTerkait:dataTerkaitDiskusi, kalimatData:kalimatDataTerkait
         };
         /* Kartu "langkah berikutnya" di layar Hari Ini memakai penentu langkah
            yang sama dengan sapaan proaktif. */
@@ -4070,6 +4468,18 @@
         function rp(n){ try{ return fmtShort(n||0); }catch(e){ return "Rp "+Math.round(n||0).toLocaleString("id-ID"); } }
         function numOf(id){ var el=gid(id); var v=el?parseFloat(el.value):0; return isNaN(v)?0:v; }
 
+        /* Sebutan sapaan (Mas/Mbak/Ibu/Ayah) — dibaca dari kolom Panggilan
+           (inPanggilan); bila belum dipilih, "" (netral, tidak pernah menebak).
+           Dipakai di semua konteks/petunjuk AI di blok ini. */
+        function sapaanPenggunaCoach(){
+          try{ if(typeof window.__sapaanPengguna==="function") return window.__sapaanPengguna(); }catch(e){}
+          var el=gid("inPanggilan"); var v=el?String(el.value||"").trim():""; return (v==="Mas"||v==="Mbak"||v==="Ibu"||v==="Ayah")?v:"";
+        }
+        function kalimatSapaanCoach(){
+          var s=sapaanPenggunaCoach();
+          return s ? ("Sapa pengguna dengan sebutan \""+s+"\" secara natural menggantikan kata \"Anda\" (contoh: \""+s+", coba ceritakan…\").") : "";
+        }
+
         function aiContext(){
           var c={};
           try{
@@ -4086,6 +4496,7 @@
             c.valuasi_tinggi = Math.round(S.valHigh||0);
             c.multiple_valuasi = S.mult || 0;
             var sel=gid("inSektor"); c.jenis_usaha = (sel && sel.value) ? sel.value : null;
+            c.sapaan=sapaanPenggunaCoach();
           }catch(e){}
           return c;
         }
@@ -4176,7 +4587,11 @@
           target.textContent="Sedang berpikir… AI Coach sedang menyiapkan penjelasan sederhana untuk Anda.";
           function fallback(){ target.textContent=localExplain(prompt)+"\n\nAI belum tersambung — ini penjelasan dari perhitungan aplikasi."; }
           try{
-            fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt, question:prompt, context:aiContext()})})
+            /* Sebutan sapaan ikut sebagai petunjuk bila dipilih; bila belum
+               dipilih, kunci petunjuk dihilangkan (JSON membuang undefined)
+               supaya bentuk permintaan sama seperti sebelumnya. */
+            var petunjukAskAI=kalimatSapaanCoach();
+            fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt, question:prompt, context:aiContext(), petunjuk:petunjukAskAI||undefined})})
               .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
               .then(function(data){
                 var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
@@ -4254,10 +4669,35 @@
                  ketukan pengguna pada tiga tombol di bawah kolom chat. */
               var topikDiskusi=(logId==="coachChat") ? window.__topikDiskusiAktif : null;
               var ctxDiskusi=aiContext();
-              var petunjukDiskusi="Bila perlu bertanya balik, ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini.";
+              var petunjukDiskusi="Bila perlu bertanya balik, ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."+(kalimatSapaanCoach()?" "+kalimatSapaanCoach():"");
               if(topikDiskusi){
-                ctxDiskusi.topik_diskusi={pertanyaan_id:topikDiskusi.qid, pertanyaan:topikDiskusi.teks, jawaban:topikDiskusi.jawaban||null};
-                petunjukDiskusi="Anda sedang membahas jawaban introspeksi \""+topikDiskusi.teks+"\" (jawaban sekarang: \""+(topikDiskusi.jawaban||"—")+"\"). Bila cerita pengguna menunjukkan jawabannya perlu berubah, sarankan SATU tingkat yang paling tepat dengan kalimat: Saya sarankan jawaban ini 'Sebagian' — ketuk tombolnya di bawah bila setuju. (Ganti 'Sebagian' dengan tingkat yang Anda sarankan: Belum, Sebagian, atau Sudah.) Lalu akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini.";
+                ctxDiskusi.topik_diskusi={pertanyaan_id:topikDiskusi.qid, pertanyaan:topikDiskusi.teks, jawaban:topikDiskusi.jawaban||null, sapaan:sapaanPenggunaCoach()};
+                /* Konteks diskusi memakai data usaha nyata (sektor, kota, omzet,
+                   HPP, produk) + data terkait pertanyaan itu (data_terkait:
+                   stok, kanal, skor, izin, angka) + hasil hitungan HPP panel
+                   bila topiknya HPP — supaya AI menjawab spesifik, bukan teori
+                   umum, dan tidak membuat-buat harga. Nama, email, HP, dan GPS
+                   tidak pernah ikut. */
+                try{
+                  if(typeof window.__konteksUsahaDiskusi==="function"){
+                    var uDiskusi=window.__konteksUsahaDiskusi(topikDiskusi.qid);
+                    ctxDiskusi.topik_diskusi.sektor=uDiskusi.sektor;
+                    ctxDiskusi.topik_diskusi.kota=uDiskusi.kota;
+                    ctxDiskusi.topik_diskusi.provinsi=uDiskusi.provinsi;
+                    ctxDiskusi.topik_diskusi.omzet_per_bulan=uDiskusi.omzet_per_bulan;
+                    ctxDiskusi.topik_diskusi.hpp_saat_ini=uDiskusi.hpp_saat_ini;
+                    ctxDiskusi.topik_diskusi.produk=uDiskusi.produk;
+                    ctxDiskusi.topik_diskusi.data_terkait=uDiskusi.data_terkait||{};
+                  }
+                  if(topikDiskusi.qid==="fin-2" && window.__diskusiUji && typeof window.__diskusiUji.hppHitung==="function"){
+                    var hDiskusi=window.__diskusiUji.hppHitung();
+                    if(hDiskusi) ctxDiskusi.topik_diskusi.hpp_hitungan=hDiskusi;
+                  }
+                }catch(e){}
+                petunjukDiskusi="Anda sedang membahas jawaban introspeksi \""+topikDiskusi.teks+"\" (jawaban sekarang: \""+(topikDiskusi.jawaban||"—")+"\"). Sebut data usaha pengguna di konteks dengan nama dan angka sebenarnya untuk pertanyaan ini (lihat data_terkait di konteks). Jangan memberi teori umum. Jangan pernah membuat-buat harga bahan, harga jual, atau angka yang tidak ada di konteks — bila datanya belum ada, tanyakan berapa yang sebenarnya."
+                  + (topikDiskusi.qid==="fin-2" ? " Untuk HPP: bila konteks berisi hpp_hitungan, sebutkan hasil hitungannya dengan angka sebenarnya (HPP per porsi, HPP% dari harga jual, margin) dan bantu pengguna menyesuaikan biayanya di panel Hitung HPP." : "")
+                  + " Bila cerita pengguna menunjukkan jawabannya perlu berubah, sarankan SATU tingkat yang paling tepat dengan kalimat: Saya sarankan jawaban ini 'Sebagian' — ketuk tombolnya di bawah bila setuju. (Ganti 'Sebagian' dengan tingkat yang Anda sarankan: Belum, Sebagian, atau Sudah.) Tutup dengan SATU langkah nyata berikutnya yang menyebut nama modul atau formulir yang harus dibuka pengguna, lalu akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."
+                  + (kalimatSapaanCoach()?" "+kalimatSapaanCoach():"");
               }
               fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:q, question:q, context:ctxDiskusi, history:history.slice(), petunjuk:petunjukDiskusi})})
                 .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
@@ -4651,6 +5091,7 @@
           // supaya pengguna yang menekan "Ubah usaha" tinggal mengubah yang perlu.
           if(gid("inNama") && gid("inNama").value) gid("wizNama").value=gid("inNama").value;
           if(gid("inSektor") && gid("inSektor").value) gid("wizSektor").value=gid("inSektor").value;
+          if(gid("inPanggilan") && gid("inPanggilan").value) gid("wizPanggilan").value=gid("inPanggilan").value;
           if(window.__setWilayah) window.__setWilayah(gid("inProvinsi")?gid("inProvinsi").value:"", gid("inKota")?gid("inKota").value:"");
           var omz=numOf("inOmzet"), hpp=numOf("inHpp");
           if(omz>0) gid("wizOmzet").value=omz;
@@ -4734,6 +5175,7 @@
         function applyWizard(){
           var nama=gid("wizNama").value.trim(); if(nama) gid("inNama").value=nama;
           if(gid("wizSektor").value) gid("inSektor").value=gid("wizSektor").value;
+          if(gid("wizPanggilan").value) gid("inPanggilan").value=gid("wizPanggilan").value;
           var wProv=gid("wizProvinsi")?gid("wizProvinsi").value:"";
           var wKota=gid("wizKota")?gid("wizKota").value:"";
           if(window.__setWilayah) window.__setWilayah(wProv, wKota);
@@ -4973,6 +5415,7 @@
           newPassConfirm:{s:"Ketik ulang kata sandi baru yang sama persis seperti kolom di atasnya, supaya tidak ada salah ketik.",e:"Isinya harus sama persis dengan kolom Kata sandi baru, termasuk huruf besar dan kecilnya.",h:"Bila muncul pesan tidak sama, periksa lagi kedua kolom huruf demi huruf, lalu ketuk Simpan kata sandi baru lagi."},
           inNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan.",e:"Dapur Bu Sari.",h:"Cukup nama yang dikenal pelanggan."},
           inSektor:{s:"Bidang usaha utama Anda. Pilihan ini menentukan saran kemasan, cara hitung, dan angka pembanding yang dipakai aplikasi.",e:"Warung makan memilih Kuliner, toko kelontong memilih Retail, laundry memilih Jasa.",h:"Pilih yang paling dekat dengan kegiatan yang menghasilkan uang paling besar."},
+          inPanggilan:{s:"Sebutan ramah yang dipakai AI Coach saat menyapa dan memandu Anda (Mas, Mbak, Ibu, atau Ayah).",e:"Pilih Ibu bila Anda ingin disapa Ibu, atau Mas bila Anda ingin disapa Mas.",h:"Pilih yang paling nyaman untuk Anda. Boleh dikosongkan — AI akan menyapa secara netral tanpa sebutan."},
           inProvinsi:{s:"Provinsi tempat usaha Anda berjalan saat ini.",e:"Usaha di Surabaya memilih Jawa Timur.",h:"Ketuk daftarnya, lalu pilih satu provinsi. Setelah itu kolom kota/kabupaten di sebelahnya terisi daftar dari provinsi itu."},
           inKota:{s:"Kota atau kabupaten tempat usaha Anda berjalan.",e:"Kota Surabaya, Kabupaten Sidoarjo.",h:"Pilih provinsi dulu — daftar di kolom ini hanya berisi kota/kabupaten dari provinsi tersebut."},
           wizProvinsi:{s:"Provinsi tempat usaha Anda berjalan saat ini.",e:"Usaha di Surabaya memilih Jawa Timur.",h:"Pilih satu provinsi, lalu lanjut memilih kota/kabupatennya."},
@@ -5038,6 +5481,7 @@
           sopTujuan:{s:"Hasil akhir yang diharapkan bila langkah-langkah ini dijalankan dengan benar.",e:"Warung siap jualan pukul 06.00 dengan rasa dan tampilan yang sama setiap hari.",h:"Tulis dalam satu kalimat yang bisa diperiksa benar atau salahnya."},
           wizNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan.",e:"Dapur Bu Sari.",h:"Cukup nama yang dikenal pelanggan."},
           wizSektor:{s:"Bidang usaha utama Anda. Pilihan ini menentukan saran dan angka pembanding untuk usaha Anda.",e:"Warung makan memilih Kuliner; laundry memilih Jasa.",h:"Pilih yang paling dekat dengan penghasilan utama Anda."},
+          wizPanggilan:{s:"Sebutan ramah yang dipakai AI Coach saat menyapa dan memandu Anda (Mas, Mbak, Ibu, atau Ayah).",e:"Pilih Ibu bila Anda ingin disapa Ibu.",h:"Pilih yang paling nyaman untuk Anda. Boleh dilewati — AI akan menyapa secara netral tanpa sebutan."},
           cekUrl1:{s:"Tautan halaman publik usaha Anda di Google Maps / Profil Bisnis Google. Aplikasi meminta server membaca halaman publik itu dan menampilkan rating serta jumlah ulasan yang terbaca untuk Anda bandingkan.",e:"Tautan dari tombol Bagikan di Google Maps untuk tempat usaha Anda.",h:"Buka Google Maps, cari usaha Anda, ketuk Bagikan, salin tautannya, lalu tempel di sini dan ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda."},
           cekUrl2:{s:"Tautan halaman publik toko Anda di Tokopedia. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Tokopedia.",h:"Salin tautan toko Tokopedia Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
           cekUrl3:{s:"Tautan halaman publik toko Anda di Shopee. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Shopee.",h:"Salin tautan toko Shopee Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
