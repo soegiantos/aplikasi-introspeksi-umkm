@@ -140,6 +140,7 @@
       body[data-layar]:not([data-layar="pemasaran"]) #pemasaran{display:none!important}
       body[data-layar]:not([data-layar="sop"]) #sop{display:none!important}
       body[data-layar]:not([data-layar="portal"]) #portal{display:none!important}
+      body[data-layar]:not([data-layar="paket"]) #paket{display:none!important}
       .btn-kembali-layar{margin:0 0 10px}
 
       /* ---------- scores ---------- */
@@ -270,6 +271,12 @@
       .sync-pill{font-size:.78rem;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--teal-soft);color:#8fd3dc}
       .sync-pill.warn{background:var(--warn-soft);color:var(--warn)}
       .sync-pill.err{background:var(--warn-soft);color:var(--warn)}
+      /* ---------- strip status akun (selalu terlihat di bawah topbar) ---------- */
+      .status-strip{display:flex;align-items:center;gap:4px 10px;flex-wrap:wrap;padding:7px 18px;border-top:1px solid var(--line);background:var(--gold-soft);cursor:pointer}
+      .status-strip .status-pill{font-size:.88rem;font-weight:800;color:var(--ink)}
+      .status-strip .status-sub{font-size:.82rem;color:var(--ink-soft)}
+      .status-strip .status-hint{margin-left:auto;font-size:.78rem;color:var(--ink-soft);font-weight:600}
+      .status-strip .btn{margin-left:auto}
       .btn.small{min-height:40px;padding:8px 13px;font-size:.86rem}
       .sql-banner{display:none;background:var(--warn-soft);border:1px solid var(--warn);color:var(--ink);border-radius:12px;padding:14px 16px;margin-top:16px;font-size:.93rem}
       .sql-banner.show{display:block}
@@ -630,6 +637,7 @@
         <button class="btn" id="btnFriendlyPopupOk" type="button" style="width:100%;margin-top:18px">Mengerti</button>
       </div>
     </div>
+
     <script>
       /* Satu-satunya wadah pesan kesalahan di aplikasi: pop-up ramah berbahasa
          Indonesia sederhana — judul + apa yang terjadi + apa yang harus dilakukan.
@@ -696,6 +704,14 @@
           <button class="btn ghost small" id="btnLogout" type="button">Keluar</button>
         </div>
       </div>
+    </div>
+
+    <!-- ============ STRIP STATUS AKUN: selalu terlihat, ketuk untuk detail ============ -->
+    <div class="status-strip" id="statusAkunStrip" role="button" tabindex="0" aria-label="Status akun — ketuk untuk detail">
+      <span class="status-pill" id="statusAkunPill">Mode coba — belum daftar</span>
+      <span class="status-sub" id="statusAkunSub">Data tersimpan di HP ini saja</span>
+      <span class="status-hint" id="statusAkunHint">Ketuk untuk detail</span>
+      <button class="btn small" id="statusAkunDaftar" type="button" style="display:none">Daftar</button>
     </div>
 
     <div class="guest-banner" id="guestBanner" role="status">
@@ -1367,7 +1383,7 @@
           <div class="grid-2" style="margin-top:14px">
             <div class="card" style="margin:0">
               <h3>Bulanan</h3>
-              <p style="font-size:1.5rem;font-weight:800" id="hargaBulanan">Rp29.000</p>
+              <p style="font-size:1.5rem;font-weight:800" id="hargaBulanan">Rp30.000</p>
               <p class="note">Pro selama 1 bulan, termasuk portal investor dan kuota AI 300 pertanyaan per bulan.</p>
               <div class="actions"><button class="btn" id="btnLanggananBulanan" type="button">Pilih Bulanan</button></div>
             </div>
@@ -1394,7 +1410,7 @@
             <div class="form-grid" style="margin-top:10px">
               <label class="f"><span>Kode QRIS pembayaran (foto)</span><input type="file" id="adminQrisPhoto" accept="image/*" /></label>
               <label class="f"><span>Nama penerima</span><input type="text" id="adminNamaPenerima" placeholder="contoh: Lab Sistem Cerdas Fisika" autocomplete="off" /></label>
-              <label class="f"><span>Harga Bulanan (Rp)</span><input type="number" id="adminHargaBulanan" placeholder="contoh: 29000" min="0" step="1000" /></label>
+              <label class="f"><span>Harga Bulanan (Rp)</span><input type="number" id="adminHargaBulanan" placeholder="contoh: 30000" min="0" step="1000" /></label>
               <label class="f"><span>Harga Tahunan (Rp)</span><input type="number" id="adminHargaTahunan" placeholder="contoh: 290000" min="0" step="1000" /></label>
             </div>
             <div id="adminQrisPratinjau" style="margin-top:8px"></div>
@@ -1403,6 +1419,28 @@
             <div class="actions"><button class="btn ghost small" id="btnMuatAntrean" type="button">Muat ulang antrean</button></div>
             <div id="langgananAntrean" style="margin-top:10px"></div>
           </div>
+        </div>
+      </section>
+
+      <!-- ============ 15. PAKET & LAYANAN (halaman detail status akun — dibuka dari bilah status di atas) ============ -->
+      <section id="paket">
+        <div class="sec-head"><span class="sec-num">15</span><h2>Paket &amp; Layanan</h2></div>
+        <p class="sec-sub">Apa yang Anda dapat di setiap tahap — tanpa daftar, setelah daftar, dan bila berlangganan.</p>
+        <div class="card">
+          <h3>1. Mode Coba — tanpa daftar</h3>
+          <p>Semua bisa dicoba tanpa daftar: 9 modul aplikasi, valuasi usaha, dan AI Coach bisa dipakai. Data usaha hanya tersimpan di HP ini — tidak tersimpan di cloud dan tidak bisa dibuka di HP lain. Daftar kapan saja, dan data coba Anda pindah ke akun baru Anda.</p>
+          <div class="actions"><button class="btn" id="btnPaketDaftar" type="button">Daftar</button></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>2. Terdaftar — Gratis</h3>
+          <p>Setelah daftar dan konfirmasi email, data usaha tersimpan di cloud, aman, dan bisa dibuka di perangkat lain. Paket Gratis meliputi 50 transaksi per bulan berjalan, 20 barang stok, 10 piutang, dan 10 utang. AI Coach menjawab 20 pertanyaan per bulan.</p>
+          <p>Data yang sudah ada tidak pernah dikunci — selalu bisa dibaca, diubah, dan dihapus. Bila ingin lebih, lihat tahap Berlangganan Pro di bawah.</p>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>3. Berlangganan Pro — Rp30.000 per bulan</h3>
+          <p>Transaksi, stok, piutang, dan utang tanpa batas. AI Coach menjawab 300 pertanyaan per bulan. Anda bisa membagikan tautan Portal investor ke calon mitra.</p>
+          <p class="note" id="paketProBelum">Pendaftaran langganan belum dibuka.</p>
+          <div class="actions"><button class="btn" id="btnPaketLangganan" type="button" style="display:none">Berlangganan Pro</button></div>
         </div>
       </section>
 
@@ -2411,7 +2449,7 @@
            sengaja TIDAK masuk daftar (fitur langganan mati — saklar
            LANGGANAN_AKTIF false; bila suatu hari dinyalakan, daftarkan
            sebagai layar di sini). */
-        var LAYAR_DAFTAR=["hariini","data","dashboard","valuasi","introspeksi","keuangan","saran","kemasan","buku","cekdata","legalitas","pemasaran","sop","portal"];
+        var LAYAR_DAFTAR=["hariini","data","dashboard","valuasi","introspeksi","keuangan","saran","kemasan","buku","cekdata","legalitas","pemasaran","sop","portal","paket"];
         /* Alias tautan dalam yang bukan nama bagian (mis. #coach untuk
            AI Coach, #ekonomi untuk Ekonomi & Investasi): dibuka layarnya
            yang sesuai, hash lalu menjadi nama layar yang baku. */
@@ -2728,7 +2766,7 @@
           "create table if not exists public.pengaturan_app (",
           "  id int primary key,",
           "  qris_langganan text, nama_penerima text,",
-          "  harga_bulanan int not null default 29000,",
+          "  harga_bulanan int not null default 30000,",
           "  harga_tahunan int not null default 290000",
           ");",
           "alter table public.langganan enable row level security;",
@@ -2952,6 +2990,7 @@
         var btnPendingOtherEmail=gid("btnPendingOtherEmail");
         if(btnPendingOtherEmail) btnPendingOtherEmail.addEventListener("click",function(){
           clearPendingConfirm();
+          if(typeof perbaruiStatusAkun==="function"){ try{ perbaruiStatusAkun(); }catch(e){} }
           hidePendingConfirm();
           setAuthMode("reg");
           var ae=gid("authEmail"); if(ae){ ae.value=""; if(ae.focus) ae.focus(); }
@@ -3464,6 +3503,8 @@
           gid("btnLogout").textContent="Keluar";
           gid("accountBar").classList.add("show");
           gid("userEmail").textContent=user.email||"";
+          /* Strip status akun memakai keadaan sesi yang sama. */
+          if(typeof perbaruiStatusAkun==="function"){ try{ perbaruiStatusAkun(); }catch(e){} }
           /* Langganan: segarkan status Pro & kartu langganan (diam bila saklar mati). */
           if(window.__refreshProStatus){ try{ window.__refreshProStatus(); }catch(e){} }
           if(window.__renderLangganan){ try{ window.__renderLangganan(); }catch(e){} }
@@ -3494,6 +3535,7 @@
           gid("authGate").style.display="none";
           gid("accountBar").classList.add("show");
           gid("userEmail").textContent="Mode coba — tanpa daftar";
+          if(typeof perbaruiStatusAkun==="function"){ try{ perbaruiStatusAkun(); }catch(e){} }
           var gb=gid("guestBanner"); if(gb) gb.classList.add("show");
           var gr=gid("btnGuestRegister"); if(gr) gr.style.display="";
           gid("btnLogout").textContent="Keluar mode coba";
@@ -3798,6 +3840,7 @@
                 authMsg("");
                 setPendingConfirm(email);
                 showPendingConfirm(email);
+                if(typeof perbaruiStatusAkun==="function"){ try{ perbaruiStatusAkun(); }catch(e){} }
               }
             } else {
               var r2=await sb.auth.signInWithPassword({email:email, password:pass});
@@ -3807,7 +3850,7 @@
           }catch(e){ popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini.", "Tidak bisa terhubung"); }
           if(!authCooldownTimer) gid("authSubmit").disabled=false;
         });
-        var bba=gid("btnBackToApp"); if(bba) bba.addEventListener("click",function(){ entered=true; gid("authGate").style.display="none"; gid("guestGateMsg").classList.remove("show"); });
+        var bba=gid("btnBackToApp"); if(bba) bba.addEventListener("click",function(){ entered=true; gid("authGate").style.display="none"; gid("guestGateMsg").classList.remove("show"); if(typeof perbaruiStatusAkun==="function"){ try{ perbaruiStatusAkun(); }catch(e){} } });
         var bgr=gid("btnGuestRegister"); if(bgr) bgr.addEventListener("click",function(){ window.__showRegisterGate("Simpan ke cloud"); });
         var bbr=gid("btnBannerRegister"); if(bbr) bbr.addEventListener("click",function(){ window.__showRegisterGate("Simpan ke cloud"); });
 
@@ -5053,7 +5096,7 @@
            makeCoachChat. Kuota dijaga di KEDUA jalur lewat helper yang sama
            (kuotaAiHabis / tambahHitunganAi) supaya tidak ada yang lolos. */
         var PEMILIK_EMAIL="soegianto@fst.unair.ac.id";
-        var HARGA_BULANAN_DEFAULT=29000, HARGA_TAHUNAN_DEFAULT=290000;
+        var HARGA_BULANAN_DEFAULT=30000, HARGA_TAHUNAN_DEFAULT=290000;
         var _pengaturan=null, _pengaturanDimuat=false;
         var _langgananDipilih=null, _langgananBuktiB64=null, _adminQrisB64=null;
         var _proCache=false, _proDiketahui=false;
@@ -5218,6 +5261,9 @@
             isiFormAdmin();
             muatAntrean();
           }
+          /* Strip status akun memakai keadaan langganan yang sama — muat ulang
+             (tanpa cache lama) setiap kali kartu langganan dirender. */
+          if(typeof perbaruiStatusAkun==="function"){ try{ if(typeof _statusAkunBerakhirCache!=="undefined") _statusAkunBerakhirCache={ts:0,data:null}; perbaruiStatusAkun(); }catch(e){} }
         }
         window.__renderLangganan=renderLangganan;
 
@@ -5561,6 +5607,126 @@
            pengguna lama tidak sampai ke sini karena sudah punya data. */
         if(window.__pendingGreetingOpen){ window.__pendingGreetingOpen=false; openGreeting(); }
         else if(window.__pendingWizardOpen){ window.__pendingWizardOpen=false; openWizard(); }
+      })();
+    </script>
+
+    <script>
+      /* ================= STATUS AKUN (strip di bawah topbar) =================
+         Strip yang selalu terlihat dan menjelaskan keadaan akun dalam bahasa
+         Indonesia sederhana: (1) mode coba — tanpa daftar, (2) menunggu
+         konfirmasi email, (3) terdaftar — Paket Gratis, (4) berlangganan Pro
+         — aktif sampai tanggal berakhir (hanya bila saklar LANGGANAN_AKTIF
+         menyala DAN baris langganan aktif masih berlaku). Keadaan dibaca dari
+         keadaan sesi yang sama dengan aplikasi (currentUser /
+         __penggunaAktif / __pendingConfirmEmail) — tidak ada pelacakan akun
+         kedua. Bila saklar mati, strip dan halaman Paket & Layanan tidak
+         pernah menampilkan alur pembayaran apa pun; halaman hanya berkata
+         "Pendaftaran langganan belum dibuka". Ketuk strip membuka halaman
+         "Paket & Layanan" (layar "paket" dalam sistem layar) yang menjelaskan
+         ketiga tahap.
+         Catatan: gid didefinisikan sendiri di blok ini karena tiap blok
+         skrip mendefinisikan gid lokalnya (tidak ada gid global). */
+      function gid(id){ return document.getElementById(id); }
+      var _statusAkunBerakhirCache={ts:0, data:null};
+      /* Baris langganan terbaru pengguna (hanya bila saklar menyala; bila
+         mati, tidak ada kueri apa pun ke tabel langganan). */
+      async function statusLanggananTerbaru(){
+        if(!LANGGANAN_AKTIF) return null;
+        var now=Date.now();
+        if(_statusAkunBerakhirCache.data && (now-_statusAkunBerakhirCache.ts)<60000) return _statusAkunBerakhirCache.data;
+        var hasil={pro:false, berakhir:null, menunggu:false};
+        try{
+          var sb=(window.__sbAuth && window.__sbAuth())||null;
+          var u=(window.__penggunaAktif && window.__penggunaAktif())||null;
+          if(sb && u){
+            var r=await sb.from("langganan").select("status,berakhir").eq("user_id",u.id).order("created_at",{ascending:false}).limit(1);
+            if(!r.error && r.data && r.data.length){
+              var row=r.data[0];
+              hasil.menunggu=(row.status==="menunggu");
+              if(row.status==="aktif" && row.berakhir && new Date(row.berakhir)>new Date()){ hasil.pro=true; hasil.berakhir=row.berakhir; }
+            }
+          }
+        }catch(e){}
+        _statusAkunBerakhirCache={ts:now, data:hasil};
+        return hasil;
+      }
+      /* Tanggal berakhir diformat dengan cara yang sama dengan modul
+         langganan (fmtTglPanjang di sana bersifat lokal di dalam IIFE-nya,
+         jadi diformat ulang di sini — sumber tanggalnya tetap baris
+         langganan yang sama). */
+      function statusAkunTeksPro(berakhir){
+        try{
+          var d=new Date(berakhir);
+          if(!isNaN(d.getTime())){
+            var t=d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+            if(t) return "Berlangganan Pro — aktif sampai "+t;
+          }
+        }catch(e){}
+        return "Berlangganan Pro — aktif";
+      }
+      async function perbaruiStatusAkun(){
+        var strip=gid("statusAkunStrip"); if(!strip) return;
+        var pill=gid("statusAkunPill"), sub=gid("statusAkunSub"), hint=gid("statusAkunHint"), daf=gid("statusAkunDaftar");
+        var user=null; try{ user=(window.__penggunaAktif && window.__penggunaAktif())||null; }catch(e){}
+        var pending=""; try{ pending=(window.__pendingConfirmEmail && window.__pendingConfirmEmail())||""; }catch(e){}
+        var mode="coba", pillTxt="Mode coba — belum daftar", subTxt="Data tersimpan di HP ini saja", daftar=false;
+        if(user){
+          mode="gratis"; pillTxt="Terdaftar — "+(user.email||""); subTxt="Paket Gratis";
+          if(LANGGANAN_AKTIF){
+            var st=null; try{ st=await statusLanggananTerbaru(); }catch(e){}
+            if(st && st.pro){ mode="pro"; pillTxt=statusAkunTeksPro(st.berakhir); subTxt="Paket Pro"; }
+            else if(st && st.menunggu){ subTxt="Pembayaran sedang dicek"; }
+          }
+        } else if(pending){
+          mode="menunggu"; pillTxt="Menunggu konfirmasi email"; subTxt="Periksa kotak masuk, termasuk folder Spam";
+        }
+        daftar=(mode==="coba");
+        if(pill) pill.textContent=pillTxt;
+        if(sub) sub.textContent=subTxt;
+        if(hint) hint.style.display=daftar?"none":"";
+        if(daf) daf.style.display=daftar?"":"none";
+        var pd=gid("btnPaketDaftar"); if(pd) pd.style.display=daftar?"":"none";
+        strip.setAttribute("data-mode", mode);
+        strip.setAttribute("aria-label","Status akun: "+pillTxt+". Ketuk untuk detail.");
+      }
+      window.__perbaruiStatusAkun=perbaruiStatusAkun;
+      window.__statusLanggananTerbaru=statusLanggananTerbaru;
+      window.__statusAkunResetCache=function(){ _statusAkunBerakhirCache={ts:0, data:null}; };
+      /* Ketuk strip membuka halaman "Paket & Layanan" (layar "paket"). */
+      function bukaHalamanPaket(){
+        if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("paket"); return; }catch(e){} }
+        try{ document.body.setAttribute("data-layar","paket"); }catch(e){}
+      }
+      /* Bagian Pro di halaman Paket & Layanan: bila saklar mati, tombol
+         berlangganan disembunyikan dan tertulis "Pendaftaran langganan belum
+         dibuka"; bila saklar menyala, tombol berlangganan tampil. */
+      function aturPaketPro(){
+        var b=gid("btnPaketLangganan"), n=gid("paketProBelum");
+        if(b) b.style.display=LANGGANAN_AKTIF?"":"none";
+        if(n) n.style.display=LANGGANAN_AKTIF?"none":"";
+      }
+      window.__bukaHalamanPaket=bukaHalamanPaket;
+      window.__aturPaketPro=aturPaketPro;
+      (function(){
+        var strip=gid("statusAkunStrip"); if(!strip) return;
+        strip.addEventListener("click", function(){ bukaHalamanPaket(); });
+        strip.addEventListener("keydown", function(ev){ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); bukaHalamanPaket(); } });
+        var daf=gid("statusAkunDaftar");
+        if(daf) daf.addEventListener("click", function(ev){ ev.stopPropagation(); if(window.__showRegisterGate) window.__showRegisterGate("Simpan ke cloud"); });
+        var pd=gid("btnPaketDaftar");
+        if(pd) pd.addEventListener("click", function(){ if(window.__showRegisterGate) window.__showRegisterGate("Simpan ke cloud"); });
+        var bl=gid("btnPaketLangganan");
+        if(bl) bl.addEventListener("click", function(){
+          /* Alur berlangganan modul langganan yang sudah ada (paket Bulanan,
+             Rp30.000). Modul langganan tidak terdaftar sebagai layar; bila
+             saklar menyala, bagiannya sudah dibuka initLangganan — cukup
+             jalankan bukaBayar, yang menampilkan panel bayar dan menggulir
+             ke sana. */
+          if(window.__bukaBayar){ try{ window.__bukaBayar("bulanan"); return; }catch(e){} }
+          var el=gid("langganan"); if(el){ try{ el.scrollIntoView(); }catch(e){} }
+        });
+        try{ aturPaketPro(); }catch(e){}
+        try{ perbaruiStatusAkun(); }catch(e){}
       })();
     </script>
 
