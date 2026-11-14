@@ -2456,6 +2456,32 @@
           if(snap.lokasi) return true;
           return ["txs","stocks","pis","utangs"].some(function(k){ return Array.isArray(snap[k]) && snap[k].length>0; });
         }
+        /* Apakah snapshot CLOUD berisi data usaha sungguhan (bukan baris kosong).
+           collectSnapshot() selalu membuat objek `inputs` dengan ~70 kunci walau
+           semua nilainya "" — jadi menghitung kunci saja TIDAK BOLEH dipakai
+           untuk memutuskan "cloud berisi data". Baris cloud yang hanya berisi
+           snapshot kosong (mis. tersimpan otomatis setelah tautan konfirmasi
+           email dibuka, saat finalisasi kunjungan proaktif mengubah
+           proaktif.last_seen) harus tetap dianggap kosong, supaya migrasi data
+           coba tamu tetap jalan saat masuk pertama kali. */
+        function cloudAdaIsi(snap){
+          if(!snap) return false;
+          if(snapshotNyata(snap)) return true;
+          var inp=snap.inputs||{};
+          var seed=isContohSeed(inp);
+          var adaIsian=Object.keys(inp).some(function(k){
+            if(seed && (k==="inNama"||k==="inOmzet")) return false; // pasangan seed contoh: abaikan
+            if(k==="inTergantung" && String(inp[k]).trim()==="0") return false; // nilai bawaan slider (0), bukan isian
+            if(k==="inKalibrasi") return false; // checkbox: el.value selalu "on"; status centang tidak tersimpan di snapshot
+            var v=inp[k];
+            return v!=null && String(v).trim()!=="";
+          });
+          if(adaIsian) return true;
+          if(snap.answers && Object.keys(snap.answers).length>0) return true;
+          if(Array.isArray(snap.sopSteps) && snap.sopSteps.some(function(s){ return s && String(s).trim()!==""; })) return true;
+          if(snap.qris_image) return true;
+          return false;
+        }
         function sudahMengisiNyata(){
           if(flagSudahMengisi()) return true;
           try{ return snapshotNyata(collectSnapshot()); }catch(e){ return false; }
@@ -2624,7 +2650,7 @@
                 pis:(res[3].data||[]).map(function(r){ return {cid:r.id, nama:r.keterangan||"", jumlah:+r.jumlah||0, tempo:r.jatuh_tempo||"—"}; }),
                 utangs:(res[4].data||[]).map(function(r){ return {cid:r.id, ket:r.keterangan||"", jumlah:+r.jumlah||0, tempo:r.jatuh_tempo||"—"}; })
               };
-              var hasCloud = Object.keys(snap.inputs).length>0 || snap.txs.length>0 || snap.stocks.length>0 || snap.pis.length>0 || snap.utangs.length>0 || !!snap.qris_image;
+              var hasCloud = cloudAdaIsi(snap);
               cloudChecked=true; cloudHasData=!!hasCloud;
               if(hasCloud) applySnapshot(snap);
               else { var loc2=readLocal(); if(loc2) applySnapshot(loc2); }
