@@ -91,6 +91,7 @@
       input[type="range"]{width:100%;accent-color:var(--accent);min-height:36px}
       .range-row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--ink-soft)}
       .note{font-size:.85rem;color:var(--ink-soft)}
+      .rujukan{font-size:.85rem;color:var(--ink-soft);margin-top:6px}
       .voice-result{display:none;background:var(--accent-soft);border:1px solid var(--accent);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.95rem;font-weight:600;margin-top:12px}
       /* Panel rekaman suara (dipakai tombol suara Modul Keuangan + Hari Ini):
          ikon mikrofon menunjukkan kapan pengguna bicara (emas + denyut) dan
@@ -826,10 +827,10 @@
           <a href="#langganan" id="modLanggananLink" style="display:none"><b>10 · Langganan</b><span>Paket Pro &amp; pembayaran</span></a>
         </div>
         <div class="stat-row">
-          <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div><button class="btn-explain kompak" type="button" data-explain="level" data-explain-target="explain-hero-level">Jelaskan ini</button><div class="explain-answer" id="explain-hero-level" role="status"></div></div>
-          <div class="stat"><div class="k">Skor Kesehatan Usaha (keseluruhan)</div><div class="v" id="stHealth">—</div><div class="s" id="stHealthSub">Gabungan keuangan, produk, pasar &amp; teknologi — bukan skor keuangan saja.</div><button class="btn-explain kompak" type="button" data-explain="kesehatan" data-explain-target="explain-hero-kesehatan">Jelaskan ini</button><div class="explain-answer" id="explain-hero-kesehatan" role="status"></div></div>
-          <div class="stat"><div class="k">Skor Siap Investasi</div><div class="v" id="stInvest">—</div><div class="s" id="stInvestSub">kelengkapan untuk penawaran kerjasama investasi</div><button class="btn-explain kompak" type="button" data-explain="investasi" data-explain-target="explain-hero-investasi">Jelaskan ini</button><div class="explain-answer" id="explain-hero-investasi" role="status"></div></div>
-          <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><div class="s" id="stValRange">rentang rendah – tinggi</div><button class="btn-explain kompak" type="button" data-explain="valuasi" data-explain-target="explain-hero-valuasi">Jelaskan ini</button><div class="explain-answer" id="explain-hero-valuasi" role="status"></div></div>
+          <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div><p class="rujukan" id="rujLevelHero">—</p><button class="btn-explain kompak" type="button" data-explain="level" data-explain-target="explain-hero-level">Jelaskan ini</button><div class="explain-answer" id="explain-hero-level" role="status"></div></div>
+          <div class="stat"><div class="k">Skor Kesehatan Usaha (keseluruhan)</div><div class="v" id="stHealth">—</div><div class="s" id="stHealthSub">Gabungan keuangan, produk, pasar &amp; teknologi — bukan skor keuangan saja.</div><p class="rujukan" id="rujHealth">—</p><button class="btn-explain kompak" type="button" data-explain="kesehatan" data-explain-target="explain-hero-kesehatan">Jelaskan ini</button><div class="explain-answer" id="explain-hero-kesehatan" role="status"></div></div>
+          <div class="stat"><div class="k">Skor Siap Investasi</div><div class="v" id="stInvest">—</div><div class="s" id="stInvestSub">kelengkapan untuk penawaran kerjasama investasi</div><p class="rujukan" id="rujInvestHero">—</p><button class="btn-explain kompak" type="button" data-explain="investasi" data-explain-target="explain-hero-investasi">Jelaskan ini</button><div class="explain-answer" id="explain-hero-investasi" role="status"></div></div>
+          <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><div class="s" id="stValRange">rentang rendah – tinggi</div><p class="rujukan" id="rujVal">—</p><button class="btn-explain kompak" type="button" data-explain="valuasi" data-explain-target="explain-hero-valuasi">Jelaskan ini</button><div class="explain-answer" id="explain-hero-valuasi" role="status"></div></div>
         </div>
       </header>
 
@@ -1029,6 +1030,7 @@
             <h3>Level skala usaha</h3>
             <p style="margin-top:8px"><span class="pill good" id="lvlPill" style="font-size:.95rem;padding:6px 14px">—</span></p>
             <p class="note" style="margin-top:10px" id="lvlDesc">—</p>
+            <p class="rujukan" id="rujLevel">—</p>
             <div class="ladder" id="scaleLadder">
               <div data-s="mikro"><b>Mikro</b>omzet ≤ Rp2 M</div>
               <div data-s="kecil"><b>Kecil</b>Rp2–15 M</div>
@@ -1042,6 +1044,7 @@
             <h3>Level kematangan</h3>
             <p style="margin-top:8px"><span class="pill mid" id="matPill" style="font-size:.95rem;padding:6px 14px">—</span></p>
             <p class="note" style="margin-top:10px" id="matDesc">—</p>
+            <p class="rujukan" id="rujMat">—</p>
             <div class="ladder" id="matLadder">
               <div data-m="0"><b>Level 0</b>Bertahan</div>
               <div data-m="1"><b>Level 1</b>Tercatat</div>
@@ -1053,13 +1056,13 @@
           </div>
         </div>
         <div class="grid-3" style="margin-top:14px">
-          <div class="card score-card"><div class="top"><h3>Kesehatan Keuangan (saja)</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><div class="explain-answer" id="explain-keuangan" role="status"></div><p class="note">Hanya aspek keuangan: margin, utang, dan pencatatan.</p></div>
-          <div class="card score-card"><div class="top"><h3>Kematangan digital</h3><span class="score-num" id="scDig">—</span></div><div class="bar"><i id="scDigBar"></i></div><p class="note" id="scDigNote">—</p><button class="btn-explain" type="button" data-explain="digital">Jelaskan ini</button><div class="explain-answer" id="explain-digital" role="status"></div></div>
-          <div class="card score-card"><div class="top"><h3>Kesiapan investasi</h3><span class="score-num" id="scInv">—</span></div><div class="bar"><i id="scInvBar"></i></div><p class="note" id="scInvNote">—</p><button class="btn-explain" type="button" data-explain="investasi">Jelaskan ini</button><div class="explain-answer" id="explain-investasi" role="status"></div></div>
+          <div class="card score-card"><div class="top"><h3>Kesehatan Keuangan (saja)</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><p class="rujukan" id="rujFin">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><div class="explain-answer" id="explain-keuangan" role="status"></div><p class="note">Hanya aspek keuangan: margin, utang, dan pencatatan.</p></div>
+          <div class="card score-card"><div class="top"><h3>Kematangan digital</h3><span class="score-num" id="scDig">—</span></div><div class="bar"><i id="scDigBar"></i></div><p class="note" id="scDigNote">—</p><p class="rujukan" id="rujDig">—</p><button class="btn-explain" type="button" data-explain="digital">Jelaskan ini</button><div class="explain-answer" id="explain-digital" role="status"></div></div>
+          <div class="card score-card"><div class="top"><h3>Kesiapan investasi</h3><span class="score-num" id="scInv">—</span></div><div class="bar"><i id="scInvBar"></i></div><p class="note" id="scInvNote">—</p><p class="rujukan" id="rujInv">—</p><button class="btn-explain" type="button" data-explain="investasi">Jelaskan ini</button><div class="explain-answer" id="explain-investasi" role="status"></div></div>
         </div>
         <div class="grid-2" style="margin-top:14px">
-          <div class="card score-card"><div class="top"><h3>Skor Konsistensi Data</h3><span class="score-num" id="scCons">0</span></div><div class="bar"><i id="scConsBar"></i></div><p class="note" id="scConsNote">Isi cek 9 sumber data lokal di Modul Cek Data di bawah — skor membandingkan klaim Anda dengan jejak usaha yang bisa diverifikasi pihak lain.</p><button class="btn-explain" type="button" data-explain="konsistensi">Jelaskan ini</button><div class="explain-answer" id="explain-konsistensi" role="status"></div></div>
-          <div class="card"><h3>Titik impas (BEP) &amp; prediksi arus kas</h3><p class="note" style="margin-top:6px" id="bepNote">Isi omzet, HPP, biaya operasional, dan gaji pemilik untuk melihat omzet minimum agar tidak rugi.</p><div class="bar-wrap" id="cfChart"></div><p class="note" style="margin-top:8px">Prediksi 3 bulan ke depan memakai laba bersih bulanan saat ini dan pertumbuhan omzet yang Anda isi — bukan janji, melainkan proyeksi lurus untuk perencanaan kas.</p><button class="btn-explain" type="button" data-explain="bep">Jelaskan ini</button><div class="explain-answer" id="explain-bep" role="status"></div></div>
+          <div class="card score-card"><div class="top"><h3>Skor Konsistensi Data</h3><span class="score-num" id="scCons">0</span></div><div class="bar"><i id="scConsBar"></i></div><p class="note" id="scConsNote">Isi cek 9 sumber data lokal di Modul Cek Data di bawah — skor membandingkan klaim Anda dengan jejak usaha yang bisa diverifikasi pihak lain.</p><p class="rujukan" id="rujCons">—</p><button class="btn-explain" type="button" data-explain="konsistensi">Jelaskan ini</button><div class="explain-answer" id="explain-konsistensi" role="status"></div></div>
+          <div class="card"><h3>Titik impas (BEP) &amp; prediksi arus kas</h3><p class="note" style="margin-top:6px" id="bepNote">Isi omzet, HPP, biaya operasional, dan gaji pemilik untuk melihat omzet minimum agar tidak rugi.</p><p class="rujukan" id="rujBep">—</p><div class="bar-wrap" id="cfChart"></div><p class="note" style="margin-top:8px">Prediksi 3 bulan ke depan memakai laba bersih bulanan saat ini dan pertumbuhan omzet yang Anda isi — bukan janji, melainkan proyeksi lurus untuk perencanaan kas.</p><button class="btn-explain" type="button" data-explain="bep">Jelaskan ini</button><div class="explain-answer" id="explain-bep" role="status"></div></div>
         </div>
       </section>
 
@@ -2222,6 +2225,42 @@
         if (!weaks.length) weaks.push("Tidak ada aspek berstatus 'Belum'. Pertahankan konsistensi dan naikkan item 'Sebagian' menjadi 'Sudah'.");
         $("strengthList").innerHTML=strengths.slice(0,5).map(x=>"<li>"+x+"</li>").join("");
         $("weakList").innerHTML=weaks.slice(0,5).map(x=>"<li>"+x+"</li>").join("");
+
+        /* ---------- nilai rujukan (gaya hasil lab) di bawah angka dasbor ----------
+           Satu baris pendek per angka: nilai + rujukan dari aturan aplikasi
+           sendiri (PP 7/2021, band kematangan, HPP sehat ≤70%, ambang siap
+           investasi 70, pengali lazim 3–4x, BEP = omzet minimum agar tidak
+           rugi) + posisi dalam kata biasa ("dalam/di bawah/di atas rujukan").
+           Tanpa warna merah. Bila omzet belum diisi, baris yang butuh omzet
+           berkata jujur — bukan menebak. Dihitung ulang di tiap recalc. */
+        (function tulisRujukan(){
+          function isiRuj(id, teks){ var el=$(id); if(el) el.textContent=teks; }
+          var bandMat=["di bawah 30","30–47","48–63","64–79","80 ke atas"];
+          var ambangMat=[30,48,64,80,null];
+          var rujLevelTxt;
+          if (omzetBln<=0) rujLevelTxt="Isi omzet dulu untuk melihat rujukan level skala.";
+          else if (skala==="mikro") rujLevelTxt="Rujukan: Mikro — omzet sampai Rp2 M per tahun; "+fmtShort(2e9-omzetThn)+" lagi ke Kecil.";
+          else if (skala==="kecil") rujLevelTxt="Rujukan: Kecil — omzet Rp2–15 M per tahun; "+fmtShort(15e9-omzetThn)+" lagi ke Menengah.";
+          else if (skala==="menengah") rujLevelTxt="Rujukan: Menengah — omzet Rp15–50 M per tahun; "+fmtShort(50e9-omzetThn)+" lagi ke Besar.";
+          else rujLevelTxt="Rujukan: di atas Rp50 M per tahun — di luar skala UMKM (PP 7/2021).";
+          isiRuj("rujLevelHero", rujLevelTxt); isiRuj("rujLevel", rujLevelTxt);
+          isiRuj("rujHealth", "Rujukan untuk Level "+matLevel+": "+bandMat[matLevel]+" — dalam rujukan.");
+          isiRuj("rujMat", matLevel>=4 ? "Rujukan: Level 4 (80 ke atas) — level tertinggi." : "Rujukan: Level "+matLevel+" ("+bandMat[matLevel]+") — "+(ambangMat[matLevel]-health)+" poin lagi ke Level "+(matLevel+1)+".");
+          if (omzetBln<=0) isiRuj("rujFin", "Isi omzet dan HPP dulu untuk melihat rujukan keuangan.");
+          else isiRuj("rujFin", "Rujukan: HPP sehat di bawah 70% dan utang di bawah 30% dari aset — HPP Anda "+Math.round(hppPct*100)+"%, utang "+Math.round(debtRatio*100)+"% dari aset — "+((hppPct<=0.7 && debtRatio<0.3)?"dalam rujukan":"di atas rujukan")+".");
+          var krgTech=(100-dimScore.tech)*0.55, krgMkt=(100-dimScore.mkt)*0.25, krgBuku=(3-buku)*8;
+          var rujDigTxt;
+          if (krgTech<=0 && krgMkt<=0 && krgBuku<=0) rujDigTxt="Rujukan: teknologi, pasar, dan pembukuan sudah lengkap — skor ini sudah maksimal dari komponennya.";
+          else if (krgTech>=krgMkt && krgTech>=krgBuku) rujDigTxt="Rujukan: skor penuh bila teknologi, pasar, dan pembukuan lengkap — yang paling tertinggal: teknologi "+dimScore.tech+"/100 (kurang "+krgTech.toLocaleString("id-ID",{maximumFractionDigits:1})+" poin).";
+          else if (krgMkt>=krgBuku) rujDigTxt="Rujukan: skor penuh bila teknologi, pasar, dan pembukuan lengkap — yang paling tertinggal: pasar & kemasan "+dimScore.mkt+"/100 (kurang "+krgMkt.toLocaleString("id-ID",{maximumFractionDigits:1})+" poin).";
+          else rujDigTxt="Rujukan: skor penuh bila teknologi, pasar, dan pembukuan lengkap — yang paling tertinggal: pembukuan level "+buku+" dari 3 (kurang "+krgBuku.toLocaleString("id-ID",{maximumFractionDigits:1})+" poin).";
+          isiRuj("rujDig", rujDigTxt);
+          var rujInvTxt="Rujukan: siap ditawarkan bila 70 ke atas — Anda "+scInv+" — "+(scInv>=70?"dalam rujukan":"di bawah rujukan")+".";
+          isiRuj("rujInvestHero", rujInvTxt); isiRuj("rujInv", rujInvTxt);
+          if (omzetBln<=0) isiRuj("rujVal", "Isi omzet dan HPP dulu untuk melihat rujukan valuasi.");
+          else if (sdeThn<=0) isiRuj("rujVal", "Rujukan: pengali lazim 3–4x — laba Anda belum positif, jadi valuasi memakai aset bersih.");
+          else isiRuj("rujVal", "Rujukan: pengali lazim 3–4x — pengali Anda "+mult.toLocaleString("id-ID",{maximumFractionDigits:2})+" — "+(mult<3?"di bawah rujukan":mult<=4?"dalam rujukan":"di atas rujukan")+".");
+        })();
 
         recalcFinance(sdeBln, labaBersihBln);
         buildAdvice({sektor,skala,matLevel,dimScore,scInv,buku,legal,terg,mult,sdeThn,margin});
@@ -3427,7 +3466,17 @@
         ["NPWP & data pajak","Nama & alamat di NPWP sama dengan NIB?",["Belum dicek","Beda","Sesuai"]],
         ["Ulasan pelanggan online","Rating & keluhan terakhir mencerminkan kondisi usaha saat ini?",["Belum dicek","Beda","Sesuai"]]
       ],consState,updateCons);
-      function updateCons(){ let tot=0; for(let ci=0;ci<9;ci++){ const v=consState[ci]||0; tot+= v===2?100: v===1?40:0; } consScoreVal=Math.round(tot/9); setBar("consScore","consBar",consScoreVal); const sc=$("scCons"); if(sc){ sc.textContent=consScoreVal; const b=$("scConsBar"); b.style.width=consScoreVal+"%"; b.className=consScoreVal>=66?"":consScoreVal>=40?"mid":"low"; $("scConsNote").textContent= consScoreVal>=80?"Sangat konsisten — data Anda mudah diverifikasi calon investor/mitra.": consScoreVal>=50?"Sebagian sesuai. Perbaiki sumber yang 'Beda' — ketidakcocokan nama/alamat adalah penyebab verifikasi gagal yang paling umum.":"Masih banyak yang belum dicek / beda. Cek satu sumber per hari, mulai dari NIB dan Google Maps."; } if(typeof extraUpdate==="function") extraUpdate(); }
+      function updateCons(){ let tot=0; for(let ci=0;ci<9;ci++){ const v=consState[ci]||0; tot+= v===2?100: v===1?40:0; } consScoreVal=Math.round(tot/9); setBar("consScore","consBar",consScoreVal); const sc=$("scCons"); if(sc){ sc.textContent=consScoreVal; const b=$("scConsBar"); b.style.width=consScoreVal+"%"; b.className=consScoreVal>=66?"":consScoreVal>=40?"mid":"low"; $("scConsNote").textContent= consScoreVal>=80?"Sangat konsisten — data Anda mudah diverifikasi calon investor/mitra.": consScoreVal>=50?"Sebagian sesuai. Perbaiki sumber yang 'Beda' — ketidakcocokan nama/alamat adalah penyebab verifikasi gagal yang paling umum.":"Masih banyak yang belum dicek / beda. Cek satu sumber per hari, mulai dari NIB dan Google Maps."; }
+        /* nilai rujukan konsistensi: 100 bila ke-9 sumber cocok */
+        const rujConsEl=$("rujCons");
+        if (rujConsEl){
+          let nSesuai=0, nBeda=0, nBelum=0;
+          for (let cj=0; cj<9; cj++){ if (consState[cj]===2) nSesuai++; else if (consState[cj]===1) nBeda++; else nBelum++; }
+          rujConsEl.textContent = (nSesuai===0 && nBeda===0)
+            ? "Rujukan: 100 bila ke-9 sumber cocok — belum ada sumber yang dicek — di bawah rujukan."
+            : "Rujukan: 100 bila ke-9 sumber cocok — Anda "+consScoreVal+" ("+nSesuai+" cocok, "+nBeda+" berbeda, "+nBelum+" belum dicek) — "+(consScoreVal>=100?"dalam rujukan":"di bawah rujukan")+".";
+        }
+        if(typeof extraUpdate==="function") extraUpdate(); }
 
       /* --- Legalitas --- */
       const legalState=[0,0,0,0,0,0];
@@ -3523,6 +3572,11 @@
         const omzetEff=(S.omzetBln||0)+aggF.inn;
         const bep= contrib>0? fixed/contrib : 0;
         const bepEl=$("bepNote"); if(bepEl) bepEl.innerHTML= S.omzetBln>0? "BEP Anda: omzet minimum <b>"+fmtShort(bep)+"/bulan</b> agar tidak rugi (biaya tetap "+fmtShort(fixed)+" — termasuk pengeluaran operasional dari catatan transaksi — ÷ margin kontribusi "+Math.round(contrib*100)+"%). Pendapatan Anda saat ini "+fmtShort(omzetEff)+"/bulan (Data Usaha + transaksi tercatat) — "+(omzetEff>=bep?"di atas BEP, usaha menghasilkan laba.":"<b>di bawah BEP</b> — naikkan omzet atau tekan HPP/biaya tetap.") : "Isi omzet, HPP, biaya operasional, dan gaji pemilik untuk melihat BEP.";
+        /* nilai rujukan BEP: omzet harus ≥ BEP agar tidak rugi */
+        const rujBepEl=$("rujBep");
+        if (rujBepEl) rujBepEl.textContent = S.omzetBln>0
+          ? "Rujukan: omzet harus ≥ BEP "+fmtShort(bep)+"/bulan agar tidak rugi — omzet Anda "+fmtShort(omzetEff)+"/bulan — "+(omzetEff>=bep?"di atas rujukan":"di bawah rujukan")+"."
+          : "Isi omzet dan HPP dulu untuk melihat rujukan BEP.";
         const cf=$("cfChart"); if(cf){ let saldo=0; let rows=""; const laba=(S.labaBersihBln||0)+aggF.net; let max=Math.max(1,Math.abs(laba)*3); for(let m=1;m<=3;m++){ const proj=laba*Math.pow(1+(S.tumbuh||0)/12,m); saldo+=proj; if(Math.abs(saldo)>max)max=Math.abs(saldo); } saldo=0; for(let m=1;m<=3;m++){ const proj=laba*Math.pow(1+(S.tumbuh||0)/12,m); saldo+=proj; const pct=Math.max(4,Math.round(Math.abs(saldo)/max*100)); rows+="<div class='cf-row'><span class='lbl'>Bulan +"+m+"</span><span class='track'><i style='width:"+pct+"%'></i></span><span class='amt'>"+fmtShort(saldo)+"</span></div>"; } cf.innerHTML=rows; }
         renderReports();
         const bn=$("invNama"); if(bn){ bn.textContent=($("inNama").value||"(nama usaha belum diisi)")+" — "+($("inKota").value||"")+" · "+(typeof lokasiText==="function"?lokasiText():""); $("invSkor").textContent="Level "+(S.skala||"—")+" · Kematangan Lvl "+(S.matLevel??"—")+" · Kesehatan usaha keseluruhan "+(S.health??"—")+"/100 · Siap Investasi "+(S.scInv??"—")+"/100"; $("invVal").textContent=fmtShort(S.weighted||0)+" ("+fmtShort(S.valLow||0)+" – "+fmtShort(S.valHigh||0)+")"; $("invSkor2").textContent=consScoreVal+"/100 · "+legalScoreVal+"/100 · "+($("packScore").textContent||"0/100"); const raw=(($("inNama").value||"")+"|"+Math.round(S.weighted||0)+"|"+Math.round(S.sdeThn||0)+"|"+consScoreVal+"|"+legalScoreVal); let h=0; for(let i=0;i<raw.length;i++){ h=((h<<5)-h+raw.charCodeAt(i))|0; } $("invCode").textContent="UMKM-"+Math.abs(h).toString(36).toUpperCase()+"-"+Math.round(S.weighted||0).toString(36).toUpperCase(); if(typeof drawQr==="function") drawQr($("invCode").textContent+" | "+($("inNama").value||"UMKM")+" | Val "+fmtShort(S.weighted||0)+" | Konsistensi "+consScoreVal); }
