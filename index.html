@@ -141,6 +141,7 @@
       body[data-layar]:not([data-layar="sop"]) #sop{display:none!important}
       body[data-layar]:not([data-layar="portal"]) #portal{display:none!important}
       body[data-layar]:not([data-layar="paket"]) #paket{display:none!important}
+      body[data-layar]:not([data-layar="adminmarketing"]) #adminmarketing{display:none!important}
       .btn-kembali-layar{margin:0 0 10px}
 
       /* ---------- scores ---------- */
@@ -557,6 +558,8 @@
           <div id="regFields" style="display:none">
             <label class="f" style="margin-bottom:12px"><span>Nama usaha</span><input type="text" id="authNama" placeholder="contoh: Dapur Bu Sari" autocomplete="organization" /></label>
             <label class="f" style="margin-bottom:12px"><span>Nomor HP (WhatsApp)</span><input type="tel" id="authHp" placeholder="contoh: 0812-3456-7890" autocomplete="tel" /></label>
+            <label class="f" style="margin-bottom:12px"><span>Kode marketing (jika ada)</span><input type="text" id="authKode" placeholder="contoh: UMKM30" maxlength="6" autocomplete="off" style="text-transform:uppercase" /></label>
+            <p class="note" style="margin:-4px 0 12px">Opsional — isi hanya bila Anda mendapat kode dari tim marketing.</p>
           </div>
           <label class="f" style="margin-bottom:12px"><span>Email</span><input type="email" id="authEmail" placeholder="contoh: usaha@email.com" autocomplete="email" required /></label>
           <p class="note" id="authEmailHintReg" style="display:none;margin:-4px 0 12px">Pakai email asli yang aktif — tautan konfirmasi akan dikirim ke email ini. Tanpa email asli, Anda tidak bisa mengonfirmasi dan tidak bisa masuk.</p>
@@ -700,6 +703,7 @@
           <span class="sync-pill" id="syncStatus">Memuat…</span>
           <button class="btn ghost small" id="btnUbahUsahaTop" type="button">Ubah usaha</button>
           <button class="btn ghost small" id="btnSaveCloud" type="button">Simpan sekarang</button>
+          <button class="btn ghost small" id="btnAdminMarketing" type="button" style="display:none">Admin marketing</button>
           <button class="btn small" id="btnGuestRegister" type="button" style="display:none">Daftar untuk menyimpan</button>
           <button class="btn ghost small" id="btnLogout" type="button">Keluar</button>
         </div>
@@ -1441,6 +1445,33 @@
           <p>Transaksi, stok, piutang, dan utang tanpa batas. AI Coach menjawab 300 pertanyaan per bulan. Anda bisa membagikan tautan Portal investor ke calon mitra.</p>
           <p class="note" id="paketProBelum">Pendaftaran langganan belum dibuka.</p>
           <div class="actions"><button class="btn" id="btnPaketLangganan" type="button" style="display:none">Berlangganan Pro</button></div>
+        </div>
+      </section>
+
+      <section id="adminmarketing">
+        <div class="sec-head"><span class="sec-num">16</span><h2>Admin marketing</h2></div>
+        <p class="sec-sub">Kode marketing per orang — setiap marketing punya kode 6 huruf/angka sendiri. Halaman ini hanya untuk pemilik aplikasi.</p>
+        <div id="mkBukanPemilik" style="display:none"><p class="note">Halaman ini hanya untuk pemilik aplikasi.</p></div>
+        <div id="mkIsi" style="display:none">
+          <div class="card" id="mkSetup" style="display:none">
+            <h3>Tabel kode marketing belum dibuat</h3>
+            <p>Jalankan SQL di bawah ini sekali di SQL Editor cloud (tempel di bawah SQL tabel yang sudah ada), lalu buka lagi halaman ini.</p>
+            <pre id="mkSetupSql" style="white-space:pre-wrap;word-break:break-word;font-size:.8rem"></pre>
+            <div class="actions"><button class="btn small" id="btnMkSalinSql" type="button">Salin SQL</button></div>
+          </div>
+          <div class="card" style="margin-top:14px">
+            <h3>Tambah marketing</h3>
+            <label class="f" style="margin-bottom:12px"><span>Nama marketing</span><input type="text" id="mkNama" placeholder="contoh: Budi Santoso" autocomplete="off" /></label>
+            <label class="f" style="margin-bottom:12px"><span>Kode (kosongkan untuk dibuat otomatis)</span><input type="text" id="mkKode" placeholder="contoh: UMKM30" maxlength="6" autocomplete="off" style="text-transform:uppercase" /></label>
+            <p class="note" style="margin:-4px 0 12px">Kode terdiri dari 6 huruf atau angka, contoh: UMKM30. Bila dikosongkan, kode dibuat otomatis.</p>
+            <div class="actions"><button class="btn" id="btnMkTambah" type="button">Tambah marketing</button></div>
+            <p class="note" id="mkTambahHasil" style="display:none"></p>
+          </div>
+          <div class="card" style="margin-top:14px">
+            <h3>Daftar kode marketing</h3>
+            <p class="note" id="mkDaftarKosong" style="display:none">Belum ada kode marketing. Tambahkan marketing pertama di atas.</p>
+            <div id="mkDaftar"></div>
+          </div>
         </div>
       </section>
 
@@ -2449,7 +2480,7 @@
            sengaja TIDAK masuk daftar (fitur langganan mati — saklar
            LANGGANAN_AKTIF false; bila suatu hari dinyalakan, daftarkan
            sebagai layar di sini). */
-        var LAYAR_DAFTAR=["hariini","data","dashboard","valuasi","introspeksi","keuangan","saran","kemasan","buku","cekdata","legalitas","pemasaran","sop","portal","paket"];
+        var LAYAR_DAFTAR=["hariini","data","dashboard","valuasi","introspeksi","keuangan","saran","kemasan","buku","cekdata","legalitas","pemasaran","sop","portal","paket","adminmarketing"];
         /* Alias tautan dalam yang bukan nama bagian (mis. #coach untuk
            AI Coach, #ekonomi untuk Ekonomi & Investasi): dibuka layarnya
            yang sesuai, hash lalu menjadi nama layar yang baku. */
@@ -2661,7 +2692,7 @@
           "-- Tabel Aplikasi Introspeksi UMKM (jalankan sekali di SQL Editor cloud)",
           "create table if not exists public.profiles (",
           "  id uuid primary key references auth.users(id) on delete cascade,",
-          "  nama_usaha text, no_hp text, created_at timestamptz not null default now()",
+          "  nama_usaha text, no_hp text, kode_marketing text, created_at timestamptz not null default now()",
           ");",
           "create table if not exists public.umkm_data (",
           "  user_id uuid primary key references auth.users(id) on delete cascade,",
@@ -2789,7 +2820,34 @@
           "drop policy if exists \"pengaturan baca publik\" on public.pengaturan_app;",
           "create policy \"pengaturan baca publik\" on public.pengaturan_app for select using (true);",
           "drop policy if exists \"pengaturan admin ubah\" on public.pengaturan_app;",
-          "create policy \"pengaturan admin ubah\" on public.pengaturan_app for all using (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id') with check (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id');"
+          "create policy \"pengaturan admin ubah\" on public.pengaturan_app for all using (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id') with check (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id');",
+          "-- --- MARKETING: kode marketing per orang (jalankan bersama SQL di atas) ---",
+          "create table if not exists public.marketing_kode (",
+          "  kode text primary key,",
+          "  nama text not null,",
+          "  aktif boolean not null default true,",
+          "  dibuat_pada timestamptz not null default now()",
+          ");",
+          "alter table public.profiles add column if not exists kode_marketing text;",
+          "alter table public.marketing_kode enable row level security;",
+          "-- Marketing: hanya pemilik aplikasi (email di bawah) yang boleh membaca,",
+          "-- menambah, mengubah, dan menghapus kode. Pengguna lain TIDAK bisa membaca",
+          "-- tabel ini — pengecekan kode saat daftar lewat fungsi cek_kode_marketing.",
+          "drop policy if exists \"marketing pemilik semua\" on public.marketing_kode;",
+          "create policy \"marketing pemilik semua\" on public.marketing_kode for all using (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id') with check (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id');",
+          "create or replace function public.cek_kode_marketing(p_kode text)",
+          "returns boolean",
+          "language sql security definer set search_path = public as $$",
+          "  select exists (select 1 from public.marketing_kode where kode = upper(trim(p_kode)) and aktif)",
+          "$$;",
+          "create or replace function public.hitung_pendaftar_marketing()",
+          "returns table(kode text, jumlah bigint)",
+          "language sql security definer set search_path = public as $$",
+          "  select kode_marketing as kode, count(*) as jumlah from public.profiles where kode_marketing is not null and kode_marketing <> '' group by kode_marketing",
+          "$$;",
+          "grant execute on function public.cek_kode_marketing(text) to anon, authenticated;",
+          "grant execute on function public.hitung_pendaftar_marketing() to authenticated;",
+          "-- --- AKHIR MARKETING ---"
         ].join("\n");
 
         var sb = null, currentUser = null, entered = false, localMode = false;
@@ -3422,6 +3480,19 @@
               if(hasCloud && snapshotNyata(snap)) tandaiSudahMengisi();
               var prof=res[5].data;
               if(prof && prof.nama_usaha && !gid("inNama").value){ gid("inNama").value=prof.nama_usaha; recalc(); }
+              /* Kode marketing pendaftaran (bila pendaftaran menunggu konfirmasi,
+                 profil di atas belum berisi kodenya): ambil dari data akun atau
+                 simpanan lokal, lalu simpan ke profil — upsert terpisah supaya
+                 bila kolomnya belum ada di cloud, nama usaha tetap tersimpan. */
+              try{
+                var kodeMeta=(currentUser && currentUser.user_metadata && currentUser.user_metadata.kode_marketing)||"";
+                var kodeLokal=""; try{ kodeLokal=localStorage.getItem("umkm-introspeksi-kode-marketing")||""; }catch(e2){}
+                var kodeSimpan=kodeMarketingBersih(kodeMeta||kodeLokal);
+                if(kodeSimpan && (!prof || prof.kode_marketing!==kodeSimpan)){
+                  var upK=await sb.from("profiles").upsert({id:uid, kode_marketing:kodeSimpan});
+                  if(!upK.error){ try{ localStorage.removeItem("umkm-introspeksi-kode-marketing"); }catch(e3){} }
+                }
+              }catch(e){}
               setSync("Tersimpan di cloud","");
               audit("Data akun dimuat dari cloud.");
             }
@@ -3803,6 +3874,24 @@
         window.__saranDomainEmail=saranDomainEmail;
         window.__emailSementara=emailSementara;
         window.__cekEmailBisaTerima=cekEmailBisaTerima;
+        /* ---------- Kode marketing saat pendaftaran (opsional) ----------
+           Format: tepat 6 huruf/angka. Dicek lewat fungsi cek_kode_marketing
+           di cloud. Gagal apa pun (tabel/fungsi belum dibuat, tidak ada
+           internet) = TIDAK PASTI, bukan "tidak ada" — pendaftaran tetap
+           lanjut dan kodenya disimpan apa adanya (fail-open; konfirmasi
+           email tetap bukti akhir). */
+        function kodeMarketingBersih(s){
+          return String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
+        }
+        async function cekKodeMarketing(kode){
+          try{
+            var r=await sb.rpc("cek_kode_marketing", {p_kode:kode});
+            if(r.error) return {ada:true, takPasti:true};
+            return {ada:!!r.data, takPasti:false};
+          }catch(e){ return {ada:true, takPasti:true}; }
+        }
+        window.__cekKodeMarketing=cekKodeMarketing;
+        window.__kodeMarketingBersih=kodeMarketingBersih;
         gid("authForm").addEventListener("submit", async function(ev){
           ev.preventDefault();
           if(!sb){ popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini.", "Tidak bisa terhubung"); return; }
@@ -3822,16 +3911,37 @@
               authMsg("Memeriksa alamat email...","ok");
               var cekE=await cekEmailBisaTerima(email);
               if(!cekE.bisa){ popupAuth("Alamat emailnya terlihat tidak bisa menerima surat — mungkin domainnya salah ketik atau sudah tidak aktif. Periksa lagi tulisannya, atau pakai email lain yang masih aktif.", "Email ini sepertinya tidak bisa menerima surat"); if(!authCooldownTimer) gid("authSubmit").disabled=false; return; }
+              /* Kode marketing (opsional): format tepat 6 huruf/angka, lalu
+                 dicek ke tabel marketing_kode. Kode tidak dikenal / tidak
+                 aktif tidak memblokir pendaftaran — pengguna bisa memperbaiki
+                 kodenya atau mengosongkan kolomnya lalu daftar lagi. Bila
+                 tabel/fungsi belum dibuat, kode diterima apa adanya. */
+              var kodeMk=kodeMarketingBersih((gid("authKode")||{}).value||"");
+              if(kodeMk){
+                if(!/^[A-Z0-9]{6}$/.test(kodeMk)){ popupAuth("Kode marketing terdiri dari 6 huruf atau angka, contoh: UMKM30. Periksa lagi kodenya, atau kosongkan kolomnya bila Anda tidak punya kode — pendaftaran tetap bisa lanjut.", "Kode marketingnya belum benar"); if(!authCooldownTimer) gid("authSubmit").disabled=false; return; }
+                authMsg("Memeriksa kode marketing...","ok");
+                var cekK=await cekKodeMarketing(kodeMk);
+                if(!cekK.ada && !cekK.takPasti){ popupAuth("Kode marketing tidak ditemukan atau sudah tidak aktif — periksa lagi kodenya, atau lanjutkan tanpa kode (kosongkan kolomnya). Pendaftaran tetap bisa lanjut.", "Kode marketing tidak ditemukan"); if(!authCooldownTimer) gid("authSubmit").disabled=false; return; }
+              }
               authMsg("Memproses...","ok");
-              var r=await sb.auth.signUp({email:email, password:pass, options:{data:{nama_usaha:nama, no_hp:hp}}});
+              var metaDaftar={nama_usaha:nama, no_hp:hp}; if(kodeMk) metaDaftar.kode_marketing=kodeMk;
+              var r=await sb.auth.signUp({email:email, password:pass, options:{data:metaDaftar}});
               if(r.error){ tanganiErrorAuth(r.error, "daftar"); }
               else if(r.data.session){
                 if(isGuest){ try{ migrateSnapshot=collectSnapshot(); localStorage.setItem("umkm-introspeksi-pending-migration", JSON.stringify(migrateSnapshot)); }catch(e){} }
                 try{ await sb.from("profiles").upsert({id:r.data.user.id, nama_usaha:nama, no_hp:hp}); }catch(e){}
+                /* Kode marketing disimpan terpisah: bila kolomnya belum ada
+                   di cloud (SQL marketing belum dijalankan), hanya baris kode
+                   yang gagal — nama usaha dan HP tetap tersimpan. */
+                try{ if(kodeMk) await sb.from("profiles").upsert({id:r.data.user.id, kode_marketing:kodeMk}); }catch(e){}
                 if(!gid("inNama").value) gid("inNama").value=nama;
                 authMsg(""); enterApp(r.data.user); toast(isGuest||migrateSnapshot?"Data coba Anda sudah tersimpan.":"Selamat datang! Formulir masih kosong — silakan isi data usaha Anda.");
               } else {
                 if(isGuest){ try{ var gs=collectSnapshot(); localStorage.setItem("umkm-introspeksi-pending-migration", JSON.stringify(gs)); persistLocal(gs); }catch(e){} }
+                /* Pendaftaran menunggu konfirmasi: profil belum bisa ditulis
+                   (belum ada sesi), jadi kodenya dititipkan dulu — saat masuk
+                   pertama kali, loadData menyimpannya ke profil dari data akun. */
+                try{ if(kodeMk) localStorage.setItem("umkm-introspeksi-kode-marketing", kodeMk); }catch(e){}
                 /* Pendaftaran diterima & email konfirmasi sudah dikirim: simpan
                    email sebagai "menunggu konfirmasi" dan tampilkan keadaan
                    khusus itu — BUKAN formulir daftar lagi, supaya pengguna tidak
@@ -5688,6 +5798,9 @@
         var pd=gid("btnPaketDaftar"); if(pd) pd.style.display=daftar?"":"none";
         strip.setAttribute("data-mode", mode);
         strip.setAttribute("aria-label","Status akun: "+pillTxt+". Ketuk untuk detail.");
+        /* Entri "Admin marketing" (blok marketing) ikut diperbarui di sini —
+           fungsi itu ada bila blok marketing sudah dimuat; bila belum, lewati. */
+        try{ if(window.__perbaruiAdminMarketing) window.__perbaruiAdminMarketing(); }catch(e){}
       }
       window.__perbaruiStatusAkun=perbaruiStatusAkun;
       window.__statusLanggananTerbaru=statusLanggananTerbaru;
@@ -5727,6 +5840,243 @@
         });
         try{ aturPaketPro(); }catch(e){}
         try{ perbaruiStatusAkun(); }catch(e){}
+      })();
+    </script>
+
+    <script>
+      /* ================= ADMIN MARKETING: kode 6 huruf/angka per orang =================
+         Setiap marketing punya kode sendiri (dibuat otomatis atau ditulis
+         pemilik, contoh: UMKM30). Halaman "Admin marketing" (layar ke-16)
+         hanya untuk pemilik aplikasi (email di bawah, pola yang sama dengan
+         admin langganan). Pendaftaran boleh diisi kode marketing — dicek lewat
+         fungsi cek_kode_marketing; kode tidak dikenal / tidak aktif tidak
+         memblokir pendaftaran, dan bila tabel/fungsi belum dibuat kodenya
+         diterima apa adanya. Jumlah pendaftar dihitung dari profil lewat
+         fungsi hitung_pendaftar_marketing (hanya angka, tanpa nama/email).
+         Fitur ini TIDAK memakai saklar LANGGANAN_AKTIF — berjalan walau
+         langganan mati. */
+      (function(){
+        "use strict";
+        function gid(id){ return document.getElementById(id); }
+        function escMk(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+        function toastMk(pesan){
+          try{ if(typeof toast==="function"){ toast(pesan); return; } }catch(e){}
+          try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Selesai", pesan, ""); }catch(e2){}
+        }
+        function popupMk(judul, apa){
+          try{ if(window.tampilPopupRamah){ window.tampilPopupRamah(judul, apa, ""); return; } }catch(e){}
+          toastMk(apa||judul);
+        }
+        function fmtTglMk(iso){
+          try{ var d=new Date(iso); if(isNaN(d.getTime())) return "—"; return d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }catch(e){ return "—"; }
+        }
+        function tabelHilang(err){
+          if(!err) return false;
+          var m=((err.message||"")+" "+(err.code||""));
+          return /42P01|PGRST205|Could not find the table|does not exist/i.test(m);
+        }
+        var PEMILIK_EMAIL_MK="soegianto@fst.unair.ac.id";
+        /* SQL yang sama dengan blok MARKETING di SQL_TEXT — hanya untuk
+           ditampilkan di halaman bila tabel belum dibuat (bukan sumber
+           utama; yang dijalankan pemilik adalah SQL_TEXT). */
+        var MARKETING_SQL_LINES=[
+          "-- Marketing: kode marketing per orang",
+          "create table if not exists public.marketing_kode (",
+          "  kode text primary key,",
+          "  nama text not null,",
+          "  aktif boolean not null default true,",
+          "  dibuat_pada timestamptz not null default now()",
+          ");",
+          "alter table public.profiles add column if not exists kode_marketing text;",
+          "alter table public.marketing_kode enable row level security;",
+          "drop policy if exists \"marketing pemilik semua\" on public.marketing_kode;",
+          "create policy \"marketing pemilik semua\" on public.marketing_kode for all using (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id') with check (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id');",
+          "create or replace function public.cek_kode_marketing(p_kode text)",
+          "returns boolean",
+          "language sql security definer set search_path = public as $$",
+          "  select exists (select 1 from public.marketing_kode where kode = upper(trim(p_kode)) and aktif)",
+          "$$;",
+          "create or replace function public.hitung_pendaftar_marketing()",
+          "returns table(kode text, jumlah bigint)",
+          "language sql security definer set search_path = public as $$",
+          "  select kode_marketing as kode, count(*) as jumlah from public.profiles where kode_marketing is not null and kode_marketing <> '' group by kode_marketing",
+          "$$;",
+          "grant execute on function public.cek_kode_marketing(text) to anon, authenticated;",
+          "grant execute on function public.hitung_pendaftar_marketing() to authenticated;"
+        ];
+        function sbMk(){ try{ return (window.__sbAuth && window.__sbAuth())||null; }catch(e){ return null; } }
+        function penggunaMk(){ try{ return (window.__penggunaAktif && window.__penggunaAktif())||null; }catch(e){ return null; } }
+        function apakahPemilik(){
+          var u=penggunaMk();
+          return !!(u && u.email===PEMILIK_EMAIL_MK);
+        }
+        function kodeBersihMk(s){
+          if(typeof window.__kodeMarketingBersih==="function"){ try{ return window.__kodeMarketingBersih(s); }catch(e){} }
+          return String(s||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
+        }
+        function buatKodeMarketing(){
+          /* Huruf/angka tanpa yang mudah tertukar (tanpa I, O, 0, 1) — pola
+             yang sama dengan buatKodePesanan di blok langganan. */
+          var Huruf="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+          var out="";
+          if(window.crypto && crypto.getRandomValues){
+            var a=new Uint8Array(6); crypto.getRandomValues(a);
+            for(var i=0;i<6;i++) out+=Huruf.charAt(a[i]%Huruf.length);
+          } else { for(var i=0;i<6;i++) out+=Huruf.charAt(Math.floor(Math.random()*Huruf.length)); }
+          return out;
+        }
+        function salinKode(teks, pesan){
+          try{
+            if(navigator.clipboard && navigator.clipboard.writeText){
+              navigator.clipboard.writeText(teks).then(function(){ toastMk(pesan||("Kode "+teks+" tersalin.")); }, function(){ toastMk("Kode: "+teks); });
+              return;
+            }
+          }catch(e){}
+          toastMk("Kode: "+teks);
+        }
+        /* Entri di bilah akun: hanya pemilik yang melihatnya. Dipanggil dari
+           perbaruiStatusAkun (blok strip status) di setiap perubahan keadaan
+           akun, plus sekali saat blok ini dimuat. */
+        function perbaruiAdminMarketing(){
+          var b=gid("btnAdminMarketing"); if(!b) return;
+          var pemilik=apakahPemilik();
+          b.style.display=pemilik?"":"none";
+          if(!pemilik){
+            try{
+              if(document.body.getAttribute("data-layar")==="adminmarketing" && window.__tampilkanLayar) window.__tampilkanLayar("hariini");
+            }catch(e){}
+          }
+        }
+        window.__perbaruiAdminMarketing=perbaruiAdminMarketing;
+        async function muatDaftarMarketing(){
+          var isi=gid("mkIsi"), bukan=gid("mkBukanPemilik");
+          if(!apakahPemilik()){
+            if(bukan) bukan.style.display="";
+            if(isi) isi.style.display="none";
+            return;
+          }
+          if(bukan) bukan.style.display="none";
+          if(isi) isi.style.display="";
+          var setup=gid("mkSetup"), kosong=gid("mkDaftarKosong"), wadah=gid("mkDaftar");
+          var sb=sbMk();
+          if(!sb){ if(setup) setup.style.display=""; return; }
+          var r=await sb.from("marketing_kode").select("kode,nama,aktif,dibuat_pada").order("dibuat_pada",{ascending:false});
+          if(r.error){
+            if(tabelHilang(r.error)){ if(setup) setup.style.display=""; if(wadah) wadah.innerHTML=""; if(kosong) kosong.style.display="none"; return; }
+            popupMk("Daftar kode belum bisa dimuat","Periksa koneksi internet Anda, lalu buka lagi halaman ini.");
+            return;
+          }
+          if(setup) setup.style.display="none";
+          var rows=r.data||[];
+          if(!rows.length){ if(kosong) kosong.style.display=""; if(wadah) wadah.innerHTML=""; return; }
+          if(kosong) kosong.style.display="none";
+          /* Jumlah pendaftar per kode (hanya angka, dari profil). Bila
+             sumber hitungannya tidak tersedia, tampilkan "—" — jangan
+             pernah membuat angka. */
+          var jumlah={}, adaJumlah=true;
+          try{
+            var rc=await sb.rpc("hitung_pendaftar_marketing");
+            if(rc.error) adaJumlah=false;
+            else (rc.data||[]).forEach(function(x){ jumlah[x.kode]=+x.jumlah||0; });
+          }catch(e){ adaJumlah=false; }
+          if(wadah) wadah.innerHTML=rows.map(function(x){
+            var j=adaJumlah ? ((jumlah[x.kode]!=null)?jumlah[x.kode]:0) : null;
+            var jTeks=(j==null)?"—":String(j);
+            var hapus=(j===0)?'<button class="btn ghost small" type="button" data-hapus="'+escMk(x.kode)+'">Hapus</button>':"";
+            return '<div style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:10px">'
+              +'<div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><b style="font-size:1.15rem;letter-spacing:.08em">'+escMk(x.kode)+'</b><button class="btn ghost small" type="button" data-salin="'+escMk(x.kode)+'">Salin</button></div>'
+              +'<p style="margin-top:8px">Nama marketing: <b>'+escMk(x.nama||"—")+'</b></p>'
+              +'<p>Dibuat: '+escMk(fmtTglMk(x.dibuat_pada))+' · Status: <b>'+(x.aktif?"Aktif":"Tidak aktif")+'</b> · Jumlah pendaftar: <b>'+jTeks+'</b></p>'
+              +'<div class="actions"><button class="btn ghost small" type="button" data-aktif="'+escMk(x.kode)+'" data-nilai="'+(x.aktif?"false":"true")+'">'+(x.aktif?"Nonaktifkan":"Aktifkan")+'</button>'+hapus+'</div>'
+              +'</div>';
+          }).join("");
+        }
+        async function tambahMarketing(){
+          var namaEl=gid("mkNama"), kodeEl=gid("mkKode");
+          var nama=(namaEl&&namaEl.value||"").trim();
+          var kodeRaw=(kodeEl&&kodeEl.value||"").trim();
+          if(!nama){ popupMk("Isi nama marketing dulu","Tulis nama orang marketingnya, contoh: Budi Santoso."); return; }
+          var kode=kodeBersihMk(kodeRaw);
+          if(kodeRaw && !/^[A-Z0-9]{6}$/.test(kode)){ popupMk("Kode marketingnya belum benar","Kode terdiri dari 6 huruf atau angka, contoh: UMKM30. Periksa lagi kodenya, atau kosongkan kolomnya supaya dibuat otomatis."); return; }
+          var sb=sbMk();
+          if(!sb){ popupMk("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return; }
+          if(!kode){
+            /* Kode otomatis: buat sampai dapat yang belum dipakai. */
+            for(var i=0;i<8;i++){
+              var g=buatKodeMarketing();
+              var cek=await sb.from("marketing_kode").select("kode").eq("kode",g).maybeSingle();
+              if(cek.error){
+                if(tabelHilang(cek.error)){ var st=gid("mkSetup"); if(st) st.style.display=""; popupMk("Tabel kode marketing belum dibuat","Jalankan SQL di halaman ini di SQL Editor cloud, lalu coba lagi."); return; }
+                break;
+              }
+              if(!cek.data){ kode=g; break; }
+            }
+            if(!kode){ popupMk("Kode belum bisa dibuat","Kode otomatis tidak bisa dibuat — periksa koneksi internet Anda, lalu coba lagi."); return; }
+          }
+          var r=await sb.from("marketing_kode").insert({kode:kode, nama:nama, aktif:true});
+          if(r.error){
+            if(tabelHilang(r.error)){ var st2=gid("mkSetup"); if(st2) st2.style.display=""; popupMk("Tabel kode marketing belum dibuat","Jalankan SQL di halaman ini di SQL Editor cloud, lalu coba lagi."); return; }
+            if(/duplicate|23505/i.test((r.error.message||"")+" "+(r.error.code||""))){ popupMk("Kode sudah dipakai","Kode "+kode+" sudah dipakai marketing lain — pilih kode lain, atau kosongkan kolomnya supaya dibuat otomatis."); return; }
+            popupMk("Belum bisa menyimpan","Kode belum tersimpan — periksa koneksi internet Anda, lalu coba lagi."); return;
+          }
+          if(namaEl) namaEl.value=""; if(kodeEl) kodeEl.value="";
+          var hasil=gid("mkTambahHasil");
+          if(hasil){
+            hasil.style.display="";
+            hasil.innerHTML="Kode <b>"+escMk(kode)+"</b> untuk <b>"+escMk(nama)+"</b> sudah dibuat. <button class=\"btn ghost small\" type=\"button\" data-salin=\""+escMk(kode)+"\">Salin kode</button>";
+          }
+          toastMk("Marketing "+nama+" ditambahkan — kode "+kode+".");
+          await muatDaftarMarketing();
+        }
+        async function ubahAktifMarketing(kode, nilai){
+          var sb=sbMk();
+          if(!sb){ popupMk("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return; }
+          var r=await sb.from("marketing_kode").update({aktif:nilai}).eq("kode",kode);
+          if(r.error){ popupMk(nilai?"Kode belum bisa diaktifkan":"Kode belum bisa dinonaktifkan","Periksa koneksi internet Anda, lalu coba lagi."); return; }
+          toastMk(nilai?("Kode "+kode+" diaktifkan."):("Kode "+kode+" dinonaktifkan — kode ini tidak lagi diterima saat pendaftaran."));
+          await muatDaftarMarketing();
+        }
+        async function hapusMarketing(kode){
+          var sb=sbMk();
+          if(!sb){ popupMk("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return; }
+          var r=await sb.from("marketing_kode").delete().eq("kode",kode);
+          if(r.error){ popupMk("Kode belum bisa dihapus","Periksa koneksi internet Anda, lalu coba lagi."); return; }
+          toastMk("Kode "+kode+" dihapus.");
+          await muatDaftarMarketing();
+        }
+        window.__mk={
+          perbarui:perbaruiAdminMarketing, muat:muatDaftarMarketing, tambah:tambahMarketing,
+          buatKode:buatKodeMarketing, normal:kodeBersihMk, apakahPemilik:apakahPemilik,
+          sql:MARKETING_SQL_LINES.join("\n")
+        };
+        (function(){
+          var pre=gid("mkSetupSql"); if(pre) pre.textContent=MARKETING_SQL_LINES.join("\n");
+          ["mkKode","authKode"].forEach(function(id){
+            var el=gid(id); if(!el) return;
+            el.addEventListener("input", function(){ var v=kodeBersihMk(el.value); if(el.value!==v) el.value=v; });
+          });
+          var b=gid("btnAdminMarketing");
+          if(b) b.addEventListener("click", function(){
+            if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("adminmarketing"); }catch(e){} }
+            muatDaftarMarketing();
+          });
+          var t=gid("btnMkTambah"); if(t) t.addEventListener("click", tambahMarketing);
+          var s=gid("btnMkSalinSql");
+          if(s) s.addEventListener("click", function(){ salinKode(MARKETING_SQL_LINES.join("\n"), "SQL tersalin — tempel di SQL Editor cloud lalu klik Run"); });
+          var sec=gid("adminmarketing");
+          if(sec) sec.addEventListener("click", function(ev){
+            var el=ev.target && ev.target.closest ? ev.target.closest("[data-salin],[data-aktif],[data-hapus]") : null;
+            if(!el) return;
+            if(el.hasAttribute("data-salin")){ salinKode(el.getAttribute("data-salin")); return; }
+            if(el.hasAttribute("data-aktif")){ ubahAktifMarketing(el.getAttribute("data-aktif"), el.getAttribute("data-nilai")==="true"); return; }
+            if(el.hasAttribute("data-hapus")){ hapusMarketing(el.getAttribute("data-hapus")); return; }
+          });
+          window.addEventListener("hashchange", function(){
+            try{ if(String(window.location.hash||"")==="#adminmarketing") muatDaftarMarketing(); }catch(e){}
+          });
+          try{ perbaruiAdminMarketing(); }catch(e){}
+          try{ if(String(window.location.hash||"")==="#adminmarketing") muatDaftarMarketing(); }catch(e){}
+        })();
       })();
     </script>
 
