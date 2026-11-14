@@ -113,6 +113,12 @@
       .voice-block{margin-top:14px}
       .voice-block .voice-result{margin-top:8px}
       .voice-warn{background:var(--warn-soft);border:1.5px solid var(--warn);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.93rem;font-weight:600;margin-top:12px}
+      /* Lipatan penjelasan Tambah Transaksi: tiga penjelasan (sec-sub,
+         catatan foto, peringatan suara) tersembunyi di balik satu
+         tombol "Lihat penjelasan" — selalu tertutup setiap kali layar
+         dibuka; pengguna hanya melihat Foto / Suara / Isian. */
+      #txPenjelasan[hidden]{display:none!important}
+      #btnTxPenjelasan{margin-bottom:12px}
       .demo-tag{display:inline-block;background:var(--gold-soft);color:var(--gold);font-weight:700;font-size:.8rem;padding:4px 10px;border-radius:999px;margin-bottom:12px}
       /* Ringkasan data usaha (tampil saat formulir dilipat karena sudah terisi). */
       .data-ringkas{margin-top:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--accent-soft)}
@@ -1336,18 +1342,24 @@
       <!-- ============ 8b. TAMBAH TRANSAKSI (dari Pembukuan) ============ -->
       <section id="buku-transaksi">
         <div class="sec-head"><span class="sec-num">08</span><h2>Tambah transaksi</h2></div>
-        <p class="sec-sub">Catat transaksi seperti buku kas digital. <b>Periksa kembali angkanya sebelum menambah transaksi</b>, terutama angka hasil ucapan suara.</p>
+        <button class="btn ghost" id="btnTxPenjelasan" type="button" aria-expanded="false" aria-controls="txPenjelasan">Lihat penjelasan</button>
+        <div id="txPenjelasan" hidden>
+          <p class="sec-sub">Catat transaksi seperti buku kas digital. <b>Periksa kembali angkanya sebelum menambah transaksi</b>, terutama angka hasil ucapan suara.</p>
+          <p class="note" style="margin-top:8px">Foto nota tampil sebagai bukti pendamping catatan Anda. Baca angka di nota, lalu masukkan jumlahnya pada formulir di bawah.</p>
+          <p class="voice-warn" role="note">Peringatan: periksa kembali angkanya sebelum menambah transaksi. Hasil suara hanya mengisi kolom — transaksi baru tercatat setelah Anda menekan tombol Tambah transaksi.</p>
+        </div>
         <div class="card">
-          <h3>Tambah transaksi</h3>
+          <h3>Foto</h3>
           <div class="photo-box">
             <label class="f"><span>Foto nota / struk (opsional)</span><input type="file" id="notaPhoto" accept="image/*" /></label>
             <img id="notaPreview" alt="Pratinjau foto nota yang diunggah" style="display:none" />
-            <p class="note" style="margin-top:8px">Foto nota tampil sebagai bukti pendamping catatan Anda. Baca angka di nota, lalu masukkan jumlahnya pada formulir di bawah.</p>
           </div>
+          <h3>Suara</h3>
           <div class="voice-block">
             <button class="btn ghost" id="btnVoice" type="button" style="width:100%">Catat dengan suara (keterangan + jumlah)</button>
             <p class="voice-result" id="voiceResult" role="status"></p>
           </div>
+          <h3>Isian</h3>
           <div class="form-grid" style="margin-top:14px">
             <label class="f"><span>Tanggal</span><input type="text" id="txTanggal" placeholder="contoh: 2026-11-14" /></label>
             <label class="f"><span>Keterangan</span><input type="text" id="txKet" placeholder="contoh: Penjualan nasi campur 40 porsi" /></label>
@@ -1355,7 +1367,6 @@
             <label class="f"><span>Kategori</span><select id="txKat"><option value="" selected disabled>Pilih kategori…</option><option>Penjualan</option><option>QRIS</option><option>Bahan baku</option><option>Operasional</option><option>Gaji</option><option>Kemasan</option><option>Transport</option><option>Lainnya</option></select></label>
             <label class="f"><span>Jumlah (Rp)</span><input type="number" id="txJumlah" placeholder="contoh: 600000" min="0" step="1000" /></label>
           </div>
-          <p class="voice-warn" role="note">Peringatan: periksa kembali angkanya sebelum menambah transaksi. Hasil suara hanya mengisi kolom — transaksi baru tercatat setelah Anda menekan tombol Tambah transaksi.</p>
           <div class="actions"><button class="btn" id="btnTx" type="button">Tambah transaksi</button></div>
           <div id="txEmpty" class="empty-note">Belum ada transaksi tercatat. Tambahkan penjualan dan pengeluaran hari ini untuk menyusun laporan.</div>
           <table class="mini-table" id="txTable" style="display:none"><thead><tr><th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th>Jumlah</th><th></th></tr></thead><tbody id="txBody"></tbody></table>
@@ -3198,6 +3209,21 @@
         function hashAdalahLayar(){
           try{ var h=String(window.location.hash||"").replace(/^#/,""); return !!layarDariNama(h); }catch(e){ return false; }
         }
+        /* Penjelasan Tambah Transaksi: satu lipatan berisi tiga teks
+           (sec-sub, catatan foto, peringatan suara). Selalu tertutup
+           setiap kali layar dibuka — pengguna hanya melihat Foto / Suara /
+           Isian sampai ia sendiri mengetuk "Lihat penjelasan". Tanpa
+           argumen, berbalik dari keadaan sekarang. */
+        function aturPenjelasanTx(buka){
+          try{
+            var w=gid("txPenjelasan"), b=gid("btnTxPenjelasan");
+            if(!w||!b) return false;
+            if(typeof buka!=="boolean") buka=w.hidden;
+            w.hidden=!buka;
+            b.setAttribute("aria-expanded", buka?"true":"false");
+            return buka;
+          }catch(e){ return false; }
+        }
         function tampilkanLayar(nama, opsi){
           opsi=opsi||{};
           if(modePortalBerbagi()) return false;
@@ -3232,7 +3258,12 @@
              rekaman suara di atas adalah pintu masuknya. Peramban biasanya
              melepas fokus saat kolom disembunyikan, tapi jangan andalkan
              itu — lepas eksplisit di sini. */
-          if(nama==="buku-transaksi"){ try{ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }catch(e){} }
+          if(nama==="buku-transaksi"){
+            try{ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }catch(e){}
+            /* Masuk Tambah Transaksi selalu dari atas dengan penjelasan
+               tertutup — lipatan tidak pernah diingat terbuka. */
+            aturPenjelasanTx(false);
+          }
           return true;
         }
         /* Layar yang memuat elemen tertentu (dipakai fokusKeKolom dan
@@ -3327,6 +3358,7 @@
           return hasil;
         }
         window.__tampilkanLayar=tampilkanLayar;
+        window.__aturPenjelasanTx=aturPenjelasanTx;
         window.__layarUntukEl=layarUntukEl;
         window.__tampilkanLayarAwal=tampilkanLayarAwal;
         window.__layarAktif=function(){ return layarAktif; };
@@ -3338,6 +3370,8 @@
            sekali — tidak ada data-layar, tidak ada perubahan hash. */
         try{
           pasangTombolKembali();
+          var bTxP=gid("btnTxPenjelasan");
+          if(bTxP) bTxP.addEventListener("click", function(){ aturPenjelasanTx(); });
           if(!modePortalBerbagi() && !hashAdalahPemulihan()){
             tampilkanLayar(layarDariHash()||"hariini", {scroll:false});
           }
