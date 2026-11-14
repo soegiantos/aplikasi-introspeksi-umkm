@@ -228,6 +228,7 @@
       #naikLevelList{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
       #naikLevelList li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
       #naikLevelList li span{font-weight:600}
+      #naikLevelList li .btn{flex:none;min-width:84px;white-space:nowrap}
       .ladder div b{display:block;font-size:.95rem}
       @media(max-width:640px){.ladder{grid-template-columns:repeat(2,1fr)}.ladder div:last-child{grid-column:span 2}}
 
@@ -3972,7 +3973,7 @@
             if(el.tagName==="BUTTON"&&el.type==="submit") return false;
             if(el.matches("a.menu-row, nav.main a, .module-grid a, .bottom-nav a")) return true;
             if(el.classList.contains("btn-explain")||el.classList.contains("tx-mode-btn")||el.classList.contains("field-help-btn")||el.classList.contains("wiz-skip")||el.classList.contains("forgot-link")||el.classList.contains("chip-lipatan")) return true;
-            if(el.hasAttribute("data-wiz-next")||el.hasAttribute("data-wiz-back")||el.hasAttribute("data-explain-target")||el.hasAttribute("data-help-chip")||el.hasAttribute("data-kembali-layar")||el.hasAttribute("data-diskusi-buka")||el.hasAttribute("data-diskusi-tutup")||el.hasAttribute("data-lipatan-untuk")||el.hasAttribute("data-pro-explain")||el.hasAttribute("data-pro-goto")) return true;
+            if(el.hasAttribute("data-wiz-next")||el.hasAttribute("data-wiz-back")||el.hasAttribute("data-explain-target")||el.hasAttribute("data-help-chip")||el.hasAttribute("data-kembali-layar")||el.hasAttribute("data-diskusi-buka")||el.hasAttribute("data-diskusi-tutup")||el.hasAttribute("data-lipatan-untuk")||el.hasAttribute("data-pro-explain")||el.hasAttribute("data-pro-goto")||el.hasAttribute("data-naik-target")) return true;
             if(el.id&&ID_NAVIGASI.indexOf(el.id)>=0) return true;
             return false;
           }
@@ -3989,6 +3990,7 @@
             if((v=el.getAttribute("data-diskusi-tutup"))) return "diskusi-tutup:"+v;
             if((v=el.getAttribute("data-lipatan-untuk"))) return "lipatan:"+v;
             if((v=el.getAttribute("data-untuk-kolom"))) return "kolom:"+v;
+            if((v=el.getAttribute("data-naik-target"))) return "naik:"+v;
           if((v=el.getAttribute("data-wiz-next"))) return "wiz:next:"+v+":"+String(el.className).split(/\s+/).filter(function(c){ return c && c!=="sudah-diklik"; }).join(".");
           if((v=el.getAttribute("data-wiz-back"))) return "wiz:back:"+v+":"+String(el.className).split(/\s+/).filter(function(c){ return c && c!=="sudah-diklik"; }).join(".");
             if(el.hasAttribute("data-pro-explain")||el.hasAttribute("data-pro-goto")){
