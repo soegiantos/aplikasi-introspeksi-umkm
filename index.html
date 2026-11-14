@@ -110,6 +110,9 @@
       .suara-bawah{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
       .suara-bawah span{font-size:.9rem;color:var(--ink-soft);font-weight:600}
       .suara-berhenti{min-height:40px}
+      .suara-debug{margin-top:10px}
+      .suara-debug-tombol{min-height:32px;padding:4px 10px;font-size:.82rem}
+      .suara-debug-log{margin-top:8px;max-height:120px;overflow-y:auto;background:var(--field-bg);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.8rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
       .voice-warn{background:var(--warn-soft);border:1.5px solid var(--warn);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.93rem;font-weight:600;margin-top:12px}
       .demo-tag{display:inline-block;background:var(--gold-soft);color:var(--gold);font-weight:700;font-size:.8rem;padding:4px 10px;border-radius:999px;margin-bottom:12px}
       /* Ringkasan data usaha (tampil saat formulir dilipat karena sudah terisi). */
@@ -2571,7 +2574,7 @@
          suara tidak terganggu, tanpa popup apa pun. Stream dan loop animasi
          selalu ditutup saat rekaman selesai/berhenti agar mikrofon tidak
          terus terbuka. */
-      var __suaraPanel=null, __suaraR=null, __suaraRaf=null, __suaraStream=null, __suaraCtx=null, __suaraAnalyser=null, __suaraData=null, __suaraSelesaiFlag=false, __suaraMenungguFinal=false, __suaraTungguFinal=null, __suaraTeksTerakhir="";
+      var __suaraPanel=null, __suaraR=null, __suaraRaf=null, __suaraStream=null, __suaraCtx=null, __suaraAnalyser=null, __suaraData=null, __suaraSelesaiFlag=false, __suaraMenungguFinal=false, __suaraTungguFinal=null, __suaraTeksTerakhir="", __suaraAkhirDicatat=false;
       function __suaraSetStatus(bicara, teks){
         if(!__suaraPanel) return;
         var st=__suaraPanel.querySelector("#voiceStatusText");
@@ -2613,6 +2616,8 @@
          final sudah ada, keadaan selesai yang berlaku (tidak diubah). */
       function __suaraAkhir(){
         if(__suaraSelesaiFlag) return;
+        /* Dicatat sekali per rekaman (onend dan onaudioend sering berdua). */
+        if(!__suaraAkhirDicatat){ __suaraAkhirDicatat=true; __suaraDebug("Pengenalan selesai"); }
         if(__suaraMenungguFinal) return; /* "Berhenti" sudah ditekan: status "menulis hasil…" tetap sampai tenggang habis / hasil final tiba. */
         __suaraBersihMeter();
         if(!__suaraPanel) return;
@@ -2633,6 +2638,52 @@
         if(teks){ c.textContent=teks; c.style.display="block"; }
         else { c.textContent=""; c.style.display="none"; }
       }
+      /* Catatan debug di dalam panel suara (hanya tampilan — tidak pernah
+         ditulis ke cloud atau localStorage). Satu baris per kejadian,
+         diawali jam HH:MM:SS, dibatasi 30 baris terakhir. Dipakai pemilik
+         untuk melihat mengapa pengenalan suara tidak mengembalikan teks
+         padahal meter mikrofon bergerak. */
+      var __suaraDebugMaks=30;
+      function __suaraDebugJam(){
+        var d=new Date();
+        function p(n){ return (n<10?"0":"")+n; }
+        return p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+      }
+      function __suaraDebug(teks){
+        if(!__suaraPanel) return;
+        var el=__suaraPanel.querySelector("#voiceDebugLog");
+        if(!el) return;
+        var baris=document.createElement("div");
+        baris.textContent=__suaraDebugJam()+" "+teks;
+        el.appendChild(baris);
+        while(el.children.length>__suaraDebugMaks){ el.removeChild(el.firstChild); }
+      }
+      function __suaraDebugBersih(){
+        if(!__suaraPanel) return;
+        var el=__suaraPanel.querySelector("#voiceDebugLog");
+        if(el) el.textContent="";
+      }
+      function __suaraDebugTutup(){
+        if(!__suaraPanel) return;
+        var log=__suaraPanel.querySelector("#voiceDebugLog");
+        if(log) log.style.display="none";
+        var b=__suaraPanel.querySelector("#voiceDebugBtn");
+        if(b){ b.textContent="Lihat debug"; b.setAttribute("aria-expanded","false"); }
+      }
+      /* Arti kode galat pengenalan suara dalam kata biasa, selalu disertai
+         kode aslinya dalam kurung supaya penyebab pastinya terlihat. */
+      function __suaraDebugSalah(kode){
+        var k=String(kode||"");
+        var arti;
+        if(k==="no-speech") arti="tidak ada suara terdeteksi";
+        else if(k==="network") arti="jaringan bermasalah saat mengirim suara";
+        else if(k==="not-allowed"||k==="service-not-allowed") arti="izin atau layanan pengenalan suara ditolak";
+        else if(k==="audio-capture") arti="mikrofon tidak bisa dibuka";
+        else if(k==="aborted") arti="pengenalan dibatalkan";
+        else if(k==="language-not-supported") arti="bahasa tidak didukung";
+        else arti=k||"kesalahan tidak diketahui";
+        return "Kesalahan: "+arti+" ("+k+")";
+      }
       /* Tenggang habis setelah "Berhenti" tanpa hasil final. Panel TETAP
          terbuka — tidak ditutup diam-diam dan tidak ada pop-up. Bila ada
          teks interim, teks itu tetap terlihat ("Terdengar: …") dengan
@@ -2648,9 +2699,11 @@
         if(!__suaraPanel) return;
         var adaTeks=!!(__suaraTeksTerakhir && String(__suaraTeksTerakhir).trim());
         if(adaTeks){
+          __suaraDebug("Tenggang habis: hanya tangkapan sebagian — kolom belum terisi");
           __suaraCatatan("Ini baru tangkapan sebagian — kolom belum terisi dari suara ini. Isi kolomnya sendiri, atau coba lagi di tempat yang lebih tenang.");
           __suaraSetStatus(false, "Selesai — periksa teks di atas, lalu tekan Tutup");
         } else {
+          __suaraDebug("Tenggang habis: tidak ada ucapan yang tertangkap");
           __suaraCatatan("Tidak ada ucapan yang tertangkap. Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya.");
           __suaraSetStatus(false, "Tidak ada yang tertangkap — tekan Tutup untuk menutup");
         }
@@ -2730,7 +2783,8 @@
           +'<div class="suara-teks" id="voiceTeks" style="display:none"></div>'
           +'<div class="suara-catatan" id="voiceCatatan" style="display:none"></div>'
           +'<div class="suara-meter" aria-hidden="true"><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span></div>'
-          +'<div class="suara-bawah"><span id="voiceLevelText">Suara: sangat lemah</span><button type="button" class="btn ghost suara-berhenti" id="voiceStopBtn">Berhenti</button></div>';
+          +'<div class="suara-bawah"><span id="voiceLevelText">Suara: sangat lemah</span><button type="button" class="btn ghost suara-berhenti" id="voiceStopBtn">Berhenti</button></div>'
+          +'<div class="suara-debug"><button type="button" class="btn ghost suara-debug-tombol" id="voiceDebugBtn" aria-expanded="false">Lihat debug</button><div class="suara-debug-log" id="voiceDebugLog" style="display:none"></div></div>';
         document.body.appendChild(p);
         var b=p.querySelector("#voiceStopBtn");
         if(b) b.addEventListener("click", function(){
@@ -2745,9 +2799,20 @@
           if(__suaraR){ try{ __suaraR.stop(); }catch(e){} }
           __suaraBersihMeter();
           __suaraSetStatus(false, "Suara berhenti — menulis hasil…");
+          __suaraDebug("Berhenti ditekan — menunggu hasil akhir");
           __suaraMenungguFinal=true;
           if(__suaraTungguFinal!==null){ try{ clearTimeout(__suaraTungguFinal); }catch(e){} }
           __suaraTungguFinal=setTimeout(__suaraTungguFinalHabis, 2800);
+        });
+        /* Tombol debug: melipat/membuka catatan kejadian rekaman ini saja. */
+        var dg=p.querySelector("#voiceDebugBtn");
+        if(dg) dg.addEventListener("click", function(){
+          var log=p.querySelector("#voiceDebugLog");
+          if(!log) return;
+          var buka=log.style.display==="none";
+          log.style.display=buka?"block":"none";
+          dg.textContent=buka?"Sembunyikan debug":"Lihat debug";
+          dg.setAttribute("aria-expanded", buka?"true":"false");
         });
         __suaraPanel=p;
         return p;
@@ -2767,7 +2832,12 @@
         __suaraSelesaiFlag=false;
         __suaraBatalTunggu();
         __suaraTeksTerakhir="";
+        __suaraAkhirDicatat=false;
         __suaraCatatan("");
+        __suaraDebugBersih();
+        __suaraDebugTutup();
+        if(r){ __suaraDebug("Pengenalan suara: tersedia"); __suaraDebug("Bahasa: Indonesia ("+(r.lang||"id-ID")+")"); }
+        else { __suaraDebug("Pengenalan suara: tidak didukung peramban ini"); }
         if(resEl && resEl.parentNode) resEl.parentNode.insertBefore(p, resEl);
         var m=p.querySelector(".suara-meter"); if(m) m.style.display="";
         var tx=p.querySelector("#voiceTeks"); if(tx){ tx.textContent=""; tx.style.display="none"; }
@@ -2778,26 +2848,28 @@
         __suaraR=r||null;
         __suaraMulaiMeter();
       }
-      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter, teks:__suaraTeks, selesai:__suaraSelesai, akhir:__suaraAkhir, rangkum:__suaraRangkumHasil, statusTeks:__suaraSetStatusTeks, sudahSelesai:function(){ return !!__suaraSelesaiFlag; }, menunggu:function(){ return !!__suaraMenungguFinal; }, tungguHabis:__suaraTungguFinalHabis};
+      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter, teks:__suaraTeks, selesai:__suaraSelesai, akhir:__suaraAkhir, rangkum:__suaraRangkumHasil, statusTeks:__suaraSetStatusTeks, debug:__suaraDebug, debugSalah:__suaraDebugSalah, sudahSelesai:function(){ return !!__suaraSelesaiFlag; }, menunggu:function(){ return !!__suaraMenungguFinal; }, tungguHabis:__suaraTungguFinalHabis};
       $("btnVoice").addEventListener("click",function(){
         const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
         const resEl=$("voiceResult");
         if(!SR){ popupRamah("Suara belum bisa dipakai","Input suara tidak didukung peramban ini.","Ketik keterangannya seperti biasa — catatan tetap bisa disimpan. Suara umumnya jalan di peramban Chrome pada HP Android."); return; }
         const r=new SR(); r.lang="id-ID"; r.interimResults=true;
         if(window.__panelSuara) window.__panelSuara.buka(r, resEl);
-        r.onspeechstart=function(){ if(window.__panelSuara) window.__panelSuara.bicara(true); };
-        r.onspeechend=function(){ if(window.__panelSuara) window.__panelSuara.bicara(false, "Suara berhenti — menulis hasil…"); };
+        r.onspeechstart=function(){ var PS=window.__panelSuara; if(PS){ PS.bicara(true); if(PS.debug) PS.debug("Suara mulai terdengar"); } };
+        r.onspeechend=function(){ var PS=window.__panelSuara; if(PS){ PS.bicara(false, "Suara berhenti — menulis hasil…"); if(PS.debug) PS.debug("Suara berhenti"); } };
         r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
         r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
+        r.onnomatch=function(){ var PS=window.__panelSuara; if(PS && PS.debug) PS.debug("Suara terdengar tapi kata-katanya tidak dikenali"); };
         r.onresult=function(ev){
           var PS=window.__panelSuara;
           if(PS && PS.sudahSelesai()) return;
           var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
+          if(h.teks && PS && PS.debug) PS.debug(h.final ? "Hasil akhir: "+(h.finalTeks||h.teks) : "Hasil sementara: "+h.teks);
           if(h.teks && PS) PS.teks(h.final ? (h.finalTeks||h.teks) : h.teks, h.final);
           if(!h.final) return;
           const teks=h.finalTeks||h.teks;
           const p=parseUcapanTransaksi(teks);
-          if(!p.mentah){ if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
+          if(!p.mentah){ if(PS && PS.debug) PS.debug("Hasil akhir tidak terbaca — keterangan dan jumlah kosong"); if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
           if(p.keterangan) $("txKet").value=p.keterangan;
           let msg;
           if(p.jumlah!==null){
@@ -2814,8 +2886,8 @@
           }
           if(PS) PS.selesai();
         };
-        r.onerror=function(){ var PS=window.__panelSuara; if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
-        r.start(); toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
+        r.onerror=function(ev){ var PS=window.__panelSuara; if(PS && PS.debug && PS.debugSalah) PS.debug(PS.debugSalah(ev&&ev.error)); if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
+        r.start(); if(window.__panelSuara && window.__panelSuara.debug) window.__panelSuara.debug("Mulai mendengarkan"); toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
       });
 
       /* --- Stok & Piutang --- */
@@ -6770,14 +6842,16 @@
           if(!SR){ popupRamah("Suara belum bisa dipakai","Input suara tidak didukung peramban ini.","Ketik keterangannya seperti biasa — catatan tetap bisa disimpan. Suara umumnya jalan di peramban Chrome pada HP Android."); return; }
           var r=new SR(); r.lang="id-ID"; r.interimResults=true;
           if(window.__panelSuara) window.__panelSuara.buka(r, resEl);
-          r.onspeechstart=function(){ if(window.__panelSuara) window.__panelSuara.bicara(true); };
-          r.onspeechend=function(){ if(window.__panelSuara) window.__panelSuara.bicara(false, "Suara berhenti — menulis hasil…"); };
+          r.onspeechstart=function(){ var PS=window.__panelSuara; if(PS){ PS.bicara(true); if(PS.debug) PS.debug("Suara mulai terdengar"); } };
+          r.onspeechend=function(){ var PS=window.__panelSuara; if(PS){ PS.bicara(false, "Suara berhenti — menulis hasil…"); if(PS.debug) PS.debug("Suara berhenti"); } };
           r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
           r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
+          r.onnomatch=function(){ var PS=window.__panelSuara; if(PS && PS.debug) PS.debug("Suara terdengar tapi kata-katanya tidak dikenali"); };
           r.onresult=function(ev){
             var PS=window.__panelSuara;
             if(PS && PS.sudahSelesai()) return;
             var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
+            if(h.teks && PS && PS.debug) PS.debug(h.final ? "Hasil akhir: "+(h.finalTeks||h.teks) : "Hasil sementara: "+h.teks);
             if(h.teks && PS) PS.teks(h.final ? (h.finalTeks||h.teks) : h.teks, h.final);
             if(!h.final) return;
             var teks=h.finalTeks||h.teks;
@@ -6794,8 +6868,9 @@
             toast("Keterangan dan jumlah terisi dari suara — periksa kembali angkanya");
             if(PS) PS.selesai();
           };
-          r.onerror=function(){ var PS=window.__panelSuara; if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
+          r.onerror=function(ev){ var PS=window.__panelSuara; if(PS && PS.debug && PS.debugSalah) PS.debug(PS.debugSalah(ev&&ev.error)); if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
           try{ r.start(); }catch(e){}
+          if(window.__panelSuara && window.__panelSuara.debug) window.__panelSuara.debug("Mulai mendengarkan");
           toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
         });
         renderHariIni();
