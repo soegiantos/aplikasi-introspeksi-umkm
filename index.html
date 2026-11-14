@@ -259,6 +259,41 @@
       .explain-answer{margin-top:10px;font-size:.93rem;background:var(--surface-2);border-radius:10px;padding:12px 14px;white-space:pre-line}
       .explain-answer:empty{display:none}
 
+      /* ---------- Saran Proaktif: panel Perlu Perhatian ---------- */
+      .pro-panel{border:1px solid var(--teal)}
+      .pro-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+      .pro-count{font-size:.8rem;font-weight:800;padding:4px 11px;border-radius:999px;background:var(--warn-soft);color:var(--warn);white-space:nowrap}
+      .pro-count.ok{background:var(--accent-soft);color:#7fd6ab}
+      .pro-item{border:1px solid var(--line);border-left:5px solid var(--teal);border-radius:10px;padding:13px 14px;margin-top:11px;background:var(--surface-2)}
+      .pro-item.merah{border-left-color:var(--bad);background:var(--bad-soft)}
+      .pro-item.kuning{border-left-color:var(--warn);background:var(--warn-soft)}
+      .pro-item.biru{border-left-color:var(--teal);background:var(--teal-soft)}
+      .pro-top{display:flex;gap:8px;align-items:flex-start}
+      .pro-title{font-weight:800;font-size:.99rem;flex:1 1 auto}
+      .pro-badge{font-size:.72rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:3px 9px;border-radius:999px;flex:none;background:var(--teal);color:#08130d}
+      .pro-item.merah .pro-badge{background:var(--bad);color:#2b0f0b}
+      .pro-item.kuning .pro-badge{background:var(--warn);color:#2b1c07}
+      .pro-item.biru .pro-badge{background:var(--teal);color:#08222a}
+      .pro-close{flex:none;width:34px;height:34px;min-height:34px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink-soft);font:inherit;font-weight:800;cursor:pointer;line-height:1}
+      .pro-close:hover{color:var(--ink);border-color:var(--ink-soft)}
+      .pro-detail{margin-top:5px;font-size:.94rem}
+      .pro-cat{font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-top:2px}
+      .pro-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+      .pro-actions .btn{min-height:42px;padding:8px 14px;font-size:.88rem}
+      .pro-ans{margin-top:10px;font-size:.93rem;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;white-space:pre-line}
+      .pro-ans:empty{display:none}
+      .pro-ok{margin-top:12px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:13px 14px;font-size:.95rem}
+      .pro-due{margin-top:16px;border-top:1px dashed var(--line);padding-top:13px}
+      .pro-due h4{margin:0;font-size:.95rem}
+      .pro-due ul{list-style:none;margin:8px 0 0;padding:0}
+      .pro-due li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:.92rem;flex-wrap:wrap}
+      .pro-due li:last-child{border-bottom:none}
+      .pro-due .due-when{font-weight:700;white-space:nowrap}
+      .pro-summary{border:1px solid var(--gold);background:var(--gold-soft);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
+      .pro-summary h3{color:var(--gold)}
+      .pro-summary ol{margin:8px 0 0;padding-left:20px}
+      .pro-summary li{margin:5px 0;font-size:.94rem}
+
       /* ---------- Ikon penjelasan di setiap isian + Tanya AI per kolom ---------- */
       .field-help-btn{display:inline-grid;place-items:center;width:28px;height:28px;min-height:28px;min-width:28px;border-radius:50%;background:var(--gold-soft);color:var(--gold);border:1.5px solid var(--gold);font:inherit;font-size:.88rem;font-weight:800;line-height:1;cursor:pointer;vertical-align:middle;margin-left:7px;padding:0;flex:none}
       .field-help-btn:hover,.field-help-btn:focus-visible{background:var(--gold);color:#171106;outline:2px solid var(--gold);outline-offset:1px}
@@ -607,6 +642,20 @@
           <div class="card score-card"><div class="top"><h3>Kesehatan keuangan</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><div class="explain-answer" id="explain-keuangan" role="status"></div></div>
           <div class="card score-card"><div class="top"><h3>Kematangan digital</h3><span class="score-num" id="scDig">—</span></div><div class="bar"><i id="scDigBar"></i></div><p class="note" id="scDigNote">—</p></div>
           <div class="card score-card"><div class="top"><h3>Kesiapan investasi</h3><span class="score-num" id="scInv">—</span></div><div class="bar"><i id="scInvBar"></i></div><p class="note" id="scInvNote">—</p><button class="btn-explain" type="button" data-explain="investasi">Jelaskan ini</button><div class="explain-answer" id="explain-investasi" role="status"></div></div>
+        </div>
+        <div id="proaktifWrap" style="margin-top:14px">
+          <div id="proaktifSummary"></div>
+          <div class="card pro-panel" id="proaktifPanel">
+            <div class="pro-head">
+              <div>
+                <h3>Perlu Perhatian</h3>
+                <p class="note" style="margin-top:4px">Saran proaktif dari data usaha Anda sendiri — diperiksa otomatis setiap aplikasi dibuka dan setiap angka berubah. AI Coach hanya menjelaskan; semua angka dihitung rumus aplikasi dari data Anda.</p>
+              </div>
+              <span class="pro-count ok" id="proaktifCount">Memeriksa…</span>
+            </div>
+            <div id="proaktifList"></div>
+            <div id="proaktifDue"></div>
+          </div>
         </div>
         <div class="grid-2" style="margin-top:14px">
           <div class="card score-card"><div class="top"><h3>Skor Konsistensi Data</h3><span class="score-num" id="scCons">0</span></div><div class="bar"><i id="scConsBar"></i></div><p class="note" id="scConsNote">Isi cek 9 sumber data lokal di Modul Cek Data di bawah — skor membandingkan klaim Anda dengan jejak usaha yang bisa diverifikasi pihak lain.</p><button class="btn-explain" type="button" data-explain="konsistensi">Jelaskan ini</button><div class="explain-answer" id="explain-konsistensi" role="status"></div></div>
@@ -1427,6 +1476,7 @@
         buildAdvice({sektor,skala,matLevel,dimScore,scInv,buku,legal,terg,mult,sdeThn,margin});
         S={omzetThn,sdeThn,labaBersihBln,weighted,valLow,valHigh,mult,health,scInv,skala,matLevel,dimScore,asetBersih,omzetBln,hppPct,opex,gaji,aset,utang,tumbuh};
         if (typeof extraUpdate==="function") extraUpdate();
+        if (typeof window.__renderProaktif==="function"){ try{ window.__renderProaktif(); }catch(e){} }
       }
 
       function recalcFinance(sdeBln, labaBln){
@@ -1735,6 +1785,7 @@
         const cf=$("cfChart"); if(cf){ let saldo=0; let rows=""; const laba=(S.labaBersihBln||0)+aggF.net; let max=Math.max(1,Math.abs(laba)*3); for(let m=1;m<=3;m++){ const proj=laba*Math.pow(1+(S.tumbuh||0)/12,m); saldo+=proj; if(Math.abs(saldo)>max)max=Math.abs(saldo); } saldo=0; for(let m=1;m<=3;m++){ const proj=laba*Math.pow(1+(S.tumbuh||0)/12,m); saldo+=proj; const pct=Math.max(4,Math.round(Math.abs(saldo)/max*100)); rows+="<div class='cf-row'><span class='lbl'>Bulan +"+m+"</span><span class='track'><i style='width:"+pct+"%'></i></span><span class='amt'>"+fmtShort(saldo)+"</span></div>"; } cf.innerHTML=rows; }
         renderReports();
         const bn=$("invNama"); if(bn){ bn.textContent=($("inNama").value||"(nama usaha belum diisi)")+" — "+($("inKota").value||"")+" · "+(typeof lokasiText==="function"?lokasiText():""); $("invSkor").textContent="Level "+(S.skala||"—")+" · Kematangan Lvl "+(S.matLevel??"—")+" · Kesehatan "+(S.health??"—")+"/100 · Siap Investasi "+(S.scInv??"—")+"/100"; $("invVal").textContent=fmtShort(S.weighted||0)+" ("+fmtShort(S.valLow||0)+" – "+fmtShort(S.valHigh||0)+")"; $("invSkor2").textContent=consScoreVal+"/100 · "+legalScoreVal+"/100 · "+($("packScore").textContent||"0/100"); const raw=(($("inNama").value||"")+"|"+Math.round(S.weighted||0)+"|"+Math.round(S.sdeThn||0)+"|"+consScoreVal+"|"+legalScoreVal); let h=0; for(let i=0;i<raw.length;i++){ h=((h<<5)-h+raw.charCodeAt(i))|0; } $("invCode").textContent="UMKM-"+Math.abs(h).toString(36).toUpperCase()+"-"+Math.round(S.weighted||0).toString(36).toUpperCase(); if(typeof drawQr==="function") drawQr($("invCode").textContent+" | "+($("inNama").value||"UMKM")+" | Val "+fmtShort(S.weighted||0)+" | Konsistensi "+consScoreVal); }
+        if (typeof window.__renderProaktif==="function"){ try{ window.__renderProaktif(); }catch(e){} }
       }
       $("inSektor").addEventListener("change",buildContentCal);
       buildContentCal(); updatePack(); updateCons(); updateLegal(); updateChannels(); renderTx(); renderStock(); renderPi();
@@ -1871,6 +1922,21 @@
         var tablesMissing = false, loading = false, lastJson = "", saveTimer = null;
         var authMode = "login";
         var utangs = [];
+        /* ---------- Saran Proaktif: status kunjungan & cek konsistensi terakhir ----------
+           last_seen = waktu aplikasi terakhir dibuka; lastConsCheck = terakhir kali
+           ada sumber konsistensi berubah dari "Belum dicek" menjadi Sesuai/Beda.
+           Keduanya ikut disimpan di umkm_data.data.proaktif (pengguna terdaftar)
+           dan di snapshot lokal (tamu) lewat collectSnapshot/saveData di bawah. */
+        var proaktifState = { last_seen: null, lastConsCheck: null };
+        window.__proaktifState = proaktifState;
+        window.__sudahMengisiNyata = function(){ try{ return sudahMengisiNyata(); }catch(e){ return false; } };
+        window.__getUtangs = function(){ return utangs; };
+        window.__setProaktif = function(patch){
+          if(!patch) return;
+          if(patch.last_seen) proaktifState.last_seen = patch.last_seen;
+          if(patch.lastConsCheck) proaktifState.lastConsCheck = patch.lastConsCheck;
+          try{ persistLocal(collectSnapshot()); }catch(e){}
+        };
         var isGuest = false, migrateSnapshot = null;
         window.__lokasiUsaha = window.__lokasiUsaha || null;
         window.__isGuestMode = function(){ return isGuest; };
@@ -1960,7 +2026,8 @@
             txs:txs.map(function(t){ if(!t.cid) t.cid=uuid(); return {cid:t.cid,tgl:t.tgl,ket:t.ket,jenis:t.jenis,kat:t.kat,jumlah:t.jumlah}; }),
             stocks:stocks.map(function(s){ if(!s.cid) s.cid=uuid(); return {cid:s.cid,nama:s.nama,qty:s.qty,beli:s.beli,jual:s.jual}; }),
             pis:pis.map(function(p){ if(!p.cid) p.cid=uuid(); return {cid:p.cid,nama:p.nama,jumlah:p.jumlah,tempo:p.tempo}; }),
-            utangs:utangs.map(function(u){ if(!u.cid) u.cid=uuid(); return {cid:u.cid,ket:u.ket,jumlah:u.jumlah,tempo:u.tempo}; })
+            utangs:utangs.map(function(u){ if(!u.cid) u.cid=uuid(); return {cid:u.cid,ket:u.ket,jumlah:u.jumlah,tempo:u.tempo}; }),
+            proaktif:{ last_seen: proaktifState.last_seen||null, lastConsCheck: proaktifState.lastConsCheck||null }
           };
         }
         function refreshSegs(containerId, vals){
@@ -1988,6 +2055,7 @@
           renderLokasi();
           if(snap.inputs){ Object.keys(snap.inputs).forEach(function(id){ var el=gid(id); if(el && el.type!=="file"){ try{ el.value=snap.inputs[id]; }catch(e){} } }); }
           if(window.__applyWilayahFromInputs){ try{ window.__applyWilayahFromInputs(snap.inputs||{}); }catch(e){} }
+          if(snap.proaktif){ if(snap.proaktif.last_seen) proaktifState.last_seen=snap.proaktif.last_seen; if(snap.proaktif.lastConsCheck) proaktifState.lastConsCheck=snap.proaktif.lastConsCheck; }
           if(snap.answers) Object.assign(answers, snap.answers);
           [["pack",packState],["cons",consState],["legal",legalState],["chan",chanState]].forEach(function(pair){ var src=snap[pair[0]]; if(Array.isArray(src)){ pair[1].splice(0,pair[1].length); src.forEach(function(v){ pair[1].push(v); }); } });
           var quizVals=[]; DIMS.forEach(function(d){ d.qs.forEach(function(_,i){ quizVals.push(answers[d.key+"-"+i]); }); });
@@ -2001,6 +2069,7 @@
           updatePack(); updateCons(); updateLegal(); updateChannels(); buildContentCal();
           renderLokasi();
           recalc();
+          if(window.__renderProaktif){ try{ window.__renderProaktif(true); }catch(e){} }
           loading=false;
         }
 
@@ -2021,7 +2090,7 @@
           setSync("Menyimpan...","");
           try{
             var uid=currentUser.id;
-            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, lokasi:snap.lokasi||window.__lokasiUsaha||null};
+            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, lokasi:snap.lokasi||window.__lokasiUsaha||null, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
@@ -2059,6 +2128,7 @@
               var core=(res[0].data&&res[0].data.data)||{};
               var snap={
                 lokasi:core.lokasi||null,
+                proaktif:core.proaktif||null,
                 inputs:core.inputs||{}, answers:core.answers||{}, pack:core.pack, cons:core.cons, legal:core.legal, chan:core.chan, sopSteps:core.sopSteps,
                 txs:(res[1].data||[]).map(function(r){ return {cid:r.id, tgl:r.tanggal||"", ket:r.keterangan||"", jenis:r.jenis, kat:r.kategori||"Lainnya", jumlah:+r.jumlah||0}; }),
                 stocks:(res[2].data||[]).map(function(r){ return {cid:r.id, nama:r.nama||"", qty:+r.qty||0, beli:+r.harga_beli||0, jual:+r.harga_jual||0}; }),
@@ -2097,6 +2167,7 @@
               var migMsg=document.createElement("p"); migMsg.className="note"; migMsg.style.cssText="background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:12px 14px;margin-top:14px"; migMsg.textContent="Data coba Anda sudah tersimpan."; var wb=document.querySelector(".wrap"); if(wb) wb.prepend(migMsg);
             }
           }
+          if(window.__renderProaktif){ try{ window.__renderProaktif(true); }catch(e){} }
         }
 
         /* ---------- gerbang masuk ---------- */
@@ -3189,6 +3260,478 @@
             }catch(e){ lokal(); }
           });
         })();
+      })();
+    </script>
+
+    <script>
+      /* ================= SARAN PROAKTIF: MESIN PERINGATAN OTOMATIS =================
+         Berjalan otomatis setiap aplikasi dibuka dan setiap kali angka berubah
+         (dipanggil dari akhir recalc() dan extraUpdate(), serta setelah
+         applySnapshot/loadData selesai). Semua peringatan dihitung dengan rumus
+         transparan dari data pengguna sendiri — AI Coach hanya menjelaskan lewat
+         window.__askAICoach (POST /api/ai-chat, konteks angka saja, tanpa nama,
+         kota, email, nomor HP, atau lokasi GPS), tidak pernah membuat angka.
+         Aturan yang datanya tidak ada DIAM — tidak ada peringatan palsu.
+         Status kunjungan disimpan di proaktif.last_seen dan tanggal cek
+         konsistensi terakhir di proaktif.lastConsCheck (tersimpan di cloud untuk
+         pengguna terdaftar lewat jalur simpan yang sudah ada, dan di
+         localStorage untuk tamu). */
+      (function(){
+        "use strict";
+        if(window.__bagikanMode) return; // mode portal berbagi: panel tidak berjalan
+        function gid(id){ return document.getElementById(id); }
+        function escS(s){ try{ return esc(s); }catch(e){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); } }
+        function fmtS(n){ try{ return fmtFull(n||0); }catch(e){ return "Rp "+Math.round(n||0).toLocaleString("id-ID"); } }
+        function fmtShortS(n){ try{ return fmtShort(n||0); }catch(e){ return fmtS(n); } }
+
+        var LS_KEY = "umkm-introspeksi-proaktif:v1";
+        var dismissed = {};           // tutup per item — hanya berlaku sesi ini
+        var visitFinalized = false;   // last_seen hanya diperbarui sekali per kunjungan
+        var summaryData = null;       // isi kartu ringkasan (dihitung sekali saat kunjungan difinalkan)
+        var prevConsSnapshot = null;  // untuk mendeteksi perubahan status cek konsistensi
+        var lastSignature = "";       // cegah gambar ulang yang tidak perlu (jawaban AI tidak hilang)
+        var renderQueued = false;
+
+        var CONS_NAMES = ["OSS / NIB","Google Maps / Profil Bisnis Google","Tokopedia","Shopee","Aplikasi pesan-antar (GoFood/GrabFood/ShopeeFood)","Media sosial usaha (Instagram/TikTok/Facebook)","QRIS / rekening usaha","NPWP & data pajak","Ulasan pelanggan online"];
+
+        /* ---------- tanggal ---------- */
+        function todayMid(){ var d=new Date(); d.setHours(0,0,0,0); return d; }
+        function parseTgl(raw){
+          if(raw==null) return null;
+          var s=String(raw).trim();
+          if(!s || s==="—" || s==="-") return null;
+          if(s.toLowerCase()==="hari ini") return todayMid();
+          var m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+          if(m){ var d=new Date(+m[1], +m[2]-1, +m[3]); return isNaN(d.getTime())?null:d; }
+          var d2=new Date(s);
+          if(isNaN(d2.getTime())) return null;
+          d2.setHours(0,0,0,0); return d2;
+        }
+        function diffHari(d){ return Math.round((d.getTime()-todayMid().getTime())/86400000); }
+        function fmtTgl(d){ try{ return d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }catch(e){ return ""; } }
+
+        /* ---------- akses data aplikasi (aman bila belum termuat) ---------- */
+        function getS(){ try{ return (typeof S!=="undefined" && S) ? S : {}; }catch(e){ return {}; } }
+        function getTxs(){ try{ return (typeof txs!=="undefined" && Array.isArray(txs)) ? txs : []; }catch(e){ return []; } }
+        function getStocks(){ try{ return (typeof stocks!=="undefined" && Array.isArray(stocks)) ? stocks : []; }catch(e){ return []; } }
+        function getPis(){ try{ return (typeof pis!=="undefined" && Array.isArray(pis)) ? pis : []; }catch(e){ return []; } }
+        function getUtangs(){ try{ if(typeof window.__getUtangs==="function") return window.__getUtangs()||[]; }catch(e){} return []; }
+        function getCons(){ try{ return (typeof consState!=="undefined" && Array.isArray(consState)) ? consState : []; }catch(e){ return []; } }
+        function getPackState(){ try{ return (typeof packState!=="undefined" && Array.isArray(packState)) ? packState : []; }catch(e){ return []; } }
+        function getChan(){ try{ return (typeof chanState!=="undefined" && Array.isArray(chanState)) ? chanState : []; }catch(e){ return []; } }
+        function getConsScore(){ try{ return (typeof consScoreVal!=="undefined") ? (consScoreVal||0) : 0; }catch(e){ return 0; } }
+        function getLegalScore(){ try{ return (typeof legalScoreVal!=="undefined") ? (legalScoreVal||0) : 0; }catch(e){ return 0; } }
+        function getPackScore(){
+          var el=gid("packScore"); if(el){ var v=parseInt(el.textContent,10); if(!isNaN(v)) return v; }
+          return 0;
+        }
+        function packSudahDinilai(){
+          try{ if(typeof packHasPhoto!=="undefined" && packHasPhoto) return true; }catch(e){}
+          try{ if(typeof angleCount!=="undefined" && angleCount>0) return true; }catch(e){}
+          if(gid("packPreview") && gid("packPreview").style.display!=="none" && gid("packPreview").src) return true;
+          return getPackState().some(function(v){ return v>0; });
+        }
+        function sudahNyata(){
+          try{ if(typeof window.__sudahMengisiNyata==="function") return !!window.__sudahMengisiNyata(); }catch(e){}
+          try{ if(localStorage.getItem("umkm-introspeksi-sudah-mengisi:v1")==="1") return true; }catch(e){}
+          var nm=gid("inNama");
+          return !!(nm && nm.value && nm.value.trim());
+        }
+
+        /* ---------- status proaktif: baca & simpan ---------- */
+        function readStoredProaktif(){
+          var out={ last_seen:null, lastConsCheck:null };
+          function merge(p){ if(!p) return; if(p.last_seen && !out.last_seen) out.last_seen=p.last_seen; if(p.lastConsCheck && !out.lastConsCheck) out.lastConsCheck=p.lastConsCheck; }
+          try{ var st=window.__proaktifState; if(st) merge(st); }catch(e){}
+          try{ var raw=localStorage.getItem(LS_KEY); if(raw) merge(JSON.parse(raw)); }catch(e){}
+          try{
+            ["umkm-introspeksi-cache:lokal"].forEach(function(k){
+              var raw2=localStorage.getItem(k); if(!raw2) return;
+              var snap=JSON.parse(raw2); if(snap) merge(snap.proaktif);
+            });
+          }catch(e){}
+          return out;
+        }
+        function writeStoredProaktif(patch){
+          try{ if(typeof window.__setProaktif==="function") window.__setProaktif(patch); }catch(e){}
+          try{
+            var cur={}; var raw=localStorage.getItem(LS_KEY); if(raw) cur=JSON.parse(raw)||{};
+            if(patch.last_seen) cur.last_seen=patch.last_seen;
+            if(patch.lastConsCheck) cur.lastConsCheck=patch.lastConsCheck;
+            localStorage.setItem(LS_KEY, JSON.stringify(cur));
+          }catch(e){}
+          try{
+            var raw3=localStorage.getItem("umkm-introspeksi-cache:lokal");
+            if(raw3){ var snap2=JSON.parse(raw3); if(snap2){ snap2.proaktif=snap2.proaktif||{}; if(patch.last_seen) snap2.proaktif.last_seen=patch.last_seen; if(patch.lastConsCheck) snap2.proaktif.lastConsCheck=patch.lastConsCheck; localStorage.setItem("umkm-introspeksi-cache:lokal", JSON.stringify(snap2)); } }
+          }catch(e){}
+        }
+
+        /* ---------- deteksi perubahan cek konsistensi -> lastConsCheck ---------- */
+        function trackConsCheck(){
+          var cs=getCons();
+          if(!cs.length) return;
+          var copy=cs.slice(0,9);
+          if(prevConsSnapshot){
+            var berubah=false;
+            for(var i=0;i<9;i++){ if(prevConsSnapshot[i]===0 && (copy[i]===1 || copy[i]===2)){ berubah=true; break; } }
+            if(berubah) writeStoredProaktif({ lastConsCheck:new Date().toISOString() });
+          }
+          prevConsSnapshot=copy;
+        }
+
+        /* ---------- aturan deteksi ---------- */
+        function computeAlerts(){
+          var s=getS(), txList=getTxs(), alerts=[], dues=[];
+          function add(level, kat, judul, detail, prompt, target, targetLabel){
+            alerts.push({ id:judul+"|"+detail, level:level, sev: level==="merah"?0 : level==="kuning"?1 : 2, kat:kat, judul:judul, detail:detail, prompt:prompt, target:target, targetLabel:targetLabel });
+          }
+          var now=new Date();
+
+          /* ===== Keuangan ===== */
+          var agg=null;
+          try{ if(typeof txAgg==="function") agg=txAgg(); }catch(e){}
+          var biayaSebulan=(+s.opex||0)+(+s.gaji||0);
+          if(txList.length>0 && agg){
+            if(agg.net < biayaSebulan){
+              add("merah","Keuangan","Kas menipis",
+                "Saldo kas dari catatan transaksi Anda "+fmtS(agg.net)+", sedangkan biaya operasional + gaji pemilik sebulan "+fmtS(biayaSebulan)+". Kas saat ini di bawah kebutuhan satu bulan.",
+                "Jelaskan dalam 2-3 kalimat sederhana: kas usaha saya "+fmtS(agg.net)+" sedangkan biaya operasional sebulan "+fmtS(biayaSebulan)+". Apa yang sebaiknya saya lakukan?",
+                "#buku","Buka pembukuan");
+            }
+            /* Omzet turun: pemasukan bulan berjalan vs bulan lalu */
+            var y=now.getFullYear(), mo=now.getMonth();
+            var masukIni=0, masukLalu=0;
+            txList.forEach(function(t){
+              if(t.jenis!=="masuk") return;
+              var d=parseTgl(t.tgl); if(!d) return;
+              if(d.getFullYear()===y && d.getMonth()===mo) masukIni+=(+t.jumlah||0);
+              else {
+                var ly = mo===0 ? y-1 : y, lm = mo===0 ? 11 : mo-1;
+                if(d.getFullYear()===ly && d.getMonth()===lm) masukLalu+=(+t.jumlah||0);
+              }
+            });
+            if(masukLalu>0 && masukIni < masukLalu*0.8){
+              var turunPct=Math.round((1-masukIni/masukLalu)*100);
+              add("kuning","Keuangan","Omzet bulan ini turun",
+                "Pemasukan tercatat bulan ini "+fmtS(masukIni)+", turun "+turunPct+"% dibanding bulan lalu ("+fmtS(masukLalu)+").",
+                "Jelaskan dalam 2-3 kalimat sederhana: pemasukan usaha saya bulan ini "+fmtS(masukIni)+", turun "+turunPct+" persen dibanding bulan lalu yang "+fmtS(masukLalu)+". Apa yang sebaiknya saya lakukan?",
+                "#buku","Lihat catatan transaksi");
+            }
+            /* Pencatatan terakhir */
+            var terakhir=null;
+            txList.forEach(function(t){ var d=parseTgl(t.tgl); if(d && (!terakhir || d>terakhir)) terakhir=d; });
+            if(terakhir && diffHari(terakhir) < -7){
+              add("kuning","Keuangan","Sudah "+Math.abs(diffHari(terakhir))+" hari tidak mencatat transaksi",
+                "Transaksi terakhir tercatat tanggal "+fmtTgl(terakhir)+". Catatan yang berhenti membuat laporan dan skor Anda tidak mencerminkan keadaan sebenarnya.",
+                "Jelaskan dalam 2-3 kalimat sederhana: saya terakhir mencatat transaksi "+Math.abs(diffHari(terakhir))+" hari lalu. Kenapa pencatatan yang berhenti itu masalah, dan apa langkah termudah untuk memulainya lagi?",
+                "#buku","Catat transaksi sekarang");
+            }
+          }
+          /* Piutang */
+          getPis().forEach(function(p){
+            var d=parseTgl(p.tempo); if(!d) return;
+            var diff=diffHari(d);
+            if(diff<0){
+              add("merah","Keuangan","Piutang lewat jatuh tempo",
+                "Piutang "+fmtS(p.jumlah)+" dari "+(p.nama||"pelanggan")+" lewat jatuh tempo "+Math.abs(diff)+" hari lalu (tempo "+fmtTgl(d)+").",
+                "Jelaskan dalam 2-3 kalimat sederhana: piutang usaha saya "+fmtS(p.jumlah)+" sudah lewat jatuh tempo "+Math.abs(diff)+" hari. Apa yang sebaiknya saya lakukan?",
+                "#buku","Lihat daftar piutang");
+            } else if(diff<=7){
+              add("kuning","Keuangan","Piutang segera jatuh tempo",
+                "Piutang "+fmtS(p.jumlah)+" dari "+(p.nama||"pelanggan")+" jatuh tempo "+(diff===0?"hari ini":diff+" hari lagi")+" ("+fmtTgl(d)+").",
+                "Jelaskan dalam 2-3 kalimat sederhana: piutang usaha saya "+fmtS(p.jumlah)+" jatuh tempo "+(diff===0?"hari ini":diff+" hari lagi")+". Apa yang sebaiknya saya lakukan?",
+                "#buku","Lihat daftar piutang");
+              dues.push({ jenis:"Piutang", nama:p.nama||"Pelanggan", jumlah:+p.jumlah||0, tgl:d, diff:diff });
+            } else {
+              /* belum dekat: tidak masuk pengingat 7 hari */
+            }
+            if(diff>=0 && diff<=7){ /* sudah ditangani di atas */ }
+          });
+          /* Utang */
+          getUtangs().forEach(function(u){
+            var d=parseTgl(u.tempo); if(!d) return;
+            var diff=diffHari(d);
+            if(diff<0){
+              add("merah","Keuangan","Utang sudah lewat jatuh tempo",
+                "Utang "+fmtS(u.jumlah)+" — "+(u.ket||"kewajiban usaha")+" — sudah lewat jatuh tempo "+Math.abs(diff)+" hari (tempo "+fmtTgl(d)+").",
+                "Jelaskan dalam 2-3 kalimat sederhana: utang usaha saya "+fmtS(u.jumlah)+" sudah lewat jatuh tempo "+Math.abs(diff)+" hari. Apa yang sebaiknya saya lakukan?",
+                "#buku","Lihat daftar utang");
+            } else if(diff<=7){
+              add("merah","Keuangan","Utang segera jatuh tempo",
+                "Utang "+fmtS(u.jumlah)+" — "+(u.ket||"kewajiban usaha")+" — jatuh tempo "+(diff===0?"hari ini":diff+" hari lagi")+" ("+fmtTgl(d)+"). Siapkan dananya dari sekarang.",
+                "Jelaskan dalam 2-3 kalimat sederhana: utang usaha saya "+fmtS(u.jumlah)+" jatuh tempo "+(diff===0?"hari ini":diff+" hari lagi")+". Apa yang sebaiknya saya lakukan?",
+                "#buku","Lihat daftar utang");
+              dues.push({ jenis:"Utang", nama:u.ket||"Kewajiban usaha", jumlah:+u.jumlah||0, tgl:d, diff:diff });
+            }
+          });
+          /* Stok */
+          getStocks().forEach(function(st){
+            var q=+st.qty||0;
+            if(q<=5){
+              add("kuning","Keuangan","Stok "+(q===0?"habis":"menipis")+": "+(st.nama||"barang"),
+                q===0 ? ("Stok "+(st.nama||"barang")+" sudah habis (0). Segera belanja ulang supaya penjualan tidak berhenti.") : ("Sisa stok "+(st.nama||"barang")+" tinggal "+q+". Siapkan belanja ulang sebelum habis."),
+                "Jelaskan dalam 2-3 kalimat sederhana: stok barang saya "+(q===0?"sudah habis":"tinggal "+q+" buah")+". Apa yang sebaiknya saya lakukan?",
+                "#buku","Lihat stok barang");
+            }
+          });
+          /* HPP tinggi */
+          if((+s.hppPct||0) > 0.70 && (+s.omzetBln||0) > 0){
+            add("kuning","Keuangan","HPP terlalu tinggi — margin tipis",
+              "HPP / biaya bahan Anda "+Math.round(s.hppPct*100)+"% dari omzet "+fmtS(s.omzetBln)+" per bulan. Di atas 70%, sisa untuk biaya operasional dan keuntungan sangat tipis.",
+              "Jelaskan dalam 2-3 kalimat sederhana: biaya bahan usaha saya "+Math.round(s.hppPct*100)+" persen dari omzet "+fmtS(s.omzetBln)+" per bulan. Apa yang sebaiknya saya lakukan?",
+              "#keuangan","Periksa hitungan HPP");
+          }
+          /* Skor Siap Investasi rendah */
+          var scInv=+s.scInv||0;
+          if(scInv>0 && scInv<40){
+            var packNum=getPackScore();
+            var kandidat=[
+              { nama:"legalitas", skor:getLegalScore() },
+              { nama:"kemasan", skor:packNum },
+              { nama:"konsistensi data", skor:getConsScore() },
+              { nama:"pencatatan transaksi", skor: txList.length>0 ? 100 : 0 }
+            ];
+            kandidat.sort(function(a,b){ return a.skor-b.skor; });
+            var lemah=kandidat.slice(0,2);
+            add("kuning","Keuangan","Skor Siap Investasi masih rendah",
+              "Skor Siap Investasi Anda "+scInv+"/100. Dua hal yang paling menahannya: "+lemah[0].nama+" ("+lemah[0].skor+"/100) dan "+lemah[1].nama+" ("+lemah[1].skor+"/100). Perbaiki dua hal ini dulu sebelum menawarkan kerjasama investasi.",
+              "Jelaskan dalam 2-3 kalimat sederhana: skor siap investasi saya "+scInv+" dari 100, paling lemah di "+lemah[0].nama+" ("+lemah[0].skor+" dari 100) dan "+lemah[1].nama+" ("+lemah[1].skor+" dari 100). Apa yang sebaiknya saya lakukan?",
+              "#saran","Lihat rencana perbaikan");
+          }
+
+          /* ===== Pemasaran ===== */
+          var cs=getCons(), consScore=getConsScore();
+          var adaDicek=cs.some(function(v){ return v!==0; });
+          if(consScore<50 && (sudahNyata() || adaDicek)){
+            var belum=[];
+            cs.forEach(function(v,i){ if(v===0) belum.push(CONS_NAMES[i]||("Sumber ke-"+(i+1))); });
+            var belumTxt = belum.length ? (belum.slice(0,3).join(", ")+(belum.length>3 ? ", dan "+(belum.length-3)+" sumber lain" : "")) : "beberapa sumber masih berbeda";
+            add("kuning","Pemasaran","Skor Konsistensi Data masih rendah",
+              "Skor Konsistensi Data Anda "+consScore+"/100. Sumber yang belum dicek: "+belumTxt+". Data yang belum dicek dihitung 0 — sama seperti cara calon mitra kerjasama investasi melihatnya.",
+              "Jelaskan dalam 2-3 kalimat sederhana: skor konsistensi data usaha saya "+consScore+" dari 100 dan masih ada sumber data online yang belum saya cek. Apa yang sebaiknya saya lakukan?",
+              "#cekdata","Mulai cek data online");
+          }
+          var stored=readStoredProaktif();
+          if(stored.lastConsCheck){
+            var lc=new Date(stored.lastConsCheck);
+            if(!isNaN(lc.getTime())){
+              var hariLewat=Math.floor((now.getTime()-lc.getTime())/86400000);
+              if(hariLewat>30){
+                add("biru","Pemasaran","Sudah lama tidak mengecek data online",
+                  "Terakhir kali Anda mengecek kesesuaian data online "+hariLewat+" hari lalu ("+fmtTgl(lc)+"). Nama, alamat, atau harga bisa berubah — cek ulang supaya data Anda tetap bisa dipercaya.",
+                  "Jelaskan dalam 2-3 kalimat sederhana: saya terakhir mengecek kesesuaian data usaha saya di internet "+hariLewat+" hari lalu. Kenapa perlu dicek ulang dan dari mana saya mulai?",
+                  "#cekdata","Cek ulang data online");
+              }
+            }
+          }
+          var packNum2=getPackScore();
+          if(packNum2<50 && packSudahDinilai()){
+            add("kuning","Pemasaran","Nilai kemasan masih rendah",
+              "Skor kemasan Anda "+packNum2+"/100. Kemasan yang belum lengkap membuat produk sulit masuk kanal online dan ritel — lengkapi label dan foto produknya.",
+              "Jelaskan dalam 2-3 kalimat sederhana: skor kemasan produk saya "+packNum2+" dari 100. Apa yang sebaiknya saya lakukan untuk memperbaikinya?",
+              "#kemasan","Perbaiki kemasan");
+          }
+
+          /* ===== Teknologi ===== */
+          if(sudahNyata() && txList.length===0){
+            add("biru","Teknologi","Pembukuan masih manual",
+              "Anda sudah mengisi data usaha, tetapi belum ada satu pun transaksi tercatat di aplikasi. Coba catat penjualan hari ini — bisa memakai foto nota (dibaca otomatis) atau tombol suara, tidak perlu mengetik semua.",
+              "Jelaskan dalam 2-3 kalimat sederhana: saya belum pernah mencatat transaksi usaha saya di aplikasi ini. Kenapa pencatatan harian itu penting dan apa cara termudah memulainya?",
+              "#buku","Mulai catat transaksi");
+          }
+          var chan=getChan();
+          if(sudahNyata() && chan.length>=6 && (chan[2]||0)===0 && (chan[3]||0)===0 && (chan[4]||0)===0 && (chan[5]||0)===0){
+            var sekEl=gid("inSektor"); var sek=sekEl?sekEl.value:"";
+            var saranKanal = sek==="kuliner" ? "aplikasi pesan-antar (GoFood / GrabFood / ShopeeFood) — pembeli makanan paling sering mencari lewat sana"
+              : sek==="retail" ? "marketplace (Shopee / Tokopedia / TikTok Shop) — pembeli toko paling mudah ditemukan di sana"
+              : sek==="jasa" ? "WhatsApp Business + Google Maps — pelanggan jasa biasanya mencari layanan terdekat lalu menghubungi lewat WhatsApp"
+              : "WhatsApp Business dengan katalog produk — gratis dan paling cepat mulai menghasilkan pesanan";
+            add("biru","Teknologi","Belum ada kanal penjualan digital",
+              "Semua kanal digital Anda (marketplace, pesan-antar, media sosial, Google Maps) masih berstatus Belum. Satu kanal yang paling cocok untuk jenis usaha Anda: "+saranKanal+".",
+              "Jelaskan dalam 2-3 kalimat sederhana: usaha saya belum menjual lewat kanal digital apa pun. Kenapa satu kanal digital itu penting dan apa langkah pertama yang paling mudah?",
+              "#pemasaran","Lihat kanal penjualan");
+          }
+
+          dues.sort(function(a,b){ return a.tgl-b.tgl; });
+          alerts.sort(function(a,b){ return a.sev-b.sev; });
+          return { alerts:alerts, dues:dues };
+        }
+
+        /* ---------- ringkasan sejak kunjungan terakhir ---------- */
+        function finalizeVisit(fromLoad){
+          if(visitFinalized) return;
+          var stored=readStoredProaktif();
+          var prev = stored.last_seen ? new Date(stored.last_seen) : null;
+          var hasStored = !!(prev && !isNaN(prev.getTime()));
+          /* Tunda finalisasi bila data kunjungan sebelumnya mungkin masih dimuat
+             dari cloud / snapshot lokal — kecuali pemanggil menyatakan data sudah dimuat. */
+          if(!hasStored && !fromLoad){
+            var elapsed=Date.now()-pageStart;
+            if(elapsed<2600) return; // beri waktu pemuatan selesai; timer cadangan akan memanggil lagi
+          }
+          visitFinalized=true;
+          var now=new Date();
+          if(hasStored){
+            var gapMs=now.getTime()-prev.getTime();
+            if(gapMs > 7*86400000){
+              var txList=getTxs();
+              var masukPeriode=0, masukSebelumnya=0;
+              txList.forEach(function(t){
+                if(t.jenis!=="masuk") return;
+                var d=parseTgl(t.tgl); if(!d) return;
+                var tms=d.getTime();
+                if(tms>prev.getTime() && tms<=now.getTime()) masukPeriode+=(+t.jumlah||0);
+                else if(tms>prev.getTime()-gapMs && tms<=prev.getTime()) masukSebelumnya+=(+t.jumlah||0);
+              });
+              var cur=computeAlerts();
+              var visible=cur.alerts.filter(function(a){ return !dismissed[a.id]; });
+              summaryData={
+                sejak:prev, masukPeriode:masukPeriode, masukSebelumnya:masukSebelumnya,
+                jumlahPeringatan:visible.length,
+                top:visible.slice(0,3).map(function(a){ return a.judul+" — "+a.detail; })
+              };
+            }
+          }
+          writeStoredProaktif({ last_seen:now.toISOString() });
+        }
+        var pageStart=Date.now();
+
+        /* ---------- gambar panel ---------- */
+        function renderProaktif(fromLoad){
+          var panel=gid("proaktifPanel");
+          if(!panel) return;
+          trackConsCheck();
+          finalizeVisit(!!fromLoad);
+          var hasil=computeAlerts();
+          var visible=hasil.alerts.filter(function(a){ return !dismissed[a.id]; });
+
+          /* pertahankan jawaban AI yang sedang tampil */
+          var savedAns={};
+          panel.querySelectorAll(".pro-item").forEach(function(it){
+            var id=it.getAttribute("data-pro-id"); var ans=it.querySelector(".pro-ans");
+            if(id && ans && ans.textContent) savedAns[id]=ans.textContent;
+          });
+
+          var sig=JSON.stringify({ v:visible.map(function(a){ return a.id; }), d:hasil.dues.map(function(x){ return x.jenis+x.nama+x.jumlah+x.diff; }), s:summaryData?summaryData.sejak.getTime():0, n:visible.length });
+          if(sig===lastSignature && !summaryDataDirty) return;
+          lastSignature=sig; summaryDataDirty=false;
+
+          /* ringkasan mingguan */
+          var sumEl=gid("proaktifSummary");
+          if(sumEl){
+            if(summaryData){
+              var sd=summaryData;
+              var banding = sd.masukSebelumnya>0
+                ? (sd.masukPeriode>=sd.masukSebelumnya ? "naik" : "turun")+" dibanding periode sebelumnya yang sama panjang ("+fmtS(sd.masukSebelumnya)+")"
+                : "belum ada pemasukan tercatat pada periode sebelumnya untuk dibandingkan";
+              var h="<div class='pro-summary'><h3>Ringkasan sejak terakhir dibuka</h3>";
+              h+="<p style='margin-top:8px'>Terakhir Anda membuka aplikasi: <b>"+fmtTgl(sd.sejak)+"</b>.</p>";
+              h+="<p style='margin-top:6px'>Pemasukan tercatat sejak kunjungan terakhir: <b>"+fmtS(sd.masukPeriode)+"</b> — "+banding+".</p>";
+              h+="<p style='margin-top:6px'>Peringatan aktif saat ini: <b>"+sd.jumlahPeringatan+" hal</b>.</p>";
+              if(sd.top.length){ h+="<p style='margin-top:8px'><b>3 tindakan teratas:</b></p><ol>"+sd.top.map(function(t){ return "<li>"+escS(t)+"</li>"; }).join("")+"</ol>"; }
+              h+="</div>";
+              sumEl.innerHTML=h;
+            } else sumEl.innerHTML="";
+          }
+
+          var countEl=gid("proaktifCount");
+          if(countEl){
+            countEl.textContent = visible.length ? (visible.length+" hal perlu diperhatikan") : "Semua terkendali";
+            countEl.className = "pro-count"+(visible.length?"":" ok");
+          }
+
+          var listEl=gid("proaktifList");
+          if(listEl){
+            if(!visible.length){
+              listEl.innerHTML="<div class='pro-ok'>Semua terkendali — tidak ada yang perlu diperhatikan saat ini.</div>";
+            } else {
+              listEl.innerHTML=visible.map(function(a,idx){
+                var badge = a.level==="merah" ? "Segera" : a.level==="kuning" ? "Perhatikan" : "Saran";
+                var ans = savedAns[a.id] ? "<div class='pro-ans' role='status'>"+escS(savedAns[a.id])+"</div>" : "<div class='pro-ans' role='status'></div>";
+                return "<div class='pro-item "+a.level+"' data-pro-id='"+escS(a.id)+"'>"
+                  +"<div class='pro-top'><span class='pro-badge'>"+badge+"</span><span class='pro-title'>"+escS(a.judul)+"</span>"
+                  +"<button type='button' class='pro-close' data-pro-dismiss='"+idx+"' aria-label='Tutup peringatan ini untuk sesi ini' title='Tutup untuk sesi ini'>&times;</button></div>"
+                  +"<div class='pro-cat'>"+escS(a.kat)+"</div>"
+                  +"<p class='pro-detail'>"+escS(a.detail)+"</p>"
+                  +"<div class='pro-actions'><button type='button' class='btn ghost' data-pro-explain='"+idx+"'>Jelaskan</button>"
+                  +"<button type='button' class='btn' data-pro-goto='"+escS(a.target)+"'>"+escS(a.targetLabel)+"</button></div>"
+                  +ans+"</div>";
+              }).join("");
+              /* simpan daftar yang sedang tampil untuk handler tombol */
+              currentVisible=visible;
+            }
+            if(!visible.length) currentVisible=[];
+          }
+
+          var dueEl=gid("proaktifDue");
+          if(dueEl){
+            if(hasil.dues.length){
+              dueEl.innerHTML="<div class='pro-due'><h4>Pengingat jatuh tempo — 7 hari ke depan</h4><ul>"
+                +hasil.dues.map(function(x){
+                    var kapan = x.diff===0 ? "hari ini" : x.diff===1 ? "besok" : x.diff+" hari lagi";
+                    return "<li><span><b>"+escS(x.jenis)+"</b> · "+escS(x.nama)+" — "+fmtS(x.jumlah)+"</span><span class='due-when'>"+kapan+" · "+fmtTgl(x.tgl)+"</span></li>";
+                  }).join("")
+                +"</ul></div>";
+            } else dueEl.innerHTML="";
+          }
+        }
+        var currentVisible=[];
+        var summaryDataDirty=true;
+        /* setelah ringkasan dihitung, gambar ulang sekali agar kartunya tampil */
+        var _finalizeBase=finalizeVisit;
+        finalizeVisit=function(fromLoad){
+          var was=visitFinalized;
+          _finalizeBase(fromLoad);
+          if(!was && visitFinalized && summaryData) summaryDataDirty=true;
+        };
+
+        function queueRender(fromLoad){
+          if(renderQueued) { if(fromLoad) pendingFromLoad=true; return; }
+          renderQueued=true; pendingFromLoad=!!fromLoad;
+          setTimeout(function(){ renderQueued=false; try{ renderProaktif(pendingFromLoad); }catch(e){} pendingFromLoad=false; }, 60);
+        }
+        var pendingFromLoad=false;
+        window.__renderProaktif=function(fromLoad){ queueRender(!!fromLoad); };
+
+        /* handler tombol: tutup, Jelaskan (AI Coach), dan lompat ke modul */
+        document.addEventListener("click", function(ev){
+          var t=ev.target;
+          var closeBtn=t.closest ? t.closest("[data-pro-dismiss]") : null;
+          if(closeBtn){
+            var idxD=+closeBtn.getAttribute("data-pro-dismiss");
+            var itemD=currentVisible[idxD];
+            if(itemD){ dismissed[itemD.id]=true; lastSignature=""; try{ renderProaktif(false); }catch(e){} }
+            return;
+          }
+          var exBtn=t.closest ? t.closest("[data-pro-explain]") : null;
+          if(exBtn){
+            var idxE=+exBtn.getAttribute("data-pro-explain");
+            var itemE=currentVisible[idxE];
+            var host=exBtn.closest(".pro-item");
+            var ansEl=host ? host.querySelector(".pro-ans") : null;
+            if(itemE && ansEl){
+              if(typeof window.__askAICoach==="function"){
+                window.__askAICoach(itemE.prompt, ansEl);
+              } else {
+                ansEl.textContent="Penjelasan AI belum termuat di halaman ini. Ringkasnya: "+itemE.detail;
+              }
+            }
+            return;
+          }
+          var goBtn=t.closest ? t.closest("[data-pro-goto]") : null;
+          if(goBtn){
+            var dest=goBtn.getAttribute("data-pro-goto");
+            var targetEl=dest ? gid(dest.replace("#","")) : null;
+            if(targetEl) targetEl.scrollIntoView({behavior:"smooth", block:"start"});
+            return;
+          }
+        });
+
+        /* gambar pertama + timer cadangan finalisasi kunjungan */
+        if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", function(){ queueRender(false); });
+        else queueRender(false);
+        setTimeout(function(){ try{ renderProaktif(true); }catch(e){} }, 2800);
+        setInterval(function(){ queueRender(false); }, 5000);
       })();
     </script>
   </body>
