@@ -549,6 +549,7 @@
         <h3 id="friendlyPopupTitle">Belum bisa melanjutkan</h3>
         <p id="friendlyPopupWhat"></p>
         <p class="friendly-do" id="friendlyPopupDo"></p>
+        <button class="btn ghost" id="btnFriendlyPopupAction" type="button" style="width:100%;margin-top:18px;display:none"></button>
         <button class="btn" id="btnFriendlyPopupOk" type="button" style="width:100%;margin-top:18px">Mengerti</button>
       </div>
     </div>
@@ -556,13 +557,21 @@
       /* Satu-satunya wadah pesan kesalahan di aplikasi: pop-up ramah berbahasa
          Indonesia sederhana — judul + apa yang terjadi + apa yang harus dilakukan.
          Tidak ada teks kesalahan merah dan tidak ada teks mentah dari server. */
-      window.tampilPopupRamah = function(judul, apa, lakukan){
+      window.tampilPopupRamah = function(judul, apa, lakukan, aksi){
         apa = String(apa == null ? "" : apa); lakukan = String(lakukan == null ? "" : lakukan);
         if(!lakukan && apa.indexOf(" — ") > 0){ var pot = apa.split(" — "); apa = pot.shift(); lakukan = pot.join(" — "); }
         var ov = document.getElementById("friendlyPopupOverlay"); if(!ov) return;
         var t = document.getElementById("friendlyPopupTitle"); if(t) t.textContent = judul || "Belum bisa melanjutkan";
         var w = document.getElementById("friendlyPopupWhat"); if(w) w.textContent = apa;
         var d = document.getElementById("friendlyPopupDo"); if(d){ d.textContent = lakukan; d.style.display = lakukan ? "" : "none"; }
+        /* Tombol aksi opsional (argumen ke-4): {label, href} — dipakai mis. oleh
+           popup kuota AI agar pengguna bisa langsung membuka modul Langganan.
+           Tanpa argumen ini perilakunya persis seperti sebelumnya. */
+        var ab = document.getElementById("btnFriendlyPopupAction");
+        if(ab){
+          if(aksi && aksi.label){ ab.textContent = aksi.label; ab.style.display = ""; ab.onclick = function(){ window.tutupPopupRamah(); if(aksi.href){ var el=document.getElementById(aksi.href); if(el){ try{ el.scrollIntoView(); }catch(e){} } } if(typeof aksi.fn==="function"){ try{ aksi.fn(); }catch(e){} } }; }
+          else { ab.style.display = "none"; ab.onclick = null; }
+        }
         ov.classList.add("show");
         var ok = document.getElementById("btnFriendlyPopupOk"); if(ok && ok.focus) ok.focus();
       };
@@ -646,6 +655,7 @@
           <a href="#legalitas"><b>7 · Legalitas</b><span>NIB, PIRT, halal, NPWP, izin edar</span></a>
           <a href="#sop"><b>8 · Orang &amp; SOP</b><span>SOP builder &amp; pembagian peran</span></a>
           <a href="#saran"><b>9 · AI Coach</b><span>Rencana 30–60–90 hari</span></a>
+          <a href="#langganan" id="modLanggananLink" style="display:none"><b>10 · Langganan</b><span>Paket Pro &amp; pembayaran</span></a>
         </div>
         <div class="stat-row">
           <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div></div>
@@ -1167,6 +1177,57 @@
         <div class="ai-box">
           <h3><span aria-hidden="true">✦</span> 7 lapisan kecerdasan di aplikasi ini</h3>
           <p><b>1 Ekstraksi data</b> — foto nota dibaca dengan OCR yang berjalan di peramban (Tesseract.js) dan input suara membantu mengubah bukti transaksi menjadi catatan. <b>2 Prediksi multiple lokal</b> — multiple dasar per sektor disesuaikan usia usaha, pertumbuhan, pembukuan, dan ketergantungan pemilik; bila data kalibrasi anonim usaha sejenis di kota Anda sudah terkumpul minimal 5 (dan Anda mengizinkan berbagi data anonim), median multiple lokal ikut digabungkan dan jumlah sampelnya ditulis terbuka di penjelasan valuasi. <b>3 Deteksi anomali</b> — margin negatif, Rasio Kemampuan Bagi Hasil di bawah 1, dan utang di atas aset ditandai otomatis sebagai peringatan. <b>4 Penjelasan angka</b> — setiap valuasi disertai penjelasan yang bisa ditelusur ke rumusnya. <b>5 Penilaian kemasan</b> — penilaian terbantu: pengukuran foto di peramban (terang, kontras, ketajaman) + 6 periksa label, digabung menjadi skor 5 aspek. <b>6 Verifikasi konsistensi</b> — Skor Konsistensi dari 9 sumber lokal. <b>7 AI Coach</b> — rencana 30–60–90 hari yang berubah mengikuti jawaban dan angka Anda. Pada versi statis ini ketujuh lapisan berjalan sebagai mesin aturan transparan langsung di halaman; lapisan model AI generatif/ML penuh adalah tahap server berikutnya.</p>
+        </div>
+      </section>
+
+      <!-- ============ 10. LANGGANAN (dormant — hanya tampil bila LANGGANAN_AKTIF true) ============ -->
+      <section id="langganan" style="display:none">
+        <div class="sec-head"><span class="sec-num">14</span><h2>Langganan</h2></div>
+        <p class="sec-sub">Paket Pro untuk usaha Anda. Pembayaran lewat QRIS dan dicek manual oleh pemilik aplikasi — Pro aktif setelah pembayaran Anda dikonfirmasi.</p>
+        <div class="card">
+          <h3>Paket Anda saat ini</h3>
+          <p class="note" id="langgananStatus" role="status">Memuat…</p>
+          <p class="note" id="langgananKuota"></p>
+          <div class="actions"><button class="btn ghost small" id="btnMuatUlangLangganan" type="button">Muat ulang status</button></div>
+          <div class="grid-2" style="margin-top:14px">
+            <div class="card" style="margin:0">
+              <h3>Bulanan</h3>
+              <p style="font-size:1.5rem;font-weight:800" id="hargaBulanan">Rp29.000</p>
+              <p class="note">Pro selama 1 bulan, termasuk portal investor dan kuota AI 300 pertanyaan per bulan.</p>
+              <div class="actions"><button class="btn" id="btnLanggananBulanan" type="button">Pilih Bulanan</button></div>
+            </div>
+            <div class="card" style="margin:0">
+              <h3>Tahunan</h3>
+              <p style="font-size:1.5rem;font-weight:800" id="hargaTahunan">Rp290.000</p>
+              <p class="note">Pro selama 12 bulan — hemat 2 bulan dibanding bayar bulanan.</p>
+              <div class="actions"><button class="btn" id="btnLanggananTahunan" type="button">Pilih Tahunan</button></div>
+            </div>
+          </div>
+          <div id="langgananBayar" style="display:none;margin-top:16px">
+            <h3>Bayar dengan QRIS</h3>
+            <p class="note">Pindai kode QRIS di bawah dengan aplikasi pembayaran Anda. Masukkan jumlah persis seperti tertera, dan tulis <b>kode pesanan</b> di catatan pembayaran supaya pembayaran Anda mudah dicocokkan.</p>
+            <div style="background:#fff;border-radius:10px;padding:12px;display:inline-block;margin:10px 0"><img id="langgananQrImg" alt="Kode QRIS pembayaran" style="max-width:220px;display:block" /></div>
+            <p class="note" id="langgananNamaPenerima"></p>
+            <p>Jumlah yang dibayar: <b id="langgananJumlah">—</b></p>
+            <p>Kode pesanan (tulis di catatan pembayaran): <b id="langgananKode">—</b></p>
+            <label class="f"><span>Bukti pembayaran (foto)</span><input type="file" id="langgananBukti" accept="image/*" /></label>
+            <div id="langgananBuktiPratinjau" style="margin-top:8px"></div>
+            <div class="actions"><button class="btn" id="btnKirimBukti" type="button">Kirim bukti pembayaran</button><button class="btn ghost" id="btnBatalBayar" type="button">Batal</button></div>
+          </div>
+          <div id="langgananAdmin" style="display:none;margin-top:16px">
+            <h3>Pengaturan &amp; persetujuan (pemilik)</h3>
+            <div class="form-grid" style="margin-top:10px">
+              <label class="f"><span>Kode QRIS pembayaran (foto)</span><input type="file" id="adminQrisPhoto" accept="image/*" /></label>
+              <label class="f"><span>Nama penerima</span><input type="text" id="adminNamaPenerima" placeholder="contoh: Lab Sistem Cerdas Fisika" autocomplete="off" /></label>
+              <label class="f"><span>Harga Bulanan (Rp)</span><input type="number" id="adminHargaBulanan" placeholder="contoh: 29000" min="0" step="1000" /></label>
+              <label class="f"><span>Harga Tahunan (Rp)</span><input type="number" id="adminHargaTahunan" placeholder="contoh: 290000" min="0" step="1000" /></label>
+            </div>
+            <div id="adminQrisPratinjau" style="margin-top:8px"></div>
+            <div class="actions"><button class="btn" id="btnSimpanPengaturan" type="button">Simpan pengaturan</button></div>
+            <h3 style="margin-top:18px">Menunggu persetujuan</h3>
+            <div class="actions"><button class="btn ghost small" id="btnMuatAntrean" type="button">Muat ulang antrean</button></div>
+            <div id="langgananAntrean" style="margin-top:10px"></div>
+          </div>
         </div>
       </section>
 
@@ -1811,6 +1872,23 @@
       $("packPhoto").addEventListener("change",function(e){ const f=e.target.files[0]; if(!f) return; const url=URL.createObjectURL(f); const img=$("packPreview"); img.src=url; img.style.display="block"; packHasPhoto=true; $("packPhotoNote").textContent="Foto terunggah: "+f.name+" — bandingkan dengan 6 periksa di samping."; audit("Foto kemasan diunggah untuk penilaian."); updatePack(); });
 
       /* --- Pembukuan --- */
+      /* Batas gratis transaksi: hanya yang bertanggal bulan berjalan.
+         tgl ditulis pengguna bebas (contoh: 2026-11-14) atau kosong ("hari ini").
+         Format YYYY-MM(-DD) dan DD-MM-YYYY dikenali; yang lain dihitung bulan ini. */
+      function bulanDariTgl(teks, blnJalan){
+        var s=String(teks||"").trim();
+        var m=s.match(/^(\d{4})[-/.](\d{1,2})/);
+        if(m) return m[1]+"-"+("0"+m[2]).slice(-2);
+        var m2=s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+        if(m2) return m2[3]+"-"+("0"+m2[2]).slice(-2);
+        return blnJalan;
+      }
+      function hitungTxBulanIni(){
+        var bln=bulanSekarang(); var n=0;
+        txs.forEach(function(t){ if(bulanDariTgl(t.tgl, bln)===bln) n++; });
+        return n;
+      }
+      window.__hitungTxBulanIni=hitungTxBulanIni;
       const txs=[]; let txSeq=0;
       function renderTx(){
         const has=txs.length>0; $("txEmpty").style.display=has?"none":"block"; $("txTable").style.display=has?"table":"none";
@@ -1820,9 +1898,15 @@
         document.querySelectorAll("[data-del]").forEach(function(b){ b.addEventListener("click",function(){ const id=+b.dataset.del; const i=txs.findIndex(function(x){return x.id===id}); if(i>=0)txs.splice(i,1); renderTx(); renderReports(); }); });
         renderReports();
       }
-      $("btnTx").addEventListener("click",function(){
+      $("btnTx").addEventListener("click",async function(){
         const jml=num("txJumlah"); if(!$("txKet").value||!$("txJenis").value||jml<=0){ popupRamah("Isian transaksi belum lengkap","Isi keterangan, jenis, dan jumlah transaksi dulu — jumlahnya harus lebih dari Rp 0.","Lengkapi kolomnya, lalu tekan Tambah transaksi."); return; }
-        txs.push({id:++txSeq,tgl:$("txTanggal").value||"hari ini",ket:$("txKet").value,jenis:$("txJenis").value,kat:$("txKat").value||"Lainnya",jumlah:jml});
+        /* Batas berlaku per bulan berjalan: yang dihitung hanya yang bertanggal
+           bulan ini. Entri yang tanggalnya bulan lain tidak menambah hitungan
+           bulan ini — jadi tidak ikut diblokir oleh batas bulan ini. */
+        var tglBaru=$("txTanggal").value||"hari ini";
+        var nTx=(bulanDariTgl(tglBaru, bulanSekarang())===bulanSekarang()) ? hitungTxBulanIni() : 0;
+        if(!(await cekBatasTambah("tx", nTx))) return;
+        txs.push({id:++txSeq,tgl:tglBaru,ket:$("txKet").value,jenis:$("txJenis").value,kat:$("txKat").value||"Lainnya",jumlah:jml});
         audit("Transaksi ditambah: "+$("txKet").value+" "+fmtFull(jml)); $("txKet").value=""; $("txJumlah").value=""; renderTx(); toast("Transaksi tercatat");
       });
       $("notaPhoto").addEventListener("change",function(e){ const f=e.target.files[0]; if(!f) return; const img=$("notaPreview"); img.src=URL.createObjectURL(f); img.style.display="block"; audit("Foto nota diunggah sebagai bukti transaksi."); });
@@ -1945,10 +2029,10 @@
       /* --- Stok & Piutang --- */
       const stocks=[]; let stSeq=0;
       function renderStock(){ const has=stocks.length>0; $("stockEmpty").style.display=has?"none":"block"; $("stockTable").style.display=has?"table":"none"; let tot=0; $("stockBody").innerHTML=stocks.map(function(s){ tot+=s.qty*s.beli; return "<tr><td>"+esc(s.nama)+"</td><td>"+s.qty+"</td><td>"+fmtFull(s.qty*s.beli)+"</td><td><button type='button' data-sdel='"+s.id+"' style='min-height:36px'>Hapus</button></td></tr>"; }).join(""); $("stockTotal").textContent=fmtFull(tot); document.querySelectorAll("[data-sdel]").forEach(function(b){ b.addEventListener("click",function(){ const i=stocks.findIndex(function(x){return x.id===+b.dataset.sdel}); if(i>=0)stocks.splice(i,1); renderStock(); }); }); renderReports(); }
-      $("btnStock").addEventListener("click",function(){ if(!$("stNama").value){popupRamah("Isian belum lengkap","Isi nama barang dulu — tulis nama barang yang mau dicatat stoknya.","Setelah terisi, tekan tombol tambah stok.");return;} stocks.push({id:++stSeq,nama:$("stNama").value,qty:num("stQty"),beli:num("stBeli"),jual:num("stJual")}); $("stNama").value=""; renderStock(); });
+      $("btnStock").addEventListener("click",async function(){ if(!$("stNama").value){popupRamah("Isian belum lengkap","Isi nama barang dulu — tulis nama barang yang mau dicatat stoknya.","Setelah terisi, tekan tombol tambah stok.");return;} if(!(await cekBatasTambah("stok", stocks.length))) return; stocks.push({id:++stSeq,nama:$("stNama").value,qty:num("stQty"),beli:num("stBeli"),jual:num("stJual")}); $("stNama").value=""; renderStock(); });
       const pis=[]; let piSeq=0;
       function renderPi(){ const has=pis.length>0; $("piEmpty").style.display=has?"none":"block"; $("piTable").style.display=has?"table":"none"; let tot=0; $("piBody").innerHTML=pis.map(function(p){ tot+=p.jumlah; return "<tr><td>"+esc(p.nama)+"</td><td>"+esc(p.tempo)+"</td><td>"+fmtFull(p.jumlah)+"</td><td><button type='button' data-pdel='"+p.id+"' style='min-height:36px'>Hapus</button></td></tr>"; }).join(""); $("piTotal").textContent=fmtFull(tot); document.querySelectorAll("[data-pdel]").forEach(function(b){ b.addEventListener("click",function(){ const i=pis.findIndex(function(x){return x.id===+b.dataset.pdel}); if(i>=0)pis.splice(i,1); renderPi(); }); }); renderReports(); if(typeof extraUpdate==="function") extraUpdate(); }
-      $("btnPiutang").addEventListener("click",function(){ if(!$("piNama").value||num("piJumlah")<=0){popupRamah("Isian belum lengkap","Isi nama pelanggan dan jumlah piutang — jumlahnya harus lebih dari Rp 0.","Lengkapi kolomnya, lalu tekan tombol tambah piutang.");return;} pis.push({id:++piSeq,nama:$("piNama").value,jumlah:num("piJumlah"),tempo:$("piTempo").value||"—"}); $("piNama").value=""; $("piJumlah").value=""; renderPi(); });
+      $("btnPiutang").addEventListener("click",async function(){ if(!$("piNama").value||num("piJumlah")<=0){popupRamah("Isian belum lengkap","Isi nama pelanggan dan jumlah piutang — jumlahnya harus lebih dari Rp 0.","Lengkapi kolomnya, lalu tekan tombol tambah piutang.");return;} if(!(await cekBatasTambah("piutang", pis.length))) return; pis.push({id:++piSeq,nama:$("piNama").value,jumlah:num("piJumlah"),tempo:$("piTempo").value||"—"}); $("piNama").value=""; $("piJumlah").value=""; renderPi(); });
 
       /* agregat transaksi: dipakai Laba Rugi, Posisi Keuangan, Arus Kas, BEP & forecast */
       function txAgg(){ let inn=0,out=0,hppTx=0,opexTx=0; txs.forEach(function(t){ if(t.jenis==="masuk") inn+=t.jumlah; else { out+=t.jumlah; if(t.kat==="Bahan baku"||t.kat==="Kemasan") hppTx+=t.jumlah; else opexTx+=t.jumlah; } }); return {inn:inn,out:out,hppTx:hppTx,opexTx:opexTx,net:inn-out}; }
@@ -2112,6 +2196,44 @@
 
     <script>
       /* ================= MULTI-USER: MASUK AKUN + SINKRONISASI CLOUD ================= */
+      /* ---------- LANGGANAN (Pro) — SAKLAR UTAMA. false = fitur MATI total:
+         tidak ada modul/tombol langganan, tidak ada kuota AI, tidak ada
+         gerbang Pro, dan aplikasi TIDAK PERNAH menyentuh tabel langganan /
+         pengaturan_app. Nyalakan hanya bila pemilik siap mengaktifkan
+         langganan manual QRIS (dan tabelnya sudah dibuat di SQL Editor). */
+      var LANGGANAN_AKTIF = false;
+      function bulanSekarang(){ var d=new Date(); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2); }
+
+      /* ---------- Batas volume data gratis (fitur langganan, pemicu bayar utama) ----------
+         Hanya bila LANGGANAN_AKTIF menyala dan pengguna BUKAN Pro. Penegakan
+         hanya di penambahan (ADD) transaksi / stok / piutang / utang; data yang
+         sudah ada tetap bisa dibaca dan dihapus, tidak pernah dikunci.
+         Tamu (tanpa akun) jelas bukan Pro -> batas berlaku. Pengguna masuk yang
+         status Pro-nya gagal dibaca (mis. koneksi gagal) -> gagal-dianggap-bebas
+         (fail open), sama seperti gerbang tautan portal.
+         Penegakan LUNAK di sisi klien: hitungan memakai data di halaman ini dan
+         bisa diputar pengguna yang gigih — penguatan di sisi server adalah
+         langkah lanjutan dan belum dibangun. */
+      var BATAS_GRATIS={tx:50, stok:20, piutang:10, utang:10};
+      var LABEL_BATAS={tx:"catatan keuangan bulan ini", stok:"barang stok", piutang:"piutang", utang:"utang"};
+      async function cekBatasTambah(jenis, jumlahSekarang){
+        if(!LANGGANAN_AKTIF) return true;
+        var pro=false, diketahui=false, adaAkun=false;
+        try{
+          if(window.__penggunaAktif) adaAkun=!!window.__penggunaAktif();
+          if(window.__langgananAktif){ pro=await window.__langgananAktif(); diketahui=window.__proDiketahui(); }
+        }catch(e){}
+        var bukanPro = pro ? false : (diketahui || !adaAkun);
+        if(!bukanPro) return true;
+        var batas=BATAS_GRATIS[jenis]||0, label=LABEL_BATAS[jenis]||"data";
+        if((jumlahSekarang||0)<batas) return true;
+        try{
+          if(window.tampilPopupRamah) window.tampilPopupRamah("Batas gratis sudah sampai","Batas gratis sudah sampai — "+batas+" "+label+". Data Anda tetap aman dan bisa dilihat.","Naik ke Pro untuk mencatat tanpa batas.", {label:"Lihat langganan", href:"langganan"});
+        }catch(e2){ try{ toast("Batas gratis sudah sampai — "+batas+" "+label+"."); }catch(e3){} }
+        return false;
+      }
+      window.__cekBatasTambah=cekBatasTambah;
+      window.__batasGratis=BATAS_GRATIS;
       (function(){
         "use strict";
         var SUPABASE_URL = "https://bdnqsxwypbrdiwaxydoh.supabase.co";
@@ -2210,7 +2332,45 @@
           "  delete from public.portal_berbagi where token = p_token",
           "$$;",
           "grant execute on function public.portal_snapshot(text) to anon, authenticated;",
-          "grant execute on function public.portal_cabut(text) to anon, authenticated;"
+          "grant execute on function public.portal_cabut(text) to anon, authenticated;",
+          "-- Langganan manual QRIS (DORMANT — tabel hanya dibuat bila pemilik",
+          "-- menjalankan SQL ini DAN menyalakan saklar LANGGANAN_AKTIF di kode).",
+          "create table if not exists public.langganan (",
+          "  id uuid primary key default gen_random_uuid(),",
+          "  user_id uuid not null references auth.users(id) on delete cascade,",
+          "  paket text not null check (paket in ('bulanan','tahunan')),",
+          "  mulai timestamptz, berakhir timestamptz,",
+          "  status text not null default 'menunggu' check (status in ('menunggu','aktif','ditolak','kedaluwarsa')),",
+          "  bukti text, order_kode text,",
+          "  created_at timestamptz not null default now()",
+          ");",
+          "create table if not exists public.pengaturan_app (",
+          "  id int primary key,",
+          "  qris_langganan text, nama_penerima text,",
+          "  harga_bulanan int not null default 29000,",
+          "  harga_tahunan int not null default 290000",
+          ");",
+          "alter table public.langganan enable row level security;",
+          "alter table public.pengaturan_app enable row level security;",
+          "-- Langganan: pengguna hanya membaca & menyisipkan baris MILIKNYA, dan",
+          "-- sisipan hanya boleh berstatus 'menunggu' — pengguna tidak bisa",
+          "-- mengaktifkan Pro untuk dirinya sendiri. Ubah + baca semua hanya",
+          "-- untuk pemilik aplikasi (email di bawah).",
+          "drop policy if exists \"langganan milik sendiri baca\" on public.langganan;",
+          "create policy \"langganan milik sendiri baca\" on public.langganan for select using (auth.uid() = user_id);",
+          "drop policy if exists \"langganan admin baca semua\" on public.langganan;",
+          "create policy \"langganan admin baca semua\" on public.langganan for select using (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id');",
+          "drop policy if exists \"langganan milik sendiri sisip\" on public.langganan;",
+          "create policy \"langganan milik sendiri sisip\" on public.langganan for insert with check (auth.uid() = user_id and status = 'menunggu');",
+          "drop policy if exists \"langganan admin ubah\" on public.langganan;",
+          "create policy \"langganan admin ubah\" on public.langganan for update using (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id') with check (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id');",
+          "-- Pengaturan aplikasi (kode QRIS pembayaran + harga): boleh dibaca siapa",
+          "-- saja — isinya hanya kode bayar dan harga, tanpa rahasia. Ubah/sisip",
+          "-- hanya untuk pemilik aplikasi.",
+          "drop policy if exists \"pengaturan baca publik\" on public.pengaturan_app;",
+          "create policy \"pengaturan baca publik\" on public.pengaturan_app for select using (true);",
+          "drop policy if exists \"pengaturan admin ubah\" on public.pengaturan_app;",
+          "create policy \"pengaturan admin ubah\" on public.pengaturan_app for all using (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id') with check (auth.jwt()->>'email' = 'soegianto@fst.unair.ac.id');"
         ].join("\n");
 
         var sb = null, currentUser = null, entered = false, localMode = false;
@@ -2246,6 +2406,10 @@
         var isGuest = false, migrateSnapshot = null;
         window.__lokasiUsaha = window.__lokasiUsaha || null;
         window.__isGuestMode = function(){ return isGuest; };
+        /* Langganan: beri skrip lain akses ke klien cloud terautentikasi & pengguna
+           aktif (tanpa ini skrip kedua tidak bisa membaca tabel langganan). */
+        window.__sbAuth = function(){ return sb; };
+        window.__penggunaAktif = function(){ return currentUser; };
 
         function gid(id){ return document.getElementById(id); }
         function uuid(){ if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(c){ var r=Math.random()*16|0, v=c==="x"?r:(r&0x3|0x8); return v.toString(16); }); }
@@ -2520,8 +2684,9 @@
           if(has) gid("inUtang").value=window.__utangTotal();
           if(typeof recalc==="function") recalc();
         }
-        gid("btnUtang").addEventListener("click",function(){
+        gid("btnUtang").addEventListener("click",async function(){
           if(!gid("utNama").value || num("utJumlah")<=0){ if(window.tampilPopupRamah) window.tampilPopupRamah("Isian belum lengkap","Isi keterangan dan jumlah utang dulu — jumlahnya harus lebih dari Rp 0.","Lengkapi kolomnya, lalu tekan tombol tambah utang."); else toast("Isi keterangan dan jumlah utang dulu"); return; }
+          if(!(await cekBatasTambah("utang", utangs.length))) return;
           utangs.push({cid:uuid(), ket:gid("utNama").value, jumlah:num("utJumlah"), tempo:gid("utTempo").value||"—"});
           gid("utNama").value=""; gid("utJumlah").value=""; gid("utTempo").value="";
           renderUtang(); audit("Utang ditambah ke daftar utang."); toast("Utang tercatat di daftar utang");
@@ -2556,7 +2721,8 @@
             pis:pis.map(function(p){ if(!p.cid) p.cid=uuid(); return {cid:p.cid,nama:p.nama,jumlah:p.jumlah,tempo:p.tempo}; }),
             utangs:utangs.map(function(u){ if(!u.cid) u.cid=uuid(); return {cid:u.cid,ket:u.ket,jumlah:u.jumlah,tempo:u.tempo}; }),
             proaktif:{ last_seen: proaktifState.last_seen||null, lastConsCheck: proaktifState.lastConsCheck||null },
-            qris_image: window.__qrisImage || null
+            qris_image: window.__qrisImage || null,
+            ai_pakai: window.__aiPakai || {bulan:bulanSekarang(), jumlah:0}
           };
         }
         function refreshSegs(containerId, vals){
@@ -2613,6 +2779,7 @@
           return {
             lokasi: c.lokasi||t.lokasi||null,
             qris_image: c.qris_image||t.qris_image||null,
+            ai_pakai: c.ai_pakai||t.ai_pakai||null,
             proaktif: c.proaktif||t.proaktif||null,
             inputs: inp, answers: ans,
             pack: Array.isArray(c.pack)?c.pack:(Array.isArray(t.pack)?t.pack:undefined),
@@ -2644,6 +2811,7 @@
           pis.splice(0,pis.length); (snap.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||uuid(), nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—"}); });
           utangs.splice(0,utangs.length); (snap.utangs||[]).forEach(function(u){ utangs.push({cid:u.cid||uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—"}); });
           window.__qrisImage = snap.qris_image || null;
+          if(snap.ai_pakai && snap.ai_pakai.bulan){ window.__aiPakai={bulan:String(snap.ai_pakai.bulan), jumlah:(+snap.ai_pakai.jumlah||0)}; }
           if(window.__renderQris){ try{ window.__renderQris(); }catch(e){} }
           renderTx(); renderStock(); renderPi(); renderUtang();
           updatePack(); updateCons(); updateLegal(); updateChannels(); buildContentCal();
@@ -2671,7 +2839,7 @@
           setSync("Menyimpan...","");
           try{
             var uid=currentUser.id;
-            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
+            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, ai_pakai: snap.ai_pakai || {bulan:bulanSekarang(), jumlah:0}, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
@@ -2715,6 +2883,7 @@
               var snap={
                 lokasi:core.lokasi||null,
                 qris_image:core.qris_image||null,
+                ai_pakai:core.ai_pakai||null,
                 proaktif:core.proaktif||null,
                 inputs:core.inputs||{}, answers:core.answers||{}, pack:core.pack, cons:core.cons, legal:core.legal, chan:core.chan, sopSteps:core.sopSteps,
                 txs:(res[1].data||[]).map(function(r){ return {cid:r.id, tgl:r.tanggal||"", ket:r.keterangan||"", jenis:r.jenis, kat:r.kategori||"Lainnya", jumlah:+r.jumlah||0}; }),
@@ -2804,6 +2973,9 @@
           gid("btnLogout").textContent="Keluar";
           gid("accountBar").classList.add("show");
           gid("userEmail").textContent=user.email||"";
+          /* Langganan: segarkan status Pro & kartu langganan (diam bila saklar mati). */
+          if(window.__refreshProStatus){ try{ window.__refreshProStatus(); }catch(e){} }
+          if(window.__renderLangganan){ try{ window.__renderLangganan(); }catch(e){} }
           var lp=loadData();
           if(lp && typeof lp.then==="function"){
             lp.then(function(){
@@ -2838,6 +3010,7 @@
           // tidak perlu ditanya lagi — langsung ke dashboard. Snapshot yang hanya
           // berisi data contoh/seed tidak dihitung: sapaan tetap tampil.
           var nyata=sudahMengisiNyata(); if(nyata) tandaiSudahMengisi();
+          if(window.__renderLangganan){ try{ window.__renderLangganan(); }catch(e){} }
           return nyata;
         }
         window.__showRegisterGate=function(reason){
@@ -3325,8 +3498,41 @@
         }
         window.__bersihkanJawabanAI=bersihkanJawabanAI;
 
+        /* ---------- Kuota AI langganan (hanya bila LANGGANAN_AKTIF) ----------
+           Penegakan LUNAK di sisi klien: hitungan disimpan di snapshot (ikut
+           tersimpan ke cloud/lokal lewat autosave) dan bisa diubah pengguna
+           yang gigih. Ini pembatas pemakaian wajar, bukan pengaman anti-curang
+           — penguatan di sisi server adalah langkah lanjutan dan belum dibangun. */
+        var KUOTA_AI_GRATIS=20, KUOTA_AI_PRO=300;
+        function kuotaAiBatas(){ return isPro()?KUOTA_AI_PRO:KUOTA_AI_GRATIS; }
+        function aiPakaiBulanIni(){
+          var p=window.__aiPakai||{bulan:bulanSekarang(),jumlah:0};
+          if(p.bulan!==bulanSekarang()) return 0;
+          return p.jumlah||0;
+        }
+        function kuotaAiHabis(){
+          if(!LANGGANAN_AKTIF) return false;
+          return aiPakaiBulanIni() >= kuotaAiBatas();
+        }
+        function tambahHitunganAi(){
+          if(!LANGGANAN_AKTIF) return;
+          var p=window.__aiPakai||{bulan:bulanSekarang(),jumlah:0};
+          if(p.bulan!==bulanSekarang()) p={bulan:bulanSekarang(),jumlah:0};
+          p.jumlah=(p.jumlah||0)+1;
+          window.__aiPakai=p;
+        }
+        function popupKuotaHabis(){
+          if(!window.tampilPopupRamah) return;
+          if(isPro()){
+            window.tampilPopupRamah("Kuota pertanyaan AI Pro bulan ini sudah habis (300).","Bulan ini Anda sudah memakai 300 pertanyaan AI.","Kuota kembali awal bulan depan — tidak ada biaya tambahan.");
+          } else {
+            window.tampilPopupRamah("Kuota pertanyaan AI gratis bulan ini sudah habis (20).","Bulan ini Anda sudah memakai 20 pertanyaan AI gratis.","Naik ke Pro untuk lanjut bertanya — ketuk tombol Lihat langganan di bawah ini.", {label:"Lihat langganan", href:"langganan"});
+          }
+        }
+
         function askAI(prompt, target){
           if(!target) return;
+          if(kuotaAiHabis()){ popupKuotaHabis(); return; }
           target.textContent="Sedang berpikir… AI Coach sedang menyiapkan penjelasan sederhana untuk Anda.";
           function fallback(){ target.textContent=localExplain(prompt)+"\n\nAI online belum tersambung — ini penjelasan dari perhitungan aplikasi."; }
           try{
@@ -3334,7 +3540,7 @@
               .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
               .then(function(data){
                 var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
-                if(ans && String(ans).trim()) target.textContent=bersihkanJawabanAI(String(ans).trim()); else fallback();
+                if(ans && String(ans).trim()){ target.textContent=bersihkanJawabanAI(String(ans).trim()); tambahHitunganAi(); } else fallback();
               })
               .catch(function(){ fallback(); });
           }catch(e){ fallback(); }
@@ -3359,6 +3565,7 @@
             return {wrap:wrap, textEl:t};
           }
           function send(){
+            if(kuotaAiHabis()){ popupKuotaHabis(); return; }
             var q=(input.value||"").trim() || defaultQ;
             var empty=gid(emptyId); if(empty) empty.style.display="none";
             bubble("user","Anda",q);
@@ -3385,13 +3592,348 @@
                 .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
                 .then(function(data){
                   var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
-                  if(ans && String(ans).trim()) done(String(ans).trim()); else fallback();
+                  if(ans && String(ans).trim()){ tambahHitunganAi(); done(String(ans).trim()); } else fallback();
                 })
                 .catch(function(){ fallback(); });
             }catch(e){ fallback(); }
           }
           return send;
         }
+
+        /* ================= LANGGANAN MANUAL QRIS (DORMANT bila LANGGANAN_AKTIF false) =================
+           Semua di bawah ini TIDAK berjalan bila saklar mati: modul disembunyikan
+           di HTML, init berhenti di baris pertama, kuota tidak dihitung, dan
+           tidak ada kueri ke tabel langganan / pengaturan_app.
+           CATATAN: askAI() di atas dan percakapan AI Coach TIDAK lewat satu
+           jalur yang sama — askAI dipakai tombol "Jelaskan ini"/"Tanya AI",
+           sedangkan percakapan (Modul 9 & wizard) memakai fetch sendiri di
+           makeCoachChat. Kuota dijaga di KEDUA jalur lewat helper yang sama
+           (kuotaAiHabis / tambahHitunganAi) supaya tidak ada yang lolos. */
+        var PEMILIK_EMAIL="soegianto@fst.unair.ac.id";
+        var HARGA_BULANAN_DEFAULT=29000, HARGA_TAHUNAN_DEFAULT=290000;
+        var _pengaturan=null, _pengaturanDimuat=false;
+        var _langgananDipilih=null, _langgananBuktiB64=null, _adminQrisB64=null;
+        var _proCache=false, _proDiketahui=false;
+
+        /* Tambah n bulan ke tanggal; bila tanggal tujuan tidak punya hari itu
+           (mis. 31 Januari + 1 bulan), pakai hari terakhir bulan tujuan
+           (28/29 Februari) — bukan melompat ke bulan berikutnya. */
+        function tambahBulan(tgl, n){
+          var d=new Date(tgl); if(isNaN(d.getTime())) d=new Date();
+          var hari=d.getDate();
+          var target=new Date(d.getFullYear(), d.getMonth()+n, 1);
+          var akhir=new Date(target.getFullYear(), target.getMonth()+1, 0).getDate();
+          target.setDate(Math.min(hari, akhir));
+          target.setHours(d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+          return target;
+        }
+        window.__tambahBulan=tambahBulan;
+
+        function buatKodePesanan(){
+          var Huruf="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+          var out="";
+          if(window.crypto && crypto.getRandomValues){
+            var a=new Uint8Array(6); crypto.getRandomValues(a);
+            for(var i=0;i<6;i++) out+=Huruf.charAt(a[i]%Huruf.length);
+          } else { for(var i=0;i<6;i++) out+=Huruf.charAt(Math.floor(Math.random()*Huruf.length)); }
+          return "UMKM-"+out;
+        }
+
+        /* Kompres foto (bukti bayar / kode QRIS pemilik) seperti pola QRIS usaha:
+           maks 900px, JPEG 0.88. Bila gambar tidak bisa dibaca, pakai data aslinya. */
+        function simpanGambarKecil(file, cb){
+          if(!file || !cb) return;
+          var reader=new FileReader();
+          reader.onload=function(){
+            var raw=reader.result;
+            var img=new Image();
+            img.onload=function(){
+              try{
+                var max=900, w=img.naturalWidth||900, h=img.naturalHeight||900;
+                var sc=Math.min(1, max/Math.max(w,h));
+                var cv=document.createElement("canvas");
+                cv.width=Math.max(1,Math.round(w*sc)); cv.height=Math.max(1,Math.round(h*sc));
+                var cx=cv.getContext("2d");
+                cx.fillStyle="#ffffff"; cx.fillRect(0,0,cv.width,cv.height);
+                cx.drawImage(img,0,0,cv.width,cv.height);
+                cb(cv.toDataURL("image/jpeg",0.88));
+              }catch(err){ cb(raw); }
+            };
+            img.onerror=function(){ cb(raw); };
+            img.src=raw;
+          };
+          reader.readAsDataURL(file);
+        }
+
+        function sbLangganan(){ try{ return (window.__sbAuth && window.__sbAuth())||null; }catch(e){ return null; } }
+        function penggunaLangganan(){ try{ return (window.__penggunaAktif && window.__penggunaAktif())||null; }catch(e){ return null; } }
+
+        /* Pro = ada baris langganan berstatus 'aktif' yang berakhirnya masih
+           di masa depan. Hanya membaca (tidak pernah menandai kedaluwarsa).
+           Bila kueri gagal / tabel belum ada / belum masuk: Pro TIDAK
+           diketahui (false + _proDiketahui=false) — pemanggil memutuskan
+           sendiri apakah gagal-dianggap-bebas atau diblokir. */
+        async function langgananAktif(){
+          _proCache=false; _proDiketahui=false;
+          try{
+            if(!LANGGANAN_AKTIF) return false;
+            var sb=sbLangganan();
+            var u=penggunaLangganan();
+            if(!sb || !u) return false;
+            var r=await sb.from("langganan").select("status,berakhir").eq("user_id",u.id).eq("status","aktif");
+            if(r.error || !r.data) return false;
+            var now=new Date(), ok=false;
+            r.data.forEach(function(row){ if(row.berakhir && new Date(row.berakhir)>now) ok=true; });
+            _proCache=ok; _proDiketahui=true;
+            return ok;
+          }catch(e){ return false; }
+        }
+        function isPro(){ return !!_proCache; }
+        function proDiketahui(){ return !!_proDiketahui; }
+        function refreshProStatus(){ if(LANGGANAN_AKTIF){ try{ var p=langgananAktif(); if(p && p.catch) p.catch(function(){}); }catch(e){} } }
+
+        async function muatPengaturan(){
+          if(_pengaturanDimuat) return _pengaturan;
+          _pengaturanDimuat=true;
+          try{
+            var sb=sbLangganan();
+            if(sb){
+              var r=await sb.from("pengaturan_app").select("*").eq("id",1).maybeSingle();
+              if(!r.error && r.data) _pengaturan=r.data;
+            }
+          }catch(e){}
+          return _pengaturan;
+        }
+        function hargaLangganan(){
+          var p=_pengaturan||{};
+          return {
+            bulanan: (p.harga_bulanan>0)? Math.round(p.harga_bulanan) : HARGA_BULANAN_DEFAULT,
+            tahunan: (p.harga_tahunan>0)? Math.round(p.harga_tahunan) : HARGA_TAHUNAN_DEFAULT
+          };
+        }
+        function fmtTglPanjang(iso){
+          try{ var d=new Date(iso); if(isNaN(d.getTime())) return "—"; return d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }catch(e){ return "—"; }
+        }
+        function tampilkanHarga(){
+          var h=hargaLangganan();
+          var b=gid("hargaBulanan"); if(b) b.textContent=fmtFull(h.bulanan);
+          var t=gid("hargaTahunan"); if(t) t.textContent=fmtFull(h.tahunan);
+        }
+        window.__langgananAktif=langgananAktif;
+        window.__isPro=isPro;
+        window.__proDiketahui=proDiketahui;
+        window.__refreshProStatus=refreshProStatus;
+        window.__kuotaAiHabis=kuotaAiHabis;
+        window.__tambahHitunganAi=tambahHitunganAi;
+        window.__aiPakaiBulanIni=aiPakaiBulanIni;
+
+        /* ---------- Kartu status + alur bayar langganan ---------- */
+        function isiFormAdmin(){
+          var p=_pengaturan||{};
+          _adminQrisB64=p.qris_langganan||null;
+          var pv=gid("adminQrisPratinjau"); if(pv) pv.innerHTML=_adminQrisB64?("<img src=\""+esc(_adminQrisB64)+"\" style=\"max-width:180px;border-radius:8px\" alt=\"Kode QRIS pembayaran\">"):"";
+          var nm=gid("adminNamaPenerima"); if(nm) nm.value=p.nama_penerima||"";
+          var hb=gid("adminHargaBulanan"); if(hb) hb.value=(p.harga_bulanan>0)? p.harga_bulanan : HARGA_BULANAN_DEFAULT;
+          var ht=gid("adminHargaTahunan"); if(ht) ht.value=(p.harga_tahunan>0)? p.harga_tahunan : HARGA_TAHUNAN_DEFAULT;
+        }
+        async function renderLangganan(){
+          if(!LANGGANAN_AKTIF) return;
+          var st=gid("langgananStatus"); if(!st) return;
+          var ku=gid("langgananKuota");
+          await muatPengaturan();
+          tampilkanHarga();
+          var u=penggunaLangganan();
+          var tamu=(window.__isGuestMode && window.__isGuestMode()) || !u;
+          var admin=gid("langgananAdmin"); if(admin) admin.style.display="none";
+          if(tamu){
+            st.textContent="Masuk atau daftar dulu untuk berlangganan — langganan tersimpan di akun Anda.";
+            if(ku) ku.textContent="Saat ini Anda memakai mode coba — kuota pertanyaan AI gratis berlaku setelah Anda masuk.";
+            return;
+          }
+          var pro=false; try{ pro=await langgananAktif(); }catch(e){}
+          var baris=null;
+          try{
+            var sb=sbLangganan();
+            if(sb){
+              var r=await sb.from("langganan").select("*").eq("user_id",u.id).order("created_at",{ascending:false}).limit(1);
+              if(!r.error && r.data && r.data.length) baris=r.data[0];
+            }
+          }catch(e){}
+          var pakai=aiPakaiBulanIni(), batas=kuotaAiBatas();
+          if(pro){
+            st.textContent="Paket Anda: Pro — aktif sampai "+fmtTglPanjang(baris && baris.berakhir);
+          } else if(baris && baris.status==="menunggu"){
+            st.textContent="Pembayaran Anda sedang dicek — Pro aktif setelah dikonfirmasi pemilik aplikasi.";
+          } else if(baris && baris.status==="ditolak"){
+            st.textContent="Pembayaran terakhir belum bisa dikonfirmasi. Silakan bayar lagi dengan kode pesanan baru, atau hubungi pemilik aplikasi.";
+          } else {
+            st.textContent="Paket Anda: Gratis.";
+          }
+          if(ku) ku.textContent="Pertanyaan AI bulan ini: "+pakai+" dari "+batas+" ("+(pro?"Pro":"Gratis")+").";
+          if(u.email===PEMILIK_EMAIL && admin){
+            admin.style.display="";
+            isiFormAdmin();
+            muatAntrean();
+          }
+        }
+        window.__renderLangganan=renderLangganan;
+
+        function bukaBayar(paket){
+          var u=penggunaLangganan();
+          if((window.__isGuestMode && window.__isGuestMode()) || !u){
+            if(window.__showRegisterGate) window.__showRegisterGate("Berlangganan Pro");
+            return;
+          }
+          var h=hargaLangganan();
+          var harga=paket==="tahunan"? h.tahunan : h.bulanan;
+          var p=_pengaturan||{};
+          if(!p.qris_langganan){
+            if(window.tampilPopupRamah) window.tampilPopupRamah("Kode pembayaran belum dipasang","Kode QRIS pembayaran belum dipasang oleh pemilik aplikasi.","Silakan kembali lagi nanti — pemilik aplikasi akan memasangnya segera.");
+            return;
+          }
+          _langgananDipilih={paket:paket, harga:harga, kode:buatKodePesanan()};
+          _langgananBuktiB64=null;
+          var bp=gid("langgananBukti"); if(bp) bp.value="";
+          var pv=gid("langgananBuktiPratinjau"); if(pv) pv.innerHTML="";
+          var qi=gid("langgananQrImg"); if(qi) qi.src=p.qris_langganan;
+          var nm=gid("langgananNamaPenerima"); if(nm) nm.textContent=p.nama_penerima?("Penerima: "+p.nama_penerima):"";
+          var j=gid("langgananJumlah"); if(j) j.textContent=fmtFull(harga);
+          var k=gid("langgananKode"); if(k) k.textContent=_langgananDipilih.kode;
+          var panel=gid("langgananBayar");
+          if(panel){ panel.style.display="block"; try{ panel.scrollIntoView(); }catch(e){} }
+        }
+        function setBuktiLangganan(b64){
+          _langgananBuktiB64=b64||null;
+          var pv=gid("langgananBuktiPratinjau");
+          if(pv) pv.innerHTML=_langgananBuktiB64?("<img src=\""+esc(_langgananBuktiB64)+"\" style=\"max-width:180px;border-radius:8px\" alt=\"Bukti pembayaran\">"):"";
+        }
+        window.__langgananSetBukti=setBuktiLangganan;
+        window.__bukaBayar=bukaBayar;
+        async function kirimBuktiBayar(){
+          if(!_langgananDipilih) return;
+          var u=penggunaLangganan();
+          if(!u) return;
+          if(!_langgananBuktiB64){
+            if(window.tampilPopupRamah) window.tampilPopupRamah("Bukti pembayaran belum ada","Unggah foto bukti pembayaran dulu — foto struk atau tangkapan layar bukti bayar Anda.","Pilih foto bukti pembayaran, lalu tekan Kirim bukti pembayaran.");
+            return;
+          }
+          var btn=gid("btnKirimBukti"); if(btn) btn.disabled=true;
+          try{
+            var sb=sbLangganan();
+            if(!sb) throw new Error("tidak tersambung");
+            var r=await sb.from("langganan").insert({user_id:u.id, paket:_langgananDipilih.paket, mulai:new Date().toISOString(), berakhir:null, status:"menunggu", bukti:_langgananBuktiB64, order_kode:_langgananDipilih.kode});
+            if(r.error) throw r.error;
+            var panel=gid("langgananBayar"); if(panel) panel.style.display="none";
+            _langgananDipilih=null; _langgananBuktiB64=null;
+            try{ audit("Bukti pembayaran langganan dikirim."); }catch(e){}
+            if(window.tampilPopupRamah) window.tampilPopupRamah("Bukti pembayaran terkirim","Terima kasih — pembayaran Anda sedang dikonfirmasi. Pro aktif setelah dikonfirmasi pemilik aplikasi.","Anda bisa menutup halaman ini — status langganan bisa dicek lagi di modul Langganan.");
+            renderLangganan();
+          }catch(e){
+            if(window.tampilPopupRamah) window.tampilPopupRamah("Bukti belum bisa dikirim","Pengiriman bukti pembayaran belum berhasil — mungkin koneksi internet sedang terganggu.","Periksa internet Anda, lalu tekan Kirim bukti pembayaran sekali lagi. Bukti foto Anda masih tersimpan di halaman ini.");
+          }
+          if(btn) btn.disabled=false;
+        }
+        window.__kirimBuktiBayar=kirimBuktiBayar;
+
+        /* ---------- Admin langganan (hanya pemilik) ---------- */
+        async function muatAntrean(){
+          var wadah=gid("langgananAntrean"); if(!wadah) return;
+          wadah.innerHTML="<p class='note'>Memuat antrean…</p>";
+          try{
+            var sb=sbLangganan(); if(!sb) throw new Error("tidak tersambung");
+            var r=await sb.from("langganan").select("*").eq("status","menunggu").order("created_at",{ascending:true});
+            if(r.error) throw r.error;
+            var rows=r.data||[];
+            if(!rows.length){ wadah.innerHTML="<p class='note'>Tidak ada pembayaran yang menunggu persetujuan.</p>"; return; }
+            var ids=rows.map(function(x){ return x.user_id; });
+            var profil={};
+            try{
+              var rp=await sb.from("profiles").select("id,nama_usaha,no_hp").in("id",ids);
+              if(!rp.error && rp.data) rp.data.forEach(function(p){ profil[p.id]=p; });
+            }catch(e){}
+            var h=hargaLangganan();
+            wadah.innerHTML=rows.map(function(x){
+              var p=profil[x.user_id]||{};
+              var jumlah=x.paket==="tahunan"? h.tahunan : h.bulanan;
+              return "<div class='card' style='margin:10px 0'>"
+                +"<p><b>"+esc(p.nama_usaha||("Pengguna "+String(x.user_id).slice(0,8)))+"</b> — "+esc(x.paket)+" — <b>"+fmtFull(jumlah)+"</b></p>"
+                +"<p class='note'>Kode pesanan: <b>"+esc(x.order_kode||"—")+"</b> · HP: "+esc(p.no_hp||"—")+" · Dikirim: "+fmtTglPanjang(x.created_at)+"</p>"
+                +(x.bukti?("<p><img src=\""+esc(x.bukti)+"\" style=\"max-width:220px;border-radius:8px\" alt=\"Bukti pembayaran\"></p>"):"<p class='note'>Tanpa foto bukti.</p>")
+                +"<div class='actions'><button class='btn small' type='button' data-setuju='"+esc(x.id)+"' data-paket='"+esc(x.paket)+"'>Setujui — aktifkan Pro</button> <button class='btn ghost small' type='button' data-tolak='"+esc(x.id)+"'>Tolak</button></div>"
+                +"</div>";
+            }).join("");
+            wadah.querySelectorAll("[data-setuju]").forEach(function(b){
+              b.addEventListener("click", function(){ setujuiLangganan(b.getAttribute("data-setuju"), b.getAttribute("data-paket")); });
+            });
+            wadah.querySelectorAll("[data-tolak]").forEach(function(b){
+              b.addEventListener("click", function(){ tolakLangganan(b.getAttribute("data-tolak")); });
+            });
+          }catch(e){
+            wadah.innerHTML="<p class='note'>Antrean belum bisa dimuat — periksa koneksi internet Anda, lalu tekan Muat ulang antrean.</p>";
+          }
+        }
+        async function setujuiLangganan(id, paket){
+          try{
+            var sb=sbLangganan(); if(!sb) throw new Error("tidak tersambung");
+            var sekarang=new Date();
+            var akhir=tambahBulan(sekarang, paket==="tahunan"?12:1);
+            var r=await sb.from("langganan").update({status:"aktif", mulai:sekarang.toISOString(), berakhir:akhir.toISOString()}).eq("id",id);
+            if(r.error) throw r.error;
+            try{ toast("Langganan disetujui — Pro aktif."); audit("Langganan disetujui (Pro aktif)."); }catch(e){}
+            muatAntrean();
+          }catch(e){
+            if(window.tampilPopupRamah) window.tampilPopupRamah("Persetujuan belum berhasil","Persetujuan langganan belum berhasil — mungkin koneksi internet sedang terganggu.","Periksa internet Anda, lalu tekan Setujui sekali lagi.");
+          }
+        }
+        async function tolakLangganan(id){
+          try{
+            var sb=sbLangganan(); if(!sb) throw new Error("tidak tersambung");
+            var r=await sb.from("langganan").update({status:"ditolak"}).eq("id",id);
+            if(r.error) throw r.error;
+            try{ toast("Pembayaran ditolak."); }catch(e){}
+            muatAntrean();
+          }catch(e){
+            if(window.tampilPopupRamah) window.tampilPopupRamah("Penolakan belum berhasil","Penolakan langganan belum berhasil — mungkin koneksi internet sedang terganggu.","Periksa internet Anda, lalu tekan Tolak sekali lagi.");
+          }
+        }
+        async function simpanPengaturanLangganan(){
+          var sb=sbLangganan(); if(!sb) return;
+          var hb=parseInt((gid("adminHargaBulanan")||{}).value,10);
+          var ht=parseInt((gid("adminHargaTahunan")||{}).value,10);
+          var nama=((gid("adminNamaPenerima")||{}).value||"").trim();
+          var btn=gid("btnSimpanPengaturan"); if(btn) btn.disabled=true;
+          try{
+            var r=await sb.from("pengaturan_app").upsert({id:1, qris_langganan:_adminQrisB64, nama_penerima:nama||null, harga_bulanan:(hb>0?hb:HARGA_BULANAN_DEFAULT), harga_tahunan:(ht>0?ht:HARGA_TAHUNAN_DEFAULT)});
+            if(r.error) throw r.error;
+            _pengaturanDimuat=false; _pengaturan=null;
+            await muatPengaturan(); tampilkanHarga();
+            try{ toast("Pengaturan langganan tersimpan."); audit("Pengaturan langganan (QRIS & harga) disimpan."); }catch(e){}
+          }catch(e){
+            if(window.tampilPopupRamah) window.tampilPopupRamah("Pengaturan belum tersimpan","Penyimpanan pengaturan langganan belum berhasil — mungkin koneksi internet sedang terganggu.","Periksa internet Anda, lalu tekan Simpan pengaturan sekali lagi.");
+          }
+          if(btn) btn.disabled=false;
+        }
+        window.__setujuiLangganan=setujuiLangganan;
+        window.__tolakLangganan=tolakLangganan;
+        window.__muatAntrean=muatAntrean;
+        window.__simpanPengaturanLangganan=simpanPengaturanLangganan;
+
+        (function initLangganan(){
+          if(!LANGGANAN_AKTIF) return; // fitur mati: modul & section tetap tersembunyi (display:none di HTML), tidak ada kueri apa pun
+          var link=gid("modLanggananLink"); if(link) link.style.display="";
+          var sec=gid("langganan"); if(sec) sec.style.display="";
+          var grid=document.querySelector(".module-grid"); if(grid) grid.setAttribute("aria-label","Daftar 10 modul aplikasi");
+          var bB=gid("btnLanggananBulanan"); if(bB) bB.addEventListener("click", function(){ bukaBayar("bulanan"); });
+          var bT=gid("btnLanggananTahunan"); if(bT) bT.addEventListener("click", function(){ bukaBayar("tahunan"); });
+          var bK=gid("btnKirimBukti"); if(bK) bK.addEventListener("click", kirimBuktiBayar);
+          var bX=gid("btnBatalBayar"); if(bX) bX.addEventListener("click", function(){ var p=gid("langgananBayar"); if(p) p.style.display="none"; _langgananDipilih=null; _langgananBuktiB64=null; });
+          var bU=gid("btnMuatUlangLangganan"); if(bU) bU.addEventListener("click", renderLangganan);
+          var fB=gid("langgananBukti"); if(fB) fB.addEventListener("change", function(e){ var f=e.target.files && e.target.files[0]; if(!f) return; simpanGambarKecil(f, setBuktiLangganan); });
+          var fA=gid("adminQrisPhoto"); if(fA) fA.addEventListener("change", function(e){ var f=e.target.files && e.target.files[0]; if(!f) return; simpanGambarKecil(f, function(b64){ _adminQrisB64=b64; var pv=gid("adminQrisPratinjau"); if(pv) pv.innerHTML=b64?("<img src=\""+esc(b64)+"\" style=\"max-width:180px;border-radius:8px\" alt=\"Kode QRIS pembayaran\">"):""; }); });
+          var bS=gid("btnSimpanPengaturan"); if(bS) bS.addEventListener("click", simpanPengaturanLangganan);
+          var bM=gid("btnMuatAntrean"); if(bM) bM.addEventListener("click", muatAntrean);
+          renderLangganan();
+        })();
 
         /* ---------- Tanya AI Coach (Modul 9) ---------- */
         var coachAsk=makeCoachChat("coachChat","coachQ","coachChatEmpty","Apa yang paling perlu saya perbaiki bulan ini?");
@@ -4037,6 +4579,22 @@
           }
           btn.addEventListener("click", async function(){
             if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Membuat tautan berbagi portal investor"); return; }
+            /* Langganan: membuat tautan berbagi portal investor butuh Pro.
+               Bila status Pro belum diketahui (mis. koneksi gagal saat membaca),
+               JANGAN blokir — lanjut seperti biasa; yang diblokir hanya pengguna
+               yang jelas-jelas bukan Pro. */
+            if(LANGGANAN_AKTIF){
+              var pro=false, diketahui=false;
+              /* WAJIB pakai eksposur window.__*: langgananAktif/proDiketahui
+                 dideklarasikan di IIFE lain, jadi pemanggilan langsung dari
+                 sini melempar ReferenceError yang tertelan catch — gerbang
+                 jadi diam-diam gagal-terbuka (bug ketahuan saat uji). */
+              try{ if(window.__langgananAktif){ pro=await window.__langgananAktif(); diketahui=window.__proDiketahui(); } }catch(e){}
+              if(diketahui && !pro){
+                try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Portal investor butuh Pro","Membuat tautan berbagi portal investor hanya untuk paket Pro.","Buka modul Langganan untuk melihat paket Pro.", {label:"Lihat langganan", href:"langganan"}); }catch(e2){}
+                return;
+              }
+            }
             var note=gid("shareNote");
             if(!sbExt){ note.textContent="Fitur berbagi belum aktif — koneksi cloud belum termuat. Portal investor di dalam aplikasi di atas tetap berfungsi seperti biasa."; return; }
             btn.disabled=true; note.textContent="Sedang membuat tautan berbagi…";
