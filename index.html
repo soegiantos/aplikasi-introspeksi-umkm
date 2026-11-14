@@ -89,6 +89,11 @@
       .voice-result{display:none;background:var(--accent-soft);border:1px solid var(--accent);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.95rem;font-weight:600;margin-top:12px}
       .voice-warn{background:var(--warn-soft);border:1.5px solid var(--warn);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.93rem;font-weight:600;margin-top:12px}
       .demo-tag{display:inline-block;background:var(--gold-soft);color:var(--gold);font-weight:700;font-size:.8rem;padding:4px 10px;border-radius:999px;margin-bottom:12px}
+      /* Ringkasan data usaha (tampil saat formulir dilipat karena sudah terisi). */
+      .data-ringkas{margin-top:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--accent-soft)}
+      .data-ringkas .ringkas-nama{font-size:1.25rem;font-weight:800}
+      .data-ringkas p{margin-top:6px;color:var(--ink-soft)}
+      .data-ringkas p b{color:var(--ink)}
 
       /* ---------- scores ---------- */
       .score-card .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
@@ -727,6 +732,14 @@
             <span class="demo-tag" style="margin:0">Formulir kosong — kolom berwarna keemasan siap diisi dengan data usaha Anda</span>
             <button class="btn ghost small" id="btnUbahUsahaData" type="button">Ubah usaha</button>
           </div>
+          <div class="data-ringkas" id="dataRingkasan" style="display:none">
+            <div class="ringkas-nama" id="ringkasNama">—</div>
+            <p>Jenis usaha: <b id="ringkasSektor">—</b></p>
+            <p>Kota: <b id="ringkasKota">—</b></p>
+            <p>Omzet per bulan: <b id="ringkasOmzet">—</b></p>
+            <div class="actions" style="margin-top:12px"><button class="btn" id="btnUbahData" type="button">Ubah data usaha</button></div>
+          </div>
+          <div id="dataFormWrap">
           <p class="help-hint"><span class="field-help-btn" aria-hidden="true">?</span><span><b>Belum paham maksud suatu kolom?</b> Ketuk ikon <b>?</b> di samping nama kolom — akan muncul penjelasan sederhana dan contohnya. Di dalam penjelasan itu ada tombol <b>Tanya AI</b>, silakan bertanya dengan bahasa Anda sendiri bila masih belum paham.</span></p>
           <div class="form-grid">
             <label class="f"><span>Nama usaha</span><input type="text" id="inNama" placeholder="contoh: Dapur Bu Sari" autocomplete="off" /></label>
@@ -801,6 +814,8 @@
               <p class="note" style="margin-top:6px">Saklar ini <b>mati secara bawaan</b>. Bila Anda menyalakannya, saat Anda menyimpan data aplikasi mengirim satu baris angka anonim (jenis usaha, provinsi, kota, omzet, laba pemilik, pengali, dan valuasi) ke cloud untuk dihitung ramai-ramai dengan usaha sejenis. Tidak ada nama usaha, email, nomor HP, alamat, atau lokasi GPS di dalamnya. Bila data usaha sejenis di kota Anda sudah terkumpul minimal 5, pengali valuasi Anda akan digabung dari angka pembanding lokal itu — jumlahnya selalu ditulis terbuka di penjelasan valuasi.</p>
               <p class="note" id="kalibrasiStatus" style="margin-top:6px" role="status"></p>
             </div>
+          </div>
+          <div class="actions" style="margin-top:14px"><button class="btn ghost" id="btnDataSelesai" type="button" style="display:none">Selesai</button></div>
           </div>
         </div>
       </section>
@@ -1847,9 +1862,12 @@
         const lok=window.__lokasiUsaha||null;
         const kotaPilihan=(($("inKota").value||"")).trim();
         const provPilihan=((($("inProvinsi")||{}).value)||"").trim();
-        const wilayahTampil=[kotaPilihan, provPilihan].filter(Boolean).join(", ");
-        if(lok && lok.lat!=null) return "Lokasi usaha (GPS): "+lok.lat+", "+lok.lng+" · akurasi ±"+(lok.akurasi_m!=null?Math.round(lok.akurasi_m):"—")+" m · diambil pada "+(lok.diambil_pada||"—")+(wilayahTampil?" · Kota: "+wilayahTampil:"");
-        return "Lokasi usaha (GPS): belum diambil"+(wilayahTampil?" · Kota: "+wilayahTampil:"");
+        /* Label lokasi mengikuti apa yang benar-benar terpilih: bila hanya
+           provinsi yang terpilih (kota belum), jangan tulis "Kota: <provinsi>"
+           — itu menyesatkan di pratinjau portal investor. */
+        const wilayahTampil=kotaPilihan?(" · Kota: "+[kotaPilihan, provPilihan].filter(Boolean).join(", ")):(provPilihan?(" · Provinsi: "+provPilihan):"");
+        if(lok && lok.lat!=null) return "Lokasi usaha (GPS): "+lok.lat+", "+lok.lng+" · akurasi ±"+(lok.akurasi_m!=null?Math.round(lok.akurasi_m):"—")+" m · diambil pada "+(lok.diambil_pada||"—")+wilayahTampil;
+        return "Lokasi usaha (GPS): belum diambil"+wilayahTampil;
       }
       window.__lokasiText=lokasiText;
       function summaryText(){
@@ -2739,6 +2757,87 @@
           try{ return snapshotNyata(collectSnapshot()); }catch(e){ return false; }
         }
 
+        /* ---------- Formulir Data Usaha dilipat bila sudah terisi ----------
+           Supaya aplikasi tidak terkesan rumit: bila data usaha sudah nyata
+           (sudahMengisiNyata() — aturan yang sama dengan sapaan proaktif dan
+           gerbang masuk), formulir dilipat dan hanya ringkasan empat baris
+           yang tampil. Pil "Formulir kosong" dan spanduk hero yang sama
+           klaimnya ikut disembunyikan karena sudah tidak benar lagi.
+           Formulir TIDAK PERNAH dilipat sendiri saat pengguna sedang
+           mengisi: pilihan "dibuka manual" dicatat di sesi ini (tombol
+           "Ubah data usaha", tombol "Isi" yang membuka kolom, atau ketikan
+           apa pun di dalam formulir) dan hanya tombol "Selesai" yang
+           mengembalikannya. */
+        var formDibukaManual=false;
+        function isiRingkasanData(){
+          var nm=gid("inNama"); var nama=nm?String(nm.value||"").trim():"";
+          var s=gid("inSektor"); var sektor="Belum diisi";
+          if(s && s.value){ var o=s.options[s.selectedIndex]; if(o) sektor=String(o.textContent||"").trim()||"Belum diisi"; }
+          var kota=gid("inKota")?String(gid("inKota").value||"").trim():"";
+          var prov=gid("inProvinsi")?String(gid("inProvinsi").value||"").trim():"";
+          var kotaTxt=[kota,prov].filter(function(x){ return !!x; }).join(", ")||"Belum diisi";
+          var om=0; try{ om=num("inOmzet"); }catch(e){ om=0; }
+          var e1=gid("ringkasNama"); if(e1) e1.textContent=nama||"Belum diisi";
+          var e2=gid("ringkasSektor"); if(e2) e2.textContent=sektor;
+          var e3=gid("ringkasKota"); if(e3) e3.textContent=kotaTxt;
+          var e4=gid("ringkasOmzet"); if(e4) e4.textContent=om>0?fmtFull(om):"Belum diisi";
+        }
+        function aturTampilanFormulir(){
+          var ada=false; try{ ada=sudahMengisiNyata(); }catch(e){ ada=false; }
+          var wrap=gid("dataFormWrap"), ring=gid("dataRingkasan"), selesai=gid("btnDataSelesai");
+          var pil=document.querySelector("#data .demo-tag");
+          var banner=gid("demoBanner");
+          if(pil) pil.style.display=ada?"none":"";
+          if(ada && banner) banner.style.display="none";
+          if(ada && !formDibukaManual){
+            if(wrap) wrap.style.display="none";
+            if(ring){ isiRingkasanData(); ring.style.display=""; }
+            if(selesai) selesai.style.display="none";
+          } else {
+            if(wrap) wrap.style.display="";
+            if(ring) ring.style.display="none";
+            if(selesai) selesai.style.display=(ada && formDibukaManual)?"":"none";
+          }
+        }
+        window.__aturTampilanFormulir=aturTampilanFormulir;
+        window.__isiRingkasanData=isiRingkasanData;
+        /* Buka formulir Data Usaha (bila dilipat) lalu gulir + fokus ke
+           kolom target. Ini satu-satunya jalur menuju kolom di dalam
+           formulir — dipakai semua tombol "Isi"/"Isi sekarang" (sapaan
+           proaktif, kartu "Langkah berikutnya", tombol aksi "Perlu
+           Perhatian"). Target di luar formulir digulir seperti biasa. */
+        function fokusKeKolom(id, block){
+          var el=gid(id); if(!el) return false;
+          var wrap=gid("dataFormWrap");
+          var diDalamFormulir=wrap && wrap.contains ? wrap.contains(el) : false;
+          var blk=block||"center";
+          if(diDalamFormulir){
+            formDibukaManual=true;
+            if(typeof aturTampilanFormulir==="function"){ try{ aturTampilanFormulir(); }catch(e){} }
+          }
+          /* Gulir + fokus langsung (sinkron): mengubah display lalu memanggil
+             scrollIntoView memaksa peramban menata ulang dulu, jadi posisi
+             kolom yang baru dibuka sudah benar tanpa perlu jeda. */
+          try{ el.scrollIntoView({behavior:"smooth", block:blk}); }catch(e){}
+          try{ var tag=(el.tagName||"").toLowerCase(); if(tag==="input"||tag==="select"||tag==="textarea") el.focus(); }catch(e){}
+          return true;
+        }
+        window.__fokusKeKolom=fokusKeKolom;
+        /* Tombol ringkasan + Selesai, dan penanda "sedang mengisi". */
+        var bUbahData=gid("btnUbahData");
+        if(bUbahData) bUbahData.addEventListener("click", function(){ fokusKeKolom("inNama"); });
+        var bDataSelesai=gid("btnDataSelesai");
+        if(bDataSelesai) bDataSelesai.addEventListener("click", function(){
+          formDibukaManual=false;
+          if(typeof aturTampilanFormulir==="function"){ try{ aturTampilanFormulir(); }catch(e){} }
+          var d=gid("data"); if(d){ try{ d.scrollIntoView({behavior:"smooth"}); }catch(e){} }
+        });
+        var wrapForm=gid("dataFormWrap");
+        if(wrapForm){
+          wrapForm.addEventListener("input", function(){ formDibukaManual=true; });
+          wrapForm.addEventListener("change", function(){ formDibukaManual=true; });
+        }
+
         /* ---------- daftar utang (modul baru) ---------- */
         window.__utangTotal = function(){ return utangs.reduce(function(a,u){ return a+(+u.jumlah||0); },0); };
         function renderUtang(){
@@ -3018,6 +3117,7 @@
           // snapshot akhir — supaya autosave tidak menyimpan ulang state yang salah.
           loading=false;
           lastJson=JSON.stringify(collectSnapshot());
+          if(typeof aturTampilanFormulir==="function"){ try{ aturTampilanFormulir(); }catch(e){} }
           window.__proaktifDataReadyFlag=true; // loadData selesai (termasuk jalur tanpa snapshot) — finalisasi kunjungan proaktif boleh jalan
           if(window.__renderProaktif){ try{ window.__renderProaktif(true); }catch(e){} }
         }
@@ -3082,6 +3182,7 @@
           // berisi data contoh/seed tidak dihitung: sapaan tetap tampil.
           var nyata=sudahMengisiNyata(); if(nyata) tandaiSudahMengisi();
           if(window.__renderLangganan){ try{ window.__renderLangganan(); }catch(e){} }
+          if(typeof aturTampilanFormulir==="function"){ try{ aturTampilanFormulir(); }catch(e){} }
           return nyata;
         }
         window.__showRegisterGate=function(reason){
@@ -3648,6 +3749,7 @@
         if(btnSapaIsi) btnSapaIsi.addEventListener("click",function(){
           var target=sapaTargetAktif; sembunyikanSapa();
           if(!target) return;
+          if(typeof fokusKeKolom==="function"){ fokusKeKolom(target); return; }
           var el=gid(target); if(!el) return;
           try{ el.scrollIntoView({behavior:"smooth", block:"center"}); }catch(e){}
           try{ var tag=(el.tagName||"").toLowerCase(); if(tag==="input"||tag==="select"||tag==="textarea") el.focus(); }catch(e){}
@@ -3685,6 +3787,11 @@
             /* Kartu "langkah berikutnya" di Hari Ini mengikuti perubahan data
                apa pun (isian, jawaban kuis, stok) — segarkan bersamaan. */
             if(typeof window.__renderHariIni==="function"){ try{ window.__renderHariIni(); }catch(e){} }
+            /* Formulir Data Usaha mengikuti perubahan data yang sama: bila
+               data baru menjadi nyata (mis. wizard selesai atau transaksi
+               pertama tercatat) dan pengguna tidak sedang mengisinya,
+               formulir dilipat ke ringkasan. */
+            if(typeof aturTampilanFormulir==="function"){ try{ aturTampilanFormulir(); }catch(e){} }
           }
         }, 2000);
         window.addEventListener("online",function(){ lastJson=""; if(entered) setSync("Internet kembali — menyinkronkan...",""); });
@@ -4485,6 +4592,7 @@
         function isiLangkahHariIni(){
           var tombol=gid("btnHiLangkah"); if(!tombol) return;
           var target=tombol.getAttribute("data-target"); if(!target) return;
+          if(typeof window.__fokusKeKolom==="function"){ window.__fokusKeKolom(target); return; }
           var el=gid(target); if(!el) return;
           try{ el.scrollIntoView({behavior:"smooth", block:"center"}); }catch(e){}
           try{ var tag=(el.tagName||"").toLowerCase(); if(tag==="input"||tag==="select"||tag==="textarea") el.focus(); }catch(e){}
@@ -5728,7 +5836,10 @@
           if(goBtn){
             var dest=goBtn.getAttribute("data-pro-goto");
             var targetEl=dest ? gid(dest.replace("#","")) : null;
-            if(targetEl) targetEl.scrollIntoView({behavior:"smooth", block:"start"});
+            if(targetEl){
+              if(typeof window.__fokusKeKolom==="function") window.__fokusKeKolom(dest.replace("#",""), "start");
+              else targetEl.scrollIntoView({behavior:"smooth", block:"start"});
+            }
             return;
           }
         });
