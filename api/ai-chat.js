@@ -47,7 +47,20 @@ export default async function handler(req, res) {
   }
 
   const prompt = typeof body?.prompt === "string" ? body.prompt.trim() : "";
-  const context = typeof body?.context === "string" ? body.context.trim() : "";
+  /* Konteks boleh berupa string (cara lama) atau objek (cara baru dari
+     aplikasi): objek diubah jadi JSON supaya model tetap menerima angka
+     dan data usaha, lalu dibatasi seperti sebelumnya. */
+  const rawContext = body?.context;
+  let context = "";
+  try {
+    context = typeof rawContext === "string" ? rawContext.trim()
+      : (rawContext && typeof rawContext === "object" ? JSON.stringify(rawContext) : "");
+  } catch {
+    context = "";
+  }
+  /* Petunjuk menjawab dari aplikasi (bila ada): instruksi cara menjawab,
+     mis. sebut kota pengguna dan sapa dengan sebutan yang dipilih. */
+  const petunjuk = typeof body?.petunjuk === "string" ? body.petunjuk.trim() : "";
 
   if (!prompt) {
     return res.status(400).json({ error: "Pertanyaan tidak boleh kosong." });
@@ -57,6 +70,14 @@ export default async function handler(req, res) {
   }
   // Batasi konteks angka yang dikirim, jangan kirim data pribadi.
   const safeContext = context.slice(0, 1500);
+  const safePetunjuk = petunjuk.slice(0, 1000);
+  /* Susun pesan pengguna: konteks (bila ada), petunjuk (bila ada),
+     lalu pertanyaan pengguna — masing-masing dengan label yang jelas. */
+  const bagianPesan = [];
+  if (safeContext) bagianPesan.push(`Konteks dari perhitungan aplikasi:\n${safeContext}`);
+  if (safePetunjuk) bagianPesan.push(`Petunjuk menjawab:\n${safePetunjuk}`);
+  bagianPesan.push(`Pertanyaan pengguna:\n${prompt}`);
+  const isiPengguna = bagianPesan.join("\n\n");
 
   try {
     const response = await fetch("https://api.deepseek.com/chat/completions", {
@@ -91,9 +112,7 @@ export default async function handler(req, res) {
           },
           {
             role: "user",
-            content: safeContext
-              ? `Konteks dari perhitungan aplikasi:\n${safeContext}\n\nPertanyaan pengguna:\n${prompt}`
-              : prompt,
+            content: isiPengguna,
           },
         ],
       }),
