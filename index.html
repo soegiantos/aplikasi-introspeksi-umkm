@@ -2551,30 +2551,45 @@
       window.parseUcapanTransaksi=parseUcapanTransaksi;
       /* ===== PANEL REKAMAN SUARA — bersama untuk Modul Keuangan + Hari Ini =====
          Satu panel yang sama tampilannya di kedua tombol suara, muncul saat
-         rekaman mulai, tepat di atas baris hasil suara. Ikon mikrofon berubah
-         lewat event SpeechRecognition: onspeechstart → sedang bicara (emas +
-         denyut), onspeechend → suara berhenti (garis abu-abu) — panel TIDAK
-         menutup saat suara berhenti: hasil interim/final ditulis dulu di
-         dalam panel ("Terdengar: …") dan panel beralih ke keadaan selesai
-         (tombol jadi "Tutup", meter dihentikan) sampai pengguna menutupnya.
-         Menekan "Berhenti" JUGA tidak menutup panel: rekaman dihentikan
-         (r.stop), meter dimatikan, status "Suara berhenti — menulis hasil…",
-         lalu panel menunggu hasil final sebentar (tenggang ~2,8 detik —
+         rekaman mulai, tepat di atas baris hasil suara. Pengenalan berjalan
+         TERUS-MENERUS (continuous=true) supaya jeda sebentar antar-kata
+         tidak mengakhiri sesi: onspeechstart → sedang bicara (emas +
+         denyut) dan membatalkan penghitung jeda, onspeechend → suara
+         berhenti sebentar (garis abu-abu) dan memulai penghitung jeda
+         ~4 detik — bila pengguna bicara lagi, penghitung batal dan sesi
+         lanjut; bila hening sampai habis, sesi diselesaikan (pemicu
+         "jeda"). Teks akhir dikumpulkan dari semua segmen final selama
+         sesi dan tampil live ("Terdengar: …", segmen final + interim
+         yang sedang berjalan). Penyelesaian terjadi TEPAT SEKALI, hanya
+         dari: tombol "Berhenti", jeda ~4 detik, atau pengenalan yang
+         selesai sendiri (onend) — segmen final pertama TIDAK lagi
+         langsung menyelesaikan. Saat diselesaikan, teks akhir yang
+         terkumpul diurai sekali, kolom terisi, "Didengar: …" tampil,
+         dan panel beralih ke keadaan selesai (tombol jadi "Tutup", meter
+         dihentikan) sampai pengguna menutupnya. Bila belum ada teks
+         akhir, panel tetap terbuka dengan catatan jujur di dalam panel
+         (tangkapan sebagian — kolom belum terisi, atau tidak ada ucapan
+         yang tertangkap). Menekan "Berhenti" JUGA tidak menutup panel:
+         rekaman dihentikan (r.stop), meter dimatikan, penghitung jeda
+         dibatalkan, status "Suara berhenti — menulis hasil…", lalu
+         panel menunggu hasil final sebentar (tenggang ~2,8 detik —
          Chrome di HP Android sering mengirim hasil final terlambat setelah
-         stop). Hasil final yang datang dalam tenggang tetap diproses seperti
-         biasa (teks tampil, kolom terisi, "Didengar: …", keadaan selesai).
-         Bila tenggang habis tanpa hasil final, panel TETAP terbuka dengan
-         catatan jujur di dalam panel (tangkapan sebagian — kolom belum
-         terisi, atau tidak ada ucapan yang tertangkap) dan tombol "Tutup";
-         TIDAK ada pop-up "Suara tidak tertangkap" di jalur ini. Panel hanya
-         menutup bila pengguna menekan "Tutup", bila error, atau bila
-         rekaman baru dimulai. Meter 10 segmen hidup dari Web Audio
-         API (getUserMedia → AudioContext → AnalyserNode, RMS tiap frame). Bila analyser tidak bisa jalan (izin ditolak, tidak
-         tersedia), meter disembunyikan diam-diam — ikon tetap jalan dan alur
+         stop). Hasil final yang datang dalam tenggang langsung
+         menyelesaikan; bila tenggang habis dan teks akhir sudah
+         terkumpul, teks itu yang diurai. Hasil akhir kosong tanpa teks
+         sama sekali tetap memakai jalur pop-up lama (Keuangan). Panel
+         hanya menutup bila pengguna menekan "Tutup", bila error, atau
+         bila rekaman baru dimulai. Meter 10 segmen hidup dari Web Audio
+         API (getUserMedia → AudioContext → AnalyserNode, RMS tiap frame).
+         Bila analyser tidak bisa jalan (izin ditolak, tidak tersedia),
+         meter disembunyikan diam-diam — ikon tetap jalan dan alur
          suara tidak terganggu, tanpa popup apa pun. Stream dan loop animasi
          selalu ditutup saat rekaman selesai/berhenti agar mikrofon tidak
-         terus terbuka. */
-      var __suaraPanel=null, __suaraR=null, __suaraRaf=null, __suaraStream=null, __suaraCtx=null, __suaraAnalyser=null, __suaraData=null, __suaraSelesaiFlag=false, __suaraMenungguFinal=false, __suaraTungguFinal=null, __suaraTeksTerakhir="", __suaraAkhirDicatat=false;
+         terus terbuka. Catatan debug di bawah panel mencatat tiap kejadian
+         (termasuk mode terus-menerus, tiap segmen akhir, mulai/batal/habis
+         penghitung jeda, dan pemicu penyelesaian) — dibersihkan tiap buka
+         baru, dibatasi 30 baris, tertutup awalnya. */
+      var __suaraPanel=null, __suaraR=null, __suaraRaf=null, __suaraStream=null, __suaraCtx=null, __suaraAnalyser=null, __suaraData=null, __suaraSelesaiFlag=false, __suaraMenungguFinal=false, __suaraTungguFinal=null, __suaraTeksTerakhir="", __suaraAkhirDicatat=false, __suaraAkhirTeks="", __suaraJedaTimer=null, __suaraFinalkanFn=null;
       function __suaraSetStatus(bicara, teks){
         if(!__suaraPanel) return;
         var st=__suaraPanel.querySelector("#voiceStatusText");
@@ -2602,6 +2617,7 @@
          yang menutupnya dengan menekan "Tutup". */
       function __suaraSelesai(){
         __suaraBatalTunggu();
+        __suaraBatalJeda();
         __suaraSelesaiFlag=true;
         __suaraBersihMeter();
         __suaraR=null;
@@ -2610,15 +2626,18 @@
           var b=__suaraPanel.querySelector("#voiceStopBtn"); if(b) b.textContent="Tutup";
         }
       }
-      /* Rekaman berakhir TANPA hasil final (mis. suara berhenti begitu saja):
-         panel TIDAK ditutup — meter dihentikan supaya mikrofon tidak terus
-         terbuka, status mengarahkan pengguna ke tombol Berhenti. Bila hasil
-         final sudah ada, keadaan selesai yang berlaku (tidak diubah). */
+      /* Rekaman berakhir sendiri (onend/onaudioend): bila ada penyelesaian
+         yang didaftarkan, serahkan padanya — teks akhir yang terkumpul
+         diurai dan kolom terisi tepat sekali (pemicu "pengenalan selesai
+         sendiri"); bila belum ada teks akhir, cabang jujur di dalam panel.
+         Panel TIDAK ditutup. */
       function __suaraAkhir(){
         if(__suaraSelesaiFlag) return;
         /* Dicatat sekali per rekaman (onend dan onaudioend sering berdua). */
         if(!__suaraAkhirDicatat){ __suaraAkhirDicatat=true; __suaraDebug("Pengenalan selesai"); }
         if(__suaraMenungguFinal) return; /* "Berhenti" sudah ditekan: status "menulis hasil…" tetap sampai tenggang habis / hasil final tiba. */
+        __suaraBatalJeda();
+        if(__suaraFinalkanFn){ __suaraFinalkanFn("pengenalan selesai sendiri"); return; }
         __suaraBersihMeter();
         if(!__suaraPanel) return;
         __suaraSetStatus(false, "Suara berhenti — tekan Berhenti untuk menutup");
@@ -2628,6 +2647,28 @@
       function __suaraBatalTunggu(){
         if(__suaraTungguFinal!==null){ try{ clearTimeout(__suaraTungguFinal); }catch(e){} __suaraTungguFinal=null; }
         __suaraMenungguFinal=false;
+      }
+      /* Penghitung jeda hening antar-kata (~4 detik): pengenalan berjalan
+         terus-menerus, jadi jeda sebentar di tengah kalimat TIDAK
+         mengakhiri sesi. onspeechend hanya memulai penghitung ini;
+         onspeechstart membatalkannya; bila penghitung habis (pengguna
+         benar-benar selesai), sesi diselesaikan lewat penyelesaian yang
+         didaftarkan (pemicu "jeda"). */
+      var __suaraJedaMs=4000;
+      function __suaraBatalJeda(){
+        if(__suaraJedaTimer!==null){ try{ clearTimeout(__suaraJedaTimer); }catch(e){} __suaraJedaTimer=null; }
+      }
+      function __suaraMulaiJeda(){
+        if(__suaraSelesaiFlag||__suaraMenungguFinal) return;
+        __suaraBatalJeda();
+        __suaraDebug("Jeda dimulai — menyelesaikan bila hening 4 detik");
+        __suaraJedaTimer=setTimeout(function(){
+          __suaraJedaTimer=null;
+          if(__suaraSelesaiFlag||__suaraMenungguFinal) return;
+          __suaraDebug("Jeda 4 detik habis — menyelesaikan");
+          if(__suaraFinalkanFn){ __suaraFinalkanFn("jeda"); return; }
+          __suaraAkhir();
+        }, __suaraJedaMs);
       }
       /* Catatan jujur di dalam panel (bukan pop-up): dipakai saat tenggang
          habis tanpa hasil final. Kosongkan untuk menyembunyikannya. */
@@ -2690,40 +2731,64 @@
          catatan bahwa itu baru tangkapan sebagian dan kolom belum terisi
          (tidak pernah diurai/diisi dari interim). Bila tidak ada teks sama
          sekali, tampil catatan jujur. Tombol berubah jadi "Tutup". */
-      function __suaraTungguFinalHabis(){
+      /* Catatan jujur di dalam panel (bukan pop-up): dipakai saat sesi
+         berakhir TANPA hasil akhir — tenggang habis, jeda habis, atau
+         pengenalan selesai sendiri. Alasan ditulis apa adanya di depan
+         catatan debug supaya pemilik melihat pemicunya. */
+      function __suaraTanpaFinal(alasan){
         if(__suaraSelesaiFlag) return;
-        if(!__suaraMenungguFinal) return;
         __suaraBatalTunggu();
+        __suaraBatalJeda();
         __suaraBersihMeter();
         __suaraR=null;
         if(!__suaraPanel) return;
         var adaTeks=!!(__suaraTeksTerakhir && String(__suaraTeksTerakhir).trim());
         if(adaTeks){
-          __suaraDebug("Tenggang habis: hanya tangkapan sebagian — kolom belum terisi");
+          __suaraDebug(alasan+": hanya tangkapan sebagian — kolom belum terisi");
           __suaraCatatan("Ini baru tangkapan sebagian — kolom belum terisi dari suara ini. Isi kolomnya sendiri, atau coba lagi di tempat yang lebih tenang.");
           __suaraSetStatus(false, "Selesai — periksa teks di atas, lalu tekan Tutup");
         } else {
-          __suaraDebug("Tenggang habis: tidak ada ucapan yang tertangkap");
+          __suaraDebug(alasan+": tidak ada ucapan yang tertangkap");
           __suaraCatatan("Tidak ada ucapan yang tertangkap. Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya.");
           __suaraSetStatus(false, "Tidak ada yang tertangkap — tekan Tutup untuk menutup");
         }
         __suaraSelesaiFlag=true;
         var b=__suaraPanel.querySelector("#voiceStopBtn"); if(b) b.textContent="Tutup";
       }
+      function __suaraTungguFinalHabis(){
+        if(__suaraSelesaiFlag) return;
+        if(!__suaraMenungguFinal) return;
+        /* Hasil akhir sudah terkumpul: selesaikan lewat penyelesaian yang
+           didaftarkan (pemicu "Berhenti"). */
+        if(__suaraAkhirTeks && String(__suaraAkhirTeks).trim()){
+          if(__suaraFinalkanFn){ __suaraFinalkanFn("Berhenti"); return; }
+        }
+        __suaraTanpaFinal("Tenggang habis");
+      }
       /* Rangkum event onresult (dengan interimResults): gabung semua
          transcript sejauh ini (untuk tampil live) + gabung transcript final
          saja (untuk parse — satu kalimat, sama seperti sebelum interim). */
       function __suaraRangkumHasil(ev){
-        var semua="", akhir="", adaFinal=false;
+        var semua="", akhir="", adaFinal=false, adaInterim=false;
         try{
           var res=(ev&&ev.results)||[];
           for(var i=0;i<res.length;i++){
             var t=(res[i]&&res[i][0]&&res[i][0].transcript)||"";
             if(t) semua+=(semua?" ":"")+t;
             if(res[i]&&res[i].isFinal){ adaFinal=true; if(t) akhir+=(akhir?" ":"")+t; }
+            else if(t){ adaInterim=true; }
           }
         }catch(e){}
-        return {teks:semua, final:adaFinal, finalTeks:akhir};
+        return {teks:semua, final:adaFinal, finalTeks:akhir, adaInterim:adaInterim};
+      }
+      /* Kumpulkan hasil pengenalan selama sesi terus-menerus: teks akhir
+         dibangun ulang dari semua segmen final dalam event (Chrome
+         mengirim hasil kumulatif), ditambah interim yang sedang berjalan —
+         panel menampilkan gabungannya secara live ("Terdengar: …"). */
+      function __suaraCatatHasil(h){
+        if(!h) return;
+        if(h.finalTeks) __suaraAkhirTeks=h.finalTeks;
+        if(h.teks) __suaraTeks(h.teks, !h.adaInterim);
       }
       function __suaraSetLevel(rms){
         if(!__suaraPanel) return;
@@ -2797,6 +2862,7 @@
              final sebentar — Chrome di HP Android sering mengirimnya
              terlambat setelah stop(). */
           if(__suaraR){ try{ __suaraR.stop(); }catch(e){} }
+          __suaraBatalJeda();
           __suaraBersihMeter();
           __suaraSetStatus(false, "Suara berhenti — menulis hasil…");
           __suaraDebug("Berhenti ditekan — menunggu hasil akhir");
@@ -2819,10 +2885,13 @@
       }
       function __suaraTutup(){
         __suaraBatalTunggu();
+        __suaraBatalJeda();
         __suaraBersihMeter();
         __suaraR=null;
         __suaraSelesaiFlag=false;
         __suaraTeksTerakhir="";
+        __suaraAkhirTeks="";
+        __suaraFinalkanFn=null;
         __suaraCatatan("");
         if(__suaraPanel) __suaraPanel.style.display="none";
       }
@@ -2831,7 +2900,10 @@
         __suaraBersihMeter();
         __suaraSelesaiFlag=false;
         __suaraBatalTunggu();
+        __suaraBatalJeda();
         __suaraTeksTerakhir="";
+        __suaraAkhirTeks="";
+        __suaraFinalkanFn=null;
         __suaraAkhirDicatat=false;
         __suaraCatatan("");
         __suaraDebugBersih();
@@ -2848,28 +2920,37 @@
         __suaraR=r||null;
         __suaraMulaiMeter();
       }
-      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter, teks:__suaraTeks, selesai:__suaraSelesai, akhir:__suaraAkhir, rangkum:__suaraRangkumHasil, statusTeks:__suaraSetStatusTeks, debug:__suaraDebug, debugSalah:__suaraDebugSalah, sudahSelesai:function(){ return !!__suaraSelesaiFlag; }, menunggu:function(){ return !!__suaraMenungguFinal; }, tungguHabis:__suaraTungguFinalHabis};
+      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter, teks:__suaraTeks, selesai:__suaraSelesai, akhir:__suaraAkhir, rangkum:__suaraRangkumHasil, statusTeks:__suaraSetStatusTeks, debug:__suaraDebug, debugSalah:__suaraDebugSalah, sudahSelesai:function(){ return !!__suaraSelesaiFlag; }, menunggu:function(){ return !!__suaraMenungguFinal; }, tungguHabis:__suaraTungguFinalHabis, mulaiJeda:__suaraMulaiJeda, batalJeda:__suaraBatalJeda, jedaAktif:function(){ return __suaraJedaTimer!==null; }, aturFinalkan:function(fn){ __suaraFinalkanFn=fn||null; }, teksAkhir:function(){ return __suaraAkhirTeks; }, catatHasil:__suaraCatatHasil, tanpaFinal:__suaraTanpaFinal};
       $("btnVoice").addEventListener("click",function(){
         const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
         const resEl=$("voiceResult");
         if(!SR){ popupRamah("Suara belum bisa dipakai","Input suara tidak didukung peramban ini.","Ketik keterangannya seperti biasa — catatan tetap bisa disimpan. Suara umumnya jalan di peramban Chrome pada HP Android."); return; }
-        const r=new SR(); r.lang="id-ID"; r.interimResults=true;
+        const r=new SR(); r.lang="id-ID"; r.interimResults=true; r.continuous=true;
         if(window.__panelSuara) window.__panelSuara.buka(r, resEl);
-        r.onspeechstart=function(){ var PS=window.__panelSuara; if(PS){ PS.bicara(true); if(PS.debug) PS.debug("Suara mulai terdengar"); } };
-        r.onspeechend=function(){ var PS=window.__panelSuara; if(PS){ PS.bicara(false, "Suara berhenti — menulis hasil…"); if(PS.debug) PS.debug("Suara berhenti"); } };
-        r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
-        r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
-        r.onnomatch=function(){ var PS=window.__panelSuara; if(PS && PS.debug) PS.debug("Suara terdengar tapi kata-katanya tidak dikenali"); };
-        r.onresult=function(ev){
+        /* Menyelesaikan rekaman tepat sekali, dari satu dari tiga pemicu:
+           "Berhenti" (ditekan pengguna / tenggang habis), "jeda" (hening
+           ~4 detik), atau "pengenalan selesai sendiri" (onend). Teks yang
+           diurai selalu teks akhir yang terkumpul selama sesi — bukan
+           segmen pertama saja. Bila belum ada teks akhir, cabang jujur
+           di dalam panel (tangkapan sebagian / tidak ada ucapan). */
+        var finalSudah=false;
+        function finalkanSuara(pemicu){
           var PS=window.__panelSuara;
-          if(PS && PS.sudahSelesai()) return;
-          var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
-          if(h.teks && PS && PS.debug) PS.debug(h.final ? "Hasil akhir: "+(h.finalTeks||h.teks) : "Hasil sementara: "+h.teks);
-          if(h.teks && PS) PS.teks(h.final ? (h.finalTeks||h.teks) : h.teks, h.final);
-          if(!h.final) return;
-          const teks=h.finalTeks||h.teks;
+          if(finalSudah) return; finalSudah=true;
+          if(!PS||PS.sudahSelesai()) return;
+          if(PS.batalJeda) PS.batalJeda();
+          var teks=PS.teksAkhir?PS.teksAkhir():"";
+          if(PS.debug) PS.debug("Diselesaikan ("+pemicu+")");
+          if(!teks){
+            if(pemicu==="hasil akhir kosong"){
+              if(PS.debug) PS.debug("Hasil akhir tidak terbaca — keterangan dan jumlah kosong");
+              PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return;
+            }
+            if(PS.tanpaFinal) PS.tanpaFinal(pemicu==="jeda"?"Jeda selesai":(pemicu==="pengenalan selesai sendiri"?"Pengenalan selesai":"Tenggang habis"));
+            return;
+          }
           const p=parseUcapanTransaksi(teks);
-          if(!p.mentah){ if(PS && PS.debug) PS.debug("Hasil akhir tidak terbaca — keterangan dan jumlah kosong"); if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
+          if(!p.mentah){ if(PS.debug) PS.debug("Hasil akhir tidak terbaca — keterangan dan jumlah kosong"); PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
           if(p.keterangan) $("txKet").value=p.keterangan;
           let msg;
           if(p.jumlah!==null){
@@ -2884,10 +2965,32 @@
             resEl.textContent=msg; resEl.style.display="block";
             toast("Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.");
           }
-          if(PS) PS.selesai();
+          PS.selesai();
+        }
+        if(window.__panelSuara && window.__panelSuara.aturFinalkan) window.__panelSuara.aturFinalkan(finalkanSuara);
+        r.onspeechstart=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; if(PS.jedaAktif && PS.jedaAktif() && PS.debug) PS.debug("Jeda dibatalkan — bicara lagi"); if(PS.batalJeda) PS.batalJeda(); PS.bicara(true); if(PS.debug) PS.debug("Suara mulai terdengar"); };
+        r.onspeechend=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; PS.bicara(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); if(PS.debug) PS.debug("Suara berhenti"); if(PS.mulaiJeda) PS.mulaiJeda(); };
+        r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
+        r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
+        r.onnomatch=function(){ var PS=window.__panelSuara; if(PS && PS.debug) PS.debug("Suara terdengar tapi kata-katanya tidak dikenali"); };
+        r.onresult=function(ev){
+          var PS=window.__panelSuara;
+          if(PS && PS.sudahSelesai()) return;
+          var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
+          if(PS && PS.catatHasil) PS.catatHasil(h);
+          if(h.teks && PS && PS.debug) PS.debug(h.finalTeks ? "Hasil akhir: "+h.finalTeks : "Hasil sementara: "+h.teks);
+          var teksAkhir=PS && PS.teksAkhir ? PS.teksAkhir() : "";
+          /* Hasil akhir kosong tanpa teks sama sekali: jalur popup lama,
+             langsung — bukan menunggu jeda. */
+          if(h.final && !teksAkhir && !h.teks){ finalkanSuara("hasil akhir kosong"); return; }
+          /* "Berhenti" sudah ditekan dan hasil akhir yang ditunggu tiba
+             dalam tenggang: selesaikan langsung, tanpa menunggu tenggang. */
+          if(PS && PS.menunggu && PS.menunggu() && teksAkhir){ finalkanSuara("Berhenti"); return; }
+          /* Selain itu hasil hanya dikumpulkan — jeda berhenti sebentar
+             di tengah kalimat TIDAK menyelesaikan apa-apa. */
         };
         r.onerror=function(ev){ var PS=window.__panelSuara; if(PS && PS.debug && PS.debugSalah) PS.debug(PS.debugSalah(ev&&ev.error)); if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
-        r.start(); if(window.__panelSuara && window.__panelSuara.debug) window.__panelSuara.debug("Mulai mendengarkan"); toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
+        r.start(); if(window.__panelSuara && window.__panelSuara.debug){ window.__panelSuara.debug("Mulai mendengarkan"); window.__panelSuara.debug("Mode: mendengarkan terus-menerus"); } toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
       });
 
       /* --- Stok & Piutang --- */
@@ -6840,21 +6943,28 @@
           var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
           var resEl=gid("hiVoiceResult");
           if(!SR){ popupRamah("Suara belum bisa dipakai","Input suara tidak didukung peramban ini.","Ketik keterangannya seperti biasa — catatan tetap bisa disimpan. Suara umumnya jalan di peramban Chrome pada HP Android."); return; }
-          var r=new SR(); r.lang="id-ID"; r.interimResults=true;
+          var r=new SR(); r.lang="id-ID"; r.interimResults=true; r.continuous=true;
           if(window.__panelSuara) window.__panelSuara.buka(r, resEl);
-          r.onspeechstart=function(){ var PS=window.__panelSuara; if(PS){ PS.bicara(true); if(PS.debug) PS.debug("Suara mulai terdengar"); } };
-          r.onspeechend=function(){ var PS=window.__panelSuara; if(PS){ PS.bicara(false, "Suara berhenti — menulis hasil…"); if(PS.debug) PS.debug("Suara berhenti"); } };
-          r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
-          r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
-          r.onnomatch=function(){ var PS=window.__panelSuara; if(PS && PS.debug) PS.debug("Suara terdengar tapi kata-katanya tidak dikenali"); };
-          r.onresult=function(ev){
+          /* Penyelesaian tepat sekali — pemicu dan teks terkumpul sama
+             seperti Modul Keuangan (lihat finalkanSuara di sana); hanya
+             pengisian kolomnya yang berbeda (form Hari Ini). */
+          var finalSudah=false;
+          function finalkanSuara(pemicu){
             var PS=window.__panelSuara;
-            if(PS && PS.sudahSelesai()) return;
-            var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
-            if(h.teks && PS && PS.debug) PS.debug(h.final ? "Hasil akhir: "+(h.finalTeks||h.teks) : "Hasil sementara: "+h.teks);
-            if(h.teks && PS) PS.teks(h.final ? (h.finalTeks||h.teks) : h.teks, h.final);
-            if(!h.final) return;
-            var teks=h.finalTeks||h.teks;
+            if(finalSudah) return; finalSudah=true;
+            if(!PS||PS.sudahSelesai()) return;
+            if(PS.batalJeda) PS.batalJeda();
+            var teks=PS.teksAkhir?PS.teksAkhir():"";
+            if(PS.debug) PS.debug("Diselesaikan ("+pemicu+")");
+            if(!teks){
+              if(pemicu==="hasil akhir kosong"){
+                if(resEl){ resEl.textContent="Didengar: —. Angka tidak terdengar — isi jumlahnya, lalu tekan Uang masuk atau Uang keluar."; resEl.style.display="block"; }
+                toast("Keterangan dan jumlah terisi dari suara — periksa kembali angkanya");
+                PS.selesai(); return;
+              }
+              if(PS.tanpaFinal) PS.tanpaFinal(pemicu==="jeda"?"Jeda selesai":(pemicu==="pengenalan selesai sendiri"?"Pengenalan selesai":"Tenggang habis"));
+              return;
+            }
             var p=parseUcapanTransaksi(teks);
             var f=gid("hiForm"); if(!f) return;
             var ket=f.querySelector('[name="ket"]'), jml=f.querySelector('[name="jumlah"]');
@@ -6866,11 +6976,29 @@
               resEl.style.display="block";
             }
             toast("Keterangan dan jumlah terisi dari suara — periksa kembali angkanya");
-            if(PS) PS.selesai();
+            PS.selesai();
+          }
+          if(window.__panelSuara && window.__panelSuara.aturFinalkan) window.__panelSuara.aturFinalkan(finalkanSuara);
+          r.onspeechstart=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; if(PS.jedaAktif && PS.jedaAktif() && PS.debug) PS.debug("Jeda dibatalkan — bicara lagi"); if(PS.batalJeda) PS.batalJeda(); PS.bicara(true); if(PS.debug) PS.debug("Suara mulai terdengar"); };
+          r.onspeechend=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; PS.bicara(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); if(PS.debug) PS.debug("Suara berhenti"); if(PS.mulaiJeda) PS.mulaiJeda(); };
+          r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
+          r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
+          r.onnomatch=function(){ var PS=window.__panelSuara; if(PS && PS.debug) PS.debug("Suara terdengar tapi kata-katanya tidak dikenali"); };
+          r.onresult=function(ev){
+            var PS=window.__panelSuara;
+            if(PS && PS.sudahSelesai()) return;
+            var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
+            if(PS && PS.catatHasil) PS.catatHasil(h);
+            if(h.teks && PS && PS.debug) PS.debug(h.finalTeks ? "Hasil akhir: "+h.finalTeks : "Hasil sementara: "+h.teks);
+            var teksAkhir=PS && PS.teksAkhir ? PS.teksAkhir() : "";
+            if(h.final && !teksAkhir && !h.teks){ finalkanSuara("hasil akhir kosong"); return; }
+            if(PS && PS.menunggu && PS.menunggu() && teksAkhir){ finalkanSuara("Berhenti"); return; }
+            /* Selain itu hasil hanya dikumpulkan — jeda berhenti sebentar
+               di tengah kalimat TIDAK menyelesaikan apa-apa. */
           };
           r.onerror=function(ev){ var PS=window.__panelSuara; if(PS && PS.debug && PS.debugSalah) PS.debug(PS.debugSalah(ev&&ev.error)); if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
           try{ r.start(); }catch(e){}
-          if(window.__panelSuara && window.__panelSuara.debug) window.__panelSuara.debug("Mulai mendengarkan");
+          if(window.__panelSuara && window.__panelSuara.debug){ window.__panelSuara.debug("Mulai mendengarkan"); window.__panelSuara.debug("Mode: mendengarkan terus-menerus"); }
           toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
         });
         renderHariIni();
