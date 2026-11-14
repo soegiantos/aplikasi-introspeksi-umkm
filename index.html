@@ -2207,6 +2207,10 @@
         }
         async function loadData(){
           loading=true; setSync("Memuat data Anda...","");
+          // cloudChecked hanya true bila data cloud BERHASIL dimuat (bukan cabang
+          // error/offline/tabel belum ada). Migrasi snapshot tamu hanya boleh
+          // diputuskan bila status cloud benar-benar diketahui.
+          var cloudChecked=false, cloudHasData=false;
           try{
             var uid=currentUser.id;
             var res=await Promise.all([
@@ -2235,6 +2239,7 @@
                 utangs:(res[4].data||[]).map(function(r){ return {cid:r.id, ket:r.keterangan||"", jumlah:+r.jumlah||0, tempo:r.jatuh_tempo||"—"}; })
               };
               var hasCloud = Object.keys(snap.inputs).length>0 || snap.txs.length>0 || snap.stocks.length>0 || snap.pis.length>0 || snap.utangs.length>0 || !!snap.qris_image;
+              cloudChecked=true; cloudHasData=!!hasCloud;
               if(hasCloud) applySnapshot(snap);
               else { var loc2=readLocal(); if(loc2) applySnapshot(loc2); }
               if(hasCloud && snapshotNyata(snap)) tandaiSudahMengisi();
@@ -2247,25 +2252,43 @@
             var loc3=readLocal(); if(loc3) applySnapshot(loc3);
             setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn");
           }
-          loading=false;
-          lastJson=JSON.stringify(collectSnapshot());
-          // Migrasi data coba tamu -> akun baru
+          // Migrasi data coba tamu -> akun baru.
+          // PERBAIKAN BUG KEHILANGAN DATA: migrasi HANYA jalan bila status cloud
+          // sudah berhasil diperiksa DAN cloud kosong (cloudChecked && !cloudHasData).
+          // - Cloud berisi data: data cloud menang — pending migration DIBUANG dan
+          //   saveData TIDAK dipanggil untuk snapshot tamu itu.
+          // - Cloud belum bisa diperiksa (offline / tabel belum ada): jangan migrasi
+          //   dan jangan buang — pending migration disimpan kembali untuk diputuskan
+          //   pada pemuatan berikutnya.
           var pendingMig=migrateSnapshot;
           if(!pendingMig){ try{ var pm=localStorage.getItem("umkm-introspeksi-pending-migration"); if(pm) pendingMig=JSON.parse(pm); }catch(e){} }
           if(pendingMig && currentUser){
-            migrateSnapshot=null;
-            try{ localStorage.removeItem("umkm-introspeksi-pending-migration"); }catch(e){}
-            var hasMig = (pendingMig.inputs && Object.keys(pendingMig.inputs).some(function(k){ return pendingMig.inputs[k]; })) || (pendingMig.txs&&pendingMig.txs.length) || (pendingMig.stocks&&pendingMig.stocks.length) || (pendingMig.pis&&pendingMig.pis.length) || (pendingMig.utangs&&pendingMig.utangs.length) || pendingMig.lokasi || pendingMig.qris_image;
-            if(hasMig){
-              if(snapshotNyata(pendingMig)) tandaiSudahMengisi();
-              applySnapshot(pendingMig);
-              var migJson=JSON.stringify(collectSnapshot());
-              await saveData(collectSnapshot(), migJson);
-              toast("Data coba Anda sudah tersimpan.");
-              setSync("Data coba Anda sudah tersimpan di cloud","");
-              var migMsg=document.createElement("p"); migMsg.className="note"; migMsg.style.cssText="background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:12px 14px;margin-top:14px"; migMsg.textContent="Data coba Anda sudah tersimpan."; var wb=document.querySelector(".wrap"); if(wb) wb.prepend(migMsg);
+            if(cloudChecked && cloudHasData){
+              migrateSnapshot=null;
+              try{ localStorage.removeItem("umkm-introspeksi-pending-migration"); }catch(e){}
+              toast("Data cloud Anda dipakai — data coba di perangkat ini tidak menimpa data cloud.");
+            } else if(cloudChecked && !cloudHasData){
+              migrateSnapshot=null;
+              try{ localStorage.removeItem("umkm-introspeksi-pending-migration"); }catch(e){}
+              var hasMig = (pendingMig.inputs && Object.keys(pendingMig.inputs).some(function(k){ return pendingMig.inputs[k]; })) || (pendingMig.txs&&pendingMig.txs.length) || (pendingMig.stocks&&pendingMig.stocks.length) || (pendingMig.pis&&pendingMig.pis.length) || (pendingMig.utangs&&pendingMig.utangs.length) || pendingMig.lokasi || pendingMig.qris_image;
+              if(hasMig){
+                if(snapshotNyata(pendingMig)) tandaiSudahMengisi();
+                applySnapshot(pendingMig);
+                var migJson=JSON.stringify(collectSnapshot());
+                await saveData(collectSnapshot(), migJson);
+                toast("Data coba Anda sudah tersimpan.");
+                setSync("Data coba Anda sudah tersimpan di cloud","");
+                var migMsg=document.createElement("p"); migMsg.className="note"; migMsg.style.cssText="background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:12px 14px;margin-top:14px"; migMsg.textContent="Data coba Anda sudah tersimpan."; var wb=document.querySelector(".wrap"); if(wb) wb.prepend(migMsg);
+              }
+            } else {
+              // Status cloud tidak diketahui: pertahankan pending migration.
+              try{ localStorage.setItem("umkm-introspeksi-pending-migration", JSON.stringify(pendingMig)); }catch(e){}
             }
           }
+          // loading=false dan lastJson dihitung SETELAH blok migrasi selesai, dari
+          // snapshot akhir — supaya autosave tidak menyimpan ulang state yang salah.
+          loading=false;
+          lastJson=JSON.stringify(collectSnapshot());
           window.__proaktifDataReadyFlag=true; // loadData selesai (termasuk jalur tanpa snapshot) — finalisasi kunjungan proaktif boleh jalan
           if(window.__renderProaktif){ try{ window.__renderProaktif(true); }catch(e){} }
         }
@@ -2445,7 +2468,14 @@
           try{
             var r=await sb.auth.updateUser({password:p1});
             if(r && r.error){
-              recoveryMsg("Gagal menyimpan kata sandi baru: "+r.error.message+" — tautan mungkin sudah kedaluwarsa, minta tautan baru.");
+              var emsg=(r.error.message||"");
+              if(emsg.indexOf("New password should be different")>=0){
+                recoveryMsg("Kata sandi baru harus berbeda dari kata sandi lama.");
+              } else if(/expired|invalid/i.test(emsg)){
+                recoveryMsg("Gagal menyimpan kata sandi baru: "+emsg+" — tautan mungkin sudah kedaluwarsa, minta tautan baru.");
+              } else {
+                recoveryMsg("Gagal menyimpan kata sandi baru: "+emsg);
+              }
             } else {
               var user=(r && r.data && r.data.user) || recoveryUser || currentUser;
               recoveryDone=true; recoveryMode=false; recoveryResolved=true;
