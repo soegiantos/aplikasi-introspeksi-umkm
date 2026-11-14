@@ -211,13 +211,13 @@
       .auth-tabs button{flex:1;border:0;background:var(--surface);color:var(--ink-soft);font:inherit;font-weight:700;padding:12px;cursor:pointer;min-height:48px}
       .auth-tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
       .auth-msg{font-size:.9rem;margin-top:12px;min-height:1.2em}
-      .auth-msg.err{color:var(--bad)} .auth-msg.ok{color:#7fd6ab}
+      .auth-msg.err{color:var(--gold)} .auth-msg.ok{color:#7fd6ab}
       .account-bar{display:none;align-items:center;gap:10px;flex-wrap:wrap;margin-left:auto}
       .account-bar.show{display:flex}
       .account-bar .who{font-size:.85rem;color:var(--ink-soft);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .sync-pill{font-size:.78rem;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--teal-soft);color:#8fd3dc}
       .sync-pill.warn{background:var(--warn-soft);color:var(--warn)}
-      .sync-pill.err{background:var(--bad-soft);color:var(--bad)}
+      .sync-pill.err{background:var(--warn-soft);color:var(--warn)}
       .btn.small{min-height:40px;padding:8px 13px;font-size:.86rem}
       .sql-banner{display:none;background:var(--warn-soft);border:1px solid var(--warn);color:var(--ink);border-radius:12px;padding:14px 16px;margin-top:16px;font-size:.93rem}
       .sql-banner.show{display:block}
@@ -239,12 +239,18 @@
       .forgot-panel{border:1px solid var(--teal);background:var(--teal-soft);border-radius:12px;padding:16px;margin-top:14px}
       .forgot-panel h3{font-size:1.05rem;margin-bottom:6px}
       .pass-hint{display:block;font-weight:400;color:var(--ink-soft);font-size:.82rem;margin-top:5px}
+      /* kotak penjelas kata sandi: emas lembut + teks tebal, supaya tidak terlewat */
+      .pass-note-box{display:block;background:var(--gold-soft);border:1.5px solid var(--gold);border-radius:10px;padding:10px 12px;margin-top:8px;font-weight:700;font-size:.92rem;color:var(--ink);line-height:1.45}
       /* ---------- pop-up sudah di menu Daftar baru ---------- */
       .reg-popup-overlay{position:fixed;inset:0;z-index:260;background:rgba(0,0,0,.74);display:none;align-items:center;justify-content:center;padding:20px 14px}
       .reg-popup-overlay.show{display:flex}
       .reg-popup-card{max-width:420px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
       .reg-popup-card h3{font-size:1.18rem;line-height:1.3}
       .reg-popup-card p{margin-top:10px;color:var(--ink-soft);font-size:.97rem;line-height:1.55}
+      /* ---------- pop-up ramah bersama untuk semua pesan kesalahan (aksen emas, bukan merah) ---------- */
+      .friendly-popup-overlay{z-index:290}
+      .friendly-popup-card{border:1.5px solid var(--gold)}
+      .friendly-popup-card .friendly-do{color:var(--ink)}
 
       /* ---------- Wizard, AI Coach & Jelaskan ini ---------- */
       .guided-cta{border:2px solid var(--accent);background:var(--accent-soft);border-radius:var(--radius);padding:18px 20px;margin-top:18px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
@@ -458,7 +464,9 @@
             <label class="f" style="margin-bottom:12px"><span>Nomor HP (WhatsApp)</span><input type="tel" id="authHp" placeholder="contoh: 0812-3456-7890" autocomplete="tel" /></label>
           </div>
           <label class="f" style="margin-bottom:12px"><span>Email</span><input type="email" id="authEmail" placeholder="contoh: usaha@email.com" autocomplete="email" required /></label>
-          <label class="f"><span>Kata sandi</span><input type="password" id="authPass" placeholder="contoh: minimal 6 karakter" autocomplete="current-password" required /><small class="pass-hint">Kata sandi ini khusus untuk aplikasi ini, bukan kata sandi email Anda.</small></label>
+          <p class="note" id="authEmailHintReg" style="display:none;margin:-4px 0 12px">Pakai email asli yang aktif — tautan konfirmasi akan dikirim ke email ini. Tanpa email asli, Anda tidak bisa mengonfirmasi dan tidak bisa masuk.</p>
+          <p class="note" id="authEmailHintLogin" style="margin:-4px 0 12px">Masukkan email yang Anda daftarkan.</p>
+          <label class="f"><span>Kata sandi</span><input type="password" id="authPass" placeholder="contoh: minimal 6 karakter" autocomplete="current-password" required /><small class="pass-hint pass-note-box" id="authPassNoteBox">Kata sandi ini khusus untuk aplikasi ini, bukan kata sandi email Anda.</small></label>
           <p class="auth-msg" id="authMsg" role="status"></p>
           <button class="btn" id="authSubmit" type="submit" style="width:100%">Masuk</button>
         </form>
@@ -511,6 +519,42 @@
         <button class="btn" id="btnLoginAlreadyOk" type="button" style="width:100%;margin-top:18px">Mengerti</button>
       </div>
     </div>
+
+    <!-- ============ POP-UP RAMAH BERSAMA: semua pesan kesalahan tampil di sini ============ -->
+    <div class="reg-popup-overlay friendly-popup-overlay" id="friendlyPopupOverlay" role="dialog" aria-modal="true" aria-labelledby="friendlyPopupTitle">
+      <div class="reg-popup-card friendly-popup-card">
+        <h3 id="friendlyPopupTitle">Belum bisa melanjutkan</h3>
+        <p id="friendlyPopupWhat"></p>
+        <p class="friendly-do" id="friendlyPopupDo"></p>
+        <button class="btn" id="btnFriendlyPopupOk" type="button" style="width:100%;margin-top:18px">Mengerti</button>
+      </div>
+    </div>
+    <script>
+      /* Satu-satunya wadah pesan kesalahan di aplikasi: pop-up ramah berbahasa
+         Indonesia sederhana — judul + apa yang terjadi + apa yang harus dilakukan.
+         Tidak ada teks kesalahan merah dan tidak ada teks mentah dari server. */
+      window.tampilPopupRamah = function(judul, apa, lakukan){
+        apa = String(apa == null ? "" : apa); lakukan = String(lakukan == null ? "" : lakukan);
+        if(!lakukan && apa.indexOf(" — ") > 0){ var pot = apa.split(" — "); apa = pot.shift(); lakukan = pot.join(" — "); }
+        var ov = document.getElementById("friendlyPopupOverlay"); if(!ov) return;
+        var t = document.getElementById("friendlyPopupTitle"); if(t) t.textContent = judul || "Belum bisa melanjutkan";
+        var w = document.getElementById("friendlyPopupWhat"); if(w) w.textContent = apa;
+        var d = document.getElementById("friendlyPopupDo"); if(d){ d.textContent = lakukan; d.style.display = lakukan ? "" : "none"; }
+        ov.classList.add("show");
+        var ok = document.getElementById("btnFriendlyPopupOk"); if(ok && ok.focus) ok.focus();
+      };
+      window.tutupPopupRamah = function(){ var ov = document.getElementById("friendlyPopupOverlay"); if(ov) ov.classList.remove("show"); };
+      window.tampilErrorRamah = function(teks, judul){ window.tampilPopupRamah(judul || "Belum bisa melanjutkan", teks, ""); };
+      window.__tampilPopupRamah = window.tampilPopupRamah;
+      window.__tampilErrorRamah = window.tampilErrorRamah;
+      window.showFriendlyError = window.tampilErrorRamah;
+      (function(){
+        var ok = document.getElementById("btnFriendlyPopupOk");
+        if(ok) ok.addEventListener("click", function(){ window.tutupPopupRamah(); });
+        var ov = document.getElementById("friendlyPopupOverlay");
+        if(ov) ov.addEventListener("click", function(ev){ if(ev.target === ov) window.tutupPopupRamah(); });
+      })();
+    </script>
 
     <!-- ============ MODAL SQL TABEL CLOUD ============ -->
     <div class="sql-modal" id="sqlModal" role="dialog" aria-label="SQL pembuatan tabel cloud">
@@ -1397,6 +1441,7 @@
         return fmtFull(n);
       }
       function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2600); }
+      function popupRamah(judul, apa, lakukan){ if(window.tampilPopupRamah){ window.tampilPopupRamah(judul, apa, lakukan); } else { toast(apa||judul); } }
 
       /* ---------- introspection questions ---------- */
       const DIMS = [
@@ -1691,7 +1736,7 @@
       $("btnCopy").addEventListener("click",()=>{
         if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Berbagi ke portal investor"); return; }
         if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(summaryText()).then(()=>toast("Ringkasan tersalin — siap ditempel ke WhatsApp / email")); }
-        else toast("Penyalinan tidak didukung di peramban ini — gunakan tombol Unduh");
+        else popupRamah("Belum bisa menyalin","Penyalinan tidak didukung di peramban ini.","Gunakan tombol Unduh — berkasnya berisi ringkasan yang sama.");
       });
 
       /* ================= MODUL LENGKAP ================= */
@@ -1747,7 +1792,7 @@
         renderReports();
       }
       $("btnTx").addEventListener("click",function(){
-        const jml=num("txJumlah"); if(!$("txKet").value||!$("txJenis").value||jml<=0){ toast("Isi keterangan, jenis, dan jumlah transaksi dulu"); return; }
+        const jml=num("txJumlah"); if(!$("txKet").value||!$("txJenis").value||jml<=0){ popupRamah("Isian transaksi belum lengkap","Isi keterangan, jenis, dan jumlah transaksi dulu — jumlahnya harus lebih dari Rp 0.","Lengkapi kolomnya, lalu tekan Tambah transaksi."); return; }
         txs.push({id:++txSeq,tgl:$("txTanggal").value||"hari ini",ket:$("txKet").value,jenis:$("txJenis").value,kat:$("txKat").value||"Lainnya",jumlah:jml});
         audit("Transaksi ditambah: "+$("txKet").value+" "+fmtFull(jml)); $("txKet").value=""; $("txJumlah").value=""; renderTx(); toast("Transaksi tercatat");
       });
@@ -1843,12 +1888,12 @@
       $("btnVoice").addEventListener("click",function(){
         const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
         const resEl=$("voiceResult");
-        if(!SR){ toast("Input suara tidak didukung peramban ini — ketik keterangannya"); return; }
+        if(!SR){ popupRamah("Suara belum bisa dipakai","Input suara tidak didukung peramban ini.","Ketik keterangannya seperti biasa — catatan tetap bisa disimpan. Suara umumnya jalan di peramban Chrome pada HP Android."); return; }
         const r=new SR(); r.lang="id-ID";
         r.onresult=function(ev){
           const teks=ev.results[0][0].transcript;
           const p=parseUcapanTransaksi(teks);
-          if(!p.mentah){ toast("Suara tidak tertangkap — coba lagi di tempat tenang"); return; }
+          if(!p.mentah){ popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
           if(p.keterangan) $("txKet").value=p.keterangan;
           let msg;
           if(p.jumlah!==null){
@@ -1864,17 +1909,17 @@
             toast("Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.");
           }
         };
-        r.onerror=function(){ toast("Suara tidak tertangkap — coba lagi di tempat tenang"); };
+        r.onerror=function(){ popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
         r.start(); toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
       });
 
       /* --- Stok & Piutang --- */
       const stocks=[]; let stSeq=0;
       function renderStock(){ const has=stocks.length>0; $("stockEmpty").style.display=has?"none":"block"; $("stockTable").style.display=has?"table":"none"; let tot=0; $("stockBody").innerHTML=stocks.map(function(s){ tot+=s.qty*s.beli; return "<tr><td>"+esc(s.nama)+"</td><td>"+s.qty+"</td><td>"+fmtFull(s.qty*s.beli)+"</td><td><button type='button' data-sdel='"+s.id+"' style='min-height:36px'>Hapus</button></td></tr>"; }).join(""); $("stockTotal").textContent=fmtFull(tot); document.querySelectorAll("[data-sdel]").forEach(function(b){ b.addEventListener("click",function(){ const i=stocks.findIndex(function(x){return x.id===+b.dataset.sdel}); if(i>=0)stocks.splice(i,1); renderStock(); }); }); renderReports(); }
-      $("btnStock").addEventListener("click",function(){ if(!$("stNama").value){toast("Isi nama barang dulu");return;} stocks.push({id:++stSeq,nama:$("stNama").value,qty:num("stQty"),beli:num("stBeli"),jual:num("stJual")}); $("stNama").value=""; renderStock(); });
+      $("btnStock").addEventListener("click",function(){ if(!$("stNama").value){popupRamah("Isian belum lengkap","Isi nama barang dulu — tulis nama barang yang mau dicatat stoknya.","Setelah terisi, tekan tombol tambah stok.");return;} stocks.push({id:++stSeq,nama:$("stNama").value,qty:num("stQty"),beli:num("stBeli"),jual:num("stJual")}); $("stNama").value=""; renderStock(); });
       const pis=[]; let piSeq=0;
       function renderPi(){ const has=pis.length>0; $("piEmpty").style.display=has?"none":"block"; $("piTable").style.display=has?"table":"none"; let tot=0; $("piBody").innerHTML=pis.map(function(p){ tot+=p.jumlah; return "<tr><td>"+esc(p.nama)+"</td><td>"+esc(p.tempo)+"</td><td>"+fmtFull(p.jumlah)+"</td><td><button type='button' data-pdel='"+p.id+"' style='min-height:36px'>Hapus</button></td></tr>"; }).join(""); $("piTotal").textContent=fmtFull(tot); document.querySelectorAll("[data-pdel]").forEach(function(b){ b.addEventListener("click",function(){ const i=pis.findIndex(function(x){return x.id===+b.dataset.pdel}); if(i>=0)pis.splice(i,1); renderPi(); }); }); renderReports(); if(typeof extraUpdate==="function") extraUpdate(); }
-      $("btnPiutang").addEventListener("click",function(){ if(!$("piNama").value||num("piJumlah")<=0){toast("Isi nama pelanggan dan jumlah piutang");return;} pis.push({id:++piSeq,nama:$("piNama").value,jumlah:num("piJumlah"),tempo:$("piTempo").value||"—"}); $("piNama").value=""; $("piJumlah").value=""; renderPi(); });
+      $("btnPiutang").addEventListener("click",function(){ if(!$("piNama").value||num("piJumlah")<=0){popupRamah("Isian belum lengkap","Isi nama pelanggan dan jumlah piutang — jumlahnya harus lebih dari Rp 0.","Lengkapi kolomnya, lalu tekan tombol tambah piutang.");return;} pis.push({id:++piSeq,nama:$("piNama").value,jumlah:num("piJumlah"),tempo:$("piTempo").value||"—"}); $("piNama").value=""; $("piJumlah").value=""; renderPi(); });
 
       /* agregat transaksi: dipakai Laba Rugi, Posisi Keuangan, Arus Kas, BEP & forecast */
       function txAgg(){ let inn=0,out=0,hppTx=0,opexTx=0; txs.forEach(function(t){ if(t.jenis==="masuk") inn+=t.jumlah; else { out+=t.jumlah; if(t.kat==="Bahan baku"||t.kat==="Kemasan") hppTx+=t.jumlah; else opexTx+=t.jumlah; } }); return {inn:inn,out:out,hppTx:hppTx,opexTx:opexTx,net:inn-out}; }
@@ -1953,7 +1998,7 @@
       $("btnAddStep").addEventListener("click",function(){ addSopStep(""); });
       $("btnSop").addEventListener("click",function(){
         const steps=Array.from(document.querySelectorAll(".sop-step")).map(function(t){return t.value.trim()}).filter(Boolean);
-        if(!$("sopNama").value||!steps.length){ toast("Isi nama SOP dan minimal satu langkah"); return; }
+        if(!$("sopNama").value||!steps.length){ popupRamah("Isian belum lengkap","Isi nama SOP dan minimal satu langkah — SOP perlu nama dan langkah kerja supaya bisa disimpan sebagai dokumen.","Lengkapi keduanya, lalu tekan tombol unduh SOP lagi."); return; }
         const txt="DOKUMEN SOP — "+$("sopNama").value+"\nPenanggung jawab: "+($("sopPj").value||"—")+"\nTujuan: "+($("sopTujuan").value||"—")+"\n\nLANGKAH KERJA:\n"+steps.map(function(s,i){return (i+1)+". "+s}).join("\n")+"\n\nSOP ini bagian dari sistem usaha "+($("inNama").value||"")+" — tinjau ulang tiap 3 bulan.";
         const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain;charset=utf-8"})); a.download="sop-umkm.txt"; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000); audit("Dokumen SOP diunduh: "+$("sopNama").value); toast("Dokumen SOP diunduh");
       });
@@ -1970,13 +2015,13 @@
       function drawQr(text){ const box=$("invQr"); if(!box) return; if(typeof qrcode==="undefined"){ box.textContent="QR: "+text; return; } try{ const qr=qrcode(0,"M"); qr.addData(text); qr.make(); box.innerHTML=qr.createSvgTag({cellSize:4,margin:8,scalable:true}); const svg=box.querySelector("svg"); if(svg){ svg.style.width="148px"; svg.style.height="148px"; } }catch(err){ box.textContent="QR: "+text; } }
       $("btnReportPdf").addEventListener("click",function(){
         if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh bundle siap investor"); return; }
-        if(!(window.jspdf && window.jspdf.jsPDF)){ toast("Pustaka PDF belum termuat — gunakan unduhan .txt/.html"); return; }
+        if(!(window.jspdf && window.jspdf.jsPDF)){ popupRamah("Unduhan PDF belum bisa dibuat","Pustaka PDF belum termuat di peramban ini.","Pakai tombol unduh .txt atau .html — isinya sama lengkapnya."); return; }
         const doc=new window.jspdf.jsPDF(); const lines=doc.splitTextToSize(fullReport(),180); doc.setFontSize(11); let y=15; lines.forEach(function(ln){ if(y>280){ doc.addPage(); y=15; } doc.text(ln,15,y); y+=6; }); doc.save("laporan-introspeksi-umkm.pdf"); audit("Laporan PDF diunduh."); toast("Laporan PDF diunduh");
       });
       $("notaPhoto").addEventListener("change",function(e){
         const f=e.target.files && e.target.files[0]; if(!f) return;
         const note=$("ocrNote"); if(!note) return;
-        if(typeof Tesseract==="undefined"){ note.textContent="OCR: pustaka Tesseract belum termuat di peramban ini — baca angka di foto nota dan masukkan manual."; return; }
+        if(typeof Tesseract==="undefined"){ note.textContent="OCR: pustaka pembaca nota belum termuat di peramban ini — baca angka di foto nota dan masukkan sendiri."; popupRamah("Foto nota belum bisa dibaca otomatis","Pustaka pembaca nota belum termuat di peramban ini.","Baca angka di foto nota, lalu masukkan jumlahnya sendiri pada formulir — catatan tetap bisa disimpan."); return; }
         note.textContent="OCR: sedang membaca teks nota… (proses berjalan di peramban Anda)";
         Tesseract.recognize(f,"ind+eng").then(function(res){
           const text=(res.data.text||"").trim();
@@ -1985,7 +2030,7 @@
           if(text && !$("txKet").value) $("txKet").value=text.split("\n")[0].slice(0,60);
           note.textContent="OCR selesai: "+(nums.length?("jumlah terbesar terbaca "+fmtFull(Math.max.apply(null,nums))+" sudah diisikan — periksa kembali sebelum menambah transaksi."):"teks terbaca, tetapi jumlah tidak ditemukan — masukkan jumlah manual.")+" Teks nota: "+text.slice(0,180);
           audit("OCR nota selesai dibaca di peramban.");
-        }).catch(function(){ note.textContent="OCR gagal membaca foto ini — coba foto yang lebih terang dan rata, atau masukkan jumlah manual."; });
+        }).catch(function(){ note.textContent="Foto nota belum bisa dibaca otomatis — coba foto yang lebih terang dan rata, atau masukkan jumlahnya sendiri."; popupRamah("Foto nota belum bisa dibaca","Foto nota ini belum bisa dibaca otomatis — mungkin terlalu gelap, miring, atau buram.","Coba foto yang lebih terang dan rata, atau masukkan jumlahnya sendiri pada formulir."); });
       });
 
       /* --- Laporan lengkap --- */
@@ -2178,6 +2223,70 @@
         function isMissingTable(e){ if(!e) return false; var m=((e.message||"")+" "+(e.code||"")); return /42P01|PGRST205|Could not find the table|does not exist/i.test(m); }
         function setSync(txt, kind){ var el=gid("syncStatus"); if(!el) return; el.textContent=txt; el.className="sync-pill"+(kind==="warn"?" warn":kind==="err"?" err":""); }
         function authMsg(txt, ok){ var el=gid("authMsg"); el.textContent=txt||""; el.className="auth-msg "+(ok?"ok":"err"); }
+        /* ---------- Penerjemah pesan error masuk/daftar + hitung mundur ----------
+           Pesan mentah dari server TIDAK PERNAH ditampilkan ke pengguna.
+           Semua diterjemahkan ke Bahasa Indonesia sederhana di bawah ini. */
+        var authCooldownTimer = null, authCooldownSisa = 0;
+        function pesanMentahAuth(err){ if(!err) return ""; if(typeof err==="string") return err; return String(err.message||err.msg||err.error_description||err.error||""); }
+        function apakahRateLimitAuth(raw){ return /security purposes|only request this after|rate.?limit|over_request|too many/i.test(String(raw||"")); }
+        function detikRateLimitAuth(err){ var raw=pesanMentahAuth(err); var m=raw.match(/after\s+(\d+)\s*second/i)||raw.match(/(\d+)\s*seconds?/i)||raw.match(/(\d+)\s*detik/i); if(m){ var n=parseInt(m[1],10); if(n&&!isNaN(n)&&n>0) return n; } return 60; }
+        function pesanAuthRamah(err, konteks){
+          var raw=pesanMentahAuth(err);
+          if(apakahRateLimitAuth(raw)){ var n=detikRateLimitAuth(err); return "Terlalu sering mencoba — tunggu "+n+" detik, lalu tekan tombolnya sekali lagi."; }
+          if(/already registered/i.test(raw)||/already exists/i.test(raw)){ return "Email ini sudah terdaftar — silakan pilih Masuk. Bila lupa kata sandinya, tekan 'Lupa kata sandi?'."; }
+          if(/invalid login/i.test(raw)||/invalid credentials/i.test(raw)){ return "Email atau kata sandi salah — periksa lagi. Bila lupa kata sandinya, tekan 'Lupa kata sandi?'."; }
+          if(/not confirmed/i.test(raw)){ return "Email belum dikonfirmasi — buka kotak masuk email Anda, klik tautan konfirmasinya, lalu kembali ke sini dan pilih Masuk."; }
+          if(/at least 6/i.test(raw)&&/password/i.test(raw)){ return "Kata sandi minimal 6 karakter."; }
+          if(/password should be/i.test(raw)){ return "Kata sandi minimal 6 karakter."; }
+          if(/invalid email/i.test(raw)||/unable to validate email/i.test(raw)||(/invalid/i.test(raw)&&/email/i.test(raw))){ return "Alamat email tidak valid — periksa penulisannya."; }
+          if(/failed to fetch/i.test(raw)||/network/i.test(raw)||/fetch/i.test(raw)||/timeout/i.test(raw)||/offline/i.test(raw)||/connection/i.test(raw)||/load failed/i.test(raw)){ return "Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini."; }
+          if(err&&(err.name==="TypeError"||err.code==="NETWORK_ERROR")){ return "Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini."; }
+          if(!raw){ return "Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini."; }
+          return "Tidak bisa melanjutkan sekarang — coba lagi sebentar lagi.";
+        }
+        window.pesanAuthRamah = pesanAuthRamah;
+        window.__pesanAuthRamah = pesanAuthRamah;
+        function labelAuthSubmit(){ return authMode==="reg" ? "Daftar & masuk" : "Masuk"; }
+        function mulaiCooldownAuth(detik){
+          var btn=gid("authSubmit"); if(!btn) return;
+          var n=parseInt(detik,10); if(!n||isNaN(n)||n<1) n=60;
+          authCooldownSisa=n;
+          if(authCooldownTimer) clearInterval(authCooldownTimer);
+          btn.disabled=true; btn.textContent="Tunggu "+authCooldownSisa+" detik…";
+          authCooldownTimer=setInterval(function(){
+            authCooldownSisa--;
+            if(authCooldownSisa<=0){ clearInterval(authCooldownTimer); authCooldownTimer=null; authCooldownSisa=0; var b=gid("authSubmit"); if(b){ b.disabled=false; b.textContent=labelAuthSubmit(); } }
+            else { var b2=gid("authSubmit"); if(b2) b2.textContent="Tunggu "+authCooldownSisa+" detik…"; }
+          },1000);
+        }
+        window.__mulaiCooldownAuth = mulaiCooldownAuth;
+        window.__authCooldownAktif = function(){ return !!authCooldownTimer; };
+        function popupAuth(teks, judul){
+          authMsg("");
+          if(window.tampilPopupRamah) window.tampilPopupRamah(judul||"Belum bisa melanjutkan", teks, "");
+          else authMsg(teks);
+        }
+        window.__popupAuth = popupAuth;
+        function tanganiErrorAuth(err, konteks){
+          var teks=pesanAuthRamah(err, konteks);
+          var raw=pesanMentahAuth(err);
+          var rate=apakahRateLimitAuth(raw);
+          if(rate){ mulaiCooldownAuth(detikRateLimitAuth(err)); }
+          var judul= rate ? "Terlalu sering mencoba" : (konteks==="daftar" ? "Pendaftaran belum berhasil" : "Belum bisa masuk");
+          popupAuth(teks, judul);
+          return teks;
+        }
+        window.__tanganiErrorAuth = tanganiErrorAuth;
+        /* Pop-up gagal simpan/muat cloud — ditahan sekali sampai ada simpan yang
+           berhasil, supaya autosave tidak memunculkan pop-up berulang-ulang. */
+        var popupSimpanSudah=false;
+        function popupGagalSimpan(mode){
+          if(popupSimpanSudah) return; popupSimpanSudah=true;
+          if(!window.tampilPopupRamah) return;
+          if(mode==="tabel") window.tampilPopupRamah("Penyimpanan cloud belum aktif","Tabel penyimpanan cloud belum dibuat, jadi data belum bisa disimpan ke cloud.","Data Anda aman di HP ini — lanjutkan memakai aplikasi seperti biasa, data tersimpan di perangkat ini.");
+          else window.tampilPopupRamah("Belum bisa terhubung ke cloud","Koneksi ke penyimpanan cloud sedang terganggu — mungkin internet putus atau lemah.","Data Anda aman di HP ini — data tersimpan di perangkat ini dan akan dicoba disimpan ke cloud lagi saat koneksi kembali.");
+        }
+        window.__popupGagalSimpan = popupGagalSimpan;
         function cacheKey(){ return "umkm-introspeksi-cache:"+(currentUser?currentUser.id:"lokal"); }
         function persistLocal(snap){ try{ localStorage.setItem(cacheKey(), JSON.stringify(snap)); }catch(e){} }
         function readLocal(){ try{ var s=localStorage.getItem(cacheKey()); return s?JSON.parse(s):null; }catch(e){ return null; } }
@@ -2225,7 +2334,7 @@
           if(typeof recalc==="function") recalc();
         }
         gid("btnUtang").addEventListener("click",function(){
-          if(!gid("utNama").value || num("utJumlah")<=0){ toast("Isi keterangan dan jumlah utang dulu"); return; }
+          if(!gid("utNama").value || num("utJumlah")<=0){ if(window.tampilPopupRamah) window.tampilPopupRamah("Isian belum lengkap","Isi keterangan dan jumlah utang dulu — jumlahnya harus lebih dari Rp 0.","Lengkapi kolomnya, lalu tekan tombol tambah utang."); else toast("Isi keterangan dan jumlah utang dulu"); return; }
           utangs.push({cid:uuid(), ket:gid("utNama").value, jumlah:num("utJumlah"), tempo:gid("utTempo").value||"—"});
           gid("utNama").value=""; gid("utJumlah").value=""; gid("utTempo").value="";
           renderUtang(); audit("Utang ditambah ke daftar utang."); toast("Utang tercatat di daftar utang");
@@ -2321,8 +2430,8 @@
              melempar error dan tidak pernah menghambat penyimpanan utama. */
           try{ if(window.__kalibrasiOnSave) window.__kalibrasiOnSave(snap); }catch(e){}
           if(isGuest || !currentUser){ persistLocal(snap); lastJson=json; setSync(isGuest?"Mode coba — tersimpan hanya di HP ini":"Tersimpan lokal (mode tanpa akun)","warn"); return; }
-          if(tablesMissing){ persistLocal(snap); lastJson=json; setSync("Tersimpan lokal — tabel cloud belum dibuat","warn"); return; }
-          if(!navigator.onLine){ persistLocal(snap); lastJson=json; setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn"); return; }
+          if(tablesMissing){ persistLocal(snap); lastJson=json; setSync("Tersimpan lokal — tabel cloud belum dibuat","warn"); popupGagalSimpan("tabel"); return; }
+          if(!navigator.onLine){ persistLocal(snap); lastJson=json; setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn"); popupGagalSimpan("gagal"); return; }
           setSync("Menyimpan...","");
           try{
             var uid=currentUser.id;
@@ -2334,13 +2443,13 @@
             await syncTable("piutang", snap.pis.map(function(p){ return {id:p.cid, user_id:uid, keterangan:p.nama, jumlah:p.jumlah, jatuh_tempo:p.tempo}; }));
             await syncTable("utang", snap.utangs.map(function(u){ return {id:u.cid, user_id:uid, keterangan:u.ket, jumlah:u.jumlah, jatuh_tempo:u.tempo}; }));
             try{ if(snap.inputs && snap.inputs.inNama) await sb.from("profiles").upsert({id:uid, nama_usaha:snap.inputs.inNama}); }catch(e){}
-            lastJson=json;
+            lastJson=json; popupSimpanSudah=false;
             setSync("Tersimpan di cloud · "+new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}),"");
             audit("Data tersinkron ke cloud.");
           }catch(e){
             persistLocal(snap); lastJson=json;
-            if(isMissingTable(e)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan lokal — tabel cloud belum dibuat","err"); }
-            else setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn");
+            if(isMissingTable(e)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan lokal — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
+            else { setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn"); popupGagalSimpan("gagal"); }
           }
         }
         async function loadData(){
@@ -2361,8 +2470,8 @@
             ]);
             var bad=res.filter(function(r){ return r.error; })[0];
             if(bad){
-              if(isMissingTable(bad.error)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan lokal — tabel cloud belum dibuat","err"); }
-              else setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn");
+              if(isMissingTable(bad.error)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan lokal — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
+              else { setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn"); popupGagalSimpan("gagal"); }
               var loc=readLocal(); if(loc) applySnapshot(loc);
             } else {
               var core=(res[0].data&&res[0].data.data)||{};
@@ -2498,13 +2607,15 @@
           gid("tabLogin").setAttribute("aria-pressed", m==="login"?"true":"false");
           gid("tabReg").setAttribute("aria-pressed", m==="reg"?"true":"false");
           gid("regFields").style.display=m==="reg"?"block":"none";
-          gid("authSubmit").textContent=m==="reg"?"Daftar & masuk":"Masuk";
+          if(!authCooldownTimer) gid("authSubmit").textContent=m==="reg"?"Daftar & masuk":"Masuk";
           gid("authTitle").textContent=m==="reg"?"Daftar akun usaha baru":"Masuk ke akun usaha Anda";
           gid("authPass").setAttribute("autocomplete", m==="reg"?"new-password":"current-password");
           /* "Lupa kata sandi?" hanya relevan di tab Masuk — di tab Daftar dan
              di mode tamu/dashboard tautan ini tidak tampil. */
           var fw=gid("forgotWrap"); if(fw) fw.style.display=(m==="login")?"block":"none";
           if(m!=="login"){ var fp=gid("forgotPanel"); if(fp) fp.style.display="none"; }
+          var ehr=gid("authEmailHintReg"); if(ehr) ehr.style.display=(m==="reg")?"block":"none";
+          var ehl=gid("authEmailHintLogin"); if(ehl) ehl.style.display=(m==="login")?"block":"none";
           authMsg("");
         }
         /* ---------- Lupa kata sandi: kirim tautan & layar kata sandi baru ---------- */
@@ -2548,6 +2659,7 @@
           gid("authTitle").textContent="Tautan sudah kedaluwarsa";
           var ex=gid("recoveryExpired"); if(ex) ex.style.display="block";
           window.scrollTo(0,0);
+          if(window.tampilPopupRamah) window.tampilPopupRamah("Tautan sudah kedaluwarsa","Tautan atur ulang ini sudah tidak berlaku lagi — mungkin sudah pernah dipakai atau terlalu lama.","Minta tautan baru lewat tombol Minta tautan baru di bawah ini, lalu segera buka email Anda dan klik tautan terbarunya.");
         }
         window.__showRecoveryScreen=showRecoveryScreen;
         window.__showRecoveryExpired=showRecoveryExpired;
@@ -2576,7 +2688,7 @@
         var btnSendReset=gid("btnSendReset");
         if(btnSendReset) btnSendReset.addEventListener("click", async function(){
           var fe=gid("forgotEmail"); var email=fe?fe.value.trim():"";
-          if(!email){ forgotMsg("Isi email akun Anda dulu."); if(fe) fe.focus(); return; }
+          if(!email){ forgotMsg(""); popupAuth("Isi email akun Anda dulu — tulis email yang dipakai untuk akun aplikasi ini, lalu tekan Kirim tautan atur ulang.", "Isian belum lengkap"); if(fe) fe.focus(); return; }
           if(!sb){ forgotMsg("Bila email itu terdaftar, tautan atur ulang sudah dikirim. Periksa kotak masuk dan folder spam Anda.", "ok"); return; }
           btnSendReset.disabled=true; btnSendReset.textContent="Mengirim..."; forgotMsg("Mengirim tautan atur ulang...","ok");
           try{
@@ -2598,21 +2710,22 @@
         var btnSaveNewPass=gid("btnSaveNewPass");
         if(btnSaveNewPass) btnSaveNewPass.addEventListener("click", async function(){
           var p1=gid("newPass").value, p2=gid("newPassConfirm").value;
-          if(!p1){ recoveryMsg("Isi kata sandi baru dulu."); return; }
-          if(p1.length<6){ recoveryMsg("Kata sandi baru minimal 6 karakter."); return; }
-          if(p1!==p2){ recoveryMsg("Kata sandi baru dan konfirmasinya tidak sama — periksa lagi."); return; }
-          if(!sb){ recoveryMsg("Koneksi ke cloud belum termuat — periksa internet Anda, lalu coba lagi."); return; }
+          if(!p1){ recoveryMsg(""); popupAuth("Isi kata sandi baru dulu — tulis kata sandi baru khusus untuk aplikasi ini.", "Isian belum lengkap"); return; }
+          if(p1.length<6){ recoveryMsg(""); popupAuth("Kata sandi baru minimal 6 karakter — buat yang sedikit lebih panjang, lalu coba lagi.", "Kata sandi terlalu pendek"); return; }
+          if(p1!==p2){ recoveryMsg(""); popupAuth("Kata sandi baru dan konfirmasinya tidak sama — periksa lagi dan pastikan keduanya persis sama.", "Konfirmasi belum sama"); return; }
+          if(!sb){ recoveryMsg(""); popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi.", "Tidak bisa terhubung"); return; }
           btnSaveNewPass.disabled=true; recoveryMsg("Menyimpan kata sandi baru...","ok");
           try{
             var r=await sb.auth.updateUser({password:p1});
             if(r && r.error){
               var emsg=(r.error.message||"");
-              if(emsg.indexOf("New password should be different")>=0){
-                recoveryMsg("Kata sandi baru harus berbeda dari kata sandi lama.");
+              recoveryMsg("");
+              if(/different/i.test(emsg)){
+                popupAuth("Kata sandi baru harus berbeda dari kata sandi lama — buat kata sandi lain yang belum dipakai untuk aplikasi ini.", "Kata sandi belum tersimpan");
               } else if(/expired|invalid/i.test(emsg)){
-                recoveryMsg("Gagal menyimpan kata sandi baru: "+emsg+" — tautan mungkin sudah kedaluwarsa, minta tautan baru.");
+                popupAuth("Tautan atur ulang ini sudah tidak berlaku — mungkin sudah pernah dipakai atau terlalu lama. Minta tautan baru lewat 'Lupa kata sandi?', lalu segera buka email Anda dan klik tautan terbarunya.", "Tautan sudah kedaluwarsa");
               } else {
-                recoveryMsg("Gagal menyimpan kata sandi baru: "+emsg);
+                popupAuth("Tidak bisa melanjutkan sekarang — coba lagi sebentar lagi.", "Kata sandi belum tersimpan");
               }
             } else {
               var user=(r && r.data && r.data.user) || recoveryUser || currentUser;
@@ -2627,7 +2740,7 @@
                 try{ var gs=await sb.auth.getSession(); var su=gs && gs.data && gs.data.session && gs.data.session.user; if(su) enterApp(su); else { gid("authGate").style.display="none"; autoStartGuest(); } }catch(e2){ gid("authGate").style.display="none"; }
               }
             }
-          }catch(e){ recoveryMsg("Terjadi gangguan koneksi — coba lagi sebentar lagi."); }
+          }catch(e){ recoveryMsg(""); popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi.", "Tidak bisa terhubung"); }
           btnSaveNewPass.disabled=false;
         });
         function showLoginAlreadyPopup(){
@@ -2662,16 +2775,16 @@
         });
         gid("authForm").addEventListener("submit", async function(ev){
           ev.preventDefault();
-          if(!sb){ authMsg("Koneksi ke cloud belum termuat — periksa internet Anda, lalu coba lagi. Data coba Anda tetap aman di HP ini."); return; }
+          if(!sb){ popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini.", "Tidak bisa terhubung"); return; }
           var email=gid("authEmail").value.trim(), pass=gid("authPass").value;
-          if(!email || !pass){ authMsg("Isi email dan kata sandi dulu."); return; }
+          if(!email || !pass){ popupAuth("Isi email dan kata sandi dulu — lengkapi kedua kolom itu, lalu tekan tombolnya sekali lagi.", "Isian belum lengkap"); return; }
           gid("authSubmit").disabled=true; authMsg("Memproses...","ok");
           try{
             if(authMode==="reg"){
               var nama=gid("authNama").value.trim(), hp=gid("authHp").value.trim();
-              if(!nama || !hp){ authMsg("Untuk pendaftaran, isi juga nama usaha dan nomor HP."); gid("authSubmit").disabled=false; return; }
+              if(!nama || !hp){ popupAuth("Untuk pendaftaran, isi juga nama usaha dan nomor HP — lengkapi kedua kolom itu, lalu tekan Daftar & masuk sekali lagi.", "Isian belum lengkap"); if(!authCooldownTimer) gid("authSubmit").disabled=false; return; }
               var r=await sb.auth.signUp({email:email, password:pass, options:{data:{nama_usaha:nama, no_hp:hp}}});
-              if(r.error){ authMsg("Pendaftaran gagal: "+r.error.message); }
+              if(r.error){ tanganiErrorAuth(r.error, "daftar"); }
               else if(r.data.session){
                 if(isGuest){ try{ migrateSnapshot=collectSnapshot(); localStorage.setItem("umkm-introspeksi-pending-migration", JSON.stringify(migrateSnapshot)); }catch(e){} }
                 try{ await sb.from("profiles").upsert({id:r.data.user.id, nama_usaha:nama, no_hp:hp}); }catch(e){}
@@ -2683,11 +2796,11 @@
               }
             } else {
               var r2=await sb.auth.signInWithPassword({email:email, password:pass});
-              if(r2.error){ authMsg("Gagal masuk: "+r2.error.message+" — periksa email/kata sandi, atau daftar bila belum punya akun."); }
+              if(r2.error){ tanganiErrorAuth(r2.error, "masuk"); }
               else { if(isGuest){ try{ migrateSnapshot=collectSnapshot(); localStorage.setItem("umkm-introspeksi-pending-migration", JSON.stringify(migrateSnapshot)); }catch(e){} } authMsg(""); enterApp(r2.data.user); toast("Selamat datang kembali — data usaha Anda dimuat dari cloud."); }
             }
-          }catch(e){ authMsg("Terjadi gangguan koneksi — coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini."); }
-          gid("authSubmit").disabled=false;
+          }catch(e){ popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini.", "Tidak bisa terhubung"); }
+          if(!authCooldownTimer) gid("authSubmit").disabled=false;
         });
         var bba=gid("btnBackToApp"); if(bba) bba.addEventListener("click",function(){ entered=true; gid("authGate").style.display="none"; gid("guestGateMsg").classList.remove("show"); });
         var bgr=gid("btnGuestRegister"); if(bgr) bgr.addEventListener("click",function(){ window.__showRegisterGate("Simpan ke cloud"); });
@@ -2697,7 +2810,7 @@
         var btnGps=gid("btnGps");
         if(btnGps) btnGps.addEventListener("click",function(){
           var st=gid("gpsStatus");
-          if(!navigator.geolocation){ if(st) st.textContent="Lokasi tidak diizinkan — Anda bisa memilih provinsi dan kota/kabupaten secara manual di bawah ini. Peramban ini tidak mendukung GPS."; toast("GPS tidak didukung — pilih provinsi & kota/kabupaten secara manual"); return; }
+          if(!navigator.geolocation){ if(st) st.textContent="Lokasi tidak diizinkan — Anda bisa memilih provinsi dan kota/kabupaten secara manual di bawah ini. Peramban ini tidak mendukung GPS."; if(window.tampilPopupRamah) window.tampilPopupRamah("Lokasi belum bisa diambil","Peramban ini tidak mendukung GPS, jadi lokasi tidak bisa diambil otomatis.","Pilih provinsi dan kota/kabupaten secara manual di bawah ini — hasilnya tetap tersimpan."); else toast("GPS tidak didukung — pilih provinsi & kota/kabupaten secara manual"); return; }
           if(st) st.textContent="Meminta izin lokasi… Izinkan akses lokasi pada peramban Anda bila diminta. Lokasi hanya diambil sekali untuk usaha ini.";
           navigator.geolocation.getCurrentPosition(function(pos){
             var lok={lat:+pos.coords.latitude.toFixed(7), lng:+pos.coords.longitude.toFixed(7), akurasi_m:pos.coords.accuracy!=null?Math.round(pos.coords.accuracy):null, diambil_pada:new Date().toISOString()};
@@ -2707,8 +2820,8 @@
             toast("Lokasi usaha tersimpan — "+lok.lat+", "+lok.lng);
             if(typeof recalc==="function") recalc();
           }, function(err){
-            if(st) st.textContent="Lokasi tidak diizinkan — Anda bisa memilih provinsi dan kota/kabupaten secara manual di bawah ini. "+(err && err.message ? "("+err.message+")" : "");
-            toast("Lokasi tidak diizinkan — pilih provinsi & kota/kabupaten secara manual");
+            if(st) st.textContent="Lokasi tidak diizinkan — Anda bisa memilih provinsi dan kota/kabupaten secara manual di bawah ini.";
+            if(window.tampilPopupRamah) window.tampilPopupRamah("Lokasi belum bisa diambil","Izin lokasi tidak diberikan, jadi lokasi tidak bisa diambil otomatis.","Pilih provinsi dan kota/kabupaten secara manual di bawah ini — hasilnya tetap tersimpan."); else toast("Lokasi tidak diizinkan — pilih provinsi & kota/kabupaten secara manual");
           }, {enableHighAccuracy:true, timeout:15000, maximumAge:0});
         });
         /* Sinkronisasi Provinsi & Kota/Kabupaten (Data Usaha, wizard, dan bagian GPS)
@@ -2929,8 +3042,8 @@
           var target=b.getAttribute("data-wiz-next");
           if(target==="2"){
             var wp=gid("wizProvinsi"), wk=gid("wizKota");
-            if(!wp || !wp.value){ try{ toast("Pilih provinsi dulu — provinsi tempat usaha Anda berjalan."); }catch(e){} if(wp) wp.focus(); return; }
-            if(!wk || !wk.value){ try{ toast("Pilih kota/kabupaten dulu — kota/kabupaten tempat usaha Anda berjalan."); }catch(e){} if(wk) wk.focus(); return; }
+            if(!wp || !wp.value){ try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Isian belum lengkap","Pilih provinsi dulu — provinsi tempat usaha Anda berjalan.","Pilih provinsinya, lalu lanjutkan langkah ini."); else toast("Pilih provinsi dulu — provinsi tempat usaha Anda berjalan."); }catch(e){} if(wp) wp.focus(); return; }
+            if(!wk || !wk.value){ try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Isian belum lengkap","Pilih kota/kabupaten dulu — kota/kabupaten tempat usaha Anda berjalan.","Pilih kota/kabupatennya, lalu lanjutkan langkah ini."); else toast("Pilih kota/kabupaten dulu — kota/kabupaten tempat usaha Anda berjalan."); }catch(e){} if(wk) wk.focus(); return; }
           }
           showWiz(target);
         }); });
@@ -3040,7 +3153,7 @@
         var H = {
           authNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan. Nama ini tampil di laporan dan di tampilan untuk calon mitra kerjasama investasi.",e:"Dapur Bu Sari, Laundry Berkah, Bengkel Pak Rudi.",h:"Isi nama yang dikenal pelanggan — tidak harus nama resmi di dokumen."},
           authHp:{s:"Nomor HP Anda yang aktif dan bisa menerima WhatsApp. Dipakai untuk mengenali akun usaha Anda.",e:"0812-3456-7890.",h:"Tulis nomor yang masih aktif, mulai dengan 08."},
-          authEmail:{s:"Alamat email untuk masuk ke akun dan menyimpan data usaha Anda di cloud, supaya bisa dibuka lagi di HP atau perangkat lain.",e:"usaha@email.com.",h:"Pakai email yang masih bisa Anda buka — tautan konfirmasi pendaftaran dikirim ke email ini."},
+          authEmail:{s:"Pakai email asli yang aktif — tautan konfirmasi akan dikirim ke email ini. Tanpa email asli, Anda tidak bisa mengonfirmasi dan tidak bisa masuk.",e:"usaha@email.com — email yang benar-benar Anda pakai dan bisa Anda buka.",h:"Periksa penulisannya sebelum menekan Daftar & masuk — bila emailnya asal-asalan atau salah ketik, tautan konfirmasi tidak akan sampai."},
           authPass:{s:"Kata sandi ini khusus untuk aplikasi ini, bukan kata sandi email Anda. Kata sandi ini Anda buat sendiri saat mendaftar di aplikasi ini — berbeda dari kata sandi untuk membuka email Anda. Hanya Anda yang tahu kata sandi ini.",e:"Minimal 6 karakter — gabungkan huruf dan angka yang mudah Anda ingat.",h:"Jangan mengisi kata sandi email Anda di sini. Bila lupa kata sandi aplikasi ini, ketuk \"Lupa kata sandi?\" di bawah formulir Masuk — tautan untuk membuat kata sandi baru dikirim ke email Anda. Jangan membagikan kata sandi ini ke siapa pun."},
           forgotEmail:{s:"Alamat email yang Anda pakai untuk mendaftar di aplikasi ini. Ke email inilah tautan untuk membuat kata sandi aplikasi yang baru dikirim.",e:"usaha@email.com — email yang sama dengan yang Anda pakai saat daftar.",h:"Periksa ejaannya, lalu ketuk Kirim tautan atur ulang. Setelah itu buka kotak masuk (dan folder spam) email Anda, lalu klik tautan terbarunya. Kata sandi email Anda tidak berubah."},
           newPass:{s:"Kata sandi baru khusus untuk aplikasi ini, bukan kata sandi email Anda. Kata sandi inilah yang Anda pakai untuk masuk ke aplikasi mulai sekarang.",e:"Minimal 6 karakter — gabungkan huruf dan angka yang mudah Anda ingat, misalnya nama usaha ditambah angka tahun.",h:"Ketik kata sandi baru Anda, lalu ketik ulang persis sama di kolom di bawahnya. Jangan memakai kata sandi email Anda di sini."},
@@ -3337,9 +3450,10 @@
             var r2=document.querySelectorAll("#consChecks .check-row")[idx]; if(!r2) return;
             r2.querySelectorAll(".seg button").forEach(function(b,j){ b.setAttribute("aria-pressed", consState[idx]===j?"true":"false"); });
           }
+          function popupCek(judul, apa, lakukan){ try{ if(window.tampilPopupRamah) window.tampilPopupRamah(judul, apa, lakukan); }catch(e){} }
           function cekOtomatis(idx, inp, res, btn){
             var url=(inp.value||"").trim();
-            if(!url){ res.textContent="Tempel dulu tautan publik sumber ini, lalu ketuk Cek otomatis."; inp.focus(); return; }
+            if(!url){ res.textContent="Tempel dulu tautan publik sumber ini, lalu ketuk Cek otomatis."; popupCek("Tautan belum ditempel","Tempel dulu tautan publik sumber ini — kolom tautannya masih kosong.","Tempel tautannya, lalu ketuk Cek otomatis lagi."); inp.focus(); return; }
             if(!/^https?:\/\//i.test(url)) url="https://"+url;
             btn.disabled=true; res.textContent="Sedang meminta server membaca halaman publik itu…";
             /* Hanya URL publik yang ditempel pengguna yang dikirim — tanpa data pribadi apa pun. */
@@ -3367,6 +3481,7 @@
               })
               .catch(function(){
                 res.textContent="Tidak bisa dibaca otomatis — cek manual. Halaman mungkin memblokir pembacaan otomatis, tidak ada sinyal yang terbaca, atau fungsi pembaca di server belum terpasang. Pilihan Sesuai / Beda / Belum dicek di atas tetap bisa dipakai seperti biasa.";
+                popupCek("Halaman belum bisa dibaca otomatis","Halaman itu tidak bisa dibaca otomatis — mungkin diblokir oleh sumbernya, tidak ada sinyal yang terbaca, atau pembaca di server belum terpasang.","Cek manual saja — tandai Sesuai, Beda, atau Belum dicek di atas seperti biasa.");
               })
               .then(function(){ btn.disabled=false; });
           }
@@ -3526,6 +3641,7 @@
               try{ toast("Tautan berbagi dibuat — salin dan kirim ke calon investor"); }catch(e){}
             }catch(e){
               note.textContent="Fitur berbagi belum aktif — penyimpanan tautan di cloud belum tersedia. Portal investor di dalam aplikasi di atas tetap berfungsi seperti biasa.";
+              try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Tautan berbagi belum bisa dibuat","Penyimpanan tautan di cloud belum tersedia saat ini.","Portal investor di dalam aplikasi di atas tetap berfungsi seperti biasa — coba lagi sebentar lagi."); }catch(e2){}
             }
             btn.disabled=false;
           });
@@ -3553,6 +3669,7 @@
               try{ audit("Tautan berbagi portal investor dicabut."); }catch(e){}
             }catch(e){
               note.textContent="Tautan belum bisa dicabut — periksa koneksi internet Anda lalu coba lagi. Selama belum tercabut, tautan lama masih aktif.";
+              try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Tautan belum bisa dicabut","Pencabutan tautan belum berhasil — mungkin koneksi internet sedang terganggu.","Periksa internet Anda, lalu coba cabut lagi. Selama belum tercabut, tautan lama masih aktif."); }catch(e2){}
             }
             br.disabled=false;
           });
@@ -3629,6 +3746,7 @@
               packMainFact=factLabels(m);
               var el=gid("packPhotoFacts");
               if(el) el.textContent= packMainFact ? ("Fakta terukur foto utama: "+factText(packMainFact)+".") : "Foto utama tidak bisa diukur di peramban ini — nilainya tetap dari daftar periksa.";
+              if(!packMainFact){ try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Foto kemasan belum bisa diukur","Foto utama ini tidak bisa diukur di peramban ini — berkasnya mungkin tidak terbaca sebagai gambar.","Coba unggah foto lain (JPG atau PNG). Nilai kemasan tetap bisa diisi dari daftar periksa seperti biasa."); }catch(e2){} }
               renderPackAspects();
             });
           });
@@ -4298,7 +4416,7 @@
 
         gid("btnQrisBayar").addEventListener("click", function(){
           var jml=parseFloat(gid("qrisJumlah").value); if(isNaN(jml)) jml=0;
-          if(jml<=0){ toast("Isi jumlah yang dibayar pembeli dulu — harus lebih dari Rp 0"); return; }
+          if(jml<=0){ if(window.tampilPopupRamah) window.tampilPopupRamah("Jumlah belum diisi","Isi jumlah yang dibayar pembeli dulu — harus lebih dari Rp 0.","Isi jumlahnya, lalu tekan Tandai Sudah Dibayar lagi."); else toast("Isi jumlah yang dibayar pembeli dulu — harus lebih dari Rp 0"); return; }
           var ket=String(gid("qrisKet").value||"").trim() || "Pembayaran QRIS";
           txs.push({id:++txSeq, cid:qrisCid(), tgl:todayStr(), ket:ket, jenis:"masuk", kat:"QRIS", jumlah:jml});
           audit("Pembayaran QRIS tercatat: "+ket+" "+fmtFull(jml));
