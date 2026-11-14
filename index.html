@@ -413,6 +413,16 @@
       .btn.big{min-height:56px;font-size:1.05rem;padding:14px 24px;border-radius:999px}
       .wizard-overlay{position:fixed;inset:0;z-index:140;background:var(--bg);overflow-y:auto;padding:22px 14px 48px;display:none}
       .wizard-overlay.show{display:block}
+      /* ---------- layar "Aplikasi ditutup" (tombol Tutup di sapaan masuk
+         pertama untuk tamu baru yang belum terdaftar dan belum punya data
+         nyata): layar penuh yang menggantikan tampilan aplikasi — tanpa merah. */
+      .layar-ditutup{position:fixed;inset:0;z-index:150;background:var(--bg);display:none;align-items:center;justify-content:center;padding:22px 14px}
+      body.aplikasi-ditutup .layar-ditutup{display:flex}
+      .ditutup-card{max-width:560px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 24px;box-shadow:var(--shadow);text-align:center}
+      .ditutup-card h2{font-size:1.4rem}
+      .ditutup-card p{color:var(--ink-soft);margin-top:10px}
+      .ditutup-card .btn{margin-top:22px;min-height:54px}
+      body.aplikasi-ditutup .topbar, body.aplikasi-ditutup .wrap, body.aplikasi-ditutup .bottom-nav, body.aplikasi-ditutup .mobile-valbar, body.aplikasi-ditutup .wizard-overlay, body.aplikasi-ditutup .help-overlay, body.aplikasi-ditutup .toast, body.aplikasi-ditutup .auth-gate, body.aplikasi-ditutup .guest-banner, body.aplikasi-ditutup .account-bar, body.aplikasi-ditutup .sql-modal{display:none!important}
       .wizard-card{max-width:560px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
       .wizard-progress{font-size:.85rem;font-weight:700;color:var(--teal);letter-spacing:.02em}
       .wizard-progress{color:#8fd3dc}
@@ -1953,6 +1963,15 @@
           </div>
           <p class="note" style="margin-top:10px">Tombol “Lihat detail lengkap” membuka 9 modul lengkap — jawaban Anda sudah terisi di formulirnya.</p>
         </div>
+      </div>
+    </div>
+
+    <!-- ============ LAYAR APLIKASI DITUTUP ============ -->
+    <div class="layar-ditutup" id="layarDitutup" role="dialog" aria-label="Aplikasi ditutup" hidden>
+      <div class="ditutup-card">
+        <h2>Aplikasi ditutup.</h2>
+        <p>Terima kasih sudah mampir. Sampai jumpa lagi.</p>
+        <button class="btn" type="button" id="btnBukaKembali">Buka kembali aplikasi</button>
       </div>
     </div>
 
@@ -7399,6 +7418,11 @@
            menampilkan sapaan + langkah 1, lalu selesai — pengisian sisanya
            bertahap lewat kartu "langkah berikutnya" dan sapaan proaktif. */
         var wizSingkat=false;
+        /* wizMasukAwal: wizard dibuka sebagai sapaan masuk pertama
+           (openGreeting), bukan dari dalam aplikasi lewat openWizard
+           ("Ubah usaha"/"Mulai"). Dipakai tombol "Tutup": hanya di sapaan
+           masuk pertama untuk tamu baru "Tutup" menutup aplikasi. */
+        var wizMasukAwal=false;
         var PROGRESS={"sapaan":"Selamat datang","1":"Langkah 1 dari 4","2":"Langkah 2 dari 4","3a":"Langkah 3 dari 4 — biaya (1 dari 3)","3b":"Langkah 3 dari 4 — biaya (2 dari 3)","3c":"Langkah 3 dari 4 — biaya (3 dari 3)","4":"Langkah 4 dari 4","hasil":"Hasil ringkas Anda"};
         function showWiz(step){
           /* Jalur pertama: langkah 2, 3a/3b/3c, 4, dan hasil tidak pernah
@@ -7411,6 +7435,7 @@
           var ov=gid("wizardOverlay"); if(ov) ov.scrollTop=0;
         }
         function openWizard(){
+          wizMasukAwal=false; /* dibuka dari dalam aplikasi: "Tutup" hanya menutup overlay */
           /* Pengguna tanpa data usaha nyata mendapat jalur pertama yang
              dipersingkat; pengguna yang sudah punya data mendapat wizard
              lengkap seperti biasa (terisi dari formulir utama). */
@@ -7430,6 +7455,41 @@
           showWiz("1");
         }
         function closeWizard(){ gid("wizardOverlay").classList.remove("show"); if(wizSingkat && window.__keHariIni){ try{ window.__keHariIni(); }catch(e){} } }
+        /* ---------- "Tutup" menutup APLIKASI (bukan sekadar overlay) ----------
+           Aturan: hanya bila wizard adalah sapaan masuk pertama (wizMasukAwal)
+           DAN pengguna belum terdaftar DAN belum punya data usaha nyata.
+           Berlaku di sapaan maupun langkah 1 jalur pertama — tamu di situ belum
+           pernah masuk ke halaman dalam dan belum menyimpan apa pun.
+           Ketikan di wizard yang belum selesai TIDAK dihitung sebagai data
+           nyata: collectSnapshot hanya membaca isian di .wrap, jadi
+           sudahMengisiNyata() tetap false sampai wizard selesai (applyWizard).
+           Di luar aturan itu (pengguna terdaftar, sudah punya data, atau wizard
+           dibuka dari dalam aplikasi lewat "Ubah usaha"/"Mulai"), "Tutup" hanya
+           menutup overlay seperti biasa.
+           Layar tertutup HANYA sesi ini (in-memory; kelas body + atribut
+           hidden): muat ulang menampilkan sapaan lagi. window.close() tidak
+           dipakai — tidak berfungsi di tab biasa; layar tertutup INILAH tutupnya.
+           "Buka kembali aplikasi" menampilkan sapaan lagi (bukan langsung
+           Hari Ini sebagai tamu), sesuai tempat pengguna menutup. */
+        function tutupAplikasi(){
+          gid("wizardOverlay").classList.remove("show");
+          var dt=gid("layarDitutup"); if(dt) dt.hidden=false;
+          document.body.classList.add("aplikasi-ditutup");
+        }
+        function bukaKembaliAplikasi(){
+          var dt=gid("layarDitutup"); if(dt) dt.hidden=true;
+          document.body.classList.remove("aplikasi-ditutup");
+          openGreeting();
+        }
+        function tutupWizard(){
+          var terdaftar=false, adaData=false;
+          try{ terdaftar=!!(window.__penggunaAktif && window.__penggunaAktif()); }catch(e){}
+          try{ adaData=!!(window.__sudahMengisiNyata && window.__sudahMengisiNyata()); }catch(e){}
+          if(wizMasukAwal && !terdaftar && !adaData){ tutupAplikasi(); return; }
+          closeWizard();
+        }
+        window.__tutupAplikasi=tutupAplikasi;
+        window.__bukaKembaliAplikasi=bukaKembaliAplikasi;
         window.__openWizard=openWizard;
         function greetingByHour(){
           var h=new Date().getHours();
@@ -7442,6 +7502,7 @@
         window.__greetingByHour=greetingByHour;
         function openGreeting(){
           wizSingkat=true; /* sapaan = jalur pertama: sapaan + langkah 1 saja */
+          wizMasukAwal=true; /* sapaan masuk pertama: "Tutup" menutup aplikasi bila tamu baru tanpa data */
           var gt=gid("greetTime"); if(gt) gt.textContent=greetingByHour();
           gid("wizardOverlay").classList.add("show");
           showWiz("sapaan");
@@ -7467,7 +7528,8 @@
           showWiz(target);
         }); });
         document.querySelectorAll("[data-wiz-back]").forEach(function(b){ b.addEventListener("click", function(){ showWiz(b.getAttribute("data-wiz-back")); }); });
-        gid("btnWizardClose").addEventListener("click", closeWizard);
+        gid("btnWizardClose").addEventListener("click", tutupWizard);
+        gid("btnBukaKembali").addEventListener("click", bukaKembaliAplikasi);
         gid("btnWizardHero").addEventListener("click", openWizard);
         ["btnUbahUsahaTop","btnUbahUsahaData"].forEach(function(id){ var el=gid(id); if(el) el.addEventListener("click", openWizard); });
         ["navWizardTop","navWizardBottom"].forEach(function(id){ var el=gid(id); if(el) el.addEventListener("click", function(ev){ ev.preventDefault(); openWizard(); }); });
