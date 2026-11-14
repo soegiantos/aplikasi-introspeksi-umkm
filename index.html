@@ -259,6 +259,29 @@
       .explain-answer{margin-top:10px;font-size:.93rem;background:var(--surface-2);border-radius:10px;padding:12px 14px;white-space:pre-line}
       .explain-answer:empty{display:none}
 
+      /* ---------- Ikon penjelasan di setiap isian + Tanya AI per kolom ---------- */
+      .field-help-btn{display:inline-grid;place-items:center;width:28px;height:28px;min-height:28px;min-width:28px;border-radius:50%;background:var(--gold-soft);color:var(--gold);border:1.5px solid var(--gold);font:inherit;font-size:.88rem;font-weight:800;line-height:1;cursor:pointer;vertical-align:middle;margin-left:7px;padding:0;flex:none}
+      .field-help-btn:hover,.field-help-btn:focus-visible{background:var(--gold);color:#171106;outline:2px solid var(--gold);outline-offset:1px}
+      .field-help-btn.qbtn{margin-left:8px}
+      .help-hint{display:flex;gap:9px;align-items:flex-start;background:var(--gold-soft);border:1px solid var(--field-border);border-radius:10px;padding:11px 13px;font-size:.9rem;margin-top:14px;color:var(--ink)}
+      .help-hint .field-help-btn{margin-left:0;margin-top:1px;pointer-events:none}
+      .help-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.74);display:none;align-items:flex-start;justify-content:center;padding:20px 12px 40px;overflow-y:auto}
+      .help-overlay.show{display:flex}
+      .help-card{max-width:560px;width:100%;margin:auto;background:var(--surface);border:1.5px solid var(--teal);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+      .help-kicker{font-size:.78rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8fd3dc}
+      .help-card h3{font-size:1.22rem;margin-top:6px;line-height:1.3}
+      .help-simple{margin-top:10px;font-size:1rem}
+      .help-example{margin-top:12px;background:var(--surface-2);border-radius:10px;padding:12px 14px;font-size:.94rem}
+      .help-example b{color:var(--gold)}
+      .help-how{margin-top:10px;font-size:.94rem;color:var(--ink-soft)}
+      .help-ask{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}
+      .help-ask p{font-weight:700;font-size:.97rem}
+      .help-ask .sub{font-weight:400;color:var(--ink-soft);font-size:.88rem;margin-top:3px}
+      .help-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+      .help-chip{background:transparent;color:#8fd3dc;border:1px solid var(--teal);font:inherit;font-weight:600;font-size:.84rem;padding:8px 12px;border-radius:999px;cursor:pointer;min-height:40px}
+      .help-answer{margin-top:12px;font-size:.95rem;background:var(--teal-soft);border:1px solid var(--teal);border-radius:10px;padding:13px 14px;white-space:pre-line}
+      .help-answer:empty{display:none}
+
       /* ---------- MODE HP / MOBILE APP ---------- */
       .bottom-nav{display:none}
       .mobile-valbar{display:none}
@@ -446,6 +469,7 @@
             <span class="demo-tag" style="margin:0">Formulir kosong — kolom berwarna keemasan siap diisi dengan data usaha Anda</span>
             <button class="btn ghost small" id="btnUbahUsahaData" type="button">Ubah usaha</button>
           </div>
+          <p class="help-hint"><span class="field-help-btn" aria-hidden="true">?</span><span><b>Belum paham maksud suatu kolom?</b> Ketuk ikon <b>?</b> di samping nama kolom — akan muncul penjelasan sederhana dan contohnya. Di dalam penjelasan itu ada tombol <b>Tanya AI</b>, silakan bertanya dengan bahasa Anda sendiri bila masih belum paham.</span></p>
           <div class="form-grid">
             <label class="f"><span>Nama usaha</span><input type="text" id="inNama" placeholder="contoh: Dapur Bu Sari" autocomplete="off" /></label>
             <label class="f"><span>Jenis usaha</span>
@@ -908,7 +932,7 @@
 
         <div class="wiz-step" data-wiz="1">
           <h2>Apa usaha Anda?</h2>
-          <p class="hint">Ceritakan sedikit saja — nama, jenis, dan kota tempat usaha Anda berjalan.</p>
+          <p class="hint">Ceritakan sedikit saja — nama, jenis, dan kota tempat usaha Anda berjalan. Ketuk ikon ? di samping nama kolom bila ingin penjelasan sederhana, dan gunakan tombol Tanya AI di dalamnya bila masih belum paham.</p>
           <label class="f" style="margin-top:14px"><span>Nama usaha</span><input type="text" id="wizNama" placeholder="contoh: Dapur Bu Sari" autocomplete="off" /></label>
           <label class="f" style="margin-top:12px"><span>Jenis usaha</span>
             <select id="wizSektor">
@@ -1001,6 +1025,37 @@
             <button class="btn" type="button" id="btnWizDetail">Lihat detail lengkap</button>
           </div>
           <p class="note" style="margin-top:10px">Tombol “Lihat detail lengkap” membuka 9 modul lengkap — jawaban Anda sudah terisi di formulirnya.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ PENJELASAN PER KOLOM + TANYA AI ============ -->
+    <div class="help-overlay" id="fieldHelpOverlay" role="dialog" aria-modal="true" aria-labelledby="fieldHelpTitle">
+      <div class="help-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+          <span class="help-kicker">Penjelasan kolom</span>
+          <button class="btn ghost small" id="btnFieldHelpCloseTop" type="button">Tutup</button>
+        </div>
+        <h3 id="fieldHelpTitle">—</h3>
+        <p class="help-simple" id="fieldHelpSimple"></p>
+        <div class="help-example" id="fieldHelpExample" style="display:none"></div>
+        <p class="help-how" id="fieldHelpHow" style="display:none"></p>
+        <div class="help-ask">
+          <p>Masih belum paham? Tanya AI di sini.</p>
+          <p class="sub">Tulis pertanyaan dengan bahasa sehari-hari. AI akan menjelaskan kolom ini saja, dengan contoh yang dekat dengan usaha Anda, sampai Anda paham. Angka hasil perhitungan tetap dari rumus aplikasi.</p>
+          <div class="help-chips">
+            <button class="help-chip" type="button" data-help-chip="contoh">Berikan contoh lain</button>
+            <button class="help-chip" type="button" data-help-chip="hitung">Bagaimana cara menghitung / mengisinya?</button>
+            <button class="help-chip" type="button" data-help-chip="salah">Kalau saya salah isi, apa akibatnya?</button>
+          </div>
+          <div class="coach-row">
+            <input type="text" id="fieldHelpQ" placeholder="contoh: Saya masih bingung, maksudnya bagaimana?" aria-label="Pertanyaan Anda tentang kolom ini" />
+            <button class="btn" id="btnFieldHelpAsk" type="button">Tanya AI</button>
+          </div>
+          <div class="help-answer" id="fieldHelpAnswer" role="status"></div>
+        </div>
+        <div class="wiz-actions" style="margin-top:18px">
+          <button class="btn" id="btnFieldHelpClose" type="button" style="flex:1 1 100%">Tutup — saya sudah paham</button>
         </div>
       </div>
     </div>
@@ -2339,6 +2394,218 @@
            pengguna lama tidak sampai ke sini karena sudah punya data. */
         if(window.__pendingGreetingOpen){ window.__pendingGreetingOpen=false; openGreeting(); }
         else if(window.__pendingWizardOpen){ window.__pendingWizardOpen=false; openWizard(); }
+      })();
+    </script>
+
+    <script>
+      /* ================= IKON PENJELASAN DI SETIAP ISIAN + TANYA AI PER KOLOM =================
+         Setiap label.f (wizard, Data Usaha, GPS, HPP, investasi, kemasan, label produk,
+         pembukuan, stok, piutang, utang, SOP, dan layar daftar/masuk) mendapat tombol "?"
+         di samping nama kolomnya. Mengetuknya membuka penjelasan sederhana + contoh.
+         Di dalam penjelasan ada kolom "Tanya AI": pertanyaan diteruskan ke AI Coach yang
+         sama (window.__askAICoach -> POST /api/ai-chat, konteks hanya angka & skor) dengan
+         konteks kolom yang sedang dibuka; bila AI online belum tersambung, tampil
+         penjelasan lokal dari kamus di bawah. Pilihan jawaban pada kuis introspeksi dan
+         baris periksa (kemasan, konsistensi, legalitas, kanal) juga mendapat tombol "?".
+         Kolom yang dibuat belakangan (langkah SOP, baris periksa) ditangkap MutationObserver. */
+      (function(){
+        "use strict";
+        function gid(id){ return document.getElementById(id); }
+        function norm(s){ return String(s||"").replace(/\s+/g," ").trim().toLowerCase(); }
+
+        /* Kamus penjelasan sederhana per kolom — bahasa sehari-hari, selalu dengan contoh. */
+        var H = {
+          authNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan. Nama ini tampil di laporan dan di tampilan untuk calon mitra kerjasama investasi.",e:"Dapur Bu Sari, Laundry Berkah, Bengkel Pak Rudi.",h:"Isi nama yang dikenal pelanggan — tidak harus nama resmi di dokumen."},
+          authHp:{s:"Nomor HP Anda yang aktif dan bisa menerima WhatsApp. Dipakai untuk mengenali akun usaha Anda.",e:"0812-3456-7890.",h:"Tulis nomor yang masih aktif, mulai dengan 08."},
+          authEmail:{s:"Alamat email untuk masuk ke akun dan menyimpan data usaha Anda di cloud, supaya bisa dibuka lagi di HP atau perangkat lain.",e:"usaha@email.com.",h:"Pakai email yang masih bisa Anda buka — tautan konfirmasi pendaftaran dikirim ke email ini."},
+          authPass:{s:"Kata sandi rahasia untuk akun Anda. Hanya Anda yang tahu kata sandi ini.",e:"Minimal 6 karakter — gabungkan huruf dan angka yang mudah Anda ingat.",h:"Jangan memakai kata sandi yang sama persis dengan email Anda, dan jangan dibagikan ke siapa pun."},
+          inNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan.",e:"Dapur Bu Sari.",h:"Cukup nama yang dikenal pelanggan."},
+          inSektor:{s:"Bidang usaha utama Anda. Pilihan ini menentukan saran kemasan, cara hitung, dan angka pembanding yang dipakai aplikasi.",e:"Warung makan memilih Kuliner, toko kelontong memilih Retail, laundry memilih Jasa.",h:"Pilih yang paling dekat dengan kegiatan yang menghasilkan uang paling besar."},
+          inProvinsi:{s:"Provinsi tempat usaha Anda berjalan saat ini.",e:"Usaha di Surabaya memilih Jawa Timur.",h:"Ketuk daftarnya, lalu pilih satu provinsi. Setelah itu kolom kota/kabupaten di sebelahnya terisi daftar dari provinsi itu."},
+          inKota:{s:"Kota atau kabupaten tempat usaha Anda berjalan.",e:"Kota Surabaya, Kabupaten Sidoarjo.",h:"Pilih provinsi dulu — daftar di kolom ini hanya berisi kota/kabupaten dari provinsi tersebut."},
+          wizProvinsi:{s:"Provinsi tempat usaha Anda berjalan saat ini.",e:"Usaha di Surabaya memilih Jawa Timur.",h:"Pilih satu provinsi, lalu lanjut memilih kota/kabupatennya."},
+          wizKota:{s:"Kota atau kabupaten tempat usaha Anda berjalan.",e:"Kota Surabaya, Kabupaten Malang.",h:"Pilih provinsi dulu — daftar di kolom ini mengikuti provinsi yang Anda pilih."},
+          gpsProvinsi:{s:"Provinsi tempat usaha Anda, diisi manual hanya bila lokasi GPS tidak tersedia atau tidak diizinkan.",e:"Jawa Timur.",h:"Pilihan ini terhubung dengan kolom Provinsi di formulir Data Usaha — mengubah di sini mengubah juga di sana."},
+          gpsKota:{s:"Kota atau kabupaten tempat usaha Anda, diisi manual hanya bila lokasi GPS tidak tersedia.",e:"Kota Surabaya.",h:"Pilih provinsi di kolom sebelahnya dulu, baru pilih kota/kabupatennya di sini."},
+          gpsDiambilPada:{s:"Waktu kapan lokasi GPS usaha Anda diambil. Kolom ini terisi sendiri saat Anda menekan tombol Ambil lokasi saya.",e:"Terisi otomatis — tidak perlu diketik.",h:"Biarkan kosong bila Anda tidak memakai GPS; cukup pilih provinsi dan kota/kabupaten secara manual."},
+          inLama:{s:"Sudah berapa tahun usaha ini berjalan, dihitung dari pertama kali mulai jualan sampai sekarang.",e:"Mulai tahun 2022, sekarang 2026 — isi 4. Baru jalan 6 bulan — isi 0,5.",h:"Boleh memakai koma, misalnya 2,5 untuk dua tahun setengah."},
+          inOmzet:{s:"Total uang penjualan dalam satu bulan, sebelum dikurangi biaya apa pun. Ini bukan keuntungan — ini semua uang yang masuk dari pembeli.",e:"Dalam sebulan pembeli membayar total Rp45.000.000 — isi 45000000, tulis angka saja tanpa titik.",h:"Jumlahkan semua penjualan: tunai, transfer, QRIS, dan aplikasi pesan-antar. Bila tidak tahu persis, isi perkiraan jujur."},
+          wizOmzet:{s:"Total uang penjualan dalam satu bulan, sebelum dikurangi biaya apa pun. Ini bukan keuntungan.",e:"Pembeli membayar total Rp45.000.000 dalam sebulan — isi 45000000.",h:"Tidak tahu? Ketuk tombol perkiraan di langkah ini, jawab penjualan sehari dan jumlah hari jualan."},
+          wizJualHari:{s:"Perkiraan total uang penjualan dalam satu hari biasa — hari yang tidak terlalu ramai dan tidak terlalu sepi.",e:"Satu hari biasa masuk Rp1.500.000 — isi 1500000.",h:"Ingat hari kemarin atau hari biasa terakhir, lalu jumlahkan semua pembayarannya."},
+          wizHariJual:{s:"Dalam satu bulan, berapa hari usaha Anda buka dan jualan.",e:"Buka Senin sampai Sabtu, libur Minggu — sekitar 26 hari.",h:"Hitung hari buka dalam seminggu, lalu kalikan kurang lebih 4 minggu."},
+          inTumbuh:{s:"Perkiraan naik atau turunnya omzet Anda dalam setahun, dalam persen. Kolom ini menilai apakah penjualan sedang membesar atau mengecil.",e:"Tahun lalu omzet Rp30 juta/bulan, sekarang Rp33 juta/bulan — naik sekitar 10, isi 10. Turun — isi angka negatif, misalnya -5.",h:"Tidak perlu tepat. Isi 0 bila penjualan terasa tetap."},
+          inHpp:{s:"Bagian dari omzet yang habis untuk bahan atau barang yang terjual, dalam persen. Sisanya adalah ruang untuk biaya lain dan keuntungan.",e:"Omzet Rp10.000.000 dan bahan yang terpakai Rp4.200.000 — isi 42.",h:"Cara hitung: total biaya bahan sebulan dibagi omzet sebulan, lalu kali 100."},
+          wizBahan:{s:"Total uang yang Anda keluarkan dalam sebulan untuk membeli bahan baku yang dipakai membuat produk atau layanan.",e:"Belanja beras, ayam, sayur, gas untuk dapur total Rp18.000.000 sebulan — isi 18000000.",h:"Jumlahkan semua belanja bahan dalam sebulan. Dari angka ini aplikasi menghitung persentase bahan dari omzet Anda."},
+          inOpex:{s:"Biaya rutin setiap bulan untuk menjalankan usaha, di luar bahan dan di luar gaji Anda sebagai pemilik.",e:"Sewa tempat, gaji karyawan, listrik, air, transport, pulsa usaha.",h:"Jumlahkan biaya rutin satu bulan. Gaji pemilik diisi di kolom terpisah, jangan digabung di sini."},
+          wizOpex:{s:"Biaya rutin setiap bulan untuk menjalankan usaha, di luar bahan dan di luar gaji Anda sebagai pemilik.",e:"Sewa Rp3 juta + gaji karyawan Rp6 juta + listrik dan transport Rp2 juta = isi 11000000.",h:"Jumlahkan sewa, gaji karyawan, listrik, air, dan transport dalam sebulan."},
+          inGaji:{s:"Gaji yang pantas untuk pekerjaan Anda sebagai pemilik, seandainya pekerjaan itu digantikan orang lain yang Anda upah.",e:"Bila seorang pengelola warung digaji Rp5.000.000 sebulan — isi 5000000.",h:"Angka ini membuat keuntungan terlihat jujur: laba dihitung setelah pekerjaan pemilik dibayar wajar."},
+          wizGaji:{s:"Gaji yang pantas untuk pekerjaan Anda sebagai pemilik, seandainya pekerjaan itu digantikan orang lain.",e:"Pengelola pengganti pantas menerima Rp5.000.000 sebulan — isi 5000000.",h:"Bayangkan Anda mengupah orang untuk melakukan semua pekerjaan Anda saat ini."},
+          inAset:{s:"Nilai wajar semua milik usaha saat ini bila dijual sekarang: peralatan, stok, kendaraan yang dipakai usaha, dan uang kas usaha.",e:"Gerobak, kompor, etalase, stok, dan kas usaha total sekitar Rp120.000.000 — isi 120000000.",h:"Pakai harga wajar sekarang, bukan harga saat membeli dulu."},
+          inUtang:{s:"Total sisa utang usaha Anda saat ini — semua kewajiban usaha yang belum lunas, kepada siapa pun.",e:"Sisa utang bahan ke pemasok Rp10 juta + sisa kewajiban lain Rp15 juta = isi 25000000.",h:"Isi sisa yang belum dibayar saja. Rinciannya bisa dicatat satu per satu di daftar utang pada Modul Keuangan."},
+          inBuku:{s:"Seberapa rapi pencatatan uang usaha Anda saat ini. Jujur saja — pilihan ini memengaruhi skor dan saran untuk Anda.",e:"Uang usaha masih bercampur dengan uang pribadi memilih pilihan pertama; sudah memakai aplikasi kasir memilih pilihan terakhir.",h:"Pilih kondisi yang paling dekat dengan keadaan sekarang, bukan keadaan yang diharapkan."},
+          inLegal:{s:"Izin usaha yang sudah Anda miliki saat ini.",e:"Sudah punya NIB dari OSS memilih pilihan NIB; makanan kemasan dengan PIRT memilih pilihan terakhir.",h:"Pilih yang sudah benar-benar terbit, bukan yang sedang diurus."},
+          inTergantung:{s:"Seberapa besar usaha berhenti bila Anda sebagai pemilik tidak hadir. Geser ke kiri bila usaha tetap jalan tanpa Anda, geser ke kanan bila semua berhenti tanpa Anda.",e:"Nilai 80 berarti hampir semua pekerjaan menunggu Anda; nilai 20 berarti karyawan bisa menjalankan usaha sendiri.",h:"Bayangkan Anda pergi 3 hari tanpa bisa dihubungi — berapa persen kegiatan usaha yang tetap berjalan?"},
+          hBahan:{s:"Biaya bahan untuk membuat SATU porsi atau SATU produk saja — bukan biaya sebulan.",e:"Satu porsi nasi campur memakai bahan Rp6.500 — isi 6500.",h:"Ambil harga bahan, bagi dengan jumlah porsi yang dihasilkan."},
+          hKemasan:{s:"Biaya kemasan untuk satu porsi atau satu produk: plastik, kotak, botol, stiker, dan penutupnya.",e:"Satu kotak + stiker Rp1.200 — isi 1200. Jualan tanpa kemasan — isi 0.",h:"Hitung harga beli kemasan per buah, bukan per pak."},
+          hEnergi:{s:"Bagian biaya gas dan listrik untuk membuat satu porsi atau satu produk.",e:"Gas dan listrik sebulan Rp600.000 untuk 1.000 porsi — per porsi sekitar Rp600, isi 600.",h:"Bila sulit dihitung tepat, isi perkiraan yang masuk akal."},
+          hTenaga:{s:"Bagian upah tenaga kerja untuk membuat satu porsi atau satu produk.",e:"Upah juru masak sebulan dibagi jumlah porsi sebulan, misalnya Rp1.800 per porsi — isi 1800.",h:"Dikerjakan sendiri tanpa upah terpisah? Isi perkiraan nilai pekerjaan itu, atau isi 0 dulu."},
+          hLain:{s:"Biaya kecil lain untuk satu porsi yang belum masuk kolom lain: es, sedotan, kantong, bumbu tambahan, dan sejenisnya.",e:"Sekitar Rp400 per porsi — isi 400. Tidak ada — isi 0.",h:"Lebih baik terisi perkiraan daripada kosong, supaya harga jual tidak kemurahan."},
+          hMargin:{s:"Keuntungan kotor yang Anda inginkan dari harga jual, dalam persen — sebelum biaya sewa dan biaya rutin lain.",e:"Ingin sisa 40 dari setiap 100 rupiah harga jual — isi 40.",h:"Umumnya usaha makanan memakai 30 sampai 50. Makin besar margin, makin tinggi harga yang disarankan."},
+          invDana:{s:"Jumlah dana kerjasama investasi yang Anda butuhkan untuk mengembangkan usaha.",e:"Butuh Rp50.000.000 untuk alat dan stok — isi 50000000.",h:"Isi sesuai rencana pemakaian yang jelas, bukan angka sebesar-besarnya."},
+          invJangka:{s:"Lama kerjasama investasi dalam bulan. Jangka lebih lama membuat bagian hasil yang dibagi setiap bulan lebih ringan.",e:"Kerjasama 24 bulan berarti hasil dibagi selama 24 kali.",h:"Pilih jangka yang membuat bagian per bulan tidak memberatkan laba bulanan Anda."},
+          packPhoto:{s:"Foto produk atau kemasan utama Anda. Foto ini dinilai bersama daftar periksa label di halaman ini.",e:"Foto dengan cahaya terang, latar bersih, dan label menghadap kamera.",h:"Ketuk kolom ini, lalu pilih foto dari HP Anda. Foto hanya tampil di halaman ini untuk Anda nilai."},
+          lblProduk:{s:"Nama produk seperti yang tertulis di label kemasan.",e:"Sambal Bawang Bu Sari.",h:"Tulis nama yang sama dengan yang Anda cetak di label."},
+          lblBerat:{s:"Berat bersih isi produk saja, tanpa berat kemasannya.",e:"200 g, 500 ml, 1 kg.",h:"Timbang isi produk, lalu tulis angkanya dengan satuannya."},
+          lblKomp:{s:"Bahan-bahan penyusun produk, diurutkan dari yang terbanyak.",e:"Cabai, bawang merah, minyak, garam.",h:"Untuk makanan dan minuman, tulis semua bahan utama yang dipakai."},
+          lblIzin:{s:"Nomor izin produk yang sudah Anda miliki, misalnya PIRT atau nomor halal.",e:"Tulis nomor persis seperti di sertifikat izin Anda.",h:"Belum punya izin? Kosongkan dulu — cara mengurusnya ada di bagian Legalitas."},
+          lblExp:{s:"Batas waktu produk masih baik dan aman dipakai atau dikonsumsi.",e:"Baik sebelum Des 2026.",h:"Tulis sesuai daya tahan produk Anda yang sebenarnya."},
+          lblKontak:{s:"Cara pembeli menghubungi Anda untuk memesan lagi.",e:"WA 0812-xxxx-xxxx atau nama akun toko online Anda.",h:"Satu kontak yang paling aktif saja sudah cukup."},
+          notaPhoto:{s:"Foto nota atau struk belanja dan penjualan sebagai bukti pendamping catatan transaksi Anda.",e:"Foto struk dari pemasok atau nota penjualan hari ini.",h:"Setelah foto dipilih, baca angkanya lalu masukkan jumlahnya pada formulir transaksi di bawahnya dan periksa kembali."},
+          txTanggal:{s:"Tanggal terjadinya transaksi — kapan uang masuk atau keluar.",e:"Ditulis tahun-bulan-tanggal, misalnya 2026-11-14.",h:"Isi tanggal transaksinya, bukan tanggal Anda mencatatnya, bila berbeda."},
+          txKet:{s:"Cerita singkat tentang transaksi ini: uang ini untuk apa atau dari apa.",e:"Penjualan nasi campur 40 porsi; Beli beras 25 kg.",h:"Tulis singkat dan jelas — keterangan ini yang Anda baca kembali saat memeriksa laporan."},
+          txJenis:{s:"Apakah uang masuk ke usaha atau keluar dari usaha.",e:"Hasil penjualan adalah Pemasukan; belanja bahan adalah Pengeluaran.",h:"Pilih satu: Pemasukan atau Pengeluaran."},
+          txKat:{s:"Kelompok transaksi, supaya laporan bisa memisahkan penjualan, bahan, dan biaya lain.",e:"Penjualan untuk hasil jualan; Bahan baku untuk belanja bahan; Gaji untuk upah karyawan.",h:"Pilih kelompok yang paling dekat. Kelompok ini memengaruhi hitungan laporan laba rugi."},
+          txJumlah:{s:"Besarnya uang pada transaksi ini, dalam rupiah.",e:"Penjualan Rp600.000 — isi 600000, angka saja tanpa titik.",h:"Satu transaksi satu jumlah. Penjualan yang berbeda hari dicatat terpisah."},
+          stNama:{s:"Nama barang yang Anda simpan sebagai stok.",e:"Beras 5 kg, Minyak goreng 2 liter.",h:"Tulis nama dan ukuran supaya mudah dikenali saat memeriksa stok."},
+          stQty:{s:"Jumlah barang yang saat ini tersedia di tempat penyimpanan.",e:"Masih ada 20 sak — isi 20.",h:"Hitung jumlah fisik yang benar-benar ada sekarang."},
+          stBeli:{s:"Harga beli Anda untuk satu satuan barang ini.",e:"Satu sak beras dibeli Rp68.000 — isi 68000.",h:"Harga per satuan, bukan total belanja."},
+          stJual:{s:"Harga jual Anda untuk satu satuan barang ini ke pembeli.",e:"Satu sak dijual Rp78.000 — isi 78000.",h:"Selisih harga jual dan harga beli adalah ruang keuntungan barang ini."},
+          piNama:{s:"Nama pelanggan atau toko yang masih berutang pembelian kepada usaha Anda.",e:"Warung Pak Budi.",h:"Tulis nama yang Anda pakai untuk menagihnya kembali."},
+          piJumlah:{s:"Jumlah uang yang masih harus dibayar pelanggan tersebut kepada Anda.",e:"Masih kurang Rp1.500.000 — isi 1500000.",h:"Isi sisa yang belum dibayar, bukan total belanja awal bila sebagian sudah dibayar."},
+          piTempo:{s:"Tanggal paling lambat pelanggan tersebut berjanji membayar.",e:"2026-11-30.",h:"Tulis tahun-bulan-tanggal sesuai kesepakatan dengan pelanggan."},
+          utNama:{s:"Keterangan utang ini: untuk apa dan kepada siapa.",e:"Utang bahan baku ke Toko Makmur.",h:"Tulis cukup jelas supaya Anda ingat kewajiban ini tanpa bertanya lagi."},
+          utJumlah:{s:"Jumlah sisa utang yang belum dibayar pada catatan ini.",e:"Rp5.000.000 — isi 5000000.",h:"Satu baris untuk satu kewajiban. Total semua baris menjadi angka utang di laporan."},
+          utTempo:{s:"Tanggal paling lambat utang ini harus dibayar.",e:"2026-12-15.",h:"Tulis tahun-bulan-tanggal sesuai kesepakatan dengan pemberi utang."},
+          sopNama:{s:"Nama kegiatan yang ingin dibuatkan langkah-langkah tertulisnya, supaya bisa dikerjakan orang lain dengan hasil yang sama.",e:"SOP Membuka Warung Pagi.",h:"Pilih satu kegiatan yang paling sering berantakan atau paling bergantung pada Anda."},
+          sopPj:{s:"Orang atau peran yang bertanggung jawab menjalankan langkah-langkah ini.",e:"Kepala dapur, kasir senior.",h:"Tulis perannya; lebih baik lagi bila ditambah nama orangnya."},
+          sopTujuan:{s:"Hasil akhir yang diharapkan bila langkah-langkah ini dijalankan dengan benar.",e:"Warung siap jualan pukul 06.00 dengan rasa dan tampilan yang sama setiap hari.",h:"Tulis dalam satu kalimat yang bisa diperiksa benar atau salahnya."},
+          wizNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan.",e:"Dapur Bu Sari.",h:"Cukup nama yang dikenal pelanggan."},
+          wizSektor:{s:"Bidang usaha utama Anda. Pilihan ini menentukan saran dan angka pembanding untuk usaha Anda.",e:"Warung makan memilih Kuliner; laundry memilih Jasa.",h:"Pilih yang paling dekat dengan penghasilan utama Anda."}
+        };
+        var LABEL_H = {
+          "catat dengan suara":{s:"Tombol ini mengisi kolom keterangan transaksi memakai suara Anda, untuk Anda periksa lagi sebelum disimpan.",e:"Tekan tombolnya, lalu ucapkan keterangan transaksi dengan jelas.",h:"Periksa hasil tulisan dari suara Anda — perbaiki bila ada kata atau angka yang keliru."},
+          "pilih foto produk":{s:"Foto produk atau kemasan utama Anda untuk dinilai bersama daftar periksa label.",e:"Foto terang, latar bersih, label menghadap kamera.",h:"Pilih foto dari HP Anda; foto hanya tampil di halaman ini."},
+          "foto nota / struk (opsional)":{s:"Foto nota atau struk sebagai bukti pendamping catatan transaksi Anda.",e:"Struk belanja bahan atau nota penjualan hari ini.",h:"Setelah memilih foto, masukkan jumlahnya pada formulir transaksi dan periksa kembali."}
+        };
+        function helpForLabelText(t){
+          var n=norm(t);
+          if(LABEL_H[n]) return LABEL_H[n];
+          if(n.indexOf("langkah")===0){ return {s:"Satu langkah kerja dalam urutan SOP ini. Tulis satu tindakan yang jelas, berurutan dari langkah pertama sampai selesai.",e:"Buka pintu, nyalakan kompor, panaskan minyak.",h:"Satu kolom satu tindakan. Tambah langkah dengan tombol Tambah langkah bila urutannya belum lengkap."}; }
+          if(n.indexOf("sudut 1")===0){ return {s:"Foto kemasan dari atas, untuk melihat bentuk dan tampilan atas produk.",e:"Foto tegak lurus dari atas dengan cahaya terang.",h:"Pilih foto dari HP Anda — sudut ini melengkapi penilaian kemasan."}; }
+          if(n.indexOf("sudut 2")===0){ return {s:"Foto kemasan dalam keadaan tertutup rapat, seperti yang diterima pembeli.",e:"Foto kemasan terlipat atau tersegel dari depan.",h:"Pilih foto dari HP Anda — sudut ini melengkapi penilaian kemasan."}; }
+          if(n.indexOf("sudut 3")===0){ return {s:"Foto isi produk atau label dari dekat, supaya tulisan label terbaca jelas.",e:"Foto dekat sampai komposisi dan tanggal terbaca.",h:"Pilih foto dari HP Anda — sudut ini melengkapi penilaian kemasan."}; }
+          return null;
+        }
+        var SEG_HINT = {
+          quizCard:"Pilih jawaban yang paling jujur untuk keadaan sekarang: Belum berarti belum dilakukan, Sebagian berarti kadang-kadang atau belum lengkap, Sudah berarti selalu dilakukan.",
+          packChecks:"Untuk tiap baris, pilih Sudah bila hal itu benar-benar sudah ada di kemasan Anda, dan Belum bila belum ada.",
+          consChecks:"Untuk tiap sumber, buka dan bandingkan datanya dengan data usaha Anda, lalu tandai: Sesuai, Beda, atau Belum dicek.",
+          legalChecks:"Untuk tiap izin, tandai status yang benar saat ini supaya aplikasi bisa menunjukkan izin mana yang perlu diurus berikutnya.",
+          channelChecks:"Tandai kanal penjualan yang benar-benar sudah aktif dan pernah menghasilkan penjualan untuk usaha Anda."
+        };
+
+        var overlay=gid("fieldHelpOverlay"), titleEl=gid("fieldHelpTitle"), simpleEl=gid("fieldHelpSimple"),
+            exEl=gid("fieldHelpExample"), howEl=gid("fieldHelpHow"), qEl=gid("fieldHelpQ"), ansEl=gid("fieldHelpAnswer");
+        var current=null, lastBtn=null;
+
+        function openHelp(info, btn){
+          current=info; lastBtn=btn||null;
+          titleEl.textContent=info.title||"Penjelasan kolom";
+          simpleEl.textContent=info.simple||"";
+          if(info.example){ exEl.style.display="block"; exEl.innerHTML=""; var b=document.createElement("b"); b.textContent="Contoh: "; exEl.appendChild(b); exEl.appendChild(document.createTextNode(info.example)); }
+          else exEl.style.display="none";
+          if(info.how){ howEl.style.display="block"; howEl.textContent="Cara mengisi: "+info.how; } else howEl.style.display="none";
+          qEl.value=""; ansEl.textContent="";
+          overlay.classList.add("show"); overlay.scrollTop=0;
+        }
+        function closeHelp(){ overlay.classList.remove("show"); if(lastBtn && lastBtn.focus) lastBtn.focus(); }
+        gid("btnFieldHelpClose").addEventListener("click", closeHelp);
+        gid("btnFieldHelpCloseTop").addEventListener("click", closeHelp);
+        overlay.addEventListener("click", function(ev){ if(ev.target===overlay) closeHelp(); });
+        document.addEventListener("keydown", function(ev){ if(ev.key==="Escape" && overlay.classList.contains("show")) closeHelp(); });
+
+        function localFieldAnswer(userQ){
+          if(!current) return "";
+          var base=current.simple||"";
+          var extra=" Dengan kata lain: perhatikan kolom "+(current.title||"ini")+" satu per satu, isi dengan keadaan usaha Anda yang sebenarnya — perkiraan jujur lebih berguna daripada angka yang dikarang.";
+          if(current.example) extra+=" Contohnya: "+current.example;
+          if(current.how) extra+=" Cara mengisinya: "+current.how;
+          if(userQ) extra+=" Itu jawaban atas pertanyaan Anda dari penjelasan kolom ini; bila masih ada bagian yang belum jelas, tanyakan lagi dengan menyebut bagian yang membingungkan itu.";
+          return base+extra;
+        }
+        function askFieldAI(userQ){
+          if(!current) return;
+          var q=(userQ||"").trim() || "Tolong jelaskan lagi kolom ini dengan bahasa yang sangat sederhana.";
+          var prompt="Saya belum paham kolom \""+(current.title||"")+"\". Penjelasan awalnya: \""+(current.simple||"")+"\" "+(current.example?("Contoh awalnya: \""+current.example+"\" "):"")+"Pertanyaan saya: "+q+" Tolong jelaskan kolom ini saja dengan bahasa Indonesia yang sangat sederhana, beri satu contoh dari usaha kecil, dan akhiri dengan satu langkah praktis cara mengisinya. Jangan membuat angka hasil perhitungan baru.";
+          ansEl.textContent="Sedang berpikir… AI sedang menyiapkan penjelasan untuk kolom ini.";
+          if(window.__askAICoach){ window.__askAICoach(prompt, ansEl); }
+          else { ansEl.textContent=localFieldAnswer(q)+"\n\nAI online belum tersambung — ini penjelasan dari aplikasi."; }
+          /* Bila jalur online gagal, __askAICoach sendiri menampilkan penjelasan lokal umumnya;
+             jawaban lokal khusus kolom tampil bila fungsi itu tidak tersedia sama sekali. */
+        }
+        gid("btnFieldHelpAsk").addEventListener("click", function(){ askFieldAI(qEl.value); });
+        qEl.addEventListener("keydown", function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); askFieldAI(qEl.value); } });
+        document.querySelectorAll("[data-help-chip]").forEach(function(ch){
+          ch.addEventListener("click", function(){
+            var kind=ch.getAttribute("data-help-chip");
+            var q= kind==="contoh" ? "Berikan satu contoh lain yang sederhana untuk kolom ini." : kind==="hitung" ? "Bagaimana cara menghitung atau mengisi kolom ini, langkah demi langkah?" : "Kalau saya salah mengisi kolom ini, apa akibatnya untuk hasil perhitungan saya?";
+            qEl.value=q; askFieldAI(q);
+          });
+        });
+
+        function makeBtn(title, cls){
+          var b=document.createElement("button"); b.type="button"; b.className="field-help-btn"+(cls?" "+cls:"");
+          b.textContent="?"; b.setAttribute("aria-label","Penjelasan tentang "+title); b.title="Penjelasan: "+title;
+          return b;
+        }
+        function resolveLabelInfo(label, spanText){
+          var control=label.querySelector("input,select,textarea");
+          var info=null;
+          if(control && control.id && H[control.id]) info=H[control.id];
+          if(!info) info=helpForLabelText(spanText);
+          var small=label.querySelector("small");
+          var smallText=small?small.textContent.replace(/\s+/g," ").trim():"";
+          var ph=control?String(control.getAttribute("placeholder")||""):"";
+          var exFromPh=ph.indexOf("contoh:")===0?ph.replace(/^contoh:\s*/,""):"";
+          if(!info){
+            info={s:"Kolom ini diisi dengan "+spanText.toLowerCase()+"."+(smallText?" "+smallText:""), e:exFromPh||"", h:"Isi dengan keadaan usaha Anda yang sebenarnya. Bila ragu, ketuk tombol Tanya AI di penjelasan ini dan tanyakan dengan bahasa Anda sendiri."};
+          }
+          return { title:spanText, simple:info.s, example:info.e||exFromPh||"", how:info.h||"" };
+        }
+        function attachToLabel(label){
+          if(label.getAttribute("data-help-done")) return;
+          var span=label.querySelector(":scope > span"); if(!span) return;
+          var spanText=span.textContent.replace(/\s+/g," ").trim(); if(!spanText) return;
+          label.setAttribute("data-help-done","1");
+          var btn=makeBtn(spanText,"");
+          btn.addEventListener("click", function(ev){ ev.preventDefault(); ev.stopPropagation(); openHelp(resolveLabelInfo(label, spanText), btn); });
+          span.appendChild(btn);
+        }
+        function attachToQ(q){
+          if(q.getAttribute("data-help-done")) return;
+          var first=q.childNodes[0];
+          var title=first?first.textContent.replace(/\s+/g," ").trim():"";
+          if(!title) return;
+          q.setAttribute("data-help-done","1");
+          var small=q.querySelector("small");
+          var desc=small?small.textContent.replace(/\s+/g," ").trim():"";
+          var host=q.closest("[id]"); var seg=host && SEG_HINT[host.id] ? SEG_HINT[host.id] : "Pilih jawaban yang paling sesuai dengan keadaan usaha Anda saat ini — jawaban jujur menghasilkan saran yang tepat.";
+          var btn=makeBtn(title,"qbtn");
+          btn.addEventListener("click", function(ev){
+            ev.preventDefault(); ev.stopPropagation();
+            openHelp({title:title, simple:(desc?desc+" ":"")+seg, example:"Jawab apa adanya — jawaban bisa diubah lagi kapan pun, dan hasil skor akan mengikuti jawaban terbaru Anda.", how:"Baca pertanyaannya, ingat keadaan usaha Anda minggu ini, lalu pilih tombol jawaban di baris yang sama."}, btn);
+          });
+          if(small) q.insertBefore(btn, small); else q.appendChild(btn);
+        }
+        function scan(){
+          document.querySelectorAll("label.f").forEach(attachToLabel);
+          document.querySelectorAll(".q-row .q, .check-row .q").forEach(attachToQ);
+        }
+        scan();
+        var pending=false;
+        var mo=new MutationObserver(function(){ if(pending) return; pending=true; setTimeout(function(){ pending=false; scan(); },250); });
+        mo.observe(document.body,{childList:true,subtree:true});
+        window.__fieldHelpScan=scan;
       })();
     </script>
   </body>
