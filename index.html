@@ -498,7 +498,7 @@
     <div class="wrap">
       <header class="hero">
         <h1>Kenali kekuatan usaha Anda, lalu naikkan nilainya.</h1>
-        <p class="lede">Isi data usaha sekali, lalu lihat level UMKM Anda, skor kesehatan usaha, estimasi valuasi dari tiga metode, hasil introspeksi, hitungan HPP dan simulasi dana investasi, serta rencana perbaikan 30–60–90 hari yang disusun dari angka Anda sendiri.</p>
+        <p class="lede">Isi data usaha sekali, lalu lihat level UMKM Anda, skor kesehatan usaha keseluruhan, estimasi valuasi dari tiga metode, hasil introspeksi, hitungan HPP dan simulasi dana investasi, serta rencana perbaikan 30–60–90 hari yang disusun dari angka Anda sendiri.</p>
         <p class="note" style="margin-top:10px">Di HP: gunakan menu di bagian bawah layar untuk berpindah bagian — Data, Level, Valuasi, Cek Diri, Uang, dan Saran. Bilah hijau di atas menu menampilkan valuasi terbaru Anda setiap saat.</p>
         <div class="guided-cta">
           <div class="txt">
@@ -525,7 +525,7 @@
         </div>
         <div class="stat-row">
           <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div></div>
-          <div class="stat"><div class="k">Skor Kesehatan Usaha</div><div class="v" id="stHealth">—</div><div class="s">gabungan 4 dimensi introspeksi &amp; keuangan</div></div>
+          <div class="stat"><div class="k">Skor Kesehatan Usaha (keseluruhan)</div><div class="v" id="stHealth">—</div><div class="s">Gabungan keuangan, produk, pasar &amp; teknologi — bukan skor keuangan saja.</div></div>
           <div class="stat"><div class="k">Skor Siap Investasi</div><div class="v" id="stInvest">—</div><div class="s" id="stInvestSub">kelengkapan untuk penawaran kerjasama investasi</div></div>
           <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><div class="s" id="stValRange">rentang rendah – tinggi</div></div>
         </div>
@@ -649,7 +649,7 @@
           </div>
         </div>
         <div class="grid-3" style="margin-top:14px">
-          <div class="card score-card"><div class="top"><h3>Kesehatan keuangan</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><div class="explain-answer" id="explain-keuangan" role="status"></div></div>
+          <div class="card score-card"><div class="top"><h3>Kesehatan Keuangan (saja)</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><div class="explain-answer" id="explain-keuangan" role="status"></div><p class="note">Hanya aspek keuangan: margin, utang, dan pencatatan.</p></div>
           <div class="card score-card"><div class="top"><h3>Kematangan digital</h3><span class="score-num" id="scDig">—</span></div><div class="bar"><i id="scDigBar"></i></div><p class="note" id="scDigNote">—</p></div>
           <div class="card score-card"><div class="top"><h3>Kesiapan investasi</h3><span class="score-num" id="scInv">—</span></div><div class="bar"><i id="scInvBar"></i></div><p class="note" id="scInvNote">—</p><button class="btn-explain" type="button" data-explain="investasi">Jelaskan ini</button><div class="explain-answer" id="explain-investasi" role="status"></div></div>
         </div>
@@ -1610,7 +1610,7 @@
         L.push("Usaha: "+($("inNama").value||"(belum diisi)")+" — "+($("inSektor").value?$("inSektor").selectedOptions[0].textContent:"(jenis usaha belum dipilih)")+", "+($("inKota").value||"(kota belum diisi)"));
         L.push(lokasiText());
         L.push("Level skala: "+S.skala+" (omzet "+fmtShort(S.omzetThn)+"/tahun) · Level kematangan: "+S.matLevel+" dari 4");
-        L.push("Skor kesehatan: "+S.health+"/100 · Skor siap investasi: "+S.scInv+"/100");
+        L.push("Skor kesehatan usaha keseluruhan: "+S.health+"/100 · Skor siap investasi: "+S.scInv+"/100");
         L.push("");
         L.push("VALUASI (estimasi, bukan appraisal resmi KJPP)");
         L.push("Rentang nilai wajar: "+fmtShort(S.valLow)+" – "+fmtShort(S.valHigh)+" (tengah "+fmtShort(S.weighted)+")");
@@ -1836,7 +1836,7 @@
         const bepEl=$("bepNote"); if(bepEl) bepEl.innerHTML= S.omzetBln>0? "BEP Anda: omzet minimum <b>"+fmtShort(bep)+"/bulan</b> agar tidak rugi (biaya tetap "+fmtShort(fixed)+" — termasuk pengeluaran operasional dari catatan transaksi — ÷ margin kontribusi "+Math.round(contrib*100)+"%). Pendapatan Anda saat ini "+fmtShort(omzetEff)+"/bulan (Data Usaha + transaksi tercatat) — "+(omzetEff>=bep?"di atas BEP, usaha menghasilkan laba.":"<b>di bawah BEP</b> — naikkan omzet atau tekan HPP/biaya tetap.") : "Isi omzet, HPP, biaya operasional, dan gaji pemilik untuk melihat BEP.";
         const cf=$("cfChart"); if(cf){ let saldo=0; let rows=""; const laba=(S.labaBersihBln||0)+aggF.net; let max=Math.max(1,Math.abs(laba)*3); for(let m=1;m<=3;m++){ const proj=laba*Math.pow(1+(S.tumbuh||0)/12,m); saldo+=proj; if(Math.abs(saldo)>max)max=Math.abs(saldo); } saldo=0; for(let m=1;m<=3;m++){ const proj=laba*Math.pow(1+(S.tumbuh||0)/12,m); saldo+=proj; const pct=Math.max(4,Math.round(Math.abs(saldo)/max*100)); rows+="<div class='cf-row'><span class='lbl'>Bulan +"+m+"</span><span class='track'><i style='width:"+pct+"%'></i></span><span class='amt'>"+fmtShort(saldo)+"</span></div>"; } cf.innerHTML=rows; }
         renderReports();
-        const bn=$("invNama"); if(bn){ bn.textContent=($("inNama").value||"(nama usaha belum diisi)")+" — "+($("inKota").value||"")+" · "+(typeof lokasiText==="function"?lokasiText():""); $("invSkor").textContent="Level "+(S.skala||"—")+" · Kematangan Lvl "+(S.matLevel??"—")+" · Kesehatan "+(S.health??"—")+"/100 · Siap Investasi "+(S.scInv??"—")+"/100"; $("invVal").textContent=fmtShort(S.weighted||0)+" ("+fmtShort(S.valLow||0)+" – "+fmtShort(S.valHigh||0)+")"; $("invSkor2").textContent=consScoreVal+"/100 · "+legalScoreVal+"/100 · "+($("packScore").textContent||"0/100"); const raw=(($("inNama").value||"")+"|"+Math.round(S.weighted||0)+"|"+Math.round(S.sdeThn||0)+"|"+consScoreVal+"|"+legalScoreVal); let h=0; for(let i=0;i<raw.length;i++){ h=((h<<5)-h+raw.charCodeAt(i))|0; } $("invCode").textContent="UMKM-"+Math.abs(h).toString(36).toUpperCase()+"-"+Math.round(S.weighted||0).toString(36).toUpperCase(); if(typeof drawQr==="function") drawQr($("invCode").textContent+" | "+($("inNama").value||"UMKM")+" | Val "+fmtShort(S.weighted||0)+" | Konsistensi "+consScoreVal); }
+        const bn=$("invNama"); if(bn){ bn.textContent=($("inNama").value||"(nama usaha belum diisi)")+" — "+($("inKota").value||"")+" · "+(typeof lokasiText==="function"?lokasiText():""); $("invSkor").textContent="Level "+(S.skala||"—")+" · Kematangan Lvl "+(S.matLevel??"—")+" · Kesehatan usaha keseluruhan "+(S.health??"—")+"/100 · Siap Investasi "+(S.scInv??"—")+"/100"; $("invVal").textContent=fmtShort(S.weighted||0)+" ("+fmtShort(S.valLow||0)+" – "+fmtShort(S.valHigh||0)+")"; $("invSkor2").textContent=consScoreVal+"/100 · "+legalScoreVal+"/100 · "+($("packScore").textContent||"0/100"); const raw=(($("inNama").value||"")+"|"+Math.round(S.weighted||0)+"|"+Math.round(S.sdeThn||0)+"|"+consScoreVal+"|"+legalScoreVal); let h=0; for(let i=0;i<raw.length;i++){ h=((h<<5)-h+raw.charCodeAt(i))|0; } $("invCode").textContent="UMKM-"+Math.abs(h).toString(36).toUpperCase()+"-"+Math.round(S.weighted||0).toString(36).toUpperCase(); if(typeof drawQr==="function") drawQr($("invCode").textContent+" | "+($("inNama").value||"UMKM")+" | Val "+fmtShort(S.weighted||0)+" | Konsistensi "+consScoreVal); }
         if (typeof window.__renderProaktif==="function"){ try{ window.__renderProaktif(); }catch(e){} }
       }
       $("inSektor").addEventListener("change",buildContentCal);
@@ -2124,6 +2124,7 @@
           updatePack(); updateCons(); updateLegal(); updateChannels(); buildContentCal();
           renderLokasi();
           recalc();
+          window.__proaktifDataReadyFlag=true; // data (termasuk transaksi) sudah terpasang — finalisasi kunjungan proaktif boleh jalan
           if(window.__renderProaktif){ try{ window.__renderProaktif(true); }catch(e){} }
           loading=false;
         }
@@ -2223,6 +2224,7 @@
               var migMsg=document.createElement("p"); migMsg.className="note"; migMsg.style.cssText="background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:12px 14px;margin-top:14px"; migMsg.textContent="Data coba Anda sudah tersimpan."; var wb=document.querySelector(".wrap"); if(wb) wb.prepend(migMsg);
             }
           }
+          window.__proaktifDataReadyFlag=true; // loadData selesai (termasuk jalur tanpa snapshot) — finalisasi kunjungan proaktif boleh jalan
           if(window.__renderProaktif){ try{ window.__renderProaktif(true); }catch(e){} }
         }
 
@@ -2264,6 +2266,7 @@
           gid("btnLogout").textContent="Keluar mode coba";
           var loc=null; try{ var s=localStorage.getItem("umkm-introspeksi-cache:lokal"); loc=s?JSON.parse(s):null; }catch(e){}
           if(loc) applySnapshot(loc);
+          window.__proaktifDataReadyFlag=true; // data tamu berasal dari snapshot lokal yang sudah terpasang sinkron di atas
           lastJson=JSON.stringify(collectSnapshot());
           setSync("Mode coba — hanya di HP ini","warn");
           audit("Masuk sebagai tamu (mode coba tanpa daftar).");
@@ -2464,7 +2467,7 @@
           if(t.indexOf("valuasi")>=0 || t.indexOf("nilai usaha")>=0){
             return "Perkiraan nilai usaha Anda adalah "+rp(ctx.valuasi_tengah)+", dengan rentang "+rp(ctx.valuasi_rendah)+" sampai "+rp(ctx.valuasi_tinggi)+". Angka ini dihitung dari laba pemilik "+rp(ctx.laba_pemilik_per_tahun)+" per tahun dikali multiple "+String(ctx.multiple_valuasi).replace(".",",")+", lalu digabung dengan nilai aset bersih dan proyeksi laba 3 tahun. Ini estimasi untuk bahan diskusi awal — bukan penilaian resmi.";
           }
-          var ans="Berdasarkan perhitungan aplikasi: level usaha Anda "+(ctx.level_umkm||"—")+", valuasi tengah "+rp(ctx.valuasi_tengah)+" (rentang "+rp(ctx.valuasi_rendah)+" – "+rp(ctx.valuasi_tinggi)+"), skor kesehatan "+ctx.skor_kesehatan_usaha+"/100, dan skor siap investasi "+ctx.skor_siap_investasi+"/100.";
+          var ans="Berdasarkan perhitungan aplikasi: level usaha Anda "+(ctx.level_umkm||"—")+", valuasi tengah "+rp(ctx.valuasi_tengah)+" (rentang "+rp(ctx.valuasi_rendah)+" – "+rp(ctx.valuasi_tinggi)+"), skor kesehatan usaha keseluruhan "+ctx.skor_kesehatan_usaha+"/100, dan skor siap investasi "+ctx.skor_siap_investasi+"/100.";
           ans+=" Langkah pertama yang paling berdampak biasanya memperbaiki hal yang paling lemah di antara pencatatan, kemasan, dan kanal jualan — urutannya ada di rencana 30 hari pada bagian Saran.";
           if(q) ans+=" Untuk pertanyaan Anda, penjelasan di atas adalah yang bisa disimpulkan dari angka Anda saat ini; isi data lebih lengkap di formulir agar penjelasannya makin tepat.";
           return ans;
@@ -2614,7 +2617,7 @@
             var lvl=(S.skala||"—"); lvl=lvl.charAt(0).toUpperCase()+lvl.slice(1);
             gid("wizResLevel").textContent="Usaha "+lvl;
             gid("wizResVal").textContent=rp(S.weighted||0);
-            gid("wizResValNote").textContent="Rentang perkiraan: "+rp(S.valLow||0)+" – "+rp(S.valHigh||0)+". Skor kesehatan usaha "+(S.health||0)+"/100 · Skor siap investasi "+(S.scInv||0)+"/100.";
+            gid("wizResValNote").textContent="Rentang perkiraan: "+rp(S.valLow||0)+" – "+rp(S.valHigh||0)+". Skor kesehatan usaha keseluruhan "+(S.health||0)+"/100 · Skor siap investasi "+(S.scInv||0)+"/100.";
             gid("wizResPrio").innerHTML=wizPriorities().map(function(x){ return "<li>"+x+"</li>"; }).join("");
           }catch(e){}
           showWiz("hasil");
@@ -2920,7 +2923,7 @@
             h+="<h1 style='margin-top:16px'>"+escF(d.nama_usaha||"(nama usaha)")+"</h1>";
             h+="<p class='note' style='margin-top:6px'>"+escF(d.sektor||"")+(d.kota?" · "+escF(d.kota):"")+(d.provinsi?" · "+escF(d.provinsi):"")+"</p>";
             h+="<p style='margin-top:10px'>Level UMKM: <b>"+escF(d.level||"—")+"</b> · Level kematangan: <b>"+(d.level_kematangan==null?"—":escF(d.level_kematangan))+" dari 4</b></p>";
-            h+="<div class='share-scores'>"+skorCard("Kesehatan usaha", sk.kesehatan)+skorCard("Siap investasi", sk.siap_investasi)+skorCard("Kesehatan keuangan", sk.kesehatan_keuangan)+skorCard("Konsistensi data", sk.konsistensi)+skorCard("Legalitas", sk.legalitas)+skorCard("Kemasan", sk.kemasan)+"</div>";
+            h+="<div class='share-scores'>"+skorCard("Kesehatan usaha keseluruhan", sk.kesehatan)+skorCard("Siap investasi", sk.siap_investasi)+skorCard("Kesehatan keuangan", sk.kesehatan_keuangan)+skorCard("Konsistensi data", sk.konsistensi)+skorCard("Legalitas", sk.legalitas)+skorCard("Kemasan", sk.kemasan)+"</div>";
             h+="<div class='card' style='margin-top:16px'><h3>Estimasi valuasi</h3><p style='margin-top:8px'>Nilai tengah <b>"+fmtF(v.tengah||0)+"</b> · rentang "+fmtF(v.rendah||0)+" – "+fmtF(v.tinggi||0)+"</p><p class='note' style='margin-top:6px'>Laba pemilik (SDE) "+fmtF(v.sde_tahunan||0)+"/tahun · multiple "+(v.multiple!=null?String(v.multiple).replace(".",","):"—")+"×. Estimasi untuk bahan diskusi awal — bukan appraisal resmi KJPP.</p></div>";
             h+="<div class='card' style='margin-top:14px'><h3>Ringkasan laporan (SAK EMKM)</h3><p style='margin-top:8px'>Pendapatan "+fmtF(sak.pendapatan_per_bulan||0)+"/bulan · Laba bersih "+fmtF(sak.laba_bersih_per_bulan||0)+"/bulan · Aset bersih "+fmtF(sak.aset_bersih||0)+"</p><p class='note' style='margin-top:6px'>Skor Konsistensi Data pemilik: <b>"+(sk.konsistensi==null?"—":escF(sk.konsistensi)+"/100")+"</b> — dihitung dari 9 sumber data lokal yang biasa diperiksa calon mitra.</p></div>";
             if(Array.isArray(d.jejak_audit) && d.jejak_audit.length){ h+="<div class='card' style='margin-top:14px'><h3>Jejak audit</h3><ul class='tick' style='margin-top:8px'>"+d.jejak_audit.slice(0,10).map(function(x){ return "<li>"+escF(x)+"</li>"; }).join("")+"</ul></div>"; }
@@ -3621,15 +3624,18 @@
         /* ---------- ringkasan sejak kunjungan terakhir ---------- */
         function finalizeVisit(fromLoad){
           if(visitFinalized) return;
+          /* TUNDA finalisasi sampai data aplikasi benar-benar selesai dimuat.
+             Bendera window.__proaktifDataReadyFlag dinyalakan oleh applySnapshot
+             (snapshot lokal tamu / data cloud terdaftar), di akhir loadData, dan
+             di enterGuest. Tanpa penundaan ini ada balapan: sesi cloud selesai
+             belakangan, sehingga ringkasan dihitung saat transaksi masih kosong
+             (pemasukan terbaca Rp 0) dan last_seen tertimpa hari ini sebelum data
+             tiba — ringkasan mingguan lalu hilang atau salah angka. Batas aman
+             9 detik: sesudah itu finalkan dengan data apa pun yang sudah ada. */
+          if(!window.__proaktifDataReadyFlag && (Date.now()-pageStart) < 9000) return;
           var stored=readStoredProaktif();
           var prev = stored.last_seen ? new Date(stored.last_seen) : null;
           var hasStored = !!(prev && !isNaN(prev.getTime()));
-          /* Tunda finalisasi bila data kunjungan sebelumnya mungkin masih dimuat
-             dari cloud / snapshot lokal — kecuali pemanggil menyatakan data sudah dimuat. */
-          if(!hasStored && !fromLoad){
-            var elapsed=Date.now()-pageStart;
-            if(elapsed<2600) return; // beri waktu pemuatan selesai; timer cadangan akan memanggil lagi
-          }
           visitFinalized=true;
           var now=new Date();
           if(hasStored){
