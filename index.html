@@ -110,12 +110,8 @@
       .suara-bawah{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
       .suara-bawah span{font-size:.9rem;color:var(--ink-soft);font-weight:600}
       .suara-berhenti{min-height:40px}
-      .suara-debug{margin-top:10px}
-      .suara-debug-tombol{min-height:32px;padding:4px 10px;font-size:.82rem}
-      .suara-debug-log{margin-top:8px;max-height:120px;overflow-y:auto;background:var(--field-bg);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.8rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-      .suara-debug-tanpa-meter{margin-top:8px;font-size:.88rem;line-height:1.5;color:var(--ink-soft)}
-      .suara-debug-tanpa-meter label{display:flex;align-items:flex-start;gap:8px;cursor:pointer}
-      .suara-debug-tanpa-meter input{width:18px;height:18px;margin-top:2px;flex:none;accent-color:var(--gold)}
+      .voice-block{margin-top:14px}
+      .voice-block .voice-result{margin-top:8px}
       .voice-warn{background:var(--warn-soft);border:1.5px solid var(--warn);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.93rem;font-weight:600;margin-top:12px}
       .demo-tag{display:inline-block;background:var(--gold-soft);color:var(--gold);font-weight:700;font-size:.8rem;padding:4px 10px;border-radius:999px;margin-bottom:12px}
       /* Ringkasan data usaha (tampil saat formulir dilipat karena sudah terisi). */
@@ -841,6 +837,10 @@
         </div>
         <div class="card" style="margin-top:14px">
           <h3>Catat penjualan / pengeluaran</h3>
+          <div class="voice-block">
+            <button class="btn ghost" id="btnHiVoice" type="button">Catat dengan suara</button>
+            <p class="voice-result" id="hiVoiceResult" role="status"></p>
+          </div>
           <div class="form-grid" style="margin-top:14px" id="hiForm">
             <div class="hi-field"><span>Keterangan</span><input type="text" name="ket" placeholder="contoh: Penjualan nasi campur 40 porsi" autocomplete="off" /></div>
             <div class="hi-field"><span>Jumlah (Rp)</span><input type="number" name="jumlah" placeholder="contoh: 50000" min="0" step="1000" /></div>
@@ -848,9 +848,7 @@
           <div class="actions" style="margin-top:14px">
             <button class="btn" id="btnHiMasuk" type="button">Uang masuk</button>
             <button class="btn" id="btnHiKeluar" type="button">Uang keluar</button>
-            <button class="btn ghost" id="btnHiVoice" type="button">Catat dengan suara</button>
           </div>
-          <p class="voice-result" id="hiVoiceResult" role="status"></p>
           <div id="hiEmpty" class="empty-note">Belum ada catatan hari ini — mulai dari penjualan pertama Anda.</div>
           <table class="mini-table" id="hiTable" style="display:none"><thead><tr><th>Keterangan</th><th>Jumlah</th><th></th></tr></thead><tbody id="hiBody"></tbody></table>
         </div>
@@ -1346,15 +1344,17 @@
             <img id="notaPreview" alt="Pratinjau foto nota yang diunggah" style="display:none" />
             <p class="note" style="margin-top:8px">Foto nota tampil sebagai bukti pendamping catatan Anda. Baca angka di nota, lalu masukkan jumlahnya pada formulir di bawah.</p>
           </div>
+          <div class="voice-block">
+            <button class="btn ghost" id="btnVoice" type="button" style="width:100%">Catat dengan suara (keterangan + jumlah)</button>
+            <p class="voice-result" id="voiceResult" role="status"></p>
+          </div>
           <div class="form-grid" style="margin-top:14px">
             <label class="f"><span>Tanggal</span><input type="text" id="txTanggal" placeholder="contoh: 2026-11-14" /></label>
             <label class="f"><span>Keterangan</span><input type="text" id="txKet" placeholder="contoh: Penjualan nasi campur 40 porsi" /></label>
             <label class="f"><span>Jenis</span><select id="txJenis"><option value="" selected disabled>Pilih jenis…</option><option value="masuk">Pemasukan</option><option value="keluar">Pengeluaran</option></select></label>
             <label class="f"><span>Kategori</span><select id="txKat"><option value="" selected disabled>Pilih kategori…</option><option>Penjualan</option><option>QRIS</option><option>Bahan baku</option><option>Operasional</option><option>Gaji</option><option>Kemasan</option><option>Transport</option><option>Lainnya</option></select></label>
             <label class="f"><span>Jumlah (Rp)</span><input type="number" id="txJumlah" placeholder="contoh: 600000" min="0" step="1000" /></label>
-            <label class="f"><span>Catat dengan suara</span><button class="btn ghost" id="btnVoice" type="button" style="width:100%">Catat dengan suara (keterangan + jumlah)</button></label>
           </div>
-          <p class="voice-result" id="voiceResult" role="status"></p>
           <p class="voice-warn" role="note">Peringatan: periksa kembali angkanya sebelum menambah transaksi. Hasil suara hanya mengisi kolom — transaksi baru tercatat setelah Anda menekan tombol Tambah transaksi.</p>
           <div class="actions"><button class="btn" id="btnTx" type="button">Tambah transaksi</button></div>
           <div id="txEmpty" class="empty-note">Belum ada transaksi tercatat. Tambahkan penjualan dan pengeluaran hari ini untuk menyusun laporan.</div>
@@ -2469,10 +2469,30 @@
                  "beli beras seratus lima puluh ribu" -> ket "beli beras", Rp150.000, keluar. */
       var UC_UNIT={nol:0,satu:1,dua:2,tiga:3,empat:4,lima:5,enam:6,tujuh:7,delapan:8,sembilan:9,sepuluh:10,sebelas:11};
       var UC_SCALE={ribu:1000,juta:1000000,miliar:1000000000};
-      var UC_MASUK={jual:1,penjualan:1,terjual:1,terima:1,dapat:1,masuk:1,pemasukan:1,pendapatan:1,omzet:1,laku:1};
-      var UC_KELUAR={beli:1,bayar:1,keluar:1,pengeluaran:1,belanja:1,ongkos:1};
-      function ucTokens(teks){ return String(teks||"").toLowerCase().replace(/[.,!?;:"'()\/-]/g," ").split(/\s+/).filter(function(w){ return w.length>0; }); }
+      var UC_MASUK={jual:1,penjualan:1,terjual:1,terima:1,dapat:1,dapet:1,laku:1,setor:1,hasil:1,pemasukan:1,masuk:1,pendapatan:1,omzet:1,dibayar:1};
+      var UC_KELUAR={beli:1,bayar:1,keluar:1,pengeluaran:1,belanja:1,ongkos:1,biaya:1,sewa:1,gaji:1};
+      /* Kata benda jenis transaksi — dibuang dari keterangan bila masih ada
+         kata isi lain ("penjualan nasi campur" -> "nasi campur"); bila
+         tidak ada kata lain, kata itu dipertahankan ("penjualan lima puluh
+         ribu" -> "penjualan"). Kata kerja (beli, bayar, jual, terima)
+         selalu dipertahankan sebagai bagian keterangan. */
+      var UC_JENIS_NOMINA={penjualan:1,pemasukan:1,pengeluaran:1};
+      /* Tokenisasi yang mempertahankan angka hasil pengenalan: "Rp50.000"
+         tetap satu token "rp50.000" (bukan "rp50 000"), "Rp 50.000" jadi
+         "rp" + "50.000". Titik pemisah ribuan dan koma desimal di dalam
+         angka tidak dipecah. */
+      function ucTokens(teks){ var m=String(teks||"").toLowerCase().match(/rp\d[\d.,]*|\d[\d.,]*|[a-z\u00c0-\u00ff]+/g); return m||[]; }
       function ucIsNumWord(w){ return (w in UC_UNIT)||w==="puluh"||w==="belas"||w==="ratus"||w==="seratus"||w==="seribu"||w==="sejuta"||w==="semiliar"||(w in UC_SCALE); }
+      function ucIsDigitTok(w){ return /^(rp)?\d[\d.,]*$/.test(w); }
+      /* "rp50.000" / "50.000" / "125.500" / "50.000,50" -> angka rupiah.
+         Aturan Indonesia: titik = pemisah ribuan, koma = desimal. */
+      function ucAngkaDigit(w){
+        var s=String(w||"").replace(/^rp/,"").replace(/[.,]+$/,"");
+        if(!/^\d[\d.,]*$/.test(s)) return null;
+        var v=parseFloat(s.replace(/\./g,"").replace(",","."));
+        if(isNaN(v)) return null;
+        return Math.round(v);
+      }
       /* nilai frasa angka yang dimulai tepat di token ke-i; kembalikan {nilai, akhir} atau null */
       function ucParseAt(tokens,i){
         var n=tokens.length;
@@ -2492,50 +2512,84 @@
           return used?{v:v,next:j}:null;
         }
         if(i>=n) return null;
-        /* angka digit: "50000", atau digit + skala: "50 ribu" */
-        if(/^\d+$/.test(tokens[i])){
-          var dv=parseInt(tokens[i],10), dj=i+1;
-          if(dj<n && (tokens[dj] in UC_SCALE)){ dv*=UC_SCALE[tokens[dj]]; dj++; }
-          return {nilai:dv,akhir:dj};
+        /* awalan Rp terpisah: "rp" / "rupiah" diikuti angka digit */
+        if(tokens[i]==="rp"||tokens[i]==="rupiah"){
+          if(i+1<n && ucIsDigitTok(tokens[i+1])){ var q=ucParseAt(tokens,i+1); if(q) return {nilai:q.nilai,akhir:q.akhir}; }
+          return null;
         }
-        /* bentuk se- + skala: seribu, sejuta, semiliar (boleh diikuti segmen berskala lebih kecil) */
-        if(tokens[i]==="seribu"||tokens[i]==="sejuta"||tokens[i]==="semiliar"){
-          var sc0=tokens[i]==="seribu"?1000:(tokens[i]==="sejuta"?1000000:1000000000);
-          var total0=sc0, j0=i+1, last0=sc0;
-          while(true){
-            var s0=seg(j0); if(!s0) break;
-            var k0=s0.next;
-            if(k0<n && (tokens[k0] in UC_SCALE) && UC_SCALE[tokens[k0]]<last0){ total0+=s0.v*UC_SCALE[tokens[k0]]; last0=UC_SCALE[tokens[k0]]; j0=k0+1; }
-            else if(!(k0<n && (tokens[k0] in UC_SCALE))){ total0+=s0.v; j0=k0; break; }
-            else break;
+        /* satu segmen angka di posisi k: digit (polos/berformat, boleh
+           berawalan rp) atau kata angka, termasuk bentuk se- + skala. */
+        function ambilSegmen(k){
+          if(k>=n) return null;
+          if(ucIsDigitTok(tokens[k])){
+            var dv=ucAngkaDigit(tokens[k]);
+            if(dv===null) return null;
+            return {nilai:dv,akhir:k+1};
           }
-          return {nilai:total0,akhir:j0};
+          if(tokens[k]==="seribu"||tokens[k]==="sejuta"||tokens[k]==="semiliar"){
+            var sc0=tokens[k]==="seribu"?1000:(tokens[k]==="sejuta"?1000000:1000000000);
+            return {nilai:sc0,akhir:k+1,seSkala:sc0};
+          }
+          var sg=seg(k);
+          if(sg) return {nilai:sg.v,akhir:sg.next};
+          return null;
         }
-        /* kata angka biasa: segmen (skala menurun ribu/juta/miliar) */
-        var total=0, j=i, any=false, lastScale=Infinity;
-        while(true){
-          var s=seg(j); if(!s) break;
-          var k=s.next;
-          if(k<n && (tokens[k] in UC_SCALE)){
-            var sc=UC_SCALE[tokens[k]];
-            if(sc>=lastScale) break;
-            total+=s.v*sc; lastScale=sc; j=k+1; any=true;
-          } else { total+=s.v; j=k; any=true; break; }
+        var pertama=ambilSegmen(i);
+        if(!pertama) return null;
+        var total, j, lastScale=Infinity;
+        if(pertama.seSkala){
+          total=pertama.seSkala; lastScale=pertama.seSkala; j=pertama.akhir;
+        } else {
+          total=pertama.nilai; j=pertama.akhir;
+          if(j<n && (tokens[j] in UC_SCALE)){ lastScale=UC_SCALE[tokens[j]]; total=pertama.nilai*lastScale; j++; }
         }
-        return any?{nilai:total,akhir:j}:null;
+        /* segmen lanjutan berskala menurun ("1 juta 500 ribu",
+           "satu juta dua ratus ribu", "50 ribu 250"), atau satu ekor
+           polos tanpa skala ("1 juta 500"). */
+        while(j<n){
+          var s2=ambilSegmen(j);
+          if(!s2) break;
+          if(s2.seSkala){
+            if(s2.seSkala<lastScale){ total+=s2.seSkala; lastScale=s2.seSkala; j=s2.akhir; continue; }
+            break;
+          }
+          var k2=s2.akhir;
+          if(k2<n && (tokens[k2] in UC_SCALE)){
+            var sc2=UC_SCALE[tokens[k2]];
+            if(sc2>=lastScale) break;
+            total+=s2.nilai*sc2; lastScale=sc2; j=k2+1; continue;
+          }
+          total+=s2.nilai; j=k2; break;
+        }
+        return {nilai:total,akhir:j};
       }
       function parseUcapanTransaksi(teks){
         var tokens=ucTokens(teks);
         var hasil={keterangan:"",jumlah:null,jenis:null,jenisJelas:false,mentah:String(teks||"").trim()};
         if(!tokens.length) return hasil;
-        /* cari frasa angka pertama yang berhasil diuraikan */
-        var span=null;
-        for(var i=0;i<tokens.length;i++){
-          if(/^\d+$/.test(tokens[i]) || ucIsNumWord(tokens[i])){
-            var p=ucParseAt(tokens,i);
-            if(p && p.nilai>0){ span={dari:i,sampai:p.akhir,jumlah:p.nilai}; break; }
+        /* cari angka pertama: putaran pertama hanya angka "kuat" (berawalan
+           Rp, bertitik ribuan, atau diikuti kata skala) dan kata angka —
+           supaya "nasi campur 40 porsi Rp50.000" tidak salah mengambil
+           "40" sebagai jumlah. Putaran kedua baru menerima digit polos. */
+        function cariAngka(kuatSaja){
+          for(var i=0;i<tokens.length;i++){
+            if(tokens[i]==="rp"||tokens[i]==="rupiah"){
+              if(i+1<tokens.length && ucIsDigitTok(tokens[i+1])){
+                var p0=ucParseAt(tokens,i+1);
+                if(p0 && p0.nilai>0) return {dari:i,sampai:p0.akhir,jumlah:p0.nilai};
+              }
+              continue;
+            }
+            var dg=ucIsDigitTok(tokens[i]);
+            if(dg && kuatSaja && tokens[i].indexOf(".")<0 && tokens[i].indexOf("rp")!==0 && !(i+1<tokens.length && (tokens[i+1] in UC_SCALE))) continue;
+            if(dg || ucIsNumWord(tokens[i])){
+              var p=ucParseAt(tokens,i);
+              if(p && p.nilai>0) return {dari:i,sampai:p.akhir,jumlah:p.nilai};
+            }
           }
+          return null;
         }
+        var span=cariAngka(true)||cariAngka(false);
         var sisa=[];
         for(var t=0;t<tokens.length;t++){
           if(span && t>=span.dari && t<span.sampai) continue;
@@ -2543,11 +2597,15 @@
           sisa.push(tokens[t]);
         }
         if(span) hasil.jumlah=span.jumlah;
-        /* jenis dari kata petunjuk pertama yang muncul dalam ucapan */
+        /* jenis dari kata petunjuk pertama yang muncul dalam ucapan
+           ("bayar" = keluar, "dibayar"/"terima" = masuk). Bila tidak ada
+           kata petunjuk, jenis dibiarkan apa adanya — tidak ditebak. */
         for(var u=0;u<tokens.length;u++){
           if(UC_MASUK[tokens[u]]){ hasil.jenis="masuk"; hasil.jenisJelas=true; break; }
           if(UC_KELUAR[tokens[u]]){ hasil.jenis="keluar"; hasil.jenisJelas=true; break; }
         }
+        var isi=sisa.filter(function(w){ return !(w in UC_JENIS_NOMINA); });
+        if(isi.length>0) sisa=isi;
         hasil.keterangan=sisa.join(" ");
         return hasil;
       }
@@ -2582,56 +2640,14 @@
          terkumpul, teks itu yang diurai. Hasil akhir kosong tanpa teks
          sama sekali tetap memakai jalur pop-up lama (Keuangan). Panel
          hanya menutup bila pengguna menekan "Tutup", bila error, atau
-         bila rekaman baru dimulai. Meter 10 segmen hidup dari Web Audio
-         API (getUserMedia → AudioContext → AnalyserNode, RMS tiap frame).
-         Bila analyser tidak bisa jalan (izin ditolak, tidak tersedia),
-         meter disembunyikan diam-diam — ikon tetap jalan dan alur
-         suara tidak terganggu, tanpa popup apa pun. Stream dan loop animasi
-         selalu ditutup saat rekaman selesai/berhenti agar mikrofon tidak
-         terus terbuka. Catatan debug di bawah panel mencatat tiap kejadian
-         (termasuk mode terus-menerus, tiap segmen akhir, mulai/batal/habis
-         penghitung jeda, dan pemicu penyelesaian) — dibersihkan tiap buka
-         baru, dibatasi 30 baris, tertutup awalnya. Meter suara MATI
-         bawaan: rekaman berjalan TANPA stream meter (getUserMedia meter
-         tidak dipanggil) karena stream itu terbukti membuat pengenal suara
-         kehabisan audio di HP pemilik (A/B 2026-11-14: meter hidup →
-         onnomatch; meter mati → "beli gula lima puluh ribu" dikenali
-         sempurna). Di dalam area debug ada pilihan "Tampilkan meter suara
-         saat merekam": bila dicentang, meter dibuka seperti dulu pada
-         rekaman berikutnya (stream + segmen + teks level), dengan risiko
-         yang diketahui bahwa di sebagian HP pengenalan bisa gagal. */
-      var __suaraPanel=null, __suaraR=null, __suaraRaf=null, __suaraStream=null, __suaraCtx=null, __suaraAnalyser=null, __suaraData=null, __suaraSelesaiFlag=false, __suaraMenungguFinal=false, __suaraTungguFinal=null, __suaraTeksTerakhir="", __suaraAkhirDicatat=false, __suaraAkhirTeks="", __suaraJedaTimer=null, __suaraFinalkanFn=null;
-      /* Pilihan meter suara: dibaca tiap kali panel dibuka (bukan sekali
-         saat muat) supaya perubahan pilihan berlaku mulai rekaman
-         berikutnya. Bawaan MATI (meter tidak dibuka; pengenal suara jalan
-         tanpa stream meter). Pilihan tersimpan di localStorage kunci
-         umkm-introspeksi-debug-meter-hidup, nilai "1" = meter diinginkan.
-         Kunci lama umkm-introspeksi-debug-tanpa-meter TIDAK PERNAH dibaca
-         lagi — semantiknya terbalik ("1" = meter mati) sehingga membacanya
-         akan menyalakan meter untuk pemilik yang dulu mengujinya; kunci
-         itu hanya dihapus sekali saat muat di bawah ini. */
-      var __suaraMeterHidupKey="umkm-introspeksi-debug-meter-hidup";
-      var __suaraTanpaMeterKeyLama="umkm-introspeksi-debug-tanpa-meter";
-      try{ localStorage.removeItem(__suaraTanpaMeterKeyLama); }catch(e){}
-      function __suaraMeterHidup(){
-        try{ return localStorage.getItem(__suaraMeterHidupKey)==="1"; }catch(e){ return false; }
-      }
-      function __suaraSimpanMeterHidup(nyala){
-        try{ if(nyala) localStorage.setItem(__suaraMeterHidupKey,"1"); else localStorage.removeItem(__suaraMeterHidupKey); }catch(e){}
-      }
-      /* Kompatibilitas: tanpaMeter = meter mati (bawaan benar, karena
-         meter memang mati bawaan). Dipakai __panelSuara.tanpaMeter. */
-      function __suaraTanpaMeter(){
-        return !__suaraMeterHidup();
-      }
-      function __suaraSimpanTanpaMeter(nyala){
-        __suaraSimpanMeterHidup(!nyala);
-      }
-      function __suaraSamakanMeter(){
-        if(!__suaraPanel) return;
-        var cb=__suaraPanel.querySelector("#voiceTanpaMeter");
-        if(cb) cb.checked=__suaraMeterHidup();
-      }
+         bila rekaman baru dimulai. Meter suara MATI permanen: tidak ada
+         stream meter dan tidak ada lagi cara menyalakannya — stream itu
+         terbukti membuat pengenal suara kehabisan audio di HP pemilik
+         (A/B 2026-11-14: meter hidup → tidak ada kata yang dikenali;
+         meter mati → "beli gula lima puluh ribu" dikenali sempurna). */
+      var __suaraPanel=null, __suaraR=null, __suaraRaf=null, __suaraStream=null, __suaraCtx=null, __suaraAnalyser=null, __suaraData=null, __suaraSelesaiFlag=false, __suaraMenungguFinal=false, __suaraTungguFinal=null, __suaraTeksTerakhir="", __suaraAkhirTeks="", __suaraJedaTimer=null, __suaraFinalkanFn=null;
+      /* Meter suara MATI permanen — tidak ada pilihan, tidak ada kunci
+         simpanan, dan tidak ada stream meter. */
       function __suaraSetStatus(bicara, teks){
         if(!__suaraPanel) return;
         var st=__suaraPanel.querySelector("#voiceStatusText");
@@ -2675,8 +2691,6 @@
          Panel TIDAK ditutup. */
       function __suaraAkhir(){
         if(__suaraSelesaiFlag) return;
-        /* Dicatat sekali per rekaman (onend dan onaudioend sering berdua). */
-        if(!__suaraAkhirDicatat){ __suaraAkhirDicatat=true; __suaraDebug("Pengenalan selesai"); }
         if(__suaraMenungguFinal) return; /* "Berhenti" sudah ditekan: status "menulis hasil…" tetap sampai tenggang habis / hasil final tiba. */
         __suaraBatalJeda();
         if(__suaraFinalkanFn){ __suaraFinalkanFn("pengenalan selesai sendiri"); return; }
@@ -2703,11 +2717,9 @@
       function __suaraMulaiJeda(){
         if(__suaraSelesaiFlag||__suaraMenungguFinal) return;
         __suaraBatalJeda();
-        __suaraDebug("Jeda dimulai — menyelesaikan bila hening 4 detik");
         __suaraJedaTimer=setTimeout(function(){
           __suaraJedaTimer=null;
           if(__suaraSelesaiFlag||__suaraMenungguFinal) return;
-          __suaraDebug("Jeda 4 detik habis — menyelesaikan");
           if(__suaraFinalkanFn){ __suaraFinalkanFn("jeda"); return; }
           __suaraAkhir();
         }, __suaraJedaMs);
@@ -2721,54 +2733,6 @@
         if(teks){ c.textContent=teks; c.style.display="block"; }
         else { c.textContent=""; c.style.display="none"; }
       }
-      /* Catatan debug di dalam panel suara (hanya tampilan — tidak pernah
-         ditulis ke cloud atau localStorage). Satu baris per kejadian,
-         diawali jam HH:MM:SS, dibatasi 30 baris terakhir. Dipakai pemilik
-         untuk melihat mengapa pengenalan suara tidak mengembalikan teks
-         padahal meter mikrofon bergerak. */
-      var __suaraDebugMaks=30;
-      function __suaraDebugJam(){
-        var d=new Date();
-        function p(n){ return (n<10?"0":"")+n; }
-        return p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
-      }
-      function __suaraDebug(teks){
-        if(!__suaraPanel) return;
-        var el=__suaraPanel.querySelector("#voiceDebugLog");
-        if(!el) return;
-        var baris=document.createElement("div");
-        baris.textContent=__suaraDebugJam()+" "+teks;
-        el.appendChild(baris);
-        while(el.children.length>__suaraDebugMaks){ el.removeChild(el.firstChild); }
-      }
-      function __suaraDebugBersih(){
-        if(!__suaraPanel) return;
-        var el=__suaraPanel.querySelector("#voiceDebugLog");
-        if(el) el.textContent="";
-      }
-      function __suaraDebugTutup(){
-        if(!__suaraPanel) return;
-        var log=__suaraPanel.querySelector("#voiceDebugLog");
-        if(log) log.style.display="none";
-        var tw=__suaraPanel.querySelector("#voiceTanpaMeterWrap");
-        if(tw) tw.style.display="none";
-        var b=__suaraPanel.querySelector("#voiceDebugBtn");
-        if(b){ b.textContent="Lihat debug"; b.setAttribute("aria-expanded","false"); }
-      }
-      /* Arti kode galat pengenalan suara dalam kata biasa, selalu disertai
-         kode aslinya dalam kurung supaya penyebab pastinya terlihat. */
-      function __suaraDebugSalah(kode){
-        var k=String(kode||"");
-        var arti;
-        if(k==="no-speech") arti="tidak ada suara terdeteksi";
-        else if(k==="network") arti="jaringan bermasalah saat mengirim suara";
-        else if(k==="not-allowed"||k==="service-not-allowed") arti="izin atau layanan pengenalan suara ditolak";
-        else if(k==="audio-capture") arti="mikrofon tidak bisa dibuka";
-        else if(k==="aborted") arti="pengenalan dibatalkan";
-        else if(k==="language-not-supported") arti="bahasa tidak didukung";
-        else arti=k||"kesalahan tidak diketahui";
-        return "Kesalahan: "+arti+" ("+k+")";
-      }
       /* Tenggang habis setelah "Berhenti" tanpa hasil final. Panel TETAP
          terbuka — tidak ditutup diam-diam dan tidak ada pop-up. Bila ada
          teks interim, teks itu tetap terlihat ("Terdengar: …") dengan
@@ -2777,8 +2741,7 @@
          sekali, tampil catatan jujur. Tombol berubah jadi "Tutup". */
       /* Catatan jujur di dalam panel (bukan pop-up): dipakai saat sesi
          berakhir TANPA hasil akhir — tenggang habis, jeda habis, atau
-         pengenalan selesai sendiri. Alasan ditulis apa adanya di depan
-         catatan debug supaya pemilik melihat pemicunya. */
+         pengenalan selesai sendiri. */
       function __suaraTanpaFinal(alasan){
         if(__suaraSelesaiFlag) return;
         __suaraBatalTunggu();
@@ -2788,11 +2751,9 @@
         if(!__suaraPanel) return;
         var adaTeks=!!(__suaraTeksTerakhir && String(__suaraTeksTerakhir).trim());
         if(adaTeks){
-          __suaraDebug(alasan+": hanya tangkapan sebagian — kolom belum terisi");
           __suaraCatatan("Ini baru tangkapan sebagian — kolom belum terisi dari suara ini. Isi kolomnya sendiri, atau coba lagi di tempat yang lebih tenang.");
           __suaraSetStatus(false, "Selesai — periksa teks di atas, lalu tekan Tutup");
         } else {
-          __suaraDebug(alasan+": tidak ada ucapan yang tertangkap");
           __suaraCatatan("Tidak ada ucapan yang tertangkap. Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya.");
           __suaraSetStatus(false, "Tidak ada yang tertangkap — tekan Tutup untuk menutup");
         }
@@ -2851,39 +2812,10 @@
         if(__suaraPanel){ var m=__suaraPanel.querySelector(".suara-meter"); if(m) m.style.display="none"; }
       }
       function __suaraMulaiMeter(){
-        /* Meter mati bawaan: jangan buka stream meter sama sekali
-           (tidak ada izin mikrofon tambahan, tidak ada analyser) kecuali
-           pemilik meminta lewat pilihan "Tampilkan meter suara saat
-           merekam" di area debug. */
-        if(!__suaraMeterHidup()) return;
-        try{
-          if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ __suaraBersihMeter(); return; }
-          var AC=window.AudioContext||window.webkitAudioContext;
-          if(!AC){ __suaraBersihMeter(); return; }
-          var pr=navigator.mediaDevices.getUserMedia({audio:true});
-          if(!pr || typeof pr.then!=="function"){ __suaraBersihMeter(); return; }
-          pr.then(function(stream){
-            if(!__suaraPanel || __suaraPanel.style.display==="none"){ try{ stream.getTracks().forEach(function(t){ try{ t.stop(); }catch(e){} }); }catch(e){} return; }
-            try{
-              __suaraStream=stream;
-              __suaraCtx=new AC();
-              var src=__suaraCtx.createMediaStreamSource(stream);
-              __suaraAnalyser=__suaraCtx.createAnalyser();
-              __suaraAnalyser.fftSize=512;
-              src.connect(__suaraAnalyser);
-              __suaraData=new Uint8Array(__suaraAnalyser.fftSize);
-              var mm=__suaraPanel.querySelector(".suara-meter"); if(mm) mm.style.display="";
-              var putar=function(){
-                if(!__suaraAnalyser) return;
-                try{ __suaraAnalyser.getByteTimeDomainData(__suaraData); }catch(e){ __suaraBersihMeter(); return; }
-                var sum=0; for(var i=0;i<__suaraData.length;i++){ var v=(__suaraData[i]-128)/128; sum+=v*v; }
-                __suaraSetLevel(Math.sqrt(sum/__suaraData.length));
-                __suaraRaf=requestAnimationFrame(putar);
-              };
-              __suaraRaf=requestAnimationFrame(putar);
-            }catch(e){ __suaraBersihMeter(); }
-          }).catch(function(){ __suaraBersihMeter(); });
-        }catch(e){ __suaraBersihMeter(); }
+        /* Meter suara MATI permanen: tidak pernah membuka stream meter —
+           stream itu terbukti membuat pengenal suara kehabisan audio di HP
+           pemilik. Tidak ada lagi cara menyalakannya. */
+        return;
       }
       function __suaraBangunPanel(){
         if(__suaraPanel) return __suaraPanel;
@@ -2898,7 +2830,7 @@
           +'<div class="suara-catatan" id="voiceCatatan" style="display:none"></div>'
           +'<div class="suara-meter" aria-hidden="true"><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span></div>'
           +'<div class="suara-bawah"><span id="voiceLevelText">Suara: sangat lemah</span><button type="button" class="btn ghost suara-berhenti" id="voiceStopBtn">Berhenti</button></div>'
-          +'<div class="suara-debug"><button type="button" class="btn ghost suara-debug-tombol" id="voiceDebugBtn" aria-expanded="false">Lihat debug</button><div class="suara-debug-log" id="voiceDebugLog" style="display:none"></div><div class="suara-debug-tanpa-meter" id="voiceTanpaMeterWrap" style="display:none"><label><input type="checkbox" id="voiceTanpaMeter"> Tampilkan meter suara saat merekam</label></div></div>';
+          +'';
         document.body.appendChild(p);
         var b=p.querySelector("#voiceStopBtn");
         if(b) b.addEventListener("click", function(){
@@ -2914,33 +2846,10 @@
           __suaraBatalJeda();
           __suaraBersihMeter();
           __suaraSetStatus(false, "Suara berhenti — menulis hasil…");
-          __suaraDebug("Berhenti ditekan — menunggu hasil akhir");
           __suaraMenungguFinal=true;
           if(__suaraTungguFinal!==null){ try{ clearTimeout(__suaraTungguFinal); }catch(e){} }
           __suaraTungguFinal=setTimeout(__suaraTungguFinalHabis, 2800);
         });
-        /* Tombol debug: melipat/membuka catatan kejadian rekaman ini saja
-           beserta pilihan meter suara (pilihan hanya tampil
-           bila area debug dibuka). */
-        var dg=p.querySelector("#voiceDebugBtn");
-        if(dg) dg.addEventListener("click", function(){
-          var log=p.querySelector("#voiceDebugLog");
-          if(!log) return;
-          var buka=log.style.display==="none";
-          log.style.display=buka?"block":"none";
-          var tw=p.querySelector("#voiceTanpaMeterWrap");
-          if(tw) tw.style.display=buka?"block":"none";
-          dg.textContent=buka?"Sembunyikan debug":"Lihat debug";
-          dg.setAttribute("aria-expanded", buka?"true":"false");
-        });
-        /* Pilihan meter suara: hanya menyimpan pilihan; rekaman yang
-           sedang berjalan tidak diganggu — pilihan baru berlaku mulai
-           rekaman berikutnya (dibaca saat panel dibuka). */
-        var tm=p.querySelector("#voiceTanpaMeter");
-        if(tm){
-          tm.checked=__suaraMeterHidup();
-          tm.addEventListener("change", function(){ __suaraSimpanMeterHidup(tm.checked); });
-        }
         __suaraPanel=p;
         return p;
       }
@@ -2965,16 +2874,10 @@
         __suaraTeksTerakhir="";
         __suaraAkhirTeks="";
         __suaraFinalkanFn=null;
-        __suaraAkhirDicatat=false;
         __suaraCatatan("");
-        __suaraDebugBersih();
-        __suaraDebugTutup();
-        __suaraSamakanMeter();
-        if(r){ __suaraDebug("Pengenalan suara: tersedia"); __suaraDebug("Bahasa: Indonesia ("+(r.lang||"id-ID")+")"); __suaraDebug(__suaraMeterHidup() ? "Meter suara: hidup" : "Meter suara: mati"); }
-        else { __suaraDebug("Pengenalan suara: tidak didukung peramban ini"); }
         if(resEl && resEl.parentNode) resEl.parentNode.insertBefore(p, resEl);
-        var m=p.querySelector(".suara-meter"); if(m) m.style.display=__suaraMeterHidup()?"":"none";
-        var lv=p.querySelector("#voiceLevelText"); if(lv) lv.style.display=__suaraMeterHidup()?"":"none";
+        var m=p.querySelector(".suara-meter"); if(m) m.style.display="none";
+        var lv=p.querySelector("#voiceLevelText"); if(lv) lv.style.display="none";
         var tx=p.querySelector("#voiceTeks"); if(tx){ tx.textContent=""; tx.style.display="none"; }
         var b=p.querySelector("#voiceStopBtn"); if(b) b.textContent="Berhenti";
         __suaraSetLevel(0);
@@ -2983,7 +2886,7 @@
         __suaraR=r||null;
         __suaraMulaiMeter();
       }
-      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter, teks:__suaraTeks, selesai:__suaraSelesai, akhir:__suaraAkhir, rangkum:__suaraRangkumHasil, statusTeks:__suaraSetStatusTeks, debug:__suaraDebug, debugSalah:__suaraDebugSalah, tanpaMeter:__suaraTanpaMeter, sudahSelesai:function(){ return !!__suaraSelesaiFlag; }, menunggu:function(){ return !!__suaraMenungguFinal; }, tungguHabis:__suaraTungguFinalHabis, mulaiJeda:__suaraMulaiJeda, batalJeda:__suaraBatalJeda, jedaAktif:function(){ return __suaraJedaTimer!==null; }, aturFinalkan:function(fn){ __suaraFinalkanFn=fn||null; }, teksAkhir:function(){ return __suaraAkhirTeks; }, catatHasil:__suaraCatatHasil, tanpaFinal:__suaraTanpaFinal};
+      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter, teks:__suaraTeks, selesai:__suaraSelesai, akhir:__suaraAkhir, rangkum:__suaraRangkumHasil, statusTeks:__suaraSetStatusTeks, sudahSelesai:function(){ return !!__suaraSelesaiFlag; }, menunggu:function(){ return !!__suaraMenungguFinal; }, tungguHabis:__suaraTungguFinalHabis, mulaiJeda:__suaraMulaiJeda, batalJeda:__suaraBatalJeda, jedaAktif:function(){ return __suaraJedaTimer!==null; }, aturFinalkan:function(fn){ __suaraFinalkanFn=fn||null; }, teksAkhir:function(){ return __suaraAkhirTeks; }, catatHasil:__suaraCatatHasil, tanpaFinal:__suaraTanpaFinal};
       $("btnVoice").addEventListener("click",function(){
         const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
         const resEl=$("voiceResult");
@@ -3003,17 +2906,15 @@
           if(!PS||PS.sudahSelesai()) return;
           if(PS.batalJeda) PS.batalJeda();
           var teks=PS.teksAkhir?PS.teksAkhir():"";
-          if(PS.debug) PS.debug("Diselesaikan ("+pemicu+")");
           if(!teks){
             if(pemicu==="hasil akhir kosong"){
-              if(PS.debug) PS.debug("Hasil akhir tidak terbaca — keterangan dan jumlah kosong");
               PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return;
             }
             if(PS.tanpaFinal) PS.tanpaFinal(pemicu==="jeda"?"Jeda selesai":(pemicu==="pengenalan selesai sendiri"?"Pengenalan selesai":"Tenggang habis"));
             return;
           }
           const p=parseUcapanTransaksi(teks);
-          if(!p.mentah){ if(PS.debug) PS.debug("Hasil akhir tidak terbaca — keterangan dan jumlah kosong"); PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
+          if(!p.mentah){ PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
           if(p.keterangan) $("txKet").value=p.keterangan;
           let msg;
           if(p.jumlah!==null){
@@ -3031,17 +2932,15 @@
           PS.selesai();
         }
         if(window.__panelSuara && window.__panelSuara.aturFinalkan) window.__panelSuara.aturFinalkan(finalkanSuara);
-        r.onspeechstart=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; if(PS.jedaAktif && PS.jedaAktif() && PS.debug) PS.debug("Jeda dibatalkan — bicara lagi"); if(PS.batalJeda) PS.batalJeda(); PS.bicara(true); if(PS.debug) PS.debug("Suara mulai terdengar"); };
-        r.onspeechend=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; PS.bicara(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); if(PS.debug) PS.debug("Suara berhenti"); if(PS.mulaiJeda) PS.mulaiJeda(); };
+        r.onspeechstart=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; if(PS.batalJeda) PS.batalJeda(); PS.bicara(true); };
+        r.onspeechend=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; PS.bicara(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); if(PS.mulaiJeda) PS.mulaiJeda(); };
         r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
         r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
-        r.onnomatch=function(){ var PS=window.__panelSuara; if(PS && PS.debug) PS.debug("Suara terdengar tapi kata-katanya tidak dikenali"); };
         r.onresult=function(ev){
           var PS=window.__panelSuara;
           if(PS && PS.sudahSelesai()) return;
           var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
           if(PS && PS.catatHasil) PS.catatHasil(h);
-          if(h.teks && PS && PS.debug) PS.debug(h.finalTeks ? "Hasil akhir: "+h.finalTeks : "Hasil sementara: "+h.teks);
           var teksAkhir=PS && PS.teksAkhir ? PS.teksAkhir() : "";
           /* Hasil akhir kosong tanpa teks sama sekali: jalur popup lama,
              langsung — bukan menunggu jeda. */
@@ -3052,8 +2951,8 @@
           /* Selain itu hasil hanya dikumpulkan — jeda berhenti sebentar
              di tengah kalimat TIDAK menyelesaikan apa-apa. */
         };
-        r.onerror=function(ev){ var PS=window.__panelSuara; if(PS && PS.debug && PS.debugSalah) PS.debug(PS.debugSalah(ev&&ev.error)); if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
-        r.start(); if(window.__panelSuara && window.__panelSuara.debug){ window.__panelSuara.debug("Mulai mendengarkan"); window.__panelSuara.debug("Mode: mendengarkan terus-menerus"); } toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
+        r.onerror=function(ev){ var PS=window.__panelSuara; if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
+        r.start(); toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
       });
 
       /* --- Stok & Piutang --- */
@@ -7018,7 +6917,6 @@
             if(!PS||PS.sudahSelesai()) return;
             if(PS.batalJeda) PS.batalJeda();
             var teks=PS.teksAkhir?PS.teksAkhir():"";
-            if(PS.debug) PS.debug("Diselesaikan ("+pemicu+")");
             if(!teks){
               if(pemicu==="hasil akhir kosong"){
                 if(resEl){ resEl.textContent="Didengar: —. Angka tidak terdengar — isi jumlahnya, lalu tekan Uang masuk atau Uang keluar."; resEl.style.display="block"; }
@@ -7034,7 +6932,7 @@
             if(p.keterangan && ket) ket.value=p.keterangan;
             if(p.jumlah!==null && jml) jml.value=p.jumlah;
             if(resEl){
-              if(p.jumlah!==null) resEl.textContent="Didengar: "+(p.keterangan||"—")+" — "+fmtRp(p.jumlah)+". Periksa, lalu tekan Uang masuk atau Uang keluar.";
+              if(p.jumlah!==null) resEl.textContent="Didengar: "+(p.keterangan||"—")+" — "+fmtRp(p.jumlah)+(p.jenisJelas?(" — "+(p.jenis==="masuk"?"Masuk":"Keluar")):"")+". Periksa, lalu tekan Uang masuk atau Uang keluar.";
               else resEl.textContent="Didengar: "+(p.keterangan||"—")+". Angka tidak terdengar — isi jumlahnya, lalu tekan Uang masuk atau Uang keluar.";
               resEl.style.display="block";
             }
@@ -7042,26 +6940,23 @@
             PS.selesai();
           }
           if(window.__panelSuara && window.__panelSuara.aturFinalkan) window.__panelSuara.aturFinalkan(finalkanSuara);
-          r.onspeechstart=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; if(PS.jedaAktif && PS.jedaAktif() && PS.debug) PS.debug("Jeda dibatalkan — bicara lagi"); if(PS.batalJeda) PS.batalJeda(); PS.bicara(true); if(PS.debug) PS.debug("Suara mulai terdengar"); };
-          r.onspeechend=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; PS.bicara(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); if(PS.debug) PS.debug("Suara berhenti"); if(PS.mulaiJeda) PS.mulaiJeda(); };
+          r.onspeechstart=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; if(PS.batalJeda) PS.batalJeda(); PS.bicara(true); };
+          r.onspeechend=function(){ var PS=window.__panelSuara; if(!PS) return; if(PS.menunggu && PS.menunggu()) return; if(PS.sudahSelesai && PS.sudahSelesai()) return; PS.bicara(false, "Suara berhenti sebentar — lanjut bicara, atau tekan Berhenti"); if(PS.mulaiJeda) PS.mulaiJeda(); };
           r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
           r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
-          r.onnomatch=function(){ var PS=window.__panelSuara; if(PS && PS.debug) PS.debug("Suara terdengar tapi kata-katanya tidak dikenali"); };
           r.onresult=function(ev){
             var PS=window.__panelSuara;
             if(PS && PS.sudahSelesai()) return;
             var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
             if(PS && PS.catatHasil) PS.catatHasil(h);
-            if(h.teks && PS && PS.debug) PS.debug(h.finalTeks ? "Hasil akhir: "+h.finalTeks : "Hasil sementara: "+h.teks);
             var teksAkhir=PS && PS.teksAkhir ? PS.teksAkhir() : "";
             if(h.final && !teksAkhir && !h.teks){ finalkanSuara("hasil akhir kosong"); return; }
             if(PS && PS.menunggu && PS.menunggu() && teksAkhir){ finalkanSuara("Berhenti"); return; }
             /* Selain itu hasil hanya dikumpulkan — jeda berhenti sebentar
                di tengah kalimat TIDAK menyelesaikan apa-apa. */
           };
-          r.onerror=function(ev){ var PS=window.__panelSuara; if(PS && PS.debug && PS.debugSalah) PS.debug(PS.debugSalah(ev&&ev.error)); if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
+          r.onerror=function(ev){ var PS=window.__panelSuara; if(PS && PS.menunggu && PS.menunggu()){ PS.tungguHabis(); return; } if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
           try{ r.start(); }catch(e){}
-          if(window.__panelSuara && window.__panelSuara.debug){ window.__panelSuara.debug("Mulai mendengarkan"); window.__panelSuara.debug("Mode: mendengarkan terus-menerus"); }
           toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
         });
         renderHariIni();
