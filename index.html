@@ -426,6 +426,7 @@
       .chat-input-row{position:sticky;bottom:0;background:var(--teal-soft);padding-top:10px;align-items:stretch}
       .chat-send{font-size:1.05rem;font-weight:800;padding:10px 28px;min-width:112px}
       .btn-explain{margin-top:12px;background:transparent;color:#8fd3dc;border:1px solid var(--teal);font:inherit;font-weight:700;font-size:.88rem;padding:9px 14px;border-radius:9px;cursor:pointer;min-height:44px}
+      .btn-explain.kompak{margin-top:10px;padding:7px 10px;font-size:.82rem;min-height:36px;width:100%}
       .explain-answer{margin-top:10px;font-size:.93rem;background:var(--surface-2);border-radius:10px;padding:12px 14px;white-space:pre-line}
       .explain-answer:empty{display:none}
 
@@ -825,10 +826,10 @@
           <a href="#langganan" id="modLanggananLink" style="display:none"><b>10 · Langganan</b><span>Paket Pro &amp; pembayaran</span></a>
         </div>
         <div class="stat-row">
-          <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div></div>
-          <div class="stat"><div class="k">Skor Kesehatan Usaha (keseluruhan)</div><div class="v" id="stHealth">—</div><div class="s" id="stHealthSub">Gabungan keuangan, produk, pasar &amp; teknologi — bukan skor keuangan saja.</div></div>
-          <div class="stat"><div class="k">Skor Siap Investasi</div><div class="v" id="stInvest">—</div><div class="s" id="stInvestSub">kelengkapan untuk penawaran kerjasama investasi</div></div>
-          <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><div class="s" id="stValRange">rentang rendah – tinggi</div></div>
+          <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div><button class="btn-explain kompak" type="button" data-explain="level" data-explain-target="explain-hero-level">Jelaskan ini</button><div class="explain-answer" id="explain-hero-level" role="status"></div></div>
+          <div class="stat"><div class="k">Skor Kesehatan Usaha (keseluruhan)</div><div class="v" id="stHealth">—</div><div class="s" id="stHealthSub">Gabungan keuangan, produk, pasar &amp; teknologi — bukan skor keuangan saja.</div><button class="btn-explain kompak" type="button" data-explain="kesehatan" data-explain-target="explain-hero-kesehatan">Jelaskan ini</button><div class="explain-answer" id="explain-hero-kesehatan" role="status"></div></div>
+          <div class="stat"><div class="k">Skor Siap Investasi</div><div class="v" id="stInvest">—</div><div class="s" id="stInvestSub">kelengkapan untuk penawaran kerjasama investasi</div><button class="btn-explain kompak" type="button" data-explain="investasi" data-explain-target="explain-hero-investasi">Jelaskan ini</button><div class="explain-answer" id="explain-hero-investasi" role="status"></div></div>
+          <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><div class="s" id="stValRange">rentang rendah – tinggi</div><button class="btn-explain kompak" type="button" data-explain="valuasi" data-explain-target="explain-hero-valuasi">Jelaskan ini</button><div class="explain-answer" id="explain-hero-valuasi" role="status"></div></div>
         </div>
       </header>
 
@@ -1020,6 +1021,7 @@
           <h3>Naik Level</h3>
           <p class="note" style="margin-top:6px" id="naikLevelTarget">—</p>
           <ul id="naikLevelList"></ul>
+          <button class="btn-explain" type="button" data-explain="naiklevel" data-explain-target="explain-naiklevel">Jelaskan ini</button><div class="explain-answer" id="explain-naiklevel" role="status"></div>
         </div>
         <p class="sec-sub" id="dashSecSub">Level skala mengikuti kriteria omzet PP No. 7 Tahun 2021. Level kematangan (0–4) menilai seberapa siap usaha Anda dikelola secara modern dan diajukan untuk kerjasama investasi.</p>
         <div class="grid-2">
@@ -1034,6 +1036,7 @@
               <div data-s="besar"><b>Besar</b>&gt; Rp50 M</div>
               <div data-s="korporat"><b>Korporat</b>di luar UMKM</div>
             </div>
+            <button class="btn-explain" type="button" data-explain="level" data-explain-target="explain-level">Jelaskan ini</button><div class="explain-answer" id="explain-level" role="status"></div>
           </div>
           <div class="card">
             <h3>Level kematangan</h3>
@@ -1046,16 +1049,17 @@
               <div data-m="3"><b>Level 3</b>Tumbuh</div>
               <div data-m="4"><b>Level 4</b>Siap Ekspansi</div>
             </div>
+            <button class="btn-explain" type="button" data-explain="kematangan" data-explain-target="explain-kematangan">Jelaskan ini</button><div class="explain-answer" id="explain-kematangan" role="status"></div>
           </div>
         </div>
         <div class="grid-3" style="margin-top:14px">
           <div class="card score-card"><div class="top"><h3>Kesehatan Keuangan (saja)</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><div class="explain-answer" id="explain-keuangan" role="status"></div><p class="note">Hanya aspek keuangan: margin, utang, dan pencatatan.</p></div>
-          <div class="card score-card"><div class="top"><h3>Kematangan digital</h3><span class="score-num" id="scDig">—</span></div><div class="bar"><i id="scDigBar"></i></div><p class="note" id="scDigNote">—</p></div>
+          <div class="card score-card"><div class="top"><h3>Kematangan digital</h3><span class="score-num" id="scDig">—</span></div><div class="bar"><i id="scDigBar"></i></div><p class="note" id="scDigNote">—</p><button class="btn-explain" type="button" data-explain="digital">Jelaskan ini</button><div class="explain-answer" id="explain-digital" role="status"></div></div>
           <div class="card score-card"><div class="top"><h3>Kesiapan investasi</h3><span class="score-num" id="scInv">—</span></div><div class="bar"><i id="scInvBar"></i></div><p class="note" id="scInvNote">—</p><button class="btn-explain" type="button" data-explain="investasi">Jelaskan ini</button><div class="explain-answer" id="explain-investasi" role="status"></div></div>
         </div>
         <div class="grid-2" style="margin-top:14px">
           <div class="card score-card"><div class="top"><h3>Skor Konsistensi Data</h3><span class="score-num" id="scCons">0</span></div><div class="bar"><i id="scConsBar"></i></div><p class="note" id="scConsNote">Isi cek 9 sumber data lokal di Modul Cek Data di bawah — skor membandingkan klaim Anda dengan jejak usaha yang bisa diverifikasi pihak lain.</p><button class="btn-explain" type="button" data-explain="konsistensi">Jelaskan ini</button><div class="explain-answer" id="explain-konsistensi" role="status"></div></div>
-          <div class="card"><h3>Titik impas (BEP) &amp; prediksi arus kas</h3><p class="note" style="margin-top:6px" id="bepNote">Isi omzet, HPP, biaya operasional, dan gaji pemilik untuk melihat omzet minimum agar tidak rugi.</p><div class="bar-wrap" id="cfChart"></div><p class="note" style="margin-top:8px">Prediksi 3 bulan ke depan memakai laba bersih bulanan saat ini dan pertumbuhan omzet yang Anda isi — bukan janji, melainkan proyeksi lurus untuk perencanaan kas.</p></div>
+          <div class="card"><h3>Titik impas (BEP) &amp; prediksi arus kas</h3><p class="note" style="margin-top:6px" id="bepNote">Isi omzet, HPP, biaya operasional, dan gaji pemilik untuk melihat omzet minimum agar tidak rugi.</p><div class="bar-wrap" id="cfChart"></div><p class="note" style="margin-top:8px">Prediksi 3 bulan ke depan memakai laba bersih bulanan saat ini dan pertumbuhan omzet yang Anda isi — bukan janji, melainkan proyeksi lurus untuk perencanaan kas.</p><button class="btn-explain" type="button" data-explain="bep">Jelaskan ini</button><div class="explain-answer" id="explain-bep" role="status"></div></div>
         </div>
       </section>
 
@@ -6145,20 +6149,247 @@
           return c;
         }
 
-        function localExplain(q){
+        /* ---------- Konteks penjelasan per angka ("Jelaskan ini") ----------
+           Satu sumber kebenaran untuk penjelasan tiap angka dasbor + hero:
+           angka hidup + data yang menghasilkannya, tidak pernah dibuat-buat.
+           Dipakai dua arah: (1) digabung ke konteks /api/ai-chat lewat
+           parameter ke-3 askAI; (2) dipakai template lokal bila AI belum
+           tersambung. Nama, email, HP, dan GPS tidak pernah ikut. */
+        var NAMA_DIMENSI_PENJELASAN={keuangan:"Keuangan", operasional:"Operasional", pasar_dan_kemasan:"Pasar & kemasan", teknologi_dan_legalitas:"Teknologi & legalitas"};
+        /* Label-label ini disalin ke blok ini karena versi diskusi
+           (LABEL_*_DISKUSI) tinggal di dalam IIFE blok lain dan tidak
+           bisa dibaca dari sini — isinya sama persis. */
+        var LABEL_BUKU_PENJELASAN=["Belum dicatat / tercampur pribadi","Catatan manual / buku tulis","Spreadsheet teratur","Aplikasi kasir / akuntansi"];
+        var LABEL_LEGAL_PENJELASAN=["Belum punya NIB","Punya NIB (OSS)","NIB + PIRT / halal / izin edar"];
+        var LABEL_CHAN_PENJELASAN=["Toko fisik / lapak / warung","WhatsApp Business + katalog","Marketplace","Pesan-antar makanan / layanan","Media sosial aktif","Google Maps / Profil Bisnis"];
+        var LABEL_CONS_PENJELASAN=["OSS / NIB","Google Maps / Profil Bisnis Google","Tokopedia","Shopee","Aplikasi pesan-antar (GoFood/GrabFood/ShopeeFood)","Media sosial usaha (Instagram/TikTok/Facebook)","QRIS / rekening usaha","NPWP & data pajak","Ulasan pelanggan online"];
+        function skorDariTeks(id){ var el=gid(id); if(!el) return 0; var m=String(el.textContent||"").match(/(\d+)/); return m?parseInt(m[1],10):0; }
+        function desKoma(v){ return String(v==null?"":v).replace(".",","); }
+        function konteksPenjelasan(kunci){
+          var s=(typeof S!=="undefined" && S)?S:{};
+          var dim=(s.dimScore||{});
+          var dFin=dim.fin||0, dOps=dim.ops||0, dMkt=dim.mkt||0, dTech=dim.tech||0;
+          var scFin=skorDariTeks("scFin"), scDig=skorDariTeks("scDig");
+          var omzetBln=Math.round(s.omzetBln||0), omzetThn=Math.round(s.omzetThn||0);
+          var hppPct=(s.hppPct!=null)?s.hppPct:((numOf("inHpp")||0)/100);
+          var opex=Math.round(s.opex||0), gaji=Math.round(s.gaji||0);
+          var aset=Math.round(s.aset||0), utang=Math.round(s.utang||0);
+          var buku=numOf("inBuku"), legal=numOf("inLegal"), lama=numOf("inLama"), terg=numOf("inTergantung");
+          var tumbuh=(s.tumbuh!=null)?s.tumbuh:((numOf("inTumbuh")||0)/100);
+          var labaBersihBln=Math.round(s.labaBersihBln||0), sdeThn=Math.round(s.sdeThn||0);
+          var dimensi={keuangan:dFin, operasional:dOps, pasar_dan_kemasan:dMkt, teknologi_dan_legalitas:dTech};
+          var terlemah="keuangan", skorTerlemah=dFin;
+          [["operasional",dOps],["pasar_dan_kemasan",dMkt],["teknologi_dan_legalitas",dTech]].forEach(function(p){ if(p[1]<skorTerlemah){ terlemah=p[0]; skorTerlemah=p[1]; } });
+          function labelBuku(v){ return (v>=0 && v<=3) ? LABEL_BUKU_PENJELASAN[v] : null; }
+          function labelLegal(v){ return (v>=0 && v<=2) ? LABEL_LEGAL_PENJELASAN[v] : null; }
+          if(kunci==="level"){
+            var berikut=null, jarak=null, ambangBerikut=null;
+            if(s.skala==="mikro"){ berikut="kecil"; jarak=2000000000-omzetThn; ambangBerikut=2000000000; }
+            else if(s.skala==="kecil"){ berikut="menengah"; jarak=15000000000-omzetThn; ambangBerikut=15000000000; }
+            else if(s.skala==="menengah"){ berikut="besar"; jarak=50000000000-omzetThn; ambangBerikut=50000000000; }
+            return {level_umkm:s.skala||null, omzet_tahunan:omzetThn, omzet_bulanan:omzetBln, aset_usaha:aset, ambang_mikro_maks_rupiah:2000000000, ambang_kecil_maks_rupiah:15000000000, ambang_menengah_maks_rupiah:50000000000, level_berikut:berikut, ambang_level_berikut_rupiah:ambangBerikut, jarak_ke_level_berikut_rupiah:(jarak==null?null:Math.round(jarak)), omzet_belum_diisi:omzetThn<=0};
+          }
+          if(kunci==="kesehatan"){
+            return {skor_kesehatan_usaha:Math.round(s.health||0), skor_kesehatan_keuangan:scFin, dimensi:dimensi, dimensi_terlemah:terlemah, skor_dimensi_terlemah:skorTerlemah};
+          }
+          if(kunci==="kematangan"){
+            var matLevel=(typeof s.matLevel==="number")?s.matLevel:0;
+            var ambangBerikut=[30,48,64,80,null][matLevel];
+            var namaLevel=null, namaBerikut=null;
+            try{ namaLevel=MAT_NAMES_NAIK[matLevel]||null; namaBerikut=MAT_NAMES_NAIK[Math.min(matLevel+1,4)]||null; }catch(e){}
+            return {level_kematangan:matLevel, nama_level_kematangan:namaLevel, level_berikut:(matLevel>=4?null:namaBerikut), skor_kesehatan_usaha:Math.round(s.health||0), ambang_skor_kesehatan_untuk_level_berikut:ambangBerikut, selisih_skor_ke_level_berikut:(ambangBerikut==null?null:Math.round(ambangBerikut-(s.health||0))), dimensi:dimensi, dimensi_terlemah:terlemah, skor_dimensi_terlemah:skorTerlemah};
+          }
+          if(kunci==="naiklevel"){
+            var targetTeks=null, langkah=[];
+            try{ var te=gid("naikLevelTarget"); if(te) targetTeks=String(te.textContent||"").trim()||null; }catch(e){}
+            try{ document.querySelectorAll("#naikLevelList li span").forEach(function(sp){ var t=String(sp.textContent||"").trim(); if(t) langkah.push(t); }); }catch(e){}
+            var matLv=(typeof s.matLevel==="number")?s.matLevel:0;
+            var nmLv=null, nmBr=null;
+            try{ nmLv=MAT_NAMES_NAIK[matLv]||null; nmBr=MAT_NAMES_NAIK[Math.min(matLv+1,4)]||null; }catch(e){}
+            return {level_kematangan:matLv, nama_level_saat_ini:nmLv, level_berikut:(matLv>=4?null:nmBr), target_teks:targetTeks, langkah_konkret:langkah};
+          }
+          if(kunci==="digital"){
+            var kanalAktif=[], kanalBelum=[];
+            try{ chanState.forEach(function(v,i){ var nm=LABEL_CHAN_PENJELASAN[i]||("Kanal "+(i+1)); (v===1?kanalAktif:kanalBelum).push(nm); }); }catch(e){}
+            var qris=false;
+            try{ qris=!!window.__qrisImage; if(!qris){ var qi=gid("qrisImg"); qris=!!(qi && qi.getAttribute("src")); } }catch(e){}
+            var jwbTech=[];
+            try{ for(var ti=0;ti<3;ti++){ jwbTech.push((typeof answers!=="undefined")?(answers["tech-"+ti]):null); } }catch(e){}
+            var wa="Belum";
+            try{ wa=(typeof chanState!=="undefined" && chanState[1]===1)?"Aktif":"Belum"; }catch(e){}
+            return {skor_kematangan_digital:scDig, skor_teknologi_dan_legalitas:dTech, skor_pasar_dan_kemasan:dMkt, level_pembukuan:buku, label_pembukuan:labelBuku(buku), kanal_aktif:kanalAktif, kanal_belum_aktif:kanalBelum, whatsapp_business:wa, qris_tersimpan:qris, jawaban_teknologi:jwbTech};
+          }
+          if(kunci==="keuangan"){
+            var labaBln=omzetBln*(1-hppPct)-opex-gaji;
+            var margin=omzetBln>0?labaBln/omzetBln:0;
+            var rasioUtang=aset>0?utang/aset:0;
+            return {skor_kesehatan_keuangan:scFin, margin_laba_bersih_persen:Math.round(margin*1000)/10, hpp_persen:Math.round(hppPct*1000)/10, utang:utang, aset:aset, rasio_utang_terhadap_aset_persen:Math.round(rasioUtang*100), skor_pencatatan_keuangan:dFin, pembukuan:labelBuku(buku), level_pembukuan:buku, laba_pemilik_bulanan:Math.round(sdeThn/12)};
+          }
+          if(kunci==="investasi"){
+            var komp=[
+              {nama:"legalitas", nilai:legal*16, maks:32},
+              {nama:"pembukuan", nilai:buku*9, maks:27},
+              {nama:"lama usaha", nilai:Math.min(18,lama*4), maks:18},
+              {nama:"pencatatan keuangan", nilai:Math.round(dFin*0.22*10)/10, maks:22},
+              {nama:"kesehatan keuangan", nilai:(scFin>=60?10:scFin>=40?4:-4), maks:10}
+            ];
+            var urut=komp.slice().sort(function(a,b){ return (a.nilai/a.maks)-(b.nilai/b.maks); });
+            return {skor_siap_investasi:Math.round(s.scInv||0), legalitas:labelLegal(legal), nilai_legalitas:legal, pembukuan:labelBuku(buku), level_pembukuan:buku, lama_usaha_tahun:lama, skor_kesehatan_keuangan:scFin, skor_pencatatan_keuangan:dFin, komponen:komp.map(function(c){ return c.nama+": "+c.nilai+"/"+c.maks; }), dua_celah_terlemah:[urut[0].nama, urut[1].nama]};
+          }
+          if(kunci==="konsistensi"){
+            var sumber=[], jSesuai=0, jBeda=0, jBelum=0;
+            try{
+              for(var i=0;i<9;i++){
+                var v=(typeof consState!=="undefined")?(consState[i]||0):0;
+                var nm=LABEL_CONS_PENJELASAN[i]||("Sumber "+(i+1));
+                var st=v===2?"sesuai":v===1?"beda":"belum dicek";
+                if(v===2) jSesuai++; else if(v===1) jBeda++; else jBelum++;
+                sumber.push({nama:nm, status:st, nilai:v===2?100:v===1?40:0});
+              }
+            }catch(e){}
+            var skorCons=0;
+            try{ skorCons=(typeof consScoreVal!=="undefined")?consScoreVal:0; }catch(e){}
+            return {skor_konsistensi_data:skorCons, sumber:sumber, jumlah_sesuai:jSesuai, jumlah_beda:jBeda, jumlah_belum_dicek:jBelum};
+          }
+          if(kunci==="bep"){
+            var agg={inn:0,out:0,hppTx:0,opexTx:0,net:0};
+            try{ if(typeof txAgg==="function") agg=txAgg(); }catch(e){}
+            var fixed=opex+gaji+(agg.opexTx||0);
+            var contrib=1-hppPct;
+            var omzetEff=omzetBln+(agg.inn||0);
+            var bep=contrib>0?fixed/contrib:0;
+            var laba=(labaBersihBln)+(agg.net||0);
+            var saldo=[], sld=0;
+            for(var m=1;m<=3;m++){ var proj=laba*Math.pow(1+(tumbuh||0)/12,m); sld+=proj; saldo.push(Math.round(sld)); }
+            return {bep_bulanan:Math.round(bep), biaya_tetap_bulanan:Math.round(fixed), biaya_operasional_bulanan:opex, gaji_pemilik_bulanan:gaji, biaya_tetap_dari_transaksi_tercatat:Math.round(agg.opexTx||0), margin_kontribusi_persen:Math.round(contrib*100), hpp_persen:Math.round(hppPct*1000)/10, omzet_bulanan_saat_ini:Math.round(omzetEff), omzet_dari_data_usaha:omzetBln, tambahan_dari_transaksi_tercatat:Math.round(agg.inn||0), di_atas_bep:omzetEff>=bep, laba_bersih_bulanan:Math.round(laba), pertumbuhan_omzet_tahunan_persen:Math.round((tumbuh||0)*100), prediksi_saldo_3_bulan:saldo, omzet_belum_diisi:omzetBln<=0};
+          }
+          if(kunci==="valuasi"){
+            var sektor="lainnya";
+            try{ var sel=gid("inSektor"); sektor=(sel&&sel.value)||"lainnya"; }catch(e){}
+            var multDasar=3;
+            try{ multDasar=SECTOR[sektor].mult; }catch(e){}
+            var adj=[];
+            if(lama>=5) adj.push("usia usaha 5 tahun atau lebih (+0,5)");
+            else if(lama>=3) adj.push("usia usaha 3-5 tahun (+0,25)");
+            else if(lama<1) adj.push("usia usaha kurang dari 1 tahun (-0,5)");
+            if(terg>70) adj.push("sangat tergantung pemilik (-0,5)");
+            else if(terg<30) adj.push("mandiri dari pemilik (+0,3)");
+            if(buku>=2) adj.push("pembukuan teratur (+0,3)");
+            else if(buku===0) adj.push("keuangan tercampur (-0,3)");
+            if(tumbuh>=0.15) adj.push("tumbuh 15 persen per tahun atau lebih (+0,4)");
+            else if(tumbuh<0) adj.push("omzet menurun (-0,3)");
+            var mult=(s.mult!=null)?s.mult:multDasar;
+            var valSde=Math.max(0,sdeThn)*mult;
+            var r=0.18, valDcf=0;
+            for(var t=1;t<=3;t++){ valDcf+=(sdeThn*Math.pow(1+tumbuh,t))/Math.pow(1+r,t); }
+            valDcf=Math.max(0,valDcf);
+            return {valuasi_tengah:Math.round(s.weighted||0), valuasi_rendah:Math.round(s.valLow||0), valuasi_tinggi:Math.round(s.valHigh||0), laba_pemilik_tahunan_sde:sdeThn, multiple_valuasi:mult, multiple_dasar_sektor:multDasar, penyesuaian_multiple:adj, nilai_aset_bersih:Math.round(s.asetBersih||0), nilai_metode_aset_bersih:Math.round(s.asetBersih||0), nilai_metode_sde:Math.round(valSde), nilai_metode_dcf_3_tahun:Math.round(valDcf), hpp_persen:Math.round(hppPct*1000)/10, ketergantungan_pemilik:terg, level_pembukuan:buku, laba_belum_positif:sdeThn<=0};
+          }
+          return {};
+        }
+        window.__konteksPenjelasan=konteksPenjelasan;
+
+        /* Template lokal per angka: dipakai bila AI belum tersambung.
+           Selalu rinci dan dihitung dari konteks hidup yang sama dengan
+           yang dikirim ke AI — tidak pernah satu kalimat generik, dan
+           tidak pernah menebak angka. */
+        function templatePenjelasan(kunci, k){
+          k=k||{};
+          function namaDim(key){ return NAMA_DIMENSI_PENJELASAN[key]||key; }
+          if(kunci==="level"){
+            if(k.omzet_belum_diisi) return "Level UMKM Anda saat ini Mikro, tetapi omzet tahunan belum diisi — jadi level ini masih berdasarkan angka kosong. Isi omzet bulanan dulu di Data Usaha: bila omzet tahunan sampai Rp2 miliar, levelnya Mikro; Rp2–15 miliar Kecil; Rp15–50 miliar Menengah; di atas itu di luar UMKM menurut PP No. 7 Tahun 2021. Satu langkah konkret: isi omzet bulan ini dulu, lalu lihat level Anda berubah.";
+            var nama=(k.level_umkm||"—"); nama=nama.charAt(0).toUpperCase()+nama.slice(1);
+            var kalBerikut=k.level_berikut?(" Untuk mencapai level "+k.level_berikut+", omzet tahunan perlu sampai "+rp(k.ambang_level_berikut_rupiah||0)+" — kurang "+rp(k.jarak_ke_level_berikut_rupiah||0)+" lagi, atau sekitar "+rp(Math.round((k.jarak_ke_level_berikut_rupiah||0)/12))+" per bulan."):" Anda sudah di atas ambang UMKM menurut omzet — valuasi sebaiknya dilanjutkan dengan penilai profesional.";
+            return "Artinya: usaha Anda masuk Level "+nama+" menurut omzet tahunan (PP No. 7 Tahun 2021). Omzet Anda "+rp(k.omzet_tahunan||0)+" per tahun ("+rp(k.omzet_bulanan||0)+" per bulan)."+kalBerikut+" Langkah konkret berikutnya: naikkan omzet yang tercatat setiap bulan — tiap kenaikan omzet yang tercatat mempercepat naik level dan menaikkan valuasi.";
+          }
+          if(kunci==="kesehatan"){
+            var d=k.dimensi||{};
+            return "Artinya: Skor Kesehatan Usaha Anda "+(k.skor_kesehatan_usaha||0)+"/100 adalah gabungan empat dimensi usaha dan skor keuangan. Skor per dimensi: Keuangan "+(d.keuangan||0)+"/100, Operasional "+(d.operasional||0)+"/100, Pasar & kemasan "+(d.pasar_dan_kemasan||0)+"/100, Teknologi & legalitas "+(d.teknologi_dan_legalitas||0)+"/100; skor kesehatan keuangan (saja) "+(k.skor_kesehatan_keuangan||0)+"/100. Yang paling menahan skor ini: "+namaDim(k.dimensi_terlemah)+" ("+(k.skor_dimensi_terlemah||0)+"/100). Langkah konkret berikutnya: perbaiki satu jawaban terlemah di dimensi itu sampai berstatus Sudah — tiap jawaban yang naik mengangkat skor keseluruhan.";
+          }
+          if(kunci==="kematangan"){
+            var dd=k.dimensi||{};
+            if((k.level_kematangan||0)>=4) return "Artinya: usaha Anda sudah di "+(k.nama_level_kematangan||"Level 4 — Siap Ekspansi")+", level kematangan tertinggi (skor kesehatan usaha "+(k.skor_kesehatan_usaha||0)+"/100). Skor per dimensi: Keuangan "+(dd.keuangan||0)+"/100, Operasional "+(dd.operasional||0)+"/100, Pasar & kemasan "+(dd.pasar_dan_kemasan||0)+"/100, Teknologi & legalitas "+(dd.teknologi_dan_legalitas||0)+"/100. Langkah konkret berikutnya: pertahankan konsistensi — tata kelola, laporan konsisten, dan valuasi berkala.";
+            return "Artinya: usaha Anda di "+(k.nama_level_kematangan||"level kematangan saat ini")+" (skor kesehatan usaha "+(k.skor_kesehatan_usaha||0)+"/100). Untuk naik ke "+(k.level_berikut||"level berikut")+", skor kesehatan usaha perlu mencapai "+(k.ambang_skor_kesehatan_untuk_level_berikut||0)+" — kurang "+(k.selisih_skor_ke_level_berikut||0)+" poin lagi. Skor per dimensi: Keuangan "+(dd.keuangan||0)+"/100, Operasional "+(dd.operasional||0)+"/100, Pasar & kemasan "+(dd.pasar_dan_kemasan||0)+"/100, Teknologi & legalitas "+(dd.teknologi_dan_legalitas||0)+"/100. Yang paling menahan: "+namaDim(k.dimensi_terlemah)+" ("+(k.skor_dimensi_terlemah||0)+"/100). Langkah konkret berikutnya: perbaiki satu jawaban terlemah di dimensi itu sampai berstatus Sudah.";
+          }
+          if(kunci==="naiklevel"){
+            var lk=k.langkah_konkret||[];
+            if(!lk.length) return "Kartu Naik Level belum memuat langkah konkret — data usaha Anda belum cukup lengkap. Isi data usaha dan selesaikan satu langkah di kartu ini, lalu penjelasan ini akan menyebut langkah berikutnya yang spesifik untuk usaha Anda.";
+            return "Artinya: langkah naik level Anda berikutnya adalah "+(k.target_teks||k.level_berikut||"level kematangan berikut")+". Langkah konkret untuk usaha Anda: "+lk.join("; ")+". Kerjakan satu langkah dulu — yang paling atas biasanya yang paling berdampak — lalu skor dan level Anda dihitung ulang otomatis.";
+          }
+          if(kunci==="digital"){
+            var kanal=k.kanal_aktif&&k.kanal_aktif.length?k.kanal_aktif.join(", "):"belum ada kanal aktif";
+            var belum=k.kanal_belum_aktif&&k.kanal_belum_aktif.length?k.kanal_belum_aktif.join(", "):"tidak ada";
+            var penahan, langkah;
+            if((k.level_pembukuan||0)<2){ penahan="pembukuan (level "+(k.level_pembukuan||0)+" dari 3)"; langkah="naikkan pembukuan ke spreadsheet atau aplikasi kasir agar laba rugi bulanan tersusun otomatis"; }
+            else if((k.skor_teknologi_dan_legalitas||0)<=(k.skor_pasar_dan_kemasan||0)){ penahan="teknologi & legalitas ("+(k.skor_teknologi_dan_legalitas||0)+"/100)"; langkah="aktifkan WhatsApp Business + katalog bila belum, dan unggah kode QRIS agar pembeli bisa membayar tanpa tunai"; }
+            else { penahan="pasar & kemasan ("+(k.skor_pasar_dan_kemasan||0)+"/100)"; langkah="tambah satu kanal online (marketplace atau pesan-antar) dengan harga khusus kanal"; }
+            return "Artinya: Skor Kematangan Digital Anda "+(k.skor_kematangan_digital||0)+"/100. Skor ini dihitung dari Teknologi & legalitas "+(k.skor_teknologi_dan_legalitas||0)+"/100, Pasar & kemasan "+(k.skor_pasar_dan_kemasan||0)+"/100, dan level pembukuan "+(k.level_pembukuan||0)+" dari 3 ("+(k.label_pembukuan||"belum dipilih")+"). Kanal yang sudah aktif: "+kanal+". Kanal yang belum aktif: "+belum+". WhatsApp Business: "+(k.whatsapp_business||"Belum")+". Kode QRIS: "+(k.qris_tersimpan?"sudah tersimpan":"belum diunggah")+". Yang paling menahan skor ini: "+penahan+". Langkah konkret berikutnya: "+langkah+".";
+          }
+          if(kunci==="keuangan"){
+            var penahanK, langkahK;
+            if((k.margin_laba_bersih_persen||0)<10){ penahanK="margin laba bersih yang tipis ("+desKoma(k.margin_laba_bersih_persen||0)+"%)"; langkahK="audit tiga biaya terbesar dan hitung HPP tiap produk supaya margin tidak bocor"; }
+            else if((k.rasio_utang_terhadap_aset_persen||0)>=60){ penahanK="utang yang sudah "+desKoma(k.rasio_utang_terhadap_aset_persen||0)+"% dari aset"; langkahK="jangan tambah utang baru sebelum rasio utang terhadap aset turun di bawah 30%"; }
+            else if((k.skor_pencatatan_keuangan||0)<50){ penahanK="pencatatan keuangan ("+(k.skor_pencatatan_keuangan||0)+"/100)"; langkahK="catat semua transaksi setiap hari dan pisahkan uang usaha dari uang pribadi"; }
+            else { penahanK="tidak ada penahan tunggal yang dominan"; langkahK="pertahankan margin dan pencatatan, lalu periksa kembali tiap akhir bulan"; }
+            return "Artinya: Skor Kesehatan Keuangan Anda "+(k.skor_kesehatan_keuangan||0)+"/100 — ini hanya aspek keuangan, bukan skor kesehatan usaha keseluruhan. Skor ini dihitung dari margin laba bersih "+desKoma(k.margin_laba_bersih_persen||0)+"%, HPP "+desKoma(k.hpp_persen||0)+"% dari omzet, utang "+rp(k.utang||0)+" dari aset "+rp(k.aset||0)+" ("+(k.rasio_utang_terhadap_aset_persen||0)+"% dari aset), dan skor pencatatan keuangan "+(k.skor_pencatatan_keuangan||0)+"/100 (pembukuan: "+(k.pembukuan||"belum dipilih")+"). Laba pemilik Anda "+rp(k.laba_pemilik_bulanan||0)+"/bulan. Yang paling menahan skor ini: "+penahanK+". Langkah konkret berikutnya: "+langkahK+".";
+          }
+          if(kunci==="investasi"){
+            var langkahI="lengkapi dokumen laporan 3-6 bulan terakhir sebelum bertemu calon mitra";
+            var celah0=(k.dua_celah_terlemah&&k.dua_celah_terlemah[0])||"";
+            if(celah0==="legalitas") langkahI="urus NIB lewat OSS (gratis, online)";
+            else if(celah0==="pembukuan"||celah0==="pencatatan keuangan") langkahI="pisahkan uang usaha dan catat transaksi dengan rapi selama 3 bulan berturut-turut";
+            else if(celah0==="kesehatan keuangan") langkahI="naikkan skor kesehatan keuangan dulu — mulai dari margin dan pencatatan";
+            else if(celah0==="lama usaha") langkahI="lama usaha tidak bisa dipercepat — fokus ke legalitas dan pembukuan";
+            return "Artinya: Skor Siap Investasi Anda "+(k.skor_siap_investasi||0)+"/100. Skor ini dihitung dari legalitas ("+(k.legalitas||"belum dipilih")+"), pembukuan ("+(k.pembukuan||"belum dipilih")+"), lama usaha "+(k.lama_usaha_tahun||0)+" tahun, pencatatan keuangan "+(k.skor_pencatatan_keuangan||0)+"/100, dan kesehatan keuangan "+(k.skor_kesehatan_keuangan||0)+"/100. Dua celah terbesar Anda: "+((k.dua_celah_terlemah||[]).join(" dan ")||"belum terhitung")+". Komponen skor: "+((k.komponen||[]).join("; ")||"—")+". Langkah konkret berikutnya: "+langkahI+".";
+          }
+          if(kunci==="konsistensi"){
+            var src=k.sumber||[];
+            if((k.jumlah_belum_dicek||0)===9) return "Skor Konsistensi Data Anda 0/100 karena belum ada satu pun dari 9 sumber yang dicek. Skor ini membandingkan data usaha yang Anda klaim dengan jejak yang bisa diverifikasi calon mitra: NIB, Google Maps, Tokopedia, Shopee, aplikasi pesan-antar, media sosial, QRIS, NPWP, dan ulasan pelanggan. Sumber yang belum dicek dihitung 0 — sama seperti cara calon mitra melihat data yang belum bisa dibuktikan. Langkah konkret berikutnya: cek satu sumber per hari di Modul Cek Data, mulai dari NIB dan Google Maps.";
+            var sesuai=src.filter(function(x){ return x.status==="sesuai"; }).map(function(x){ return x.nama; });
+            var beda=src.filter(function(x){ return x.status==="beda"; }).map(function(x){ return x.nama; });
+            var belum=src.filter(function(x){ return x.status==="belum dicek"; }).map(function(x){ return x.nama; });
+            var desak=beda.length?("Yang paling mendesak: perbaiki sumber yang Beda — ketidakcocokan nama/alamat adalah penyebab verifikasi gagal yang paling umum. "):"";
+            return "Artinya: Skor Konsistensi Data Anda "+(k.skor_konsistensi_data||0)+"/100. Sudah sesuai ("+(k.jumlah_sesuai||0)+" dari 9): "+(sesuai.join("; ")||"belum ada")+". Beda ("+(k.jumlah_beda||0)+"): "+(beda.join("; ")||"tidak ada")+". Belum dicek ("+(k.jumlah_belum_dicek||0)+"): "+(belum.join("; ")||"tidak ada")+". "+desak+"Langkah konkret berikutnya: cek satu sumber yang belum dicek, mulai dari NIB dan Google Maps.";
+          }
+          if(kunci==="bep"){
+            if(k.omzet_belum_diisi) return "Titik impas (BEP) belum bisa dihitung karena omzet bulanan belum diisi. Isi omzet, HPP, biaya operasional, dan gaji pemilik di Data Usaha dulu — BEP adalah omzet minimum per bulan agar usaha tidak rugi.";
+            var saldo3=(k.prediksi_saldo_3_bulan&&k.prediksi_saldo_3_bulan[2]!=null)?k.prediksi_saldo_3_bulan[2]:0;
+            return "Artinya: omzet minimum Anda agar tidak rugi (BEP) adalah "+rp(k.bep_bulanan||0)+"/bulan. BEP ini dihitung dari biaya tetap "+rp(k.biaya_tetap_bulanan||0)+"/bulan (biaya operasional "+rp(k.biaya_operasional_bulanan||0)+" + gaji pemilik "+rp(k.gaji_pemilik_bulanan||0)+") dibagi margin kontribusi "+desKoma(k.margin_kontribusi_persen||0)+"% (HPP "+desKoma(k.hpp_persen||0)+"% dari omzet). Omzet Anda saat ini "+rp(k.omzet_bulanan_saat_ini||0)+"/bulan — "+(k.di_atas_bep?"di atas BEP, usaha menghasilkan laba.":"di bawah BEP — naikkan omzet atau tekan HPP/biaya tetap.")+" Prediksi 3 bulan ke depan memakai laba bersih "+rp(k.laba_bersih_bulanan||0)+"/bulan dan pertumbuhan omzet "+desKoma(k.pertumbuhan_omzet_tahunan_persen||0)+"%/tahun; saldo kumulatif bulan ke-3 diperkirakan "+rp(saldo3)+". Langkah konkret berikutnya: "+(k.di_atas_bep?"jaga margin — periksa HPP tiap produk tiap bulan.":"fokus ke satu cara menaikkan omzet atau memangkas biaya tetap terbesar bulan ini.");
+          }
+          if(kunci==="valuasi"){
+            if(k.laba_belum_positif) return "Dengan angka saat ini, laba pemilik (SDE) Anda "+((k.laba_pemilik_tahunan_sde||0)<0?"negatif":"nol")+" ("+rp(k.laba_pemilik_tahunan_sde||0)+"/tahun). Artinya usaha belum menghasilkan laba di atas gaji wajar pemilik, sehingga metode laba dan DCF belum bisa dipakai — valuasi sementara bertumpu pada aset bersih "+rp(k.nilai_aset_bersih||0)+". Prioritasnya bukan mencari pembeli, melainkan mengembalikan laba: periksa HPP ("+desKoma(k.hpp_persen||0)+"% dari omzet) dan harga jual per kanal di bagian Keuangan, lalu evaluasi biaya operasional terbesar. Setelah SDE positif 6 bulan berturut-turut, valuasi berbasis laba akan jauh lebih tinggi daripada nilai aset saja.";
+            var penahanV, langkahV;
+            if((k.hpp_persen||0)>=70){ penahanV="HPP yang tinggi ("+desKoma(k.hpp_persen||0)+"% dari omzet) menekan laba pemilik"; langkahV="audit tiga biaya terbesar dan hitung ulang harga jual per kanal"; }
+            else if((k.ketergantungan_pemilik||0)>70){ penahanV="ketergantungan pada pemilik ("+(k.ketergantungan_pemilik||0)+"/100) — usaha berisiko berhenti saat Anda absen"; langkahV="dokumentasikan SOP dan latih satu pengganti untuk peran kunci"; }
+            else if((k.level_pembukuan||0)===0){ penahanV="pembukuan yang masih tercampur dengan uang pribadi — laba yang tidak bisa dibuktikan biasanya ditawar jauh di bawah nilai wajar"; langkahV="rapikan pembukuan 3 bulan berturut-turut sebelum bernegosiasi"; }
+            else { penahanV="tidak ada penahan tunggal yang dominan"; langkahV="tumbuhkan omzet yang tercatat dan buka kanal penjualan baru"; }
+            return "Artinya: estimasi nilai wajar usaha Anda "+rp(k.valuasi_tengah||0)+" (rentang "+rp(k.valuasi_rendah||0)+" – "+rp(k.valuasi_tinggi||0)+"). Nilai tengah ini gabungan tiga metode: aset bersih "+rp(k.nilai_metode_aset_bersih||0)+", laba pemilik (SDE) "+rp(k.laba_pemilik_tahunan_sde||0)+"/tahun dikali pengali "+String(k.multiple_valuasi||0).replace(".",",")+" = "+rp(k.nilai_metode_sde||0)+", dan DCF 3 tahun "+rp(k.nilai_metode_dcf_3_tahun||0)+". Pengali dasar sektor "+String(k.multiple_dasar_sektor||0).replace(".",",")+" disesuaikan oleh: "+((k.penyesuaian_multiple||[]).length?k.penyesuaian_multiple.join("; "):"kondisi usaha yang standar")+". Yang paling menahan nilai: "+penahanV+". Langkah konkret berikutnya: "+langkahV+". Ini estimasi untuk bahan diskusi awal — bukan penilaian resmi.";
+          }
+          return null;
+        }
+
+        function localExplain(q, kunci){
           var ctx=aiContext(); var t=(q||"").toLowerCase();
-          if(t.indexOf("konsistensi")>=0){
-            return "Skor Konsistensi Data Anda "+ctx.skor_konsistensi_data+"/100. Skor ini naik bila data usaha Anda sama di 9 sumber yang biasa diperiksa calon mitra kerjasama investasi: NIB, Google Maps, Tokopedia, Shopee, aplikasi pesan-antar, media sosial, QRIS, NPWP, dan ulasan pelanggan. Cek satu sumber per hari di Modul Cek Data — sumber yang belum dicek dihitung 0, sama seperti cara calon mitra melihat data yang belum bisa dibuktikan.";
+          /* Penjelasan per angka selalu lewat template rinci — kunci
+             eksplisit dari tombol "Jelaskan ini", atau kata kunci dari
+             pertanyaan lain. Template memakai konteks hidup yang sama
+             dengan yang dikirim ke AI. */
+          if(kunci){
+            try{ var tk=templatePenjelasan(kunci, konteksPenjelasan(kunci)); if(tk) return tk; }catch(e){}
           }
-          if(t.indexOf("investasi")>=0){
-            return "Skor Siap Investasi Anda "+ctx.skor_siap_investasi+"/100. Skor ini dihitung dari legalitas, kerapian pembukuan, lama usaha, dan kesehatan keuangan Anda. "+(ctx.skor_siap_investasi>=70 ? "Artinya profil usaha Anda umumnya sudah layak ditawarkan untuk kerjasama investasi — lengkapi dokumen laporan 3–6 bulan terakhir sebelum bertemu calon investor." : ctx.skor_siap_investasi>=45 ? "Artinya Anda hampir siap — rapikan pembukuan dan legalitas dulu, lalu tawarkan kerjasama investasi." : "Artinya belum siap ditawarkan — mulai dari memisahkan uang usaha dan mencatat transaksi dengan rapi selama 3 bulan berturut-turut.");
-          }
-          if(t.indexOf("kesehatan")>=0 || t.indexOf("keuangan")>=0){
-            return "Skor Kesehatan Keuangan Anda "+ctx.skor_kesehatan_keuangan+"/100, dan skor kesehatan usaha keseluruhan "+ctx.skor_kesehatan_usaha+"/100. Skor keuangan dihitung dari margin laba bersih, perbandingan utang terhadap aset, dan kerapian pencatatan keuangan Anda. Cara tercepat menaikkannya: catat semua transaksi setiap hari dan periksa HPP tiap produk supaya margin tidak bocor.";
-          }
-          if(t.indexOf("valuasi")>=0 || t.indexOf("nilai usaha")>=0){
-            return "Perkiraan nilai usaha Anda adalah "+rp(ctx.valuasi_tengah)+", dengan rentang "+rp(ctx.valuasi_rendah)+" sampai "+rp(ctx.valuasi_tinggi)+". Angka ini dihitung dari laba pemilik "+rp(ctx.laba_pemilik_per_tahun)+" per tahun dikali pengali "+String(ctx.multiple_valuasi).replace(".",",")+", lalu digabung dengan nilai aset bersih dan proyeksi laba 3 tahun. Ini estimasi untuk bahan diskusi awal — bukan penilaian resmi.";
-          }
+          function templateKunci(kk){ try{ return templatePenjelasan(kk, konteksPenjelasan(kk)); }catch(e){ return null; } }
+          var jt=null;
+          if(t.indexOf("konsistensi")>=0) jt=templateKunci("konsistensi");
+          else if(t.indexOf("investasi")>=0) jt=templateKunci("investasi");
+          else if(t.indexOf("naik level")>=0) jt=templateKunci("naiklevel");
+          else if(t.indexOf("digital")>=0) jt=templateKunci("digital");
+          else if(t.indexOf("kematangan")>=0) jt=templateKunci("kematangan");
+          else if(t.indexOf("kesehatan usaha")>=0) jt=templateKunci("kesehatan");
+          else if(t.indexOf("keuangan")>=0) jt=templateKunci("keuangan");
+          else if(t.indexOf("valuasi")>=0 || t.indexOf("nilai usaha")>=0) jt=templateKunci("valuasi");
+          else if(t.indexOf("level skala")>=0 || t.indexOf("level umkm")>=0) jt=templateKunci("level");
+          else if(t.indexOf("titik impas")>=0 || t.indexOf("bep")>=0) jt=templateKunci("bep");
+          if(jt) return jt;
           var ans="Berdasarkan perhitungan aplikasi: level usaha Anda "+(ctx.level_umkm||"—")+", valuasi tengah "+rp(ctx.valuasi_tengah)+" (rentang "+rp(ctx.valuasi_rendah)+" – "+rp(ctx.valuasi_tinggi)+"), skor kesehatan usaha keseluruhan "+ctx.skor_kesehatan_usaha+"/100, dan skor siap investasi "+ctx.skor_siap_investasi+"/100.";
           ans+=" Langkah pertama yang paling berdampak biasanya memperbaiki hal yang paling lemah di antara pencatatan, kemasan, dan kanal jualan — urutannya ada di rencana 30 hari pada bagian Saran.";
           if(q) ans+=" Untuk pertanyaan Anda, penjelasan di atas adalah yang bisa disimpulkan dari angka Anda saat ini; isi data lebih lengkap di formulir agar penjelasannya makin tepat.";
@@ -6255,7 +6486,7 @@
           }
         }
 
-        function askAI(prompt, target){
+        function askAI(prompt, target, konteksTambahan, kunci){
           if(!target) return;
           if(kuotaAiHabis()){ popupKuotaHabis(); return; }
           target.textContent="Sedang berpikir… AI Coach sedang menyiapkan penjelasan sederhana untuk Anda.";
@@ -6265,12 +6496,12 @@
              proaktif, jawaban coach) tidak terdaftar dan tidak disentuh. */
           function tampilkan(){ if(window.__tampilPenjelasan) window.__tampilPenjelasan(target); }
           tampilkan();
-          function fallback(){ target.textContent=localExplain(prompt)+"\n\nAI belum tersambung — ini penjelasan dari perhitungan aplikasi."; tampilkan(); }
+          function fallback(){ target.textContent=localExplain(prompt, kunci)+"\n\nAI belum tersambung — ini penjelasan dari perhitungan aplikasi."; tampilkan(); }
           try{
             /* Petunjuk menjawab: wajib sebut kota pengguna (ada di konteks
                aiContext) dan sapa dengan sebutan bila dipilih. */
             var petunjukAskAI="Wajib: sebut kota pengguna (ambil dari konteks, contoh: Kota Surabaya) dalam jawaban."+(kalimatSapaanCoach()?" "+kalimatSapaanCoach():"");
-            fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt, question:prompt, context:aiContext(), petunjuk:petunjukAskAI||undefined})})
+            fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt, question:prompt, context:Object.assign(aiContext(), konteksTambahan||{}), petunjuk:petunjukAskAI||undefined})})
               .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
               .then(function(data){
                 var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
@@ -6737,23 +6968,38 @@
         if(btnCoach) btnCoach.addEventListener("click", coachAsk);
         if(gid("coachQ")) gid("coachQ").addEventListener("keydown", function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); coachAsk(); } });
 
-        /* ---------- Tombol Jelaskan ini di skor utama ---------- */
+        /* ---------- Tombol Jelaskan ini di tiap angka: hero + dasbor ----------
+           10 kunci penjelasan, 12 penempatan tombol. Satu angka yang tampil
+           dua kali (Level UMKM, Siap Investasi) memakai penjelasan yang
+           sama, tetapi tiap penempatan punya panel sendiri (target per
+           tombol) supaya panel selalu satu layar dengan tombolnya. */
         var EXPLAIN_PROMPTS={
-          keuangan:"Jelaskan skor Kesehatan Keuangan saya dalam 2-3 kalimat sederhana.",
-          konsistensi:"Jelaskan Skor Konsistensi Data saya dalam 2-3 kalimat sederhana.",
-          investasi:"Jelaskan Skor Siap Investasi saya dalam 2-3 kalimat sederhana."
+          level:"Jelaskan Level UMKM usaha saya secara rinci. Pakai hanya angka yang ada di konteks: omzet tahunan dan omzet bulanan saya, ambang batas omzet PP No. 7 Tahun 2021, level berikut, dan jarak rupiah ke level berikut. Jawaban tersusun: pertama apa arti level ini; kedua angka omzet mana yang menentukannya; ketiga berapa rupiah lagi sampai level berikut; terakhir satu langkah konkret untuk mencapai level berikut. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          kesehatan:"Jelaskan Skor Kesehatan Usaha (keseluruhan) saya secara rinci. Pakai hanya angka yang ada di konteks: skor keseluruhan, keempat skor dimensi (keuangan, operasional, pasar dan kemasan, teknologi dan legalitas), dan skor kesehatan keuangan. Jawaban tersusun: pertama apa arti skor ini; kedua dimensi mana yang paling menurunkannya beserta angkanya; ketiga dimensi mana yang paling kuat; terakhir satu langkah konkret yang paling berdampak. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          investasi:"Jelaskan Skor Siap Investasi saya secara rinci. Pakai hanya angka yang ada di konteks: legalitas, pembukuan, lama usaha, skor pencatatan keuangan, skor kesehatan keuangan, dan dua celah terlemah. Jawaban tersusun: pertama apa arti skor ini; kedua angka mana yang paling menyumbang dan mana yang paling menahan; ketiga dua celah terlemah beserta angkanya; terakhir satu langkah konkret yang paling berdampak. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          valuasi:"Jelaskan Estimasi Valuasi usaha saya secara rinci. Pakai hanya angka yang ada di konteks: nilai tengah, rentang rendah sampai tinggi, laba pemilik (SDE) tahunan, pengali yang dipakai beserta penyesuaiannya, dan ketiga nilai metode (aset bersih, SDE dikali pengali, DCF 3 tahun). Jawaban tersusun: pertama apa arti nilai tengah ini; kedua angka mana yang paling menentukan nilainya; ketiga apa yang paling menahan nilainya; terakhir satu langkah konkret untuk menaikkan valuasi. Bila laba pemilik nol atau negatif, katakan jujur bahwa usaha belum menghasilkan laba di atas gaji wajar pemilik dan valuasi sementara bertumpu pada aset bersih. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          kematangan:"Jelaskan Level Kematangan usaha saya secara rinci. Pakai hanya angka yang ada di konteks: level kematangan saat ini, skor kesehatan usaha, ambang skor untuk level berikut, selisih skor ke level berikut, dan keempat skor dimensi. Jawaban tersusun: pertama apa arti level ini; kedua dimensi mana yang paling menahan naik ke level berikut beserta angkanya; ketiga berapa poin lagi sampai level berikut; terakhir satu langkah konkret untuk naik ke level berikut. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          digital:"Jelaskan Skor Kematangan Digital saya secara rinci. Pakai hanya angka dan data yang ada di konteks: skor teknologi dan legalitas, skor pasar dan kemasan, level pembukuan, kanal yang sudah aktif dan yang belum, status WhatsApp Business, dan status kode QRIS. Jawaban tersusun: pertama apa arti skor ini; kedua angka mana yang paling menurunkannya; ketiga kanal atau alat apa yang masih kosong; terakhir satu langkah konkret yang paling berdampak. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          keuangan:"Jelaskan Skor Kesehatan Keuangan saya secara rinci. Pakai hanya angka yang ada di konteks: margin laba bersih, HPP, utang dan aset beserta rasionya, skor pencatatan keuangan, pembukuan, dan laba pemilik bulanan. Jawaban tersusun: pertama apa arti skor ini; kedua angka mana yang paling menurunkannya beserta angkanya; terakhir satu langkah konkret yang paling berdampak. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          konsistensi:"Jelaskan Skor Konsistensi Data saya secara rinci. Pakai hanya data yang ada di konteks: skor konsistensi, dan status kesembilan sumber (sesuai, beda, atau belum dicek) beserta namanya. Jawaban tersusun: pertama apa arti skor ini; kedua sumber mana yang sudah sesuai dan mana yang beda; ketiga sumber mana yang paling mendesak dicek atau diperbaiki; terakhir satu langkah konkret. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          bep:"Jelaskan Titik Impas (BEP) dan prediksi arus kas usaha saya secara rinci. Pakai hanya angka yang ada di konteks: BEP bulanan, biaya tetap bulanan, margin kontribusi, HPP, omzet bulanan saat ini, laba bersih bulanan, pertumbuhan omzet, dan prediksi saldo 3 bulan. Jawaban tersusun: pertama apa arti BEP ini; kedua angka mana yang membentuk BEP; ketiga apakah omzet saat ini di atas atau di bawah BEP dan apa artinya; terakhir satu langkah konkret. Bila omzet belum diisi, katakan jujur bahwa BEP belum bisa dihitung dan minta isi omzet dulu. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          naiklevel:"Jelaskan kartu Naik Level usaha saya secara rinci. Pakai hanya data yang ada di konteks: level kematangan saat ini, level berikut, dan daftar langkah konkret yang tampil di kartu. Jawaban tersusun: pertama mengapa ini level berikut untuk usaha saya; kedua langkah konkret apa saja yang perlu dilakukan beserta urutannya; terakhir satu langkah yang paling berdampak untuk dikerjakan minggu ini. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru."
         };
         /* Panel "Jelaskan ini" di bawah skor ikut aturan lipatan penjelasan:
            satu yang terbuka, terlipat sendiri setelah 30 detik. */
-        var EXPLAIN_NAMA={keuangan:"Kesehatan Keuangan",konsistensi:"Konsistensi Data",investasi:"Kesiapan Investasi"};
-        ["keuangan","konsistensi","investasi"].forEach(function(k){
-          var t=gid("explain-"+k);
-          if(t && window.__daftarPenjelasan) window.__daftarPenjelasan(t, "Penjelasan "+EXPLAIN_NAMA[k]+" — ketuk untuk baca lagi");
+        var EXPLAIN_NAMA={level:"Level UMKM",kesehatan:"Skor Kesehatan Usaha",investasi:"Kesiapan Investasi",valuasi:"Estimasi Valuasi",kematangan:"Level Kematangan",digital:"Kematangan Digital",keuangan:"Kesehatan Keuangan",konsistensi:"Konsistensi Data",bep:"Titik Impas (BEP) & Prediksi Arus Kas",naiklevel:"Naik Level"};
+        var EXPLAIN_PANEL=[["level","explain-hero-level"],["level","explain-level"],["kesehatan","explain-hero-kesehatan"],["investasi","explain-hero-investasi"],["investasi","explain-investasi"],["valuasi","explain-hero-valuasi"],["kematangan","explain-kematangan"],["digital","explain-digital"],["keuangan","explain-keuangan"],["konsistensi","explain-konsistensi"],["bep","explain-bep"],["naiklevel","explain-naiklevel"]];
+        EXPLAIN_PANEL.forEach(function(p){
+          var t=gid(p[1]);
+          if(t && window.__daftarPenjelasan) window.__daftarPenjelasan(t, "Penjelasan "+EXPLAIN_NAMA[p[0]]+" — ketuk untuk baca lagi");
         });
         document.querySelectorAll("[data-explain]").forEach(function(b){
           b.addEventListener("click", function(){
             var key=b.getAttribute("data-explain");
-            askAI(EXPLAIN_PROMPTS[key]||"Jelaskan skor ini dalam 2-3 kalimat sederhana.", gid("explain-"+key));
+            var target=gid(b.getAttribute("data-explain-target")||("explain-"+key));
+            var ctxTambahan=null;
+            try{ ctxTambahan=konteksPenjelasan(key); }catch(e){ ctxTambahan=null; }
+            askAI(EXPLAIN_PROMPTS[key]||"Jelaskan angka ini secara rinci memakai angka usaha saya.", target, ctxTambahan, key);
           });
         });
 
