@@ -3128,6 +3128,14 @@
           if(window.__bagikanMode) return; // mode portal berbagi: jangan buka sapaan/wizard
           if(recoveryMode) return; // dibuka dari tautan atur ulang: layar kata sandi baru / kedaluwarsa yang tampil, bukan sapaan/wizard
           var sudahPunyaUsaha=enterGuest();
+          /* Pendaftaran yang masih menunggu konfirmasi: tampilkan panel
+             "Menunggu konfirmasi email" langsung saat pengguna kembali,
+             sebelum sapaan/wizard atau dashboard. Cek ini harus sesudah
+             enterGuest() — __showRegisterGate hanya berjalan bila isGuest
+             sudah true — dan sebelum cabang sudahPunyaUsaha, karena tamu
+             yang kembali dengan data usaha nyata justru akan lolos lewat
+             cabang itu dan panelnya tidak pernah muncul lagi. */
+          if(pendingConfirmEmail()){ window.__showRegisterGate(); return; }
           if(sudahPunyaUsaha) return;
           if(window.__openGreeting){ window.__openGreeting(); }
           else { window.__pendingGreetingOpen=true; }
