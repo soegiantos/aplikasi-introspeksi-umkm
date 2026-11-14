@@ -369,6 +369,10 @@
       .diskusi-card{border:1.5px solid var(--gold);background:var(--gold-soft);border-radius:var(--radius);padding:12px 14px;margin:10px 0 4px}
       .diskusi-card p{margin:0 0 8px;line-height:1.5}
       .diskusi-card .actions{display:flex;gap:10px;flex-wrap:wrap}
+      /* Baris satu-baris untuk penjelasan yang sudah dibaca dan terlipat:
+         aksen emas seperti kartu diskusi, bukan merah; teks dipotong jadi
+         satu baris dengan elipsis. Ketuk untuk membuka lagi. */
+      .chip-lipatan{display:block;width:100%;text-align:left;background:var(--gold-soft);border:1.5px solid var(--gold);border-radius:var(--radius);padding:10px 12px;margin:10px 0 4px;font:inherit;color:var(--ink);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       /* ---------- Baris topik diskusi yang disematkan di AI Coach ---------- */
       #topikDiskusiBar{display:none;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid var(--gold);background:var(--gold-soft);border-radius:10px;padding:10px 12px;margin-top:12px;font-weight:700;line-height:1.45}
       #topikDiskusiBar .btn{flex:0 0 auto}
@@ -2953,7 +2957,7 @@
           var tb=0,tj=0; stocks.forEach(function(s){ tb+=s.qty*s.beli; tj+=s.qty*s.jual; });
           var pct=tj>0?Math.round(tb/tj*100):0;
           el.innerHTML="Terhubung ke stok Anda: nilai stok (harga beli) <b>"+fmtFull(tb)+"</b> · biaya pokok tersirat dari stok ±<b>"+pct+"%</b> dari harga jual (total harga beli ÷ total harga jual semua stok). <button type='button' class='btn ghost small' id='btnApplyStockHpp'>Terapkan "+pct+"% ke HPP Data Usaha</button>";
-          var b=gid("btnApplyStockHpp"); if(b) b.addEventListener("click",function(){ gid("inHpp").value=pct; recalc(); toast("Kolom HPP di Data Usaha diisi dari stok: "+pct+"%"); });
+          var b=gid("btnApplyStockHpp"); if(b) b.addEventListener("click",function(){ gid("inHpp").value=Math.round(pct*10)/10; recalc(); toast("Kolom HPP di Data Usaha diisi dari stok: "+pct+"%"); });
         }
         var _renderStock = renderStock;
         renderStock = function(){ _renderStock(); updateStockHpp(); };
@@ -4190,7 +4194,7 @@
           var bDiskusi=document.createElement("button"); bDiskusi.type="button"; bDiskusi.className="btn"; bDiskusi.textContent="Diskusi di AI Coach";
           bDiskusi.addEventListener("click", function(){ bukaDiskusiCoach(qid); });
           var bTutup=document.createElement("button"); bTutup.type="button"; bTutup.className="btn ghost"; bTutup.textContent="Tutup";
-          bTutup.addEventListener("click", function(){ diskusiDitutup[qid]=true; el.style.display="none"; });
+          bTutup.addEventListener("click", function(){ diskusiDitutup[qid]=true; lepasPenjelasan(el); });
           aksi.appendChild(bDiskusi); aksi.appendChild(bTutup);
           el.appendChild(teks); el.appendChild(aksi);
           if(rowEl && rowEl.parentNode){ rowEl.parentNode.insertBefore(el, rowEl.nextSibling); }
@@ -4201,7 +4205,7 @@
         function isiKartuDiskusi(qid, teks){
           var el=gid("diskusi-"+qid); if(!el) return;
           var t=el.querySelector(".diskusi-teks"); if(t) t.textContent=teks;
-          el.style.display="block";
+          bukaPenjelasan(el, labelDiskusi(qid));
         }
         function postingGelembungDiskusi(qid){
           if(topikDiskusiGelembung===qid) return;
@@ -4210,12 +4214,12 @@
         }
         function picuDiskusiJawaban(qid, v, rowEl){
           if(!PERTANYAAN_DISKUSI[qid]) return;
-          if(v===2){ var el2=gid("diskusi-"+qid); if(el2) el2.style.display="none"; }
+          if(v===2){ var el2=gid("diskusi-"+qid); if(el2) lepasPenjelasan(el2); }
           else if(!diskusiDitutup[qid]){
             var el=buatKartuDiskusi(qid, rowEl);
             if(diskusiCache[qid]){ isiKartuDiskusi(qid, diskusiCache[qid]); }
             else {
-              el.style.display="block";
+              bukaPenjelasan(el, labelDiskusi(qid));
               var label=LABEL_JAWABAN[v];
               tanyaDiskusiAI(qid, label).then(function(teks){
                 diskusiCache[qid]=teks; isiKartuDiskusi(qid, teks);
@@ -4278,7 +4282,7 @@
         function sinkronKartuDiskusi(qid){
           var v=answers[qid];
           var el=gid("diskusi-"+qid);
-          if(el){ if(v===2) el.style.display="none"; else if(!diskusiDitutup[qid]) el.style.display="block"; }
+          if(el){ if(v===2) lepasPenjelasan(el); else if(!diskusiDitutup[qid]) bukaPenjelasan(el, labelDiskusi(qid)); }
           perbaruiBarTopik();
         }
         function terapkanJawabanDiskusi(qid, v, teksGelembung){
@@ -4293,6 +4297,87 @@
           sinkronKartuDiskusi(qid);
           tandaiTombolDiskusi();
         }
+
+        /* ---------- Lipatan penjelasan yang sudah dibaca ----------
+           Satu penjelasan penuh terlihat dalam satu waktu: membuka satu
+           penjelasan (kartu diskusi AI di bawah pertanyaan introspeksi
+           atau panel "Jelaskan ini" di bawah skor) langsung melipat
+           penjelasan lain yang sedang terbuka. Penjelasan yang terbuka
+           terlipat sendiri setelah LIPAT_DETIK detik menjadi satu baris
+           ("ketuk untuk baca lagi"); ketuk barisnya untuk membuka lagi
+           dan penghitung 30 detik mulai dari awal.
+           Yang TIDAK ikut aturan ini: kartu sapaan proaktif, baris
+           "Perlu Perhatian", riwayat AI Coach, overlay bantuan kolom,
+           dan panel Hitung HPP (kalkulator harus tetap terbuka saat
+           dipakai). Topik yang disematkan di Modul 9 juga tidak
+           disentuh — melipat kartu inline tidak menghentikan diskusi
+           yang sedang berjalan di AI Coach. */
+        var LIPAT_DETIK=30;
+        var lipatTimer=null, lipatTerbuka=null;
+        function labelDiskusi(qid){ var p=PERTANYAAN_DISKUSI[qid]; return "Masukan AI soal "+(p?p.teks:qid)+" — ketuk untuk baca lagi"; }
+        function lipatChip(el){
+          var chip=el.__lipatChip;
+          if(!chip){
+            chip=document.createElement("button");
+            chip.type="button"; chip.className="chip-lipatan";
+            chip.style.display="none";
+            if(el.parentNode) el.parentNode.insertBefore(chip, el.nextSibling);
+            chip.addEventListener("click", function(){ bukaPenjelasan(el); });
+            el.__lipatChip=chip;
+          }
+          return chip;
+        }
+        /* Daftarkan penjelasan agar ikut aturan lipatan (hanya menyimpan
+           teks barisnya; tidak mengubah tampilan apa pun). */
+        function daftarPenjelasan(el, teksChip){
+          if(!el) return;
+          el.__lipatTeks=teksChip||"Penjelasan — ketuk untuk baca lagi";
+        }
+        function lipatPenjelasan(el){
+          if(!el) return;
+          var chip=lipatChip(el);
+          chip.textContent=el.__lipatTeks||"Penjelasan — ketuk untuk baca lagi";
+          el.style.display="none";
+          chip.style.display="block";
+          if(lipatTerbuka===el){ lipatTerbuka=null; if(lipatTimer){ clearTimeout(lipatTimer); lipatTimer=null; } }
+        }
+        function bukaPenjelasan(el, teksChip){
+          if(!el) return;
+          if(teksChip) el.__lipatTeks=teksChip;
+          if(lipatTerbuka && lipatTerbuka!==el) lipatPenjelasan(lipatTerbuka);
+          var chip=el.__lipatChip; if(chip) chip.style.display="none";
+          el.style.display="block";
+          lipatTerbuka=el;
+          if(lipatTimer) clearTimeout(lipatTimer);
+          lipatTimer=setTimeout(function(){ lipatPenjelasan(el); }, LIPAT_DETIK*1000);
+        }
+        /* Lepas dari aturan lipatan (dipakai saat penjelasan ditutup
+           permanen — "Tutup" kartu diskusi atau jawaban jadi "Sudah"):
+           elemen dan barisnya sama-sama hilang, tanpa jejak. */
+        function lepasPenjelasan(el){
+          if(!el) return;
+          if(lipatTerbuka===el){ lipatTerbuka=null; if(lipatTimer){ clearTimeout(lipatTimer); lipatTimer=null; } }
+          var chip=el.__lipatChip; if(chip) chip.style.display="none";
+          el.style.display="none";
+        }
+        /* Tampilkan penjelasan yang terdaftar (dipakai jalur askAI di blok
+           skrip lain — hanya elemen yang didaftarkan yang disentuh). */
+        function tampilPenjelasan(el){ if(el && el.__lipatTeks) bukaPenjelasan(el); }
+        window.__bukaPenjelasan=bukaPenjelasan;
+        window.__lipatPenjelasan=lipatPenjelasan;
+        window.__lepasPenjelasan=lepasPenjelasan;
+        window.__daftarPenjelasan=daftarPenjelasan;
+        window.__tampilPenjelasan=tampilPenjelasan;
+        /* Celah uji (jsdom): aturDetik dipakai harness agar tidak menunggu
+           30 detik sungguhan; lipatSekarang memicu lipatan seperti timer. */
+        window.__lipatUji={
+          detik:function(){ return LIPAT_DETIK; },
+          aturDetik:function(n){ var v=parseFloat(n); if(!isNaN(v) && v>0) LIPAT_DETIK=v; },
+          terbuka:function(){ return lipatTerbuka; },
+          lipatSekarang:function(){ if(lipatTerbuka) lipatPenjelasan(lipatTerbuka); },
+          chipUntuk:function(el){ return el ? (el.__lipatChip||null) : null; },
+          buka:bukaPenjelasan, lipat:lipatPenjelasan, lepas:lepasPenjelasan, daftar:daftarPenjelasan
+        };
 
         /* ---------- Panel Hitung HPP di dalam diskusi (hanya topik fin-2) ----------
            Panel memakai rumus yang SAMA dengan Kalkulator HPP di bagian Keuangan &
@@ -4381,7 +4466,7 @@
         function simpanHppDiskusi(){
           var r=hitungHppDiskusi();
           if(!(r.hpp_per_porsi>0 && r.harga_jual>0)) return;
-          var pct=r.hpp_persen;
+          var pct=Math.round(r.hpp_persen*10)/10; /* satu desimal saja — jangan sampai tersimpan artefak float (mis. 85.30000305175781) */
           var inp=gid("inHpp"); if(inp) inp.value=pct;
           var nama=r.produk||"produk";
           terapkanJawabanDiskusi(HPP_QID, 2, "HPP "+nama+" Rp "+Math.round(r.hpp_per_porsi).toLocaleString("id-ID")+" per porsi ("+String(pct).replace(".",",")+"% dari harga jual Rp "+Math.round(r.harga_jual).toLocaleString("id-ID")+") sudah tersimpan. Jawaban HPP diubah jadi 'Sudah' — skor diperbarui.");
@@ -4594,7 +4679,13 @@
           if(!target) return;
           if(kuotaAiHabis()){ popupKuotaHabis(); return; }
           target.textContent="Sedang berpikir… AI Coach sedang menyiapkan penjelasan sederhana untuk Anda.";
-          function fallback(){ target.textContent=localExplain(prompt)+"\n\nAI belum tersambung — ini penjelasan dari perhitungan aplikasi."; }
+          /* Panel "Jelaskan ini" yang terdaftar ikut aturan lipatan yang
+             sama dengan kartu diskusi (satu terbuka, terlipat sendiri
+             setelah 30 detik); target lain (overlay bantuan kolom, baris
+             proaktif, jawaban coach) tidak terdaftar dan tidak disentuh. */
+          function tampilkan(){ if(window.__tampilPenjelasan) window.__tampilPenjelasan(target); }
+          tampilkan();
+          function fallback(){ target.textContent=localExplain(prompt)+"\n\nAI belum tersambung — ini penjelasan dari perhitungan aplikasi."; tampilkan(); }
           try{
             /* Petunjuk menjawab: wajib sebut kota pengguna (ada di konteks
                aiContext) dan sapa dengan sebutan bila dipilih. */
@@ -4603,7 +4694,7 @@
               .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
               .then(function(data){
                 var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
-                if(ans && String(ans).trim()){ target.textContent=bersihkanJawabanAI(String(ans).trim()); tambahHitunganAi(); } else fallback();
+                if(ans && String(ans).trim()){ target.textContent=bersihkanJawabanAI(String(ans).trim()); tampilkan(); tambahHitunganAi(); } else fallback();
               })
               .catch(function(){ fallback(); });
           }catch(e){ fallback(); }
@@ -5066,6 +5157,13 @@
           konsistensi:"Jelaskan Skor Konsistensi Data saya dalam 2-3 kalimat sederhana.",
           investasi:"Jelaskan Skor Siap Investasi saya dalam 2-3 kalimat sederhana."
         };
+        /* Panel "Jelaskan ini" di bawah skor ikut aturan lipatan penjelasan:
+           satu yang terbuka, terlipat sendiri setelah 30 detik. */
+        var EXPLAIN_NAMA={keuangan:"Kesehatan Keuangan",konsistensi:"Konsistensi Data",investasi:"Kesiapan Investasi"};
+        ["keuangan","konsistensi","investasi"].forEach(function(k){
+          var t=gid("explain-"+k);
+          if(t && window.__daftarPenjelasan) window.__daftarPenjelasan(t, "Penjelasan "+EXPLAIN_NAMA[k]+" — ketuk untuk baca lagi");
+        });
         document.querySelectorAll("[data-explain]").forEach(function(b){
           b.addEventListener("click", function(){
             var key=b.getAttribute("data-explain");
@@ -5191,7 +5289,7 @@
           if(!omzet){ var d=numOf("wizJualHari"), h=numOf("wizHariJual"); if(d>0 && h>0) omzet=Math.round(d*h); }
           if(omzet>0) gid("inOmzet").value=omzet;
           var bahan=numOf("wizBahan");
-          if(bahan>0 && omzet>0){ var pct=Math.round(bahan/omzet*100); if(pct>0 && pct<=95) gid("inHpp").value=pct; }
+          if(bahan>0 && omzet>0){ var pct=Math.round(bahan/omzet*100); if(pct>0 && pct<=95) gid("inHpp").value=Math.round(pct*10)/10; }
           if(numOf("wizOpex")>0) gid("inOpex").value=numOf("wizOpex");
           if(numOf("wizGaji")>0) gid("inGaji").value=numOf("wizGaji");
           try{ recalc(); }catch(e){}
