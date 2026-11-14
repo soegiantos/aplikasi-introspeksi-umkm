@@ -2482,6 +2482,28 @@
           if(snap.qris_image) return true;
           return false;
         }
+        /* Apakah snapshot CLOUD berisi data usaha INTI — satu-satunya yang
+           boleh menghalangi migrasi data coba tamu. Jawaban kuis introspeksi
+           dan langkah SOP SAJA tidak cukup: baris cloud yang hanya berisi
+           jawaban kuis (tanpa nama usaha, omzet, atau transaksi) adalah
+           baris sebagian (mis. tersimpan saat pendaftaran, sebelum data
+           usaha sempat masuk cloud). Bila jawaban saja dihitung sebagai
+           "ada data", migrasi data usaha yang justru ditunggu pengguna
+           akan dibuang. */
+        function cloudAdaDataUsaha(snap){
+          if(!snap) return false;
+          if(snapshotNyata(snap)) return true;
+          if(snap.qris_image) return true;
+          var inp=snap.inputs||{};
+          var seed=isContohSeed(inp);
+          return Object.keys(inp).some(function(k){
+            if(seed && (k==="inNama"||k==="inOmzet")) return false; // pasangan seed contoh: abaikan
+            if(k==="inTergantung" && String(inp[k]).trim()==="0") return false; // nilai bawaan slider (0), bukan isian
+            if(k==="inKalibrasi") return false; // checkbox: el.value selalu "on"; status centang tidak tersimpan di snapshot
+            var v=inp[k];
+            return v!=null && String(v).trim()!=="";
+          });
+        }
         function sudahMengisiNyata(){
           if(flagSudahMengisi()) return true;
           try{ return snapshotNyata(collectSnapshot()); }catch(e){ return false; }
@@ -2555,6 +2577,55 @@
           }
         }
         window.__renderLokasi=renderLokasi;
+        /* Gabungkan snapshot CLOUD (menang di tiap isian yang sudah terisi)
+           dengan snapshot data coba tamu (mengisi kekosongan cloud). Dipakai
+           saat cloud BELUM punya data usaha inti: data usaha yang sempat
+           tersimpan sebagian di cloud (mis. jawaban kuis) dipertahankan,
+           sementara nama usaha, omzet, dan isian lain dari data coba
+           mengisi kolom yang masih kosong. */
+        function gabungkanSnapshot(cloud, trial){
+          var c=cloud||{}, t=trial||{};
+          var inp={}; var ci=c.inputs||{}, ti=t.inputs||{};
+          Object.keys(ci).forEach(function(k){ inp[k]=ci[k]; });
+          Object.keys(ti).forEach(function(k){
+            var cv=inp[k];
+            var kosong=cv==null || String(cv).trim()==="";
+            var tv=ti[k];
+            if(kosong && tv!=null && String(tv).trim()!=="") inp[k]=tv;
+          });
+          var ans={}; var ca=c.answers||{}, ta=t.answers||{};
+          Object.keys(ta).forEach(function(k){ ans[k]=ta[k]; });
+          Object.keys(ca).forEach(function(k){ ans[k]=ca[k]; });
+          function gabungBaris(cloudRows, trialRows){
+            var out=(cloudRows||[]).slice(); var ada={};
+            out.forEach(function(r){ if(r && r.cid) ada[r.cid]=true; });
+            (trialRows||[]).forEach(function(r){ if(r && r.cid && !ada[r.cid]){ out.push(r); ada[r.cid]=true; } });
+            return out;
+          }
+          function gabungSop(cloudSteps, trialSteps){
+            var out=(cloudSteps||[]).slice(); var t2=trialSteps||[];
+            for(var i=0;i<t2.length;i++){
+              var cv=out[i];
+              if((cv==null || String(cv).trim()==="") && t2[i]!=null && String(t2[i]).trim()!=="") out[i]=t2[i];
+            }
+            return out.length?out:["","",""];
+          }
+          return {
+            lokasi: c.lokasi||t.lokasi||null,
+            qris_image: c.qris_image||t.qris_image||null,
+            proaktif: c.proaktif||t.proaktif||null,
+            inputs: inp, answers: ans,
+            pack: Array.isArray(c.pack)?c.pack:(Array.isArray(t.pack)?t.pack:undefined),
+            cons: Array.isArray(c.cons)?c.cons:(Array.isArray(t.cons)?t.cons:undefined),
+            legal: Array.isArray(c.legal)?c.legal:(Array.isArray(t.legal)?t.legal:undefined),
+            chan: Array.isArray(c.chan)?c.chan:(Array.isArray(t.chan)?t.chan:undefined),
+            sopSteps: gabungSop(c.sopSteps, t.sopSteps),
+            txs: gabungBaris(c.txs, t.txs),
+            stocks: gabungBaris(c.stocks, t.stocks),
+            pis: gabungBaris(c.pis, t.pis),
+            utangs: gabungBaris(c.utangs, t.utangs)
+          };
+        }
         function applySnapshot(snap){
           if(!snap) return;
           loading=true;
@@ -2623,6 +2694,7 @@
           // error/offline/tabel belum ada). Migrasi snapshot tamu hanya boleh
           // diputuskan bila status cloud benar-benar diketahui.
           var cloudChecked=false, cloudHasData=false;
+          var cloudSnapForMig=null, cloudCoreData=false;
           try{
             var uid=currentUser.id;
             var res=await Promise.all([
@@ -2652,6 +2724,7 @@
               };
               var hasCloud = cloudAdaIsi(snap);
               cloudChecked=true; cloudHasData=!!hasCloud;
+              cloudSnapForMig=snap; cloudCoreData=cloudAdaDataUsaha(snap);
               if(hasCloud) applySnapshot(snap);
               else { var loc2=readLocal(); if(loc2) applySnapshot(loc2); }
               if(hasCloud && snapshotNyata(snap)) tandaiSudahMengisi();
@@ -2664,28 +2737,36 @@
             var loc3=readLocal(); if(loc3) applySnapshot(loc3);
             setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn");
           }
-          // Migrasi data coba tamu -> akun baru.
-          // PERBAIKAN BUG KEHILANGAN DATA: migrasi HANYA jalan bila status cloud
-          // sudah berhasil diperiksa DAN cloud kosong (cloudChecked && !cloudHasData).
-          // - Cloud berisi data: data cloud menang — pending migration DIBUANG dan
-          //   saveData TIDAK dipanggil untuk snapshot tamu itu.
+          // Migrasi data coba tamu -> akun baru (v2: GABUNG, bukan menang-semua).
+          // Keputusan memakai DUA ukuran cloud yang berbeda:
+          // - cloudHasData (cloudAdaIsi, dipakai di cabang tampilan di atas):
+          //   cloud berisi apa pun yang layak ditampilkan, termasuk jawaban kuis.
+          // - cloudCoreData (cloudAdaDataUsaha): cloud berisi data usaha INTI
+          //   (nama usaha / omzet / transaksi / QRIS). HANYA inilah yang boleh
+          //   menghalangi migrasi. Baris cloud sebagian (mis. hanya jawaban kuis,
+          //   tanpa data usaha) TIDAK menghalangi: data coba digabungkan ke
+          //   dalamnya (gabungkanSnapshot) — isi cloud yang nyata dipertahankan,
+          //   kekosongannya diisi data coba — lalu hasilnya disimpan ke cloud.
+          // - Cloud berisi data inti: data cloud menang — pending migration
+          //   DIBUANG dan saveData TIDAK dipanggil untuk snapshot tamu itu.
           // - Cloud belum bisa diperiksa (offline / tabel belum ada): jangan migrasi
           //   dan jangan buang — pending migration disimpan kembali untuk diputuskan
           //   pada pemuatan berikutnya.
           var pendingMig=migrateSnapshot;
           if(!pendingMig){ try{ var pm=localStorage.getItem("umkm-introspeksi-pending-migration"); if(pm) pendingMig=JSON.parse(pm); }catch(e){} }
           if(pendingMig && currentUser){
-            if(cloudChecked && cloudHasData){
+            if(cloudChecked && cloudCoreData){
               migrateSnapshot=null;
               try{ localStorage.removeItem("umkm-introspeksi-pending-migration"); }catch(e){}
               toast("Data cloud Anda dipakai — data coba di perangkat ini tidak menimpa data cloud.");
-            } else if(cloudChecked && !cloudHasData){
+            } else if(cloudChecked && !cloudCoreData){
               migrateSnapshot=null;
               try{ localStorage.removeItem("umkm-introspeksi-pending-migration"); }catch(e){}
-              var hasMig = (pendingMig.inputs && Object.keys(pendingMig.inputs).some(function(k){ return pendingMig.inputs[k]; })) || (pendingMig.txs&&pendingMig.txs.length) || (pendingMig.stocks&&pendingMig.stocks.length) || (pendingMig.pis&&pendingMig.pis.length) || (pendingMig.utangs&&pendingMig.utangs.length) || pendingMig.lokasi || pendingMig.qris_image;
+              var hasMig = (pendingMig.inputs && Object.keys(pendingMig.inputs).some(function(k){ if(k==="inTergantung" && String(pendingMig.inputs[k]).trim()==="0") return false; if(k==="inKalibrasi") return false; return !!pendingMig.inputs[k]; })) || (pendingMig.txs&&pendingMig.txs.length) || (pendingMig.stocks&&pendingMig.stocks.length) || (pendingMig.pis&&pendingMig.pis.length) || (pendingMig.utangs&&pendingMig.utangs.length) || pendingMig.lokasi || pendingMig.qris_image;
               if(hasMig){
-                if(snapshotNyata(pendingMig)) tandaiSudahMengisi();
-                applySnapshot(pendingMig);
+                var gab=gabungkanSnapshot(cloudSnapForMig||{inputs:{},answers:{}}, pendingMig);
+                if(snapshotNyata(gab)) tandaiSudahMengisi();
+                applySnapshot(gab);
                 var migJson=JSON.stringify(collectSnapshot());
                 await saveData(collectSnapshot(), migJson);
                 toast("Data coba Anda sudah tersimpan.");
