@@ -80,7 +80,10 @@ export default async function handler(req, res) {
               "Jangan pernah membuat angka valuasi, skor, HPP, atau BEP baru. " +
               "Gunakan hanya angka yang sudah diberikan di konteks. " +
               "Jika konteks tidak memberi angka, katakan bahwa angka itu harus dihitung dari data usaha, jangan menebak. " +
-              "Jangan sebut kata bank, kredit, atau KUR. Gunakan istilah investasi dan kerjasama investasi.",
+              "Jangan sebut kata bank, kredit, atau KUR. Gunakan istilah investasi dan kerjasama investasi. " +
+              "Bila kamu perlu bertanya balik kepada pengguna, ajukan MAKSIMAL satu pertanyaan sederhana dalam satu jawaban, " +
+              "pakai bahasa sehari-hari yang mudah dijawab, dan akhiri jawaban itu dengan kalimat persis ini: " +
+              "\"Silakan jawab di kolom chat di bawah ini.\"",
           },
           {
             role: "user",
