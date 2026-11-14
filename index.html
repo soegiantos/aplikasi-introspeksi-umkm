@@ -158,6 +158,10 @@
       .ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
       .ladder div{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;font-size:.82rem;font-weight:600;color:var(--ink-soft);background:var(--surface)}
       .ladder div.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+      /* ---------- Naik Level (dasbor pengguna terdaftar yang kembali) ---------- */
+      #naikLevelList{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+      #naikLevelList li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
+      #naikLevelList li span{font-weight:600}
       .ladder div b{display:block;font-size:.95rem}
       @media(max-width:640px){.ladder{grid-template-columns:repeat(2,1fr)}.ladder div:last-child{grid-column:span 2}}
 
@@ -931,7 +935,12 @@
       <!-- ============ 2. DASHBOARD ============ -->
       <section id="dashboard">
         <div class="sec-head"><span class="sec-num">02</span><h2>Dasbor level UMKM</h2></div>
-        <p class="sec-sub">Level skala mengikuti kriteria omzet PP No. 7 Tahun 2021. Level kematangan (0–4) menilai seberapa siap usaha Anda dikelola secara modern dan diajukan untuk kerjasama investasi.</p>
+        <div class="card" id="naikLevelWrap" style="display:none;margin-bottom:14px">
+          <h3>Naik Level</h3>
+          <p class="note" style="margin-top:6px" id="naikLevelTarget">—</p>
+          <ul id="naikLevelList"></ul>
+        </div>
+        <p class="sec-sub" id="dashSecSub">Level skala mengikuti kriteria omzet PP No. 7 Tahun 2021. Level kematangan (0–4) menilai seberapa siap usaha Anda dikelola secara modern dan diajukan untuk kerjasama investasi.</p>
         <div class="grid-2">
           <div class="card">
             <h3>Level skala usaha</h3>
@@ -1677,7 +1686,7 @@
         window.WILAYAH = WILAYAH;
         var PAIRS = [["inProvinsi","inKota"],["wizProvinsi","wizKota"],["gpsProvinsi","gpsKota"]];
         var syncing = false;
-        function gid(id){ return document.getElementById(id); }
+        function $(id){ return document.getElementById(id); }
         function norm(s){ return String(s||"").trim().toLowerCase().replace(/\s+/g," "); }
         function stripPrefix(s){ return norm(s).replace(/^(kabupaten administrasi|kota administrasi|kabupaten|kota)\s+/,""); }
         function findProv(name){
@@ -1734,7 +1743,7 @@
           syncing = true;
           try{
             PAIRS.forEach(function(pair){
-              var ps = gid(pair[0]), ks = gid(pair[1]);
+              var ps = $(pair[0]), ks = $(pair[1]);
               if(ps) ps.value = r.provinsi;
               fillKota(ks, r.provinsi, r.kota);
             });
@@ -1756,7 +1765,7 @@
           setWilayah(r.provinsi, r.kota);
         };
         PAIRS.forEach(function(pair){
-          var ps = gid(pair[0]), ks = gid(pair[1]);
+          var ps = $(pair[0]), ks = $(pair[1]);
           fillProvinsi(ps);
           fillKota(ks, "", "");
           if(ps) ps.addEventListener("change", function(){
@@ -1765,7 +1774,7 @@
           });
           if(ks) ks.addEventListener("change", function(){
             if(syncing) return;
-            var pEl = gid(pair[0]);
+            var pEl = $(pair[0]);
             setWilayah(pEl ? pEl.value : "", ks.value);
           });
         });
@@ -1977,7 +1986,101 @@
         S={omzetThn,sdeThn,labaBersihBln,weighted,valLow,valHigh,mult,health,scInv,skala,matLevel,dimScore,asetBersih,omzetBln,hppPct,opex,gaji,aset,utang,tumbuh};
         if (typeof extraUpdate==="function") extraUpdate();
         if (typeof window.__renderProaktif==="function"){ try{ window.__renderProaktif(); }catch(e){} }
+        try{ renderNaikLevel(true); }catch(e){}
       }
+
+      /* ---------- Naik Level (hanya pengguna terdaftar yang kembali
+         dengan data): dasbor mereka tidak lagi memuat teori level/skala
+         (penjelasan PP 7/2021, uraian tiap level, tangga skala dan
+         kematangan) — yang tampil hanya nama level + angka skor, lalu
+         bagian "Naik Level": level kematangan berikut + langkah konkret
+         menuju ke sana (langkah data berikutnya dari LANGKAH_SAPA dan dua
+         area terlemah dari logika celah panel proaktif). Tamu dan pengguna
+         terdaftar tanpa data melihat dasbor lengkap seperti semula. */
+      var DASH_SEC_SUB_AWAL=null;
+      var DASH_LVLDESC_TEORI=null, DASH_MATDESC_TEORI=null;
+      var MAT_NAMES_NAIK=["Level 0 — Bertahan","Level 1 — Tercatat","Level 2 — Terukur","Level 3 — Tumbuh","Level 4 — Siap Ekspansi"];
+      function modeNaikLevel(){
+        try{ if(document.body.classList.contains("masuk-kembali")) return true; }catch(e){}
+        try{ if(window.__penggunaAktif && window.__penggunaAktif() && window.__sudahMengisiNyata && window.__sudahMengisiNyata()) return true; }catch(e){}
+        return false;
+      }
+      function renderNaikLevel(setelahRecalc){
+        var wrap=$("naikLevelWrap"); if(!wrap) return;
+        var secSub=$("dashSecSub"), scaleLadder=$("scaleLadder"), matLadder=$("matLadder");
+        var lvlDescEl=$("lvlDesc"), matDescEl=$("matDesc");
+        if(secSub && DASH_SEC_SUB_AWAL===null) DASH_SEC_SUB_AWAL=secSub.textContent;
+        if(setelahRecalc){ var l0=$("lvlDesc"), m0=$("matDesc"); if(l0) DASH_LVLDESC_TEORI=l0.textContent; if(m0) DASH_MATDESC_TEORI=m0.textContent; }
+        if(!modeNaikLevel()){
+          wrap.style.display="none";
+          if(secSub && DASH_SEC_SUB_AWAL!==null) secSub.textContent=DASH_SEC_SUB_AWAL;
+          if(scaleLadder) scaleLadder.style.display="";
+          if(matLadder) matLadder.style.display="";
+          if(lvlDescEl && DASH_LVLDESC_TEORI!==null) lvlDescEl.textContent=DASH_LVLDESC_TEORI;
+          if(matDescEl && DASH_MATDESC_TEORI!==null) matDescEl.textContent=DASH_MATDESC_TEORI;
+          return;
+        }
+        wrap.style.display="";
+        if(secSub) secSub.textContent="";
+        if(scaleLadder) scaleLadder.style.display="none";
+        if(matLadder) matLadder.style.display="none";
+        var s=(typeof S!=="undefined" && S)?S:{};
+        var omzetThn=s.omzetThn||0;
+        if(lvlDescEl) lvlDescEl.textContent="Omzet tahunan Anda: "+fmtShort(omzetThn)+".";
+        if(matDescEl) matDescEl.textContent="";
+        var matLevel=(typeof s.matLevel==="number")?s.matLevel:0;
+        var berikut=Math.min(matLevel+1, 4);
+        var targetEl=$("naikLevelTarget");
+        if(targetEl) targetEl.textContent = matLevel>=4
+          ? "Anda sudah di level paling tinggi: "+MAT_NAMES_NAIK[4]+"."
+          : "Level berikut: "+MAT_NAMES_NAIK[berikut]+".";
+        var aksi=[];
+        var langkah=null;
+        try{ if(typeof window.__langkahBerikutnya==="function") langkah=window.__langkahBerikutnya(true); }catch(e){ langkah=null; }
+        if(langkah && langkah.target){
+          aksi.push({teks:"Isi "+langkah.label, target:langkah.target, tombol:"Isi"});
+        }
+        try{
+          var txCount=0;
+          try{ var snap=collectSnapshot(); txCount=(snap && snap.txs)?snap.txs.length:0; }catch(e2){ txCount=0; }
+          var skorKemasan=null; try{ var psEl=$("packScore"); if(psEl){ var psV=parseInt(String(psEl.textContent||"").trim(),10); if(!isNaN(psV)) skorKemasan=psV; } }catch(e){}
+          var kand=[
+            {skor:(typeof legalScoreVal!=="undefined"?legalScoreVal:null), teks:"Lengkapi legalitas usaha", target:"inLegal", tombol:"Buka"},
+            {skor:skorKemasan, teks:"Perbaiki kemasan produk", target:"kemasan", tombol:"Buka"},
+            {skor:(typeof consScoreVal!=="undefined"?consScoreVal:null), teks:"Cek data online", target:"cekdata", tombol:"Cek"},
+            {skor:(txCount>0?100:0), teks:"Catat transaksi", target:"txKet", tombol:"Catat"}
+          ];
+          kand=kand.filter(function(k){ return typeof k.skor==="number" && k.skor<100; });
+          kand.sort(function(a,b){ return a.skor-b.skor; });
+          kand.forEach(function(k){
+            for(var i=0;i<aksi.length;i++){ if(aksi[i].target===k.target) return; }
+            if(aksi.length>=3) return;
+            aksi.push({teks:k.teks+" ("+k.skor+"/100)", target:k.target, tombol:k.tombol});
+          });
+        }catch(e){}
+        var listEl=$("naikLevelList"); if(!listEl) return;
+        if(!aksi.length){
+          listEl.innerHTML="<li><span>Semua terkendali — data usaha Anda sudah lengkap.</span></li>";
+          return;
+        }
+        listEl.innerHTML=aksi.map(function(a){
+          return "<li><span>"+esc(a.teks)+"</span><button type=\"button\" class=\"btn small\" data-naik-target=\""+esc(a.target)+"\">"+esc(a.tombol)+"</button></li>";
+        }).join("");
+      }
+      window.__renderNaikLevel=renderNaikLevel;
+      /* Satu pendengar klik untuk semua tombol aksi Naik Level (daftar
+         dirender ulang tiap recalc, jadi pendengar menempel di <ul>-nya,
+         bukan di tiap tombol). */
+      (function(){
+        var listEl=$("naikLevelList"); if(!listEl) return;
+        listEl.addEventListener("click", function(ev){
+          var b=ev.target && ev.target.closest ? ev.target.closest("[data-naik-target]") : null;
+          if(!b) return;
+          var target=b.getAttribute("data-naik-target"); if(!target) return;
+          if(typeof window.__fokusKeKolom==="function"){ try{ window.__fokusKeKolom(target, "start"); return; }catch(e){} }
+          var el=$(target); if(el){ try{ el.scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){} }
+        });
+      })();
 
       function recalcFinance(sdeBln, labaBln){
         const hpp=num("hBahan")+num("hKemasan")+num("hEnergi")+num("hAir")+num("hTenaga")+num("hSusut")+num("hSewa")+num("hLain");
@@ -3187,6 +3290,7 @@
           var masukKembali=false;
           try{ masukKembali = ada && entered && !isGuest; }catch(e){ masukKembali=false; }
           try{ document.body.classList.toggle("masuk-kembali", masukKembali); }catch(e){}
+          try{ if(typeof window.__renderNaikLevel==="function") window.__renderNaikLevel(); }catch(e){}
           var wrap=gid("dataFormWrap"), ring=gid("dataRingkasan"), selesai=gid("btnDataSelesai");
           var pil=document.querySelector("#data .demo-tag");
           var banner=gid("demoBanner");
