@@ -86,6 +86,8 @@
       input[type="range"]{width:100%;accent-color:var(--accent);min-height:36px}
       .range-row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--ink-soft)}
       .note{font-size:.85rem;color:var(--ink-soft)}
+      .voice-result{display:none;background:var(--accent-soft);border:1px solid var(--accent);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.95rem;font-weight:600;margin-top:12px}
+      .voice-warn{background:var(--warn-soft);border:1.5px solid var(--warn);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.93rem;font-weight:600;margin-top:12px}
       .demo-tag{display:inline-block;background:var(--gold-soft);color:var(--gold);font-weight:700;font-size:.8rem;padding:4px 10px;border-radius:999px;margin-bottom:12px}
 
       /* ---------- scores ---------- */
@@ -878,7 +880,7 @@
       <!-- ============ 8. PEMBUKUAN & SAK EMKM ============ -->
       <section id="buku">
         <div class="sec-head"><span class="sec-num">08</span><h2>Pembukuan harian, stok, piutang &amp; laporan SAK EMKM</h2></div>
-        <p class="sec-sub">Catat transaksi seperti buku kas digital. Semua catatan tersimpan ke cloud akun Anda dan termuat lagi saat Anda masuk berikutnya. Transaksi ikut menghitung Laba Rugi, BEP, prediksi arus kas, dan laporan SAK EMKM — bukan hanya tampil sebagai daftar. Foto nota dan input suara membantu mengisi keterangan — periksa kembali angkanya sebelum menambah transaksi.</p>
+        <p class="sec-sub">Catat transaksi seperti buku kas digital. Semua catatan tersimpan ke cloud akun Anda dan termuat lagi saat Anda masuk berikutnya. Transaksi ikut menghitung Laba Rugi, BEP, prediksi arus kas, dan laporan SAK EMKM — bukan hanya tampil sebagai daftar. Foto nota membantu mengisi keterangan, dan tombol suara bisa mengisi keterangan, jumlah, dan jenis sekaligus dari satu ucapan — contoh: 'penjualan lima puluh ribu'. <b>Peringatan: periksa kembali angkanya sebelum menambah transaksi</b>, terutama angka hasil ucapan suara.</p>
         <div class="card">
           <h3>Tambah transaksi</h3>
           <div class="photo-box">
@@ -892,8 +894,10 @@
             <label class="f"><span>Jenis</span><select id="txJenis"><option value="" selected disabled>Pilih jenis…</option><option value="masuk">Pemasukan</option><option value="keluar">Pengeluaran</option></select></label>
             <label class="f"><span>Kategori</span><select id="txKat"><option value="" selected disabled>Pilih kategori…</option><option>Penjualan</option><option>QRIS</option><option>Bahan baku</option><option>Operasional</option><option>Gaji</option><option>Kemasan</option><option>Transport</option><option>Lainnya</option></select></label>
             <label class="f"><span>Jumlah (Rp)</span><input type="number" id="txJumlah" placeholder="contoh: 600000" min="0" step="1000" /></label>
-            <label class="f"><span>Catat dengan suara</span><button class="btn ghost" id="btnVoice" type="button" style="width:100%">Isi keterangan dengan suara</button></label>
+            <label class="f"><span>Catat dengan suara</span><button class="btn ghost" id="btnVoice" type="button" style="width:100%">Catat dengan suara (keterangan + jumlah)</button></label>
           </div>
+          <p class="voice-result" id="voiceResult" role="status"></p>
+          <p class="voice-warn" role="note">Peringatan: periksa kembali angkanya sebelum menambah transaksi. Hasil suara hanya mengisi kolom — transaksi baru tercatat setelah Anda menekan tombol Tambah transaksi.</p>
           <div class="actions"><button class="btn" id="btnTx" type="button">Tambah transaksi</button></div>
           <div id="txEmpty" class="empty-note">Belum ada transaksi tercatat. Tambahkan penjualan dan pengeluaran hari ini untuk menyusun laporan.</div>
           <table class="mini-table" id="txTable" style="display:none"><thead><tr><th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th>Jumlah</th><th></th></tr></thead><tbody id="txBody"></tbody></table>
@@ -1724,10 +1728,120 @@
         audit("Transaksi ditambah: "+$("txKet").value+" "+fmtFull(jml)); $("txKet").value=""; $("txJumlah").value=""; renderTx(); toast("Transaksi tercatat");
       });
       $("notaPhoto").addEventListener("change",function(e){ const f=e.target.files[0]; if(!f) return; const img=$("notaPreview"); img.src=URL.createObjectURL(f); img.style.display="block"; audit("Foto nota diunggah sebagai bukti transaksi."); });
+      /* --- Parser ucapan Bahasa Indonesia: satu kalimat -> keterangan + jumlah + jenis ---
+         Contoh: "penjualan lima puluh ribu" -> ket "penjualan", Rp50.000, masuk.
+                 "beli beras seratus lima puluh ribu" -> ket "beli beras", Rp150.000, keluar. */
+      var UC_UNIT={nol:0,satu:1,dua:2,tiga:3,empat:4,lima:5,enam:6,tujuh:7,delapan:8,sembilan:9,sepuluh:10,sebelas:11};
+      var UC_SCALE={ribu:1000,juta:1000000,miliar:1000000000};
+      var UC_MASUK={jual:1,penjualan:1,terjual:1,terima:1,dapat:1,masuk:1,pemasukan:1,pendapatan:1,omzet:1,laku:1};
+      var UC_KELUAR={beli:1,bayar:1,keluar:1,pengeluaran:1,belanja:1,ongkos:1};
+      function ucTokens(teks){ return String(teks||"").toLowerCase().replace(/[.,!?;:"'()\/-]/g," ").split(/\s+/).filter(function(w){ return w.length>0; }); }
+      function ucIsNumWord(w){ return (w in UC_UNIT)||w==="puluh"||w==="belas"||w==="ratus"||w==="seratus"||w==="seribu"||w==="sejuta"||w==="semiliar"||(w in UC_SCALE); }
+      /* nilai frasa angka yang dimulai tepat di token ke-i; kembalikan {nilai, akhir} atau null */
+      function ucParseAt(tokens,i){
+        var n=tokens.length;
+        function seg(j){
+          /* segmen 0..999: [satuan ratus | seratus] lalu [satuan puluh [satuan] | satuan belas | sepuluh | sebelas | satuan] */
+          var v=0, used=false;
+          if(j<n && tokens[j]==="seratus"){ v+=100; j++; used=true; }
+          else if(j+1<n && (tokens[j] in UC_UNIT) && UC_UNIT[tokens[j]]>0 && tokens[j+1]==="ratus"){ v+=UC_UNIT[tokens[j]]*100; j+=2; used=true; }
+          if(j<n && tokens[j]==="sepuluh"){ v+=10; j++; used=true; }
+          else if(j<n && tokens[j]==="sebelas"){ v+=11; j++; used=true; }
+          else if(j<n && (tokens[j] in UC_UNIT) && UC_UNIT[tokens[j]]>0){
+            var u=UC_UNIT[tokens[j]];
+            if(j+1<n && tokens[j+1]==="puluh"){ v+=u*10; j+=2; used=true; if(j<n && (tokens[j] in UC_UNIT) && UC_UNIT[tokens[j]]>0){ v+=UC_UNIT[tokens[j]]; j++; } }
+            else if(j+1<n && tokens[j+1]==="belas"){ v+=u+10; j+=2; used=true; }
+            else { v+=u; j++; used=true; }
+          }
+          return used?{v:v,next:j}:null;
+        }
+        if(i>=n) return null;
+        /* angka digit: "50000", atau digit + skala: "50 ribu" */
+        if(/^\d+$/.test(tokens[i])){
+          var dv=parseInt(tokens[i],10), dj=i+1;
+          if(dj<n && (tokens[dj] in UC_SCALE)){ dv*=UC_SCALE[tokens[dj]]; dj++; }
+          return {nilai:dv,akhir:dj};
+        }
+        /* bentuk se- + skala: seribu, sejuta, semiliar (boleh diikuti segmen berskala lebih kecil) */
+        if(tokens[i]==="seribu"||tokens[i]==="sejuta"||tokens[i]==="semiliar"){
+          var sc0=tokens[i]==="seribu"?1000:(tokens[i]==="sejuta"?1000000:1000000000);
+          var total0=sc0, j0=i+1, last0=sc0;
+          while(true){
+            var s0=seg(j0); if(!s0) break;
+            var k0=s0.next;
+            if(k0<n && (tokens[k0] in UC_SCALE) && UC_SCALE[tokens[k0]]<last0){ total0+=s0.v*UC_SCALE[tokens[k0]]; last0=UC_SCALE[tokens[k0]]; j0=k0+1; }
+            else if(!(k0<n && (tokens[k0] in UC_SCALE))){ total0+=s0.v; j0=k0; break; }
+            else break;
+          }
+          return {nilai:total0,akhir:j0};
+        }
+        /* kata angka biasa: segmen (skala menurun ribu/juta/miliar) */
+        var total=0, j=i, any=false, lastScale=Infinity;
+        while(true){
+          var s=seg(j); if(!s) break;
+          var k=s.next;
+          if(k<n && (tokens[k] in UC_SCALE)){
+            var sc=UC_SCALE[tokens[k]];
+            if(sc>=lastScale) break;
+            total+=s.v*sc; lastScale=sc; j=k+1; any=true;
+          } else { total+=s.v; j=k; any=true; break; }
+        }
+        return any?{nilai:total,akhir:j}:null;
+      }
+      function parseUcapanTransaksi(teks){
+        var tokens=ucTokens(teks);
+        var hasil={keterangan:"",jumlah:null,jenis:null,jenisJelas:false,mentah:String(teks||"").trim()};
+        if(!tokens.length) return hasil;
+        /* cari frasa angka pertama yang berhasil diuraikan */
+        var span=null;
+        for(var i=0;i<tokens.length;i++){
+          if(/^\d+$/.test(tokens[i]) || ucIsNumWord(tokens[i])){
+            var p=ucParseAt(tokens,i);
+            if(p && p.nilai>0){ span={dari:i,sampai:p.akhir,jumlah:p.nilai}; break; }
+          }
+        }
+        var sisa=[];
+        for(var t=0;t<tokens.length;t++){
+          if(span && t>=span.dari && t<span.sampai) continue;
+          if(tokens[t]==="rp"||tokens[t]==="rupiah") continue;
+          sisa.push(tokens[t]);
+        }
+        if(span) hasil.jumlah=span.jumlah;
+        /* jenis dari kata petunjuk pertama yang muncul dalam ucapan */
+        for(var u=0;u<tokens.length;u++){
+          if(UC_MASUK[tokens[u]]){ hasil.jenis="masuk"; hasil.jenisJelas=true; break; }
+          if(UC_KELUAR[tokens[u]]){ hasil.jenis="keluar"; hasil.jenisJelas=true; break; }
+        }
+        hasil.keterangan=sisa.join(" ");
+        return hasil;
+      }
+      window.parseUcapanTransaksi=parseUcapanTransaksi;
       $("btnVoice").addEventListener("click",function(){
         const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+        const resEl=$("voiceResult");
         if(!SR){ toast("Input suara tidak didukung peramban ini — ketik keterangannya"); return; }
-        const r=new SR(); r.lang="id-ID"; r.onresult=function(ev){ $("txKet").value=ev.results[0][0].transcript; toast("Keterangan terisi dari suara — periksa kembali"); }; r.onerror=function(){ toast("Suara tidak tertangkap — coba lagi di tempat tenang"); }; r.start(); toast("Mendengarkan… sebutkan keterangannya");
+        const r=new SR(); r.lang="id-ID";
+        r.onresult=function(ev){
+          const teks=ev.results[0][0].transcript;
+          const p=parseUcapanTransaksi(teks);
+          if(!p.mentah){ toast("Suara tidak tertangkap — coba lagi di tempat tenang"); return; }
+          if(p.keterangan) $("txKet").value=p.keterangan;
+          let msg;
+          if(p.jumlah!==null){
+            $("txJumlah").value=p.jumlah;
+            if(p.jenisJelas) $("txJenis").value=p.jenis;
+            const jenisTampil=p.jenisJelas ? (p.jenis==="masuk"?"Masuk":"Keluar") : ($("txJenis").value==="masuk"?"Masuk":($("txJenis").value==="keluar"?"Keluar":"belum dipilih"));
+            msg="Didengar: "+(p.keterangan||$("txKet").value||"—")+" — "+fmtFull(p.jumlah)+" — "+jenisTampil+(p.jenisJelas?"":". Jenis tidak terdengar jelas, jadi jenis yang sedang terpilih dipakai — ubah bila perlu")+". Periksa, lalu tekan Tambah.";
+            resEl.textContent=msg; resEl.style.display="block";
+            toast("Keterangan, jumlah, dan jenis terisi dari suara — periksa kembali angkanya");
+          } else {
+            msg="Didengar: "+(p.keterangan||$("txKet").value||"—")+". Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.";
+            resEl.textContent=msg; resEl.style.display="block";
+            toast("Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.");
+          }
+        };
+        r.onerror=function(){ toast("Suara tidak tertangkap — coba lagi di tempat tenang"); };
+        r.start(); toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
       });
 
       /* --- Stok & Piutang --- */
@@ -2953,7 +3067,7 @@
           shareLinkInput:{s:"Tautan khusus portal investor Anda. Siapa pun yang membuka tautan ini melihat ringkasan read-only usaha Anda — tanpa bisa mengubah apa pun, dan tanpa melihat email, nomor HP, lokasi GPS, atau rincian transaksi Anda.",e:"Tautan berakhir dengan kode acak panjang yang hanya Anda yang tahu sebelum dibagikan.",h:"Salin tautan ini dan kirim hanya ke calon investor yang Anda percaya. Bila berubah pikiran, ketuk Cabut tautan — tautan langsung berhenti bekerja."}
         };
         var LABEL_H = {
-          "catat dengan suara":{s:"Tombol ini mengisi kolom keterangan transaksi memakai suara Anda, untuk Anda periksa lagi sebelum disimpan.",e:"Tekan tombolnya, lalu ucapkan keterangan transaksi dengan jelas.",h:"Periksa hasil tulisan dari suara Anda — perbaiki bila ada kata atau angka yang keliru."},
+          "catat dengan suara":{s:"Tombol ini mengisi tiga kolom transaksi sekaligus dari satu kalimat ucapan Anda: keterangan, jumlah rupiah, dan jenis masuk atau keluar. Hasilnya hanya mengisi kolom — belum tersimpan, Anda tetap menekan Tambah transaksi sendiri.",e:"Ucapkan: 'penjualan lima puluh ribu' (terisi Masuk Rp50.000) atau 'beli bahan dua ratus ribu' (terisi Keluar Rp200.000).",h:"Tekan tombolnya, ucapkan keterangan dan jumlahnya dalam satu kalimat dengan jelas. Lalu periksa kembali angkanya sebelum menekan Tambah transaksi — suara kadang salah dengar angka. Bila angka tidak terdengar, isi jumlahnya dengan mengetik."},
           "pilih foto produk":{s:"Foto produk atau kemasan utama Anda untuk dinilai bersama daftar periksa label.",e:"Foto terang, latar bersih, label menghadap kamera.",h:"Pilih foto dari HP Anda; foto hanya tampil di halaman ini."},
           "foto nota / struk (opsional)":{s:"Foto nota atau struk sebagai bukti pendamping catatan transaksi Anda.",e:"Struk belanja bahan atau nota penjualan hari ini.",h:"Setelah memilih foto, masukkan jumlahnya pada formulir transaksi dan periksa kembali."}
         };
