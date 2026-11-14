@@ -166,6 +166,16 @@
       .empty-note{border:1px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--ink-soft);font-size:.9rem;margin-top:12px}
       .photo-box{border:1px dashed var(--field-border);border-radius:12px;padding:14px;background:var(--field-bg);margin-top:10px}
       .photo-box img{max-width:100%;border-radius:10px;display:block;margin-top:10px}
+      .qris-show{background:#fff;border-radius:14px;padding:18px 14px;text-align:center;margin-top:12px}
+      .qris-show img{width:min(300px,78vw);height:auto;display:block;margin:0 auto;border-radius:6px}
+      .qris-show .qris-nama{color:#171106;font-size:1.15rem;font-weight:800;margin:12px 0 0}
+      .qris-show .qris-tagihan{color:#171106;font-size:1rem;margin:6px 0 0}
+      .qris-overlay{position:fixed;inset:0;z-index:300;background:#fff;color:#171106;display:none;flex-direction:column;align-items:center;justify-content:center;padding:22px;text-align:center}
+      .qris-overlay.show{display:flex}
+      .qris-overlay img{width:min(88vw,620px);height:auto;border-radius:8px}
+      .qris-overlay .qris-nama{font-size:1.5rem;font-weight:800;margin:18px 0 0}
+      .qris-overlay .qris-tagihan{font-size:1.2rem;margin:8px 0 0}
+      .qris-overlay .btn{margin-top:22px;background:#171106;color:#fff;border-color:#171106}
       textarea.ta{width:100%;padding:10px 12px;border:1.5px solid var(--field-border);border-radius:10px;background:var(--field-bg);color:var(--ink);font:inherit;font-size:.98rem;min-height:76px}
       textarea.ta::placeholder{color:var(--field-placeholder);font-style:italic}
       .check-row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
@@ -849,7 +859,7 @@
             <label class="f"><span>Tanggal</span><input type="text" id="txTanggal" placeholder="contoh: 2026-11-14" /></label>
             <label class="f"><span>Keterangan</span><input type="text" id="txKet" placeholder="contoh: Penjualan nasi campur 40 porsi" /></label>
             <label class="f"><span>Jenis</span><select id="txJenis"><option value="" selected disabled>Pilih jenis…</option><option value="masuk">Pemasukan</option><option value="keluar">Pengeluaran</option></select></label>
-            <label class="f"><span>Kategori</span><select id="txKat"><option value="" selected disabled>Pilih kategori…</option><option>Penjualan</option><option>Bahan baku</option><option>Operasional</option><option>Gaji</option><option>Kemasan</option><option>Transport</option><option>Lainnya</option></select></label>
+            <label class="f"><span>Kategori</span><select id="txKat"><option value="" selected disabled>Pilih kategori…</option><option>Penjualan</option><option>QRIS</option><option>Bahan baku</option><option>Operasional</option><option>Gaji</option><option>Kemasan</option><option>Transport</option><option>Lainnya</option></select></label>
             <label class="f"><span>Jumlah (Rp)</span><input type="number" id="txJumlah" placeholder="contoh: 600000" min="0" step="1000" /></label>
             <label class="f"><span>Catat dengan suara</span><button class="btn ghost" id="btnVoice" type="button" style="width:100%">Isi keterangan dengan suara</button></label>
           </div>
@@ -861,6 +871,48 @@
             <div class="stat" style="box-shadow:none"><div class="k">Total keluar</div><div class="v" id="txOut">Rp 0</div></div>
             <div class="stat" style="box-shadow:none"><div class="k">Saldo catatan</div><div class="v" id="txSaldo">Rp 0</div></div>
           </div>
+        </div>
+        <div class="card" style="margin-top:14px" id="qrisCard">
+          <h3>Terima Pembayaran QRIS</h3>
+          <p class="note" id="qrisIntro" style="margin-top:6px">Unggah foto kode QRIS usaha Anda (dari penyedia QRIS tempat Anda mendaftar QRIS). Kode ini milik Anda — uang pembeli langsung masuk ke rekening Anda, tidak lewat aplikasi ini.</p>
+          <div class="photo-box">
+            <label class="f"><span>Foto kode QRIS usaha Anda</span><input type="file" id="qrisPhoto" accept="image/*" /></label>
+            <p class="note" style="margin-top:8px">Cukup unggah satu kali — foto kode QRIS tersimpan di data usaha Anda dan tampil lagi setiap aplikasi dibuka.</p>
+          </div>
+          <div id="qrisMain" style="display:none">
+            <div class="qris-show">
+              <img id="qrisImg" alt="Kode QRIS usaha Anda untuk dipindai pembeli" />
+              <p class="qris-nama" id="qrisNamaUsaha">Usaha Anda</p>
+              <p class="qris-tagihan" id="qrisTagihanInfo" style="display:none"></p>
+            </div>
+            <div class="actions">
+              <button class="btn" id="btnQrisFull" type="button">Tampilkan layar penuh</button>
+              <button class="btn ghost" id="btnQrisGanti" type="button">Ganti kode QRIS</button>
+              <button class="btn ghost" id="btnQrisHapus" type="button">Hapus</button>
+            </div>
+            <p class="note" style="margin-top:10px">Tunjukkan layar di atas ke pembeli. Bila tagihan kali ini sudah pasti jumlahnya, isi dulu jumlah tagihan dan keterangan pesanannya supaya tampil di bawah kode dan pembeli mengetik jumlah yang benar di aplikasi bayarnya.</p>
+            <div class="form-grid" style="margin-top:10px">
+              <label class="f"><span>Jumlah tagihan (Rp, opsional)</span><input type="number" id="qrisTagihan" placeholder="contoh: 75000" min="0" step="500" /></label>
+              <label class="f"><span>Keterangan pesanan (opsional)</span><input type="text" id="qrisTagihanKet" placeholder="contoh: Pesanan Bu Ani" /></label>
+            </div>
+            <h3 style="margin-top:18px">Pembeli sudah membayar? Tandai di sini</h3>
+            <p class="note" style="margin-top:6px">Setelah pembeli membayar dan Anda memastikan uangnya masuk, isi jumlah yang dibayar lalu ketuk Tandai Sudah Dibayar — jumlah itu langsung tercatat sebagai pemasukan di daftar transaksi dan laporan Anda.</p>
+            <div class="form-grid" style="margin-top:10px">
+              <label class="f"><span>Jumlah yang dibayar pembeli (Rp)</span><input type="number" id="qrisJumlah" placeholder="contoh: 75000" min="0" step="500" /></label>
+              <label class="f"><span>Keterangan (opsional)</span><input type="text" id="qrisKet" placeholder="contoh: Pesanan Bu Ani" /></label>
+            </div>
+            <div class="actions"><button class="btn" id="btnQrisBayar" type="button">Tandai Sudah Dibayar</button></div>
+            <p style="margin-top:12px"><b id="qrisToday">QRIS hari ini: 0 pembayaran, total Rp 0</b></p>
+            <div id="qrisHistEmpty" class="empty-note">Belum ada pembayaran QRIS hari ini.</div>
+            <table class="mini-table" id="qrisTable" style="display:none"><thead><tr><th>Keterangan</th><th>Jumlah</th><th></th></tr></thead><tbody id="qrisBody"></tbody></table>
+          </div>
+          <p class="note" style="margin-top:12px">Kode QRIS statis — jumlah diketik pembeli di aplikasi bayarnya. Pastikan jumlah yang masuk sesuai tagihan sebelum menandai sudah dibayar.</p>
+        </div>
+        <div class="qris-overlay" id="qrisOverlay" role="dialog" aria-label="Kode QRIS layar penuh">
+          <img id="qrisImgFull" alt="Kode QRIS usaha Anda ukuran besar untuk dipindai pembeli" />
+          <p class="qris-nama" id="qrisNamaFull">Usaha Anda</p>
+          <p class="qris-tagihan" id="qrisTagihanFull" style="display:none"></p>
+          <button class="btn" id="btnQrisCloseFull" type="button">Tutup</button>
         </div>
         <div class="grid-2" style="margin-top:14px">
           <div class="card">
@@ -2027,7 +2079,8 @@
             stocks:stocks.map(function(s){ if(!s.cid) s.cid=uuid(); return {cid:s.cid,nama:s.nama,qty:s.qty,beli:s.beli,jual:s.jual}; }),
             pis:pis.map(function(p){ if(!p.cid) p.cid=uuid(); return {cid:p.cid,nama:p.nama,jumlah:p.jumlah,tempo:p.tempo}; }),
             utangs:utangs.map(function(u){ if(!u.cid) u.cid=uuid(); return {cid:u.cid,ket:u.ket,jumlah:u.jumlah,tempo:u.tempo}; }),
-            proaktif:{ last_seen: proaktifState.last_seen||null, lastConsCheck: proaktifState.lastConsCheck||null }
+            proaktif:{ last_seen: proaktifState.last_seen||null, lastConsCheck: proaktifState.lastConsCheck||null },
+            qris_image: window.__qrisImage || null
           };
         }
         function refreshSegs(containerId, vals){
@@ -2065,6 +2118,8 @@
           stocks.splice(0,stocks.length); (snap.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||uuid(), nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0}); });
           pis.splice(0,pis.length); (snap.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||uuid(), nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—"}); });
           utangs.splice(0,utangs.length); (snap.utangs||[]).forEach(function(u){ utangs.push({cid:u.cid||uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—"}); });
+          window.__qrisImage = snap.qris_image || null;
+          if(window.__renderQris){ try{ window.__renderQris(); }catch(e){} }
           renderTx(); renderStock(); renderPi(); renderUtang();
           updatePack(); updateCons(); updateLegal(); updateChannels(); buildContentCal();
           renderLokasi();
@@ -2090,7 +2145,7 @@
           setSync("Menyimpan...","");
           try{
             var uid=currentUser.id;
-            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, lokasi:snap.lokasi||window.__lokasiUsaha||null, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
+            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
@@ -2128,6 +2183,7 @@
               var core=(res[0].data&&res[0].data.data)||{};
               var snap={
                 lokasi:core.lokasi||null,
+                qris_image:core.qris_image||null,
                 proaktif:core.proaktif||null,
                 inputs:core.inputs||{}, answers:core.answers||{}, pack:core.pack, cons:core.cons, legal:core.legal, chan:core.chan, sopSteps:core.sopSteps,
                 txs:(res[1].data||[]).map(function(r){ return {cid:r.id, tgl:r.tanggal||"", ket:r.keterangan||"", jenis:r.jenis, kat:r.kategori||"Lainnya", jumlah:+r.jumlah||0}; }),
@@ -2135,7 +2191,7 @@
                 pis:(res[3].data||[]).map(function(r){ return {cid:r.id, nama:r.keterangan||"", jumlah:+r.jumlah||0, tempo:r.jatuh_tempo||"—"}; }),
                 utangs:(res[4].data||[]).map(function(r){ return {cid:r.id, ket:r.keterangan||"", jumlah:+r.jumlah||0, tempo:r.jatuh_tempo||"—"}; })
               };
-              var hasCloud = Object.keys(snap.inputs).length>0 || snap.txs.length>0 || snap.stocks.length>0 || snap.pis.length>0 || snap.utangs.length>0;
+              var hasCloud = Object.keys(snap.inputs).length>0 || snap.txs.length>0 || snap.stocks.length>0 || snap.pis.length>0 || snap.utangs.length>0 || !!snap.qris_image;
               if(hasCloud) applySnapshot(snap);
               else { var loc2=readLocal(); if(loc2) applySnapshot(loc2); }
               if(hasCloud && snapshotNyata(snap)) tandaiSudahMengisi();
@@ -2156,7 +2212,7 @@
           if(pendingMig && currentUser){
             migrateSnapshot=null;
             try{ localStorage.removeItem("umkm-introspeksi-pending-migration"); }catch(e){}
-            var hasMig = (pendingMig.inputs && Object.keys(pendingMig.inputs).some(function(k){ return pendingMig.inputs[k]; })) || (pendingMig.txs&&pendingMig.txs.length) || (pendingMig.stocks&&pendingMig.stocks.length) || (pendingMig.pis&&pendingMig.pis.length) || (pendingMig.utangs&&pendingMig.utangs.length) || pendingMig.lokasi;
+            var hasMig = (pendingMig.inputs && Object.keys(pendingMig.inputs).some(function(k){ return pendingMig.inputs[k]; })) || (pendingMig.txs&&pendingMig.txs.length) || (pendingMig.stocks&&pendingMig.stocks.length) || (pendingMig.pis&&pendingMig.pis.length) || (pendingMig.utangs&&pendingMig.utangs.length) || pendingMig.lokasi || pendingMig.qris_image;
             if(hasMig){
               if(snapshotNyata(pendingMig)) tandaiSudahMengisi();
               applySnapshot(pendingMig);
@@ -2656,6 +2712,11 @@
           txJenis:{s:"Apakah uang masuk ke usaha atau keluar dari usaha.",e:"Hasil penjualan adalah Pemasukan; belanja bahan adalah Pengeluaran.",h:"Pilih satu: Pemasukan atau Pengeluaran."},
           txKat:{s:"Kelompok transaksi, supaya laporan bisa memisahkan penjualan, bahan, dan biaya lain.",e:"Penjualan untuk hasil jualan; Bahan baku untuk belanja bahan; Gaji untuk upah karyawan.",h:"Pilih kelompok yang paling dekat. Kelompok ini memengaruhi hitungan laporan laba rugi."},
           txJumlah:{s:"Besarnya uang pada transaksi ini, dalam rupiah.",e:"Penjualan Rp600.000 — isi 600000, angka saja tanpa titik.",h:"Satu transaksi satu jumlah. Penjualan yang berbeda hari dicatat terpisah."},
+          qrisPhoto:{s:"Foto kode QRIS milik usaha Anda sendiri — kode yang diterbitkan penyedia QRIS tempat Anda mendaftar QRIS. Aplikasi hanya menampilkan foto ini ke pembeli; uang pembeli langsung masuk ke rekening Anda, tidak lewat aplikasi ini.",e:"Foto atau tangkapan layar kode QRIS yang biasa Anda tempel di meja kasir.",h:"Ketuk kolom ini, pilih foto kode QRIS dari galeri atau kamera HP. Cukup unggah satu kali — foto tersimpan di data usaha Anda dan tampil lagi setiap aplikasi dibuka. Ketuk Ganti kode QRIS bila kode Anda berubah."},
+          qrisTagihan:{s:"Jumlah tagihan untuk pesanan yang sedang dibayar, ditampilkan besar di bawah kode QRIS supaya pembeli mengetik jumlah yang sama persis di aplikasi bayarnya.",e:"Pesanan Bu Ani total Rp75.000 — isi 75000.",h:"Boleh dikosongkan bila jumlahnya belum pasti. Kolom ini hanya tulisan penunjuk untuk pembeli — pencatatan uangnya dilakukan lewat tombol Tandai Sudah Dibayar setelah pembeli benar-benar membayar."},
+          qrisTagihanKet:{s:"Keterangan pesanan yang tampil di bawah kode QRIS, menemani jumlah tagihan, supaya pembeli yakin pesanan yang dibayar adalah pesanannya.",e:"Pesanan Bu Ani, 2 nasi campur + es teh.",h:"Tulis singkat nama pembeli atau isi pesanannya. Boleh dikosongkan."},
+          qrisJumlah:{s:"Jumlah uang yang benar-benar dibayar pembeli lewat QRIS dan sudah Anda pastikan masuk ke rekening atau dompet digital Anda.",e:"Pembeli membayar Rp75.000 — isi 75000, angka saja tanpa titik.",h:"Periksa dulu notifikasi atau riwayat masuk di penyedia QRIS Anda, samakan jumlahnya dengan tagihan, baru isi di sini dan ketuk Tandai Sudah Dibayar. Jumlah ini tercatat sebagai pemasukan di daftar transaksi dan laporan Anda."},
+          qrisKet:{s:"Keterangan untuk pembayaran QRIS ini, tampil di daftar transaksi dan riwayat QRIS hari ini supaya Anda ingat pembayaran ini untuk pesanan apa.",e:"Pesanan Bu Ani.",h:"Boleh dikosongkan — bila kosong, keterangan di daftar transaksi terisi otomatis 'Pembayaran QRIS'."},
           stNama:{s:"Nama barang yang Anda simpan sebagai stok.",e:"Beras 5 kg, Minyak goreng 2 liter.",h:"Tulis nama dan ukuran supaya mudah dikenali saat memeriksa stok."},
           stQty:{s:"Jumlah barang yang saat ini tersedia di tempat penyimpanan.",e:"Masih ada 20 sak — isi 20.",h:"Hitung jumlah fisik yang benar-benar ada sekarang."},
           stBeli:{s:"Harga beli Anda untuk satu satuan barang ini.",e:"Satu sak beras dibeli Rp68.000 — isi 68000.",h:"Harga per satuan, bukan total belanja."},
@@ -3732,6 +3793,138 @@
         else queueRender(false);
         setTimeout(function(){ try{ renderProaktif(true); }catch(e){} }, 2800);
         setInterval(function(){ queueRender(false); }, 5000);
+      })();
+    </script>
+
+    <script>
+      /* ================= TERIMA PEMBAYARAN QRIS (STATIS) =================
+         Kode QRIS statis milik pemilik usaha sendiri: foto diunggah satu kali,
+         disimpan sebagai data gambar di data usaha (window.__qrisImage ->
+         snapshot.qris_image -> tersimpan di cloud untuk pengguna terdaftar /
+         localStorage untuk tamu), lalu ditampilkan ke pembeli. Pemilik usaha
+         yang menandai pembayaran yang sudah masuk; jumlahnya masuk ke array
+         transaksi yang sama (txs) dengan kategori "QRIS", sehingga otomatis
+         ikut daftar transaksi, total pemasukan, Laba Rugi, Arus Kas, BEP &
+         forecast, dan mesin proaktif — tidak ada daftar terpisah. */
+      (function(){
+        "use strict";
+        function gid(id){ return document.getElementById(id); }
+        function todayStr(){ var d=new Date(); var m=("0"+(d.getMonth()+1)).slice(-2); var t=("0"+d.getDate()).slice(-2); return d.getFullYear()+"-"+m+"-"+t; }
+        function qrisCid(){ if(window.crypto && crypto.randomUUID) return crypto.randomUUID(); return "qris-"+Date.now()+"-"+Math.floor(Math.random()*1e9); }
+        function namaUsaha(){ var el=gid("inNama"); var v=el?String(el.value||"").trim():""; return v||"Usaha Anda"; }
+        function tagihanText(){
+          var tag=parseFloat(gid("qrisTagihan").value); if(isNaN(tag)) tag=0;
+          var ket=String(gid("qrisTagihanKet").value||"").trim();
+          var s="";
+          if(tag>0) s="Jumlah yang harus dibayar: "+fmtFull(tag);
+          if(ket) s+=(s?" · ":"")+ket;
+          return s;
+        }
+        function qrisTodayRows(){
+          var today=todayStr(); var rows=[];
+          txs.forEach(function(t){ if(t.kat==="QRIS" && t.jenis==="masuk" && (t.tgl===today || t.tgl==="hari ini")) rows.push(t); });
+          return rows;
+        }
+        function renderQris(){
+          var main=gid("qrisMain"); if(!main) return;
+          var has=!!window.__qrisImage;
+          main.style.display=has?"block":"none";
+          gid("qrisIntro").textContent= has
+            ? "Kode QRIS Anda sudah tersimpan dan tampil di bawah — tunjukkan ke pembeli saat membayar. Uang pembeli langsung masuk ke rekening Anda, tidak lewat aplikasi ini."
+            : "Unggah foto kode QRIS usaha Anda (dari penyedia QRIS tempat Anda mendaftar QRIS). Kode ini milik Anda — uang pembeli langsung masuk ke rekening Anda, tidak lewat aplikasi ini.";
+          if(has) gid("qrisImg").src=window.__qrisImage;
+          gid("qrisNamaUsaha").textContent=namaUsaha();
+          var info=tagihanText();
+          var infoEl=gid("qrisTagihanInfo");
+          infoEl.textContent=info; infoEl.style.display=info?"block":"none";
+          var rows=qrisTodayRows(); var tot=0; rows.forEach(function(t){ tot+=t.jumlah; });
+          gid("qrisToday").textContent="QRIS hari ini: "+rows.length+" pembayaran, total "+fmtFull(tot);
+          var hasR=rows.length>0;
+          gid("qrisHistEmpty").style.display=hasR?"none":"block";
+          gid("qrisTable").style.display=hasR?"table":"none";
+          gid("qrisBody").innerHTML=rows.slice().reverse().map(function(t){
+            return "<tr><td>"+esc(t.ket)+"</td><td>"+fmtFull(t.jumlah)+"</td><td><button type='button' data-qdel='"+t.id+"' style='min-height:36px'>Hapus</button></td></tr>";
+          }).join("");
+          document.querySelectorAll("[data-qdel]").forEach(function(b){
+            b.addEventListener("click", function(){
+              var id=+b.dataset.qdel;
+              var i=txs.findIndex(function(x){ return x.id===id; });
+              if(i>=0){ txs.splice(i,1); renderTx(); toast("Pembayaran QRIS dihapus dari catatan"); }
+            });
+          });
+        }
+        window.__renderQris=renderQris;
+
+        /* Bungkus renderTx: setiap perubahan daftar transaksi (tambah/hapus,
+           dari formulir manual maupun dari kartu ini) menyegarkan kartu QRIS. */
+        if(typeof renderTx==="function"){
+          var _renderTxQris=renderTx;
+          renderTx=function(){ _renderTxQris(); renderQris(); };
+        }
+
+        gid("qrisPhoto").addEventListener("change", function(e){
+          var f=e.target.files[0]; if(!f) return;
+          var reader=new FileReader();
+          reader.onload=function(){
+            var raw=reader.result;
+            var img=new Image();
+            img.onload=function(){
+              try{
+                var max=900, w=img.naturalWidth||900, h=img.naturalHeight||900;
+                var sc=Math.min(1, max/Math.max(w,h));
+                var cv=document.createElement("canvas");
+                cv.width=Math.max(1,Math.round(w*sc)); cv.height=Math.max(1,Math.round(h*sc));
+                var cx=cv.getContext("2d");
+                cx.fillStyle="#ffffff"; cx.fillRect(0,0,cv.width,cv.height);
+                cx.drawImage(img,0,0,cv.width,cv.height);
+                window.__qrisImage=cv.toDataURL("image/jpeg",0.88);
+              }catch(err){ window.__qrisImage=raw; }
+              renderQris();
+              audit("Kode QRIS usaha disimpan.");
+              toast("Kode QRIS tersimpan — tampil lagi setiap aplikasi dibuka");
+            };
+            img.onerror=function(){ window.__qrisImage=raw; renderQris(); toast("Kode QRIS tersimpan"); };
+            img.src=raw;
+          };
+          reader.readAsDataURL(f);
+        });
+        gid("btnQrisGanti").addEventListener("click", function(){ gid("qrisPhoto").click(); });
+        gid("btnQrisHapus").addEventListener("click", function(){
+          window.__qrisImage=null;
+          gid("qrisPhoto").value="";
+          renderQris();
+          audit("Kode QRIS usaha dihapus.");
+          toast("Kode QRIS dihapus — unggah lagi bila ingin memakainya");
+        });
+        function openFull(){
+          if(!window.__qrisImage) return;
+          gid("qrisImgFull").src=window.__qrisImage;
+          gid("qrisNamaFull").textContent=namaUsaha();
+          var info=tagihanText(); var el=gid("qrisTagihanFull");
+          el.textContent=info; el.style.display=info?"block":"none";
+          gid("qrisOverlay").classList.add("show");
+        }
+        function closeFull(){ gid("qrisOverlay").classList.remove("show"); }
+        gid("btnQrisFull").addEventListener("click", openFull);
+        gid("btnQrisCloseFull").addEventListener("click", closeFull);
+        gid("qrisOverlay").addEventListener("click", function(ev){ if(ev.target===gid("qrisOverlay")) closeFull(); });
+        document.addEventListener("keydown", function(ev){ if(ev.key==="Escape") closeFull(); });
+
+        ["qrisTagihan","qrisTagihanKet"].forEach(function(id){ gid(id).addEventListener("input", renderQris); });
+        var nmEl=gid("inNama"); if(nmEl) nmEl.addEventListener("input", renderQris);
+
+        gid("btnQrisBayar").addEventListener("click", function(){
+          var jml=parseFloat(gid("qrisJumlah").value); if(isNaN(jml)) jml=0;
+          if(jml<=0){ toast("Isi jumlah yang dibayar pembeli dulu — harus lebih dari Rp 0"); return; }
+          var ket=String(gid("qrisKet").value||"").trim() || "Pembayaran QRIS";
+          txs.push({id:++txSeq, cid:qrisCid(), tgl:todayStr(), ket:ket, jenis:"masuk", kat:"QRIS", jumlah:jml});
+          audit("Pembayaran QRIS tercatat: "+ket+" "+fmtFull(jml));
+          gid("qrisJumlah").value=""; gid("qrisKet").value="";
+          renderTx();
+          toast("Pembayaran QRIS "+fmtFull(jml)+" tercatat sebagai pemasukan");
+        });
+
+        renderQris();
       })();
     </script>
   </body>
