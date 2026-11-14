@@ -17,7 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js" integrity="sha384-uteMfOloLDGt042uDz+xHGF3ym63/WQ6rFq7murQRG8Ih7QrXGEGNtWd8688sb4O" crossorigin="anonymous"></script>
     <style>
       :root{
         color-scheme:dark;
@@ -352,6 +352,32 @@
         .bottom-nav a.active{color:var(--accent);background:var(--accent-soft)}
         .toast{bottom:calc(132px + env(safe-area-inset-bottom));width:calc(100vw - 28px)}
       }
+      /* ---------- saklar persetujuan kalibrasi ---------- */
+      .switch-wrap{display:flex;gap:12px;align-items:flex-start;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:16px}
+      .switch{position:relative;flex:none;width:52px;height:30px;margin-top:2px}
+      .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+      .switch .track{position:absolute;inset:0;background:var(--surface);border:1px solid var(--line);border-radius:99px;transition:background .2s}
+      .switch .track::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--ink-soft);transition:transform .2s,background .2s}
+      .switch input:checked + .track{background:var(--accent-soft);border-color:var(--accent)}
+      .switch input:checked + .track::after{transform:translateX(22px);background:var(--accent)}
+      .switch input:focus-visible + .track{outline:2px solid var(--gold);outline-offset:2px}
+      /* ---------- panel cek otomatis di baris konsistensi ---------- */
+      .cek-auto{flex:1 1 100%;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;background:var(--surface-2);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:2px 0 6px}
+      .cek-auto label.f{flex:1 1 240px}
+      .cek-auto .cek-res{flex:1 1 100%}
+      /* ---------- fakta terukur foto kemasan & skor aspek ---------- */
+      .angle-cell{display:flex;flex-direction:column;gap:6px;min-width:0}
+      .fact-lines{font-size:.78rem;color:var(--ink-soft);line-height:1.45}
+      .aspect-row{display:grid;grid-template-columns:170px 1fr 52px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+      .aspect-row .bar{margin:0}
+      .aspect-row .basis{grid-column:1 / -1;font-size:.78rem;color:var(--ink-soft);margin-top:-4px}
+      @media(max-width:640px){.aspect-row{grid-template-columns:118px 1fr 44px}}
+      /* ---------- mode portal berbagi (?bagikan=TOKEN) ---------- */
+      body.bagikan-mode .auth-gate, body.bagikan-mode .sql-modal, body.bagikan-mode .topbar, body.bagikan-mode .guest-banner, body.bagikan-mode .wrap, body.bagikan-mode .wizard-overlay, body.bagikan-mode .help-overlay, body.bagikan-mode .toast{display:none!important}
+      .portal-share-view{max-width:760px;margin:0 auto;padding:28px 18px 64px}
+      .share-badge{display:inline-block;background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:6px 14px;font-weight:700;font-size:.85rem}
+      .share-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+      @media(max-width:640px){.share-scores{grid-template-columns:repeat(2,1fr)}}
       @media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
     </style>
   </head>
@@ -535,6 +561,15 @@
               <label class="f"><span>Waktu lokasi diambil</span><input type="text" id="gpsDiambilPada" placeholder="contoh: — (terisi otomatis dari GPS)" readonly /></label>
             </div>
           </div>
+          <div class="switch-wrap">
+            <span class="switch"><input type="checkbox" id="inKalibrasi" /><span class="track" aria-hidden="true"></span></span>
+            <div>
+              <b>Kalibrasi multiple lokal</b>
+              <label for="inKalibrasi" style="display:block;margin-top:2px">Izinkan data valuasi anonim saya dipakai untuk menghitung angka pembanding usaha sejenis di kota saya (tanpa nama, alamat, atau kontak)</label>
+              <p class="note" style="margin-top:6px">Saklar ini <b>mati secara bawaan</b>. Bila Anda menyalakannya, saat Anda menyimpan data aplikasi mengirim satu baris angka anonim (jenis usaha, provinsi, kota, omzet, laba pemilik, multiple, dan valuasi) ke cloud untuk dihitung ramai-ramai dengan usaha sejenis. Tidak ada nama usaha, email, nomor HP, alamat, atau lokasi GPS di dalamnya. Bila data usaha sejenis di kota Anda sudah terkumpul minimal 5, multiple valuasi Anda akan digabung dari angka pembanding lokal itu — jumlahnya selalu ditulis terbuka di penjelasan valuasi.</p>
+              <p class="note" id="kalibrasiStatus" style="margin-top:6px" role="status"></p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -574,7 +609,7 @@
           <div class="card score-card"><div class="top"><h3>Kesiapan investasi</h3><span class="score-num" id="scInv">—</span></div><div class="bar"><i id="scInvBar"></i></div><p class="note" id="scInvNote">—</p><button class="btn-explain" type="button" data-explain="investasi">Jelaskan ini</button><div class="explain-answer" id="explain-investasi" role="status"></div></div>
         </div>
         <div class="grid-2" style="margin-top:14px">
-          <div class="card score-card"><div class="top"><h3>Skor Konsistensi Data</h3><span class="score-num" id="scCons">0</span></div><div class="bar"><i id="scConsBar"></i></div><p class="note" id="scConsNote">Isi cek 8 sumber data lokal di Modul Cek Data di bawah — skor membandingkan klaim Anda dengan jejak usaha yang bisa diverifikasi pihak lain.</p><button class="btn-explain" type="button" data-explain="konsistensi">Jelaskan ini</button><div class="explain-answer" id="explain-konsistensi" role="status"></div></div>
+          <div class="card score-card"><div class="top"><h3>Skor Konsistensi Data</h3><span class="score-num" id="scCons">0</span></div><div class="bar"><i id="scConsBar"></i></div><p class="note" id="scConsNote">Isi cek 9 sumber data lokal di Modul Cek Data di bawah — skor membandingkan klaim Anda dengan jejak usaha yang bisa diverifikasi pihak lain.</p><button class="btn-explain" type="button" data-explain="konsistensi">Jelaskan ini</button><div class="explain-answer" id="explain-konsistensi" role="status"></div></div>
           <div class="card"><h3>Titik impas (BEP) &amp; prediksi arus kas</h3><p class="note" style="margin-top:6px" id="bepNote">Isi omzet, HPP, biaya operasional, dan gaji pemilik untuk melihat omzet minimum agar tidak rugi.</p><div class="bar-wrap" id="cfChart"></div><p class="note" style="margin-top:8px">Prediksi 3 bulan ke depan memakai laba bersih bulanan saat ini dan pertumbuhan omzet yang Anda isi — bukan janji, melainkan proyeksi lurus untuk perencanaan kas.</p></div>
         </div>
       </section>
@@ -688,7 +723,7 @@
       <!-- ============ 7. PRODUK & PEMAKETAN — AI KEMASAN ============ -->
       <section id="kemasan">
         <div class="sec-head"><span class="sec-num">07</span><h2>Produk &amp; pemaketan — penilaian foto kemasan</h2></div>
-        <p class="sec-sub">Unggah foto produk Anda, lalu jawab 6 periksa label. Skor kemasan dihitung dari kelengkapan label dan kesiapan kirim — foto tampil di sini untuk Anda nilai bersama checklist-nya.</p>
+        <p class="sec-sub">Unggah foto produk Anda, lalu jawab 6 periksa label. Setiap foto yang Anda unggah juga <b>diukur langsung di peramban Anda</b> — tingkat terang, kontras, dan ketajamannya dihitung dari piksel foto — lalu fakta terukur itu digabung dengan jawaban periksa menjadi skor per aspek. Ini penilaian terbantu (pengukuran foto + daftar periksa), bukan deteksi isi foto: aplikasi tidak mengenali objek atau membaca tulisan di foto kemasan Anda.</p>
         <div class="grid-2">
           <div class="card">
             <h3>Foto produk / kemasan</h3>
@@ -696,6 +731,7 @@
               <label class="f"><span>Pilih foto produk</span><input type="file" id="packPhoto" accept="image/*" /></label>
               <img id="packPreview" alt="Pratinjau foto produk yang diunggah" style="display:none" />
               <p class="note" id="packPhotoNote" style="margin-top:8px">Belum ada foto. Foto terbaik: cahaya terang, latar bersih, label menghadap kamera.</p>
+              <p class="note" id="packPhotoFacts" style="margin-top:6px" role="status"></p>
             </div>
             <div style="margin-top:14px"><div class="dim-head"><h3>Skor kemasan</h3><span class="pill mid" id="packScore">0/100</span></div><div class="bar"><i id="packBar"></i></div><p class="note" id="pacinvNote">Jawab 6 periksa di samping untuk mendapatkan skor dan saran perbaikan kemasan.</p></div>
           </div>
@@ -711,6 +747,15 @@
           </div>
           <div id="anglePreviews" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px"></div>
           <p class="note" id="angleNote">Sudut terunggah: 0 dari 3.</p>
+        </div>
+        <div class="card" style="margin-top:14px" id="packAspectCard">
+          <h3>Penilaian terbantu (pengukuran foto + daftar periksa)</h3>
+          <p class="note" style="margin-top:6px">Skor per aspek di bawah menggabungkan <b>pengukuran foto di peramban Anda</b> (terang, kontras, dan ketajaman dihitung dari piksel foto) dengan jawaban 6 periksa label. Labelnya memang "terbantu": aplikasi <b>tidak</b> melakukan deteksi objek atau membaca isi foto — yang diukur hanya kualitas teknis fotonya.</p>
+          <div id="packAspects" style="margin-top:10px"></div>
+          <p class="note" id="packFactsSummary" style="margin-top:10px" role="status">Unggah foto produk di atas untuk melihat fakta terukurnya di sini.</p>
+          <div class="actions"><button class="btn" id="btnPackAI" type="button">Minta penilaian AI</button></div>
+          <p class="note" style="margin-top:8px">Tombol ini mengirim <b>fakta terukur dan jawaban periksa saja</b> ke AI Coach — fotonya sendiri tidak dikirim ke mana pun.</p>
+          <p class="note" id="packAIAnswer" role="status" style="margin-top:10px;white-space:pre-line"></p>
         </div>
         <div class="grid-2" style="margin-top:14px">
           <div class="card">
@@ -824,9 +869,9 @@
       <!-- ============ 9. CEK DATA LOKAL ============ -->
       <section id="cekdata">
         <div class="sec-head"><span class="sec-num">09</span><h2>Cek data online lokal &amp; Skor Konsistensi</h2></div>
-        <p class="sec-sub">Calon investor dan pembeli memeriksa jejak usaha Anda di 8 sumber ini. Untuk tiap sumber, buka sumbernya, bandingkan dengan data yang Anda klaim di formulir, lalu tandai hasilnya. Skor Konsistensi naik hanya bila data benar-benar sesuai.</p>
+        <p class="sec-sub">Calon investor dan pembeli memeriksa jejak usaha Anda di 9 sumber ini. Untuk tiap sumber, buka sumbernya, bandingkan dengan data yang Anda klaim di formulir, lalu tandai hasilnya. Skor Konsistensi naik hanya bila data benar-benar sesuai. Untuk Google Maps, Tokopedia, Shopee, dan media sosial, Anda juga bisa menempel tautan publiknya lalu menekan <b>Cek otomatis</b> — aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca (nama, rating, jumlah ulasan, harga). Bila halaman tidak bisa dibaca otomatis, pesan jujurnya akan tampil dan pilihan manual tetap bisa dipakai seperti biasa.</p>
         <div class="card" id="consCard"><div id="consChecks"></div>
-          <div style="margin-top:14px"><div class="dim-head"><h3>Skor Konsistensi Data</h3><span class="pill mid" id="consScore">0/100</span></div><div class="bar"><i id="consBar"></i></div><p class="note" id="consNote">Skor 100 hanya bila ke-8 sumber sudah dicek dan semuanya sesuai. Sumber yang belum dicek dihitung 0 — sama seperti cara calon investor melihat data yang tidak bisa diverifikasi.</p></div>
+          <div style="margin-top:14px"><div class="dim-head"><h3>Skor Konsistensi Data</h3><span class="pill mid" id="consScore">0/100</span></div><div class="bar"><i id="consBar"></i></div><p class="note" id="consNote">Skor 100 hanya bila ke-9 sumber sudah dicek dan semuanya sesuai. Sumber yang belum dicek dihitung 0 — sama seperti cara calon investor melihat data yang tidak bisa diverifikasi.</p></div>
         </div>
       </section>
 
@@ -879,9 +924,19 @@
           <h3 style="margin-top:18px">Jejak audit sesi ini</h3>
           <ul class="tick" id="auditList" style="margin-top:6px"></ul>
         </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Bagikan portal ini lewat tautan</h3>
+          <p class="note" style="margin-top:6px">Buat satu tautan khusus yang bisa dibuka calon investor <b>tanpa masuk akun</b> — isinya hanya ringkasan read-only di atas (nama usaha, jenis usaha, kota, level, skor-skor, rentang valuasi, ringkasan laporan, skor konsistensi, dan jejak audit). Tautan <b>tidak</b> berisi email, nomor HP, lokasi GPS, atau rincian transaksi Anda. Siapa pun yang memegang tautan bisa membukanya, jadi bagikan hanya ke orang yang Anda percaya — dan Anda bisa mencabutnya kapan saja; setelah dicabut, tautan itu berhenti bekerja.</p>
+          <div class="actions"><button class="btn" id="btnSharePortal" type="button">Buat tautan berbagi</button></div>
+          <div id="shareResult" style="display:none;margin-top:12px">
+            <label class="f"><span>Tautan portal investor Anda</span><input type="text" id="shareLinkInput" readonly /></label>
+            <div class="actions"><button class="btn ghost" id="btnCopyShare" type="button">Salin tautan</button><button class="btn ghost" id="btnRevokeShare" type="button">Cabut tautan</button></div>
+          </div>
+          <p class="note" id="shareNote" role="status" style="margin-top:10px"></p>
+        </div>
         <div class="ai-box">
           <h3><span aria-hidden="true">✦</span> 7 lapisan kecerdasan di aplikasi ini</h3>
-          <p><b>1 Ekstraksi data</b> — foto nota dibaca dengan OCR yang berjalan di peramban (Tesseract.js) dan input suara membantu mengubah bukti transaksi menjadi catatan. <b>2 Prediksi multiple lokal</b> — multiple dasar per sektor disesuaikan usia usaha, pertumbuhan, pembukuan, dan ketergantungan pemilik. <b>3 Deteksi anomali</b> — margin negatif, Rasio Kemampuan Bagi Hasil di bawah 1, dan utang di atas aset ditandai otomatis sebagai peringatan. <b>4 Penjelasan angka</b> — setiap valuasi disertai penjelasan yang bisa ditelusur ke rumusnya. <b>5 Penilaian kemasan</b> — skor dari foto + 6 periksa label. <b>6 Verifikasi konsistensi</b> — Skor Konsistensi dari 8 sumber lokal. <b>7 AI Coach</b> — rencana 30–60–90 hari yang berubah mengikuti jawaban dan angka Anda. Pada versi statis ini ketujuh lapisan berjalan sebagai mesin aturan transparan langsung di halaman; lapisan model AI generatif/ML penuh adalah tahap server berikutnya.</p>
+          <p><b>1 Ekstraksi data</b> — foto nota dibaca dengan OCR yang berjalan di peramban (Tesseract.js) dan input suara membantu mengubah bukti transaksi menjadi catatan. <b>2 Prediksi multiple lokal</b> — multiple dasar per sektor disesuaikan usia usaha, pertumbuhan, pembukuan, dan ketergantungan pemilik; bila data kalibrasi anonim usaha sejenis di kota Anda sudah terkumpul minimal 5 (dan Anda mengizinkan berbagi data anonim), median multiple lokal ikut digabungkan dan jumlah sampelnya ditulis terbuka di penjelasan valuasi. <b>3 Deteksi anomali</b> — margin negatif, Rasio Kemampuan Bagi Hasil di bawah 1, dan utang di atas aset ditandai otomatis sebagai peringatan. <b>4 Penjelasan angka</b> — setiap valuasi disertai penjelasan yang bisa ditelusur ke rumusnya. <b>5 Penilaian kemasan</b> — penilaian terbantu: pengukuran foto di peramban (terang, kontras, ketajaman) + 6 periksa label, digabung menjadi skor 5 aspek. <b>6 Verifikasi konsistensi</b> — Skor Konsistensi dari 9 sumber lokal. <b>7 AI Coach</b> — rencana 30–60–90 hari yang berubah mengikuti jawaban dan angka Anda. Pada versi statis ini ketujuh lapisan berjalan sebagai mesin aturan transparan langsung di halaman; lapisan model AI generatif/ML penuh adalah tahap server berikutnya.</p>
         </div>
       </section>
 
@@ -1318,6 +1373,14 @@
         if (buku>=2){mult+=0.3;adj.push("pembukuan teratur (+0,3)");} else if(buku===0){mult-=0.3;adj.push("keuangan tercampur (−0,3)");}
         if (tumbuh>=0.15){mult+=0.4;adj.push("tumbuh ≥15%/tahun (+0,4)");} else if(tumbuh<0){mult-=0.3;adj.push("omzet menurun (−0,3)");}
         mult=Math.max(1.5,Math.min(5,mult));
+        /* Kalibrasi multiple lokal: bila data anonim usaha sejenis (sektor sama,
+           kota/provinsi sama) sudah terkumpul >=5 di cloud, median multiple lokal
+           digabung 50/50 dengan multiple di atas. Fungsi penggabung tinggal di
+           skrip Fase 2 dan membaca cache hasil bacaan cloud; bila belum ada data
+           atau tabel belum tersedia, multiple literatur dipakai apa adanya dan
+           catatannya ditulis jujur di penjelasan valuasi. */
+        let kalNote="";
+        if (typeof window.__kalibrasiBlend==="function"){ const kb=window.__kalibrasiBlend(sektor,mult); if(kb){ mult=kb.mult; kalNote=kb.note||""; } }
         const valSde=Math.max(0,sdeThn)*mult;
         const r=0.18; let valDcf=0; for(let t=1;t<=3;t++){ valDcf += (sdeThn*Math.pow(1+tumbuh,t))/Math.pow(1+r,t); }
         valDcf=Math.max(0,valDcf);
@@ -1340,7 +1403,7 @@
         /* penjelasan AI (aturan transparan, angka dari rumus di atas) */
         const sektorName=$("inSektor").value ? $("inSektor").selectedOptions[0].textContent.split(" /")[0] : "UMKM";
         if (sdeThn>0){
-          $("aiExplain").textContent="Usaha "+($("inNama").value||"Anda")+" ("+sektorName+", "+($("inKota").value||"kota Anda")+") menghasilkan laba pemilik (SDE) "+fmtShort(sdeThn)+" per tahun setelah gaji wajar pemilik diperhitungkan kembali. Dengan multiple "+mult.toLocaleString("id-ID",{maximumFractionDigits:2})+"× — multiple dasar sektor "+SECTOR[sektor].mult+"× disesuaikan oleh "+(adj.length?adj.join(", "):"kondisi usaha Anda yang standar")+" — metode SDE memberi nilai "+fmtShort(valSde)+".";
+          $("aiExplain").textContent="Usaha "+($("inNama").value||"Anda")+" ("+sektorName+", "+($("inKota").value||"kota Anda")+") menghasilkan laba pemilik (SDE) "+fmtShort(sdeThn)+" per tahun setelah gaji wajar pemilik diperhitungkan kembali. Dengan multiple "+mult.toLocaleString("id-ID",{maximumFractionDigits:2})+"× — multiple dasar sektor "+SECTOR[sektor].mult+"× disesuaikan oleh "+(adj.length?adj.join(", "):"kondisi usaha Anda yang standar")+" — metode SDE memberi nilai "+fmtShort(valSde)+"."+(kalNote?" "+kalNote:"");
           $("aiExplain2").textContent=(terg>70?"Catatan terpenting: usaha masih sangat tergantung pada Anda ("+terg+"/100). Pembeli atau calon investor akan menilai nilai usaha lebih rendah karena usaha berisiko berhenti saat Anda absen — mendokumentasikan SOP dan melatih satu pengganti adalah cara tercepat menaikkan multiple. ":dimScore.fin<50?"Catatan terpenting: pencatatan keuangan ("+dimScore.fin+"/100) masih lemah. Angka laba yang tidak bisa dibuktikan biasanya ditawar jauh di bawah nilai wajar — rapikan pembukuan 3 bulan berturut-turut sebelum bernegosiasi. ":"Profil Anda relatif seimbang. Kenaikan nilai berikutnya paling cepat datang dari pertumbuhan omzet yang tercatat dan kanal penjualan baru.")+" Nilai aset bersih "+fmtShort(asetBersih)+" menjadi lantai negosiasi Anda: jangan menerima tawaran di bawah itu tanpa alasan kuat.";
         } else {
           $("aiExplain").textContent="Dengan angka saat ini, laba pemilik (SDE) Anda "+(sdeThn<0?"negatif":"nol")+" ("+fmtShort(sdeThn)+"/tahun). Artinya usaha belum menghasilkan laba di atas gaji wajar pemilik, sehingga metode laba dan DCF belum bisa dipakai — valuasi sementara bertumpu pada aset bersih "+fmtShort(asetBersih)+".";
@@ -1560,19 +1623,20 @@
           akEl.innerHTML="<tr><td>Kas masuk — pendapatan Data Usaha (per bulan)</td><td>"+fmtFull(S.omzetBln||0)+"</td></tr><tr><td>Kas masuk — pemasukan transaksi tercatat</td><td>"+fmtFull(agg.inn)+"</td></tr><tr><td>Kas keluar — HPP, operasional &amp; gaji (Data Usaha)</td><td>−"+fmtFull((S.omzetBln||0)*(S.hppPct||0)+(S.opex||0)+(S.gaji||0))+"</td></tr><tr><td>Kas keluar — pengeluaran transaksi tercatat</td><td>−"+fmtFull(agg.out)+"</td></tr><tr><td><b>Arus kas bersih</b></td><td><b>"+fmtFull(kasMasuk-kasKeluar)+"</b></td></tr><tr><td>Saldo kas dari catatan transaksi saja</td><td>"+fmtFull(agg.net)+"</td></tr>"; }
       }
 
-      /* --- Konsistensi 8 sumber --- */
-      const consState=[0,0,0,0,0,0,0,0]; let consScoreVal=0;
+      /* --- Konsistensi 9 sumber --- */
+      const consState=[0,0,0,0,0,0,0,0,0]; let consScoreVal=0;
       segRow("consChecks",[
         ["OSS / NIB","Nama & alamat usaha sama dengan formulir? Buka oss.go.id",["Belum dicek","Beda","Sesuai"]],
         ["Google Maps / Profil Bisnis Google","Nama, alamat, jam buka, foto sesuai kondisi nyata?",["Belum dicek","Beda","Sesuai"]],
-        ["Marketplace (Shopee/Tokopedia/dll)","Nama toko, alamat kirim, dan produk aktif sesuai?",["Belum dicek","Beda","Sesuai"]],
+        ["Tokopedia","Nama toko, alamat kirim, dan produk aktif di Tokopedia sesuai?",["Belum dicek","Beda","Sesuai"]],
+        ["Shopee","Nama toko, alamat kirim, dan produk aktif di Shopee sesuai?",["Belum dicek","Beda","Sesuai"]],
         ["Aplikasi pesan-antar (GoFood/GrabFood/ShopeeFood)","Menu, harga, dan jam operasional sesuai? (lewati bila tidak relevan — tandai Sesuai)",["Belum dicek","Beda","Sesuai"]],
         ["Media sosial usaha (Instagram/TikTok/Facebook)","Nama usaha & kontak sama dengan label kemasan?",["Belum dicek","Beda","Sesuai"]],
         ["QRIS / rekening usaha","Nama merchant/pemilik rekening atas nama usaha/pemilik yang sama?",["Belum dicek","Beda","Sesuai"]],
         ["NPWP & data pajak","Nama & alamat di NPWP sama dengan NIB?",["Belum dicek","Beda","Sesuai"]],
         ["Ulasan pelanggan online","Rating & keluhan terakhir mencerminkan kondisi usaha saat ini?",["Belum dicek","Beda","Sesuai"]]
       ],consState,updateCons);
-      function updateCons(){ let tot=0; consState.forEach(function(v){ tot+= v===2?100: v===1?40:0; }); consScoreVal=Math.round(tot/8); setBar("consScore","consBar",consScoreVal); const sc=$("scCons"); if(sc){ sc.textContent=consScoreVal; const b=$("scConsBar"); b.style.width=consScoreVal+"%"; b.className=consScoreVal>=66?"":consScoreVal>=40?"mid":"low"; $("scConsNote").textContent= consScoreVal>=80?"Sangat konsisten — data Anda mudah diverifikasi calon investor/mitra.": consScoreVal>=50?"Sebagian sesuai. Perbaiki sumber yang 'Beda' — ketidakcocokan nama/alamat adalah penyebab verifikasi gagal yang paling umum.":"Masih banyak yang belum dicek / beda. Cek satu sumber per hari, mulai dari NIB dan Google Maps."; } if(typeof extraUpdate==="function") extraUpdate(); }
+      function updateCons(){ let tot=0; for(let ci=0;ci<9;ci++){ const v=consState[ci]||0; tot+= v===2?100: v===1?40:0; } consScoreVal=Math.round(tot/9); setBar("consScore","consBar",consScoreVal); const sc=$("scCons"); if(sc){ sc.textContent=consScoreVal; const b=$("scConsBar"); b.style.width=consScoreVal+"%"; b.className=consScoreVal>=66?"":consScoreVal>=40?"mid":"low"; $("scConsNote").textContent= consScoreVal>=80?"Sangat konsisten — data Anda mudah diverifikasi calon investor/mitra.": consScoreVal>=50?"Sebagian sesuai. Perbaiki sumber yang 'Beda' — ketidakcocokan nama/alamat adalah penyebab verifikasi gagal yang paling umum.":"Masih banyak yang belum dicek / beda. Cek satu sumber per hari, mulai dari NIB dan Google Maps."; } if(typeof extraUpdate==="function") extraUpdate(); }
 
       /* --- Legalitas --- */
       const legalState=[0,0,0,0,0,0];
@@ -1693,6 +1757,14 @@
     </script>
 
     <script>
+      /* Mode portal berbagi: ?bagikan=TOKEN — halaman hanya menampilkan tampilan
+         investor read-only dari snapshot yang tersimpan untuk token itu.
+         Penanda ini dipasang SEBELUM skrip multi-user agar gerbang masuk, sapaan,
+         dan wizard tidak pernah terbuka pada mode ini. */
+      (function(){ try{ var t=new URLSearchParams(location.search).get("bagikan"); if(t){ window.__bagikanMode=true; window.__bagikanToken=t; } }catch(e){} })();
+    </script>
+
+    <script>
       /* ================= MULTI-USER: MASUK AKUN + SINKRONISASI CLOUD ================= */
       (function(){
         "use strict";
@@ -1751,7 +1823,48 @@
           "drop policy if exists \"piutang milik sendiri\" on public.piutang;",
           "create policy \"piutang milik sendiri\" on public.piutang for all using (auth.uid() = user_id) with check (auth.uid() = user_id);",
           "drop policy if exists \"utang milik sendiri\" on public.utang;",
-          "create policy \"utang milik sendiri\" on public.utang for all using (auth.uid() = user_id) with check (auth.uid() = user_id);"
+          "create policy \"utang milik sendiri\" on public.utang for all using (auth.uid() = user_id) with check (auth.uid() = user_id);",
+          "-- Fase 2: kalibrasi multiple lokal (baris ANONIM — tanpa user_id, nama, email, telepon, GPS)",
+          "create table if not exists public.kalibrasi (",
+          "  id bigint generated always as identity primary key,",
+          "  sektor text, provinsi text, kota text,",
+          "  omzet_bulanan numeric, sde_tahunan numeric,",
+          "  multiple_dipakai numeric, valuasi_tengah numeric,",
+          "  created_at timestamptz not null default now()",
+          ");",
+          "-- Fase 2: portal investor via tautan berbagi (snapshot read-only, diakses publik hanya dengan token acak)",
+          "create table if not exists public.portal_berbagi (",
+          "  token text primary key, data jsonb not null default '{}'::jsonb,",
+          "  created_at timestamptz not null default now()",
+          ");",
+          "alter table public.kalibrasi enable row level security;",
+          "alter table public.portal_berbagi enable row level security;",
+          "-- Kalibrasi: anon hanya boleh MENYISIPKAN baris anonim baru dan MEMBACA angka multiple",
+          "-- untuk menghitung median. Tidak ada ubah/hapus untuk anon.",
+          "drop policy if exists \"kalibrasi anonim publik\" on public.kalibrasi;",
+          "drop policy if exists \"kalibrasi sisip anonim\" on public.kalibrasi;",
+          "drop policy if exists \"kalibrasi baca multiple\" on public.kalibrasi;",
+          "create policy \"kalibrasi sisip anonim\" on public.kalibrasi for insert with check (true);",
+          "create policy \"kalibrasi baca multiple\" on public.kalibrasi for select using (true);",
+          "-- Portal berbagi: TIDAK ADA kebijakan baca/hapus massal. Anon hanya boleh MENYISIPKAN",
+          "-- snapshot baru. Membaca satu snapshot dan mencabut tautan hanya lewat dua fungsi",
+          "-- khusus di bawah yang mencocokkan token PERSIS — daftar semua tautan tidak bisa",
+          "-- diambil siapa pun, dan token acak panjang adalah satu-satunya kunci aksesnya.",
+          "drop policy if exists \"portal berbagi via token\" on public.portal_berbagi;",
+          "drop policy if exists \"portal berbagi sisip\" on public.portal_berbagi;",
+          "create policy \"portal berbagi sisip\" on public.portal_berbagi for insert with check (true);",
+          "create or replace function public.portal_snapshot(p_token text)",
+          "returns table(data jsonb, created_at timestamptz)",
+          "language sql security definer set search_path = public as $$",
+          "  select p.data, p.created_at from public.portal_berbagi p where p.token = p_token limit 1",
+          "$$;",
+          "create or replace function public.portal_cabut(p_token text)",
+          "returns void",
+          "language sql security definer set search_path = public as $$",
+          "  delete from public.portal_berbagi where token = p_token",
+          "$$;",
+          "grant execute on function public.portal_snapshot(text) to anon, authenticated;",
+          "grant execute on function public.portal_cabut(text) to anon, authenticated;"
         ].join("\n");
 
         var sb = null, currentUser = null, entered = false, localMode = false;
@@ -1898,6 +2011,10 @@
           if(rows.length){ var ins=await sb.from(table).insert(rows); if(ins.error) throw ins.error; }
         }
         async function saveData(snap, json){
+          /* Kalibrasi anonim (Fase 2): bila saklar persetujuan AKTIF, satu baris
+             angka anonim dikirim ke tabel kalibrasi. Fungsi ini tidak pernah
+             melempar error dan tidak pernah menghambat penyimpanan utama. */
+          try{ if(window.__kalibrasiOnSave) window.__kalibrasiOnSave(snap); }catch(e){}
           if(isGuest || !currentUser){ persistLocal(snap); lastJson=json; setSync(isGuest?"Mode coba — tersimpan hanya di HP ini":"Tersimpan lokal (mode tanpa akun)","warn"); return; }
           if(tablesMissing){ persistLocal(snap); lastJson=json; setSync("Tersimpan lokal — tabel cloud belum dibuat","warn"); return; }
           if(!navigator.onLine){ persistLocal(snap); lastJson=json; setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn"); return; }
@@ -1985,6 +2102,7 @@
         /* ---------- gerbang masuk ---------- */
         function hasUsaha(){ var nm=gid("inNama"); return !!(nm && nm.value && nm.value.trim()); }
         function enterApp(user){
+          if(window.__bagikanMode) return; // mode portal berbagi: tidak ada sesi, tidak ada data lain
           if(entered && !isGuest) return;
           // bila sebelumnya tamu, izinkan masuk sebagai user terdaftar (migrasi)
           entered=true; isGuest=false; localMode=false; currentUser=user;
@@ -2144,6 +2262,7 @@
            Wizard juga terbuka lewat tombol "Ubah usaha". Layar daftar/masuk hanya
            muncul lewat __showRegisterGate (aksi simpan). */
         function autoStartGuest(){
+          if(window.__bagikanMode) return; // mode portal berbagi: jangan buka sapaan/wizard
           var sudahPunyaUsaha=enterGuest();
           if(sudahPunyaUsaha) return;
           if(window.__openGreeting){ window.__openGreeting(); }
@@ -2207,7 +2326,7 @@
         function localExplain(q){
           var ctx=aiContext(); var t=(q||"").toLowerCase();
           if(t.indexOf("konsistensi")>=0){
-            return "Skor Konsistensi Data Anda "+ctx.skor_konsistensi_data+"/100. Skor ini naik bila data usaha Anda sama di 8 sumber yang biasa diperiksa calon mitra kerjasama investasi: NIB, Google Maps, marketplace, aplikasi pesan-antar, media sosial, QRIS, NPWP, dan ulasan pelanggan. Cek satu sumber per hari di Modul Cek Data — sumber yang belum dicek dihitung 0, sama seperti cara calon mitra melihat data yang belum bisa dibuktikan.";
+            return "Skor Konsistensi Data Anda "+ctx.skor_konsistensi_data+"/100. Skor ini naik bila data usaha Anda sama di 9 sumber yang biasa diperiksa calon mitra kerjasama investasi: NIB, Google Maps, Tokopedia, Shopee, aplikasi pesan-antar, media sosial, QRIS, NPWP, dan ulasan pelanggan. Cek satu sumber per hari di Modul Cek Data — sumber yang belum dicek dihitung 0, sama seperti cara calon mitra melihat data yang belum bisa dibuktikan.";
           }
           if(t.indexOf("investasi")>=0){
             return "Skor Siap Investasi Anda "+ctx.skor_siap_investasi+"/100. Skor ini dihitung dari legalitas, kerapian pembukuan, lama usaha, dan kesehatan keuangan Anda. "+(ctx.skor_siap_investasi>=70 ? "Artinya profil usaha Anda umumnya sudah layak ditawarkan untuk kerjasama investasi — lengkapi dokumen laporan 3–6 bulan terakhir sebelum bertemu calon investor." : ctx.skor_siap_investasi>=45 ? "Artinya Anda hampir siap — rapikan pembukuan dan legalitas dulu, lalu tawarkan kerjasama investasi." : "Artinya belum siap ditawarkan — mulai dari memisahkan uang usaha dan mencatat transaksi dengan rapi selama 3 bulan berturut-turut.");
@@ -2480,7 +2599,12 @@
           sopPj:{s:"Orang atau peran yang bertanggung jawab menjalankan langkah-langkah ini.",e:"Kepala dapur, kasir senior.",h:"Tulis perannya; lebih baik lagi bila ditambah nama orangnya."},
           sopTujuan:{s:"Hasil akhir yang diharapkan bila langkah-langkah ini dijalankan dengan benar.",e:"Warung siap jualan pukul 06.00 dengan rasa dan tampilan yang sama setiap hari.",h:"Tulis dalam satu kalimat yang bisa diperiksa benar atau salahnya."},
           wizNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan.",e:"Dapur Bu Sari.",h:"Cukup nama yang dikenal pelanggan."},
-          wizSektor:{s:"Bidang usaha utama Anda. Pilihan ini menentukan saran dan angka pembanding untuk usaha Anda.",e:"Warung makan memilih Kuliner; laundry memilih Jasa.",h:"Pilih yang paling dekat dengan penghasilan utama Anda."}
+          wizSektor:{s:"Bidang usaha utama Anda. Pilihan ini menentukan saran dan angka pembanding untuk usaha Anda.",e:"Warung makan memilih Kuliner; laundry memilih Jasa.",h:"Pilih yang paling dekat dengan penghasilan utama Anda."},
+          cekUrl1:{s:"Tautan halaman publik usaha Anda di Google Maps / Profil Bisnis Google. Aplikasi meminta server membaca halaman publik itu dan menampilkan rating serta jumlah ulasan yang terbaca untuk Anda bandingkan.",e:"Tautan dari tombol Bagikan di Google Maps untuk tempat usaha Anda.",h:"Buka Google Maps, cari usaha Anda, ketuk Bagikan, salin tautannya, lalu tempel di sini dan ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda."},
+          cekUrl2:{s:"Tautan halaman publik toko Anda di Tokopedia. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Tokopedia.",h:"Salin tautan toko Tokopedia Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
+          cekUrl3:{s:"Tautan halaman publik toko Anda di Shopee. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Shopee.",h:"Salin tautan toko Shopee Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
+          cekUrl5:{s:"Tautan profil publik media sosial usaha Anda, misalnya Instagram. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan.",e:"Tautan profil Instagram usaha Anda dari tombol Bagikan profil.",h:"Salin tautan profil, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda."},
+          shareLinkInput:{s:"Tautan khusus portal investor Anda. Siapa pun yang membuka tautan ini melihat ringkasan read-only usaha Anda — tanpa bisa mengubah apa pun, dan tanpa melihat email, nomor HP, lokasi GPS, atau rincian transaksi Anda.",e:"Tautan berakhir dengan kode acak panjang yang hanya Anda yang tahu sebelum dibagikan.",h:"Salin tautan ini dan kirim hanya ke calon investor yang Anda percaya. Bila berubah pikiran, ketuk Cabut tautan — tautan langsung berhenti bekerja."}
         };
         var LABEL_H = {
           "catat dengan suara":{s:"Tombol ini mengisi kolom keterangan transaksi memakai suara Anda, untuk Anda periksa lagi sebelum disimpan.",e:"Tekan tombolnya, lalu ucapkan keterangan transaksi dengan jelas.",h:"Periksa hasil tulisan dari suara Anda — perbaiki bila ada kata atau angka yang keliru."},
@@ -2606,6 +2730,465 @@
         var mo=new MutationObserver(function(){ if(pending) return; pending=true; setTimeout(function(){ pending=false; scan(); },250); });
         mo.observe(document.body,{childList:true,subtree:true});
         window.__fieldHelpScan=scan;
+      })();
+    </script>
+
+    <script>
+      /* ================= FASE 2: CEK LOKAL SEMI-OTOMATIS, KALIBRASI MULTIPLE LOKAL,
+         PORTAL INVESTOR VIA TAUTAN, PENILAIAN KEMASAN TERBANTU FOTO =================
+         Semua fitur di skrip ini jujur dan degrade gracefully:
+         - Cek otomatis hanya mengisi hasil bila server benar-benar mengembalikan
+           sinyal dari halaman publik; selain itu tampil "Tidak bisa dibaca
+           otomatis — cek manual" dan pilihan manual tetap bekerja.
+         - Kalibrasi hanya memakai data anonim yang benar-benar terbaca dari
+           tabel cloud `kalibrasi`; jumlah sampel tidak pernah dikarang. Bila
+           tabel belum ada / data <5, multiple literatur dipakai dan dikatakan begitu.
+         - Portal berbagi hanya aktif bila tabel cloud `portal_berbagi` menerima
+           snapshot; bila belum, tampil catatan "fitur berbagi belum aktif".
+         - Penilaian kemasan mengukur piksel foto di peramban (terang, kontras,
+           ketajaman) — bukan deteksi objek — dan dilabeli apa adanya.
+         Klien cloud di sini klien anon terpisah (tanpa sesi tersimpan) khusus
+         untuk tabel Fase 2; tidak mengganggu klien akun utama. */
+      (function(){
+        "use strict";
+        function gid(id){ return document.getElementById(id); }
+        function escF(s){ try{ return esc(s); }catch(e){ return String(s==null?"":s); } }
+        function fmtF(n){ try{ return fmtFull(n||0); }catch(e){ return "Rp "+Math.round(n||0).toLocaleString("id-ID"); } }
+        var SB_URL="https://bdnqsxwypbrdiwaxydoh.supabase.co";
+        var SB_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkbnFzeHd5cGJyZGl3YXh5ZG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1OTQ3NDUsImV4cCI6MjExMDE3MDc0NX0.MsdIzw-CAqJiBp3McXZ-6XLzLakmo0S5w7RhHHXMCQc";
+        var sbExt=null;
+        try{ if(window.supabase && window.supabase.createClient) sbExt=window.supabase.createClient(SB_URL, SB_ANON, {auth:{persistSession:false, autoRefreshToken:false}}); }catch(e){ sbExt=null; }
+
+        /* ================= 3. MODE PORTAL BERBAGI (?bagikan=TOKEN) ================= */
+        if(window.__bagikanMode){
+          document.body.classList.add("bagikan-mode");
+          renderBagikan(window.__bagikanToken);
+          return; // mode ini tidak menjalankan fitur lain sama sekali
+        }
+        function fmtTgl(iso){ try{ return new Date(iso).toLocaleString("id-ID",{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}); }catch(e){ return String(iso||""); } }
+        function renderBagikan(token){
+          var view=document.createElement("div"); view.className="portal-share-view"; view.id="portalShareView";
+          view.innerHTML="<p class='note'>Sedang memuat tampilan investor…</p>";
+          document.body.appendChild(view);
+          function gagal(){
+            view.innerHTML="<span class='share-badge'>Tampilan investor — hanya baca</span><h1 style='margin-top:16px'>Tautan tidak ditemukan atau sudah dicabut</h1><p class='note' style='margin-top:10px'>Tautan ini tidak lagi aktif. Minta tautan terbaru langsung kepada pemilik usaha bila Anda perlu melihat ringkasannya.</p>";
+          }
+          if(!sbExt || !token){ gagal(); return; }
+          /* Dibaca lewat fungsi khusus portal_snapshot yang mencocokkan token PERSIS
+             dan mengembalikan paling banyak satu baris — tidak ada jalan membaca
+             daftar snapshot milik orang lain. */
+          sbExt.rpc("portal_snapshot", {p_token: token}).then(function(r){
+            var row=null;
+            if(!r.error && r.data){ row=Array.isArray(r.data) ? r.data[0] : r.data; }
+            if(!row || !row.data){ gagal(); return; }
+            var d=row.data||{}, sk=d.skor||{}, v=d.valuasi||{}, sak=d.sak_emkm||{};
+            function skorCard(label, val){ return "<div class='stat'><div class='k'>"+escF(label)+"</div><div class='v'>"+(val==null?"—":escF(val)+"/100")+"</div></div>"; }
+            var h="";
+            h+="<span class='share-badge'>Tampilan investor — hanya baca</span>";
+            h+="<h1 style='margin-top:16px'>"+escF(d.nama_usaha||"(nama usaha)")+"</h1>";
+            h+="<p class='note' style='margin-top:6px'>"+escF(d.sektor||"")+(d.kota?" · "+escF(d.kota):"")+(d.provinsi?" · "+escF(d.provinsi):"")+"</p>";
+            h+="<p style='margin-top:10px'>Level UMKM: <b>"+escF(d.level||"—")+"</b> · Level kematangan: <b>"+(d.level_kematangan==null?"—":escF(d.level_kematangan))+" dari 4</b></p>";
+            h+="<div class='share-scores'>"+skorCard("Kesehatan usaha", sk.kesehatan)+skorCard("Siap investasi", sk.siap_investasi)+skorCard("Kesehatan keuangan", sk.kesehatan_keuangan)+skorCard("Konsistensi data", sk.konsistensi)+skorCard("Legalitas", sk.legalitas)+skorCard("Kemasan", sk.kemasan)+"</div>";
+            h+="<div class='card' style='margin-top:16px'><h3>Estimasi valuasi</h3><p style='margin-top:8px'>Nilai tengah <b>"+fmtF(v.tengah||0)+"</b> · rentang "+fmtF(v.rendah||0)+" – "+fmtF(v.tinggi||0)+"</p><p class='note' style='margin-top:6px'>Laba pemilik (SDE) "+fmtF(v.sde_tahunan||0)+"/tahun · multiple "+(v.multiple!=null?String(v.multiple).replace(".",","):"—")+"×. Estimasi untuk bahan diskusi awal — bukan appraisal resmi KJPP.</p></div>";
+            h+="<div class='card' style='margin-top:14px'><h3>Ringkasan laporan (SAK EMKM)</h3><p style='margin-top:8px'>Pendapatan "+fmtF(sak.pendapatan_per_bulan||0)+"/bulan · Laba bersih "+fmtF(sak.laba_bersih_per_bulan||0)+"/bulan · Aset bersih "+fmtF(sak.aset_bersih||0)+"</p><p class='note' style='margin-top:6px'>Skor Konsistensi Data pemilik: <b>"+(sk.konsistensi==null?"—":escF(sk.konsistensi)+"/100")+"</b> — dihitung dari 9 sumber data lokal yang biasa diperiksa calon mitra.</p></div>";
+            if(Array.isArray(d.jejak_audit) && d.jejak_audit.length){ h+="<div class='card' style='margin-top:14px'><h3>Jejak audit</h3><ul class='tick' style='margin-top:8px'>"+d.jejak_audit.slice(0,10).map(function(x){ return "<li>"+escF(x)+"</li>"; }).join("")+"</ul></div>"; }
+            h+="<p class='note' style='margin-top:16px'>Ringkasan ini dibuat pemilik usaha pada "+fmtTgl(d.dibuat_pada || row.created_at)+" dan dibagikan atas izinnya. Halaman ini hanya menampilkan ringkasan — tidak ada formulir, tidak ada data pribadi, dan tidak ada yang bisa diubah dari sini.</p>";
+            view.innerHTML=h;
+            document.title="Portal Investor — "+(d.nama_usaha||"UMKM");
+          }, function(){ gagal(); });
+        }
+
+        /* ================= 1. CEK DATA LOKAL SEMI-OTOMATIS ================= */
+        (function initCekOtomatis(){
+          var SUMBER=[
+            {idx:1, nama:"Google Maps / Profil Bisnis Google"},
+            {idx:2, nama:"Tokopedia"},
+            {idx:3, nama:"Shopee"},
+            {idx:5, nama:"Instagram / media sosial"}
+          ];
+          var rows=document.querySelectorAll("#consChecks .check-row");
+          if(!rows.length) return;
+          SUMBER.forEach(function(s){
+            var row=rows[s.idx]; if(!row) return;
+            var panel=document.createElement("div"); panel.className="cek-auto";
+            var lab=document.createElement("label"); lab.className="f";
+            var sp=document.createElement("span"); sp.textContent="Tempel tautan "+s.nama;
+            var inp=document.createElement("input"); inp.type="url"; inp.id="cekUrl"+s.idx; inp.placeholder="contoh: https://…"; inp.setAttribute("inputmode","url"); inp.setAttribute("autocomplete","off");
+            lab.appendChild(sp); lab.appendChild(inp);
+            var btn=document.createElement("button"); btn.type="button"; btn.className="btn ghost small"; btn.textContent="Cek otomatis";
+            var res=document.createElement("p"); res.className="note cek-res"; res.id="cekRes"+s.idx; res.setAttribute("role","status");
+            panel.appendChild(lab); panel.appendChild(btn); panel.appendChild(res);
+            row.appendChild(panel);
+            btn.addEventListener("click", function(){ cekOtomatis(s.idx, inp, res, btn); });
+          });
+          function syncConsSeg(idx){
+            var r2=document.querySelectorAll("#consChecks .check-row")[idx]; if(!r2) return;
+            r2.querySelectorAll(".seg button").forEach(function(b,j){ b.setAttribute("aria-pressed", consState[idx]===j?"true":"false"); });
+          }
+          function cekOtomatis(idx, inp, res, btn){
+            var url=(inp.value||"").trim();
+            if(!url){ res.textContent="Tempel dulu tautan publik sumber ini, lalu ketuk Cek otomatis."; inp.focus(); return; }
+            if(!/^https?:\/\//i.test(url)) url="https://"+url;
+            btn.disabled=true; res.textContent="Sedang meminta server membaca halaman publik itu…";
+            /* Hanya URL publik yang ditempel pengguna yang dikirim — tanpa data pribadi apa pun. */
+            fetch("/api/cek-lokal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:url})})
+              .then(function(r){ if(!r.ok) throw new Error("status "+r.status); return r.json(); })
+              .then(function(d){
+                var sig=(d && (d.sinyal||d.signals)) || d || {};
+                function ambil(){ for(var i=0;i<arguments.length;i++){ if(arguments[i]!=null && arguments[i]!=="") return arguments[i]; } return null; }
+                var rating=ambil(sig.rating, d.rating);
+                var ulasan=ambil(sig.jumlah_ulasan, sig.ulasan, d.jumlah_ulasan, d.ulasan);
+                var harga=ambil(sig.harga, d.harga);
+                var nama=ambil(sig.nama, d.nama);
+                var sesuaiRaw=ambil(d.sesuai, sig.sesuai);
+                var sesuai= (sesuaiRaw===true||sesuaiRaw==="sesuai") ? true : (sesuaiRaw===false||sesuaiRaw==="beda") ? false : null;
+                var parts=[];
+                if(nama) parts.push("Nama terbaca: "+nama);
+                if(rating!=null) parts.push("Rating "+rating);
+                if(ulasan!=null) parts.push(ulasan+" ulasan");
+                if(harga!=null) parts.push("Harga terbaca: "+harga);
+                if(!parts.length && sesuai==null) throw new Error("tidak ada sinyal");
+                var tgl=ambil(d.dicek_pada, d.tanggal) ? fmtTgl(ambil(d.dicek_pada, d.tanggal)) : new Date().toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+                if(sesuai!=null){ consState[idx]=sesuai?2:1; syncConsSeg(idx); try{ updateCons(); }catch(e){} }
+                res.textContent="Hasil cek otomatis ("+tgl+"): "+(parts.length?parts.join(" · "):"halaman terbaca")+"."+(sesuai!=null?(" Baris ini ditandai "+(sesuai?"Sesuai":"Beda")+" dari nama yang terbaca — periksa lagi dan ubah manual di atas bila tidak tepat."):" Bandingkan sinyal ini dengan data usaha Anda, lalu tandai Sesuai/Beda di atas.");
+                try{ audit("Cek otomatis konsistensi sumber ke-"+(idx+1)+" berhasil dibaca dari server."); }catch(e){}
+              })
+              .catch(function(){
+                res.textContent="Tidak bisa dibaca otomatis — cek manual. Halaman mungkin memblokir pembacaan otomatis, tidak ada sinyal yang terbaca, atau fungsi pembaca di server belum terpasang. Pilihan Sesuai / Beda / Belum dicek di atas tetap bisa dipakai seperti biasa.";
+              })
+              .then(function(){ btn.disabled=false; });
+          }
+        })();
+
+        /* ================= 2. KALIBRASI MULTIPLE LOKAL ================= */
+        var KAL_KEY="umkm-introspeksi-kalibrasi-setuju";
+        var kalCache={key:"", ready:false, n:0, median:0, scope:"", lastTry:0};
+        var lastKalHash="";
+        function kalSetuju(){
+          var cb=gid("inKalibrasi");
+          if(cb) return !!cb.checked;
+          try{ return localStorage.getItem(KAL_KEY)==="1"; }catch(e){ return false; }
+        }
+        (function initKalibrasiToggle(){
+          var cb=gid("inKalibrasi"); if(!cb) return;
+          try{ cb.checked = localStorage.getItem(KAL_KEY)==="1"; }catch(e){}
+          cb.addEventListener("change", function(){
+            try{ localStorage.setItem(KAL_KEY, cb.checked?"1":"0"); }catch(e){}
+            try{ toast(cb.checked?"Kalibrasi lokal aktif — data anonim Anda akan ikut dihitung saat Anda menyimpan.":"Kalibrasi lokal dimatikan — data Anda tidak dikirim untuk kalibrasi."); }catch(e){}
+            if(cb.checked){ kalCache.key=""; kalFetch(true); }
+          });
+        })();
+        function kalInputs(){
+          return { sek:(gid("inSektor")||{}).value||"", prov:(gid("inProvinsi")||{}).value||"", kota:(gid("inKota")||{}).value||"" };
+        }
+        function kalKeyOf(k){ return k.sek+"|"+k.prov+"|"+k.kota; }
+        function medianOf(rows){
+          var vals=(rows||[]).map(function(r){ return +r.multiple_dipakai; }).filter(function(x){ return x>0 && isFinite(x); });
+          vals.sort(function(a,b){ return a-b; });
+          if(!vals.length) return {n:0, median:0};
+          var mid=Math.floor(vals.length/2);
+          return { n:vals.length, median: vals.length%2 ? vals[mid] : (vals[mid-1]+vals[mid])/2 };
+        }
+        function kalQuery(sek, field, val){
+          var q=sbExt.from("kalibrasi").select("multiple_dipakai").eq("sektor", sek);
+          if(field) q=q.eq(field, val);
+          return q.limit(1000);
+        }
+        async function kalFetch(force){
+          if(!sbExt) return;
+          var k=kalInputs(); if(!k.sek) return;
+          var key=kalKeyOf(k);
+          var now=Date.now();
+          if(!force && kalCache.key===key && (kalCache.ready || now-kalCache.lastTry<30000)) return;
+          kalCache.key=key; kalCache.lastTry=now;
+          try{
+            var sets=[];
+            if(k.kota){ var rk=await kalQuery(k.sek,"kota",k.kota); if(rk.error) throw rk.error; sets.push({rows:rk.data||[], scope:k.kota}); }
+            if(k.prov){ var rp2=await kalQuery(k.sek,"provinsi",k.prov); if(rp2.error) throw rp2.error; sets.push({rows:rp2.data||[], scope:k.prov}); }
+            var rn=await kalQuery(k.sek,null,null); if(rn.error) throw rn.error; sets.push({rows:rn.data||[], scope:"Indonesia"});
+            var chosen=null, fallback=null;
+            sets.forEach(function(s){ var m=medianOf(s.rows); s.n=m.n; s.median=m.median; if(!fallback || s.n>fallback.n) fallback=s; if(!chosen && s.n>=5) chosen=s; });
+            var use=chosen||fallback||{n:0,median:0,scope:k.kota||k.prov||"Indonesia"};
+            kalCache.ready=true; kalCache.n=use.n; kalCache.median=use.median; kalCache.scope=use.scope; kalCache.blendable=!!chosen;
+            var st=gid("kalibrasiStatus");
+            if(st){ st.textContent= use.n>0 ? ("Data pembanding lokal saat ini: "+use.n+" usaha sejenis di "+use.scope+" sudah berbagi data anonim. "+(chosen?"Jumlahnya sudah cukup (minimal 5) — median multiple lokal ikut digabungkan ke multiple valuasi Anda.":"Belum cukup untuk dipakai (perlu minimal 5) — multiple Anda masih memakai angka acuan.")) : "Belum ada data anonim usaha sejenis yang terkumpul untuk sektor dan kota ini — multiple masih memakai angka acuan."; }
+            try{ recalc(); }catch(e){}
+          }catch(e){
+            /* Tabel belum ada / koneksi gagal: diam-diam saja — multiple literatur
+               tetap dipakai dan tidak ada klaim apa pun yang ditampilkan. */
+            kalCache.ready=false;
+          }
+        }
+        window.__kalibrasiBlend=function(sektor, multLit){
+          var k=kalInputs();
+          if(!kalCache.ready || k.sek!==sektor || kalKeyOf(k)!==kalCache.key) return null;
+          function fmtM(x){ return x.toLocaleString("id-ID",{maximumFractionDigits:2}); }
+          if(kalCache.blendable && kalCache.n>=5 && kalCache.median>0){
+            var blended=Math.max(1.5, Math.min(5, Math.round(((kalCache.median+multLit)/2)*100)/100));
+            return { mult:blended, note:"Multiple dipakai "+fmtM(blended)+"× — dari "+kalCache.n+" usaha sejenis di "+kalCache.scope+" (kalibrasi lokal) digabung angka acuan." };
+          }
+          if(kalCache.n>0) return { mult:multLit, note:"Data lokal usaha sejenis baru terkumpul "+kalCache.n+" (perlu minimal 5) — belum cukup data lokal, memakai angka acuan." };
+          return { mult:multLit, note:"Belum ada data lokal usaha sejenis — memakai angka acuan." };
+        };
+        window.__kalibrasiOnSave=function(){
+          if(!sbExt || !kalSetuju()) return;
+          try{
+            var k=kalInputs(); if(!k.sek) return;
+            var omz=Math.round((typeof S!=="undefined" && S.omzetBln)||0);
+            if(omz<=0) return;
+            /* SATU baris anonim: tanpa user_id, nama, email, telepon, alamat, GPS. */
+            var row={ sektor:k.sek, provinsi:k.prov, kota:k.kota, omzet_bulanan:omz, sde_tahunan:Math.round(S.sdeThn||0), multiple_dipakai:+(S.mult||0), valuasi_tengah:Math.round(S.weighted||0), created_at:new Date().toISOString() };
+            var h=JSON.stringify(row);
+            if(h===lastKalHash) return; lastKalHash=h;
+            sbExt.from("kalibrasi").insert(row).then(function(){ kalCache.key=""; kalFetch(true); }, function(){});
+          }catch(e){}
+        };
+        setTimeout(function(){ kalFetch(false); }, 1200);
+        setInterval(function(){ kalFetch(false); }, 3000);
+
+        /* ================= 3. PORTAL INVESTOR VIA TAUTAN BERBAGI ================= */
+        (function initPortalBerbagi(){
+          var btn=gid("btnSharePortal"); if(!btn) return;
+          var SHARE_KEY="umkm-introspeksi-portal-token";
+          var shareToken=null;
+          try{ shareToken=localStorage.getItem(SHARE_KEY); }catch(e){}
+          function showShareLink(token){
+            var inp=gid("shareLinkInput"); if(inp) inp.value="https://aplikasi-introspeksi-umkm.vercel.app/?bagikan="+token;
+            var box=gid("shareResult"); if(box) box.style.display="block";
+          }
+          if(shareToken) showShareLink(shareToken);
+          function genToken(){
+            var a=new Uint8Array(18);
+            if(window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+            else for(var i=0;i<a.length;i++) a[i]=Math.floor(Math.random()*256);
+            return Array.prototype.map.call(a, function(b){ return ("0"+b.toString(16)).slice(-2); }).join("");
+          }
+          function buildSnapshot(){
+            var sel=gid("inSektor"); var sektorLabel=(sel && sel.selectedOptions && sel.selectedOptions[0]) ? sel.selectedOptions[0].textContent : "";
+            var finEl=gid("scFin"), packEl=gid("packScore");
+            return {
+              nama_usaha:(gid("inNama")||{}).value||"",
+              sektor:sektorLabel,
+              kota:(gid("inKota")||{}).value||"",
+              provinsi:(gid("inProvinsi")||{}).value||"",
+              level:(typeof S!=="undefined" && S.skala)||"",
+              level_kematangan:(typeof S!=="undefined" && S.matLevel!=null)?S.matLevel:null,
+              skor:{
+                kesehatan:(typeof S!=="undefined" && S.health)||0,
+                siap_investasi:(typeof S!=="undefined" && S.scInv)||0,
+                kesehatan_keuangan:finEl?(parseInt(finEl.textContent,10)||0):0,
+                konsistensi:(typeof consScoreVal!=="undefined")?consScoreVal:0,
+                legalitas:(typeof legalScoreVal!=="undefined")?legalScoreVal:0,
+                kemasan:packEl?(parseInt(packEl.textContent,10)||0):0
+              },
+              valuasi:{
+                rendah:Math.round((typeof S!=="undefined" && S.valLow)||0),
+                tengah:Math.round((typeof S!=="undefined" && S.weighted)||0),
+                tinggi:Math.round((typeof S!=="undefined" && S.valHigh)||0),
+                sde_tahunan:Math.round((typeof S!=="undefined" && S.sdeThn)||0),
+                multiple:(typeof S!=="undefined" && S.mult)||0
+              },
+              sak_emkm:{
+                pendapatan_per_bulan:Math.round((typeof S!=="undefined" && S.omzetBln)||0),
+                laba_bersih_per_bulan:Math.round((typeof S!=="undefined" && S.labaBersihBln)||0),
+                aset_bersih:Math.round((typeof S!=="undefined" && S.asetBersih)||0)
+              },
+              jejak_audit:(typeof auditLog!=="undefined"?auditLog.slice(0,10):[]),
+              dibuat_pada:new Date().toISOString()
+            };
+          }
+          btn.addEventListener("click", async function(){
+            if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Membuat tautan berbagi portal investor"); return; }
+            var note=gid("shareNote");
+            if(!sbExt){ note.textContent="Fitur berbagi belum aktif — koneksi cloud belum termuat. Portal investor di dalam aplikasi di atas tetap berfungsi seperti biasa."; return; }
+            btn.disabled=true; note.textContent="Sedang membuat tautan berbagi…";
+            var token=genToken();
+            try{
+              var r=await sbExt.from("portal_berbagi").insert({token:token, data:buildSnapshot()});
+              if(r.error) throw r.error;
+              shareToken=token;
+              try{ localStorage.setItem(SHARE_KEY, token); }catch(e){}
+              showShareLink(token);
+              note.textContent="Tautan dibuat pada "+new Date().toLocaleString("id-ID")+". Bagikan hanya ke calon investor yang Anda percaya — siapa pun yang memegang tautan ini bisa melihat ringkasannya. Cabut kapan saja dengan tombol Cabut tautan.";
+              try{ audit("Tautan berbagi portal investor dibuat."); }catch(e){}
+              try{ toast("Tautan berbagi dibuat — salin dan kirim ke calon investor"); }catch(e){}
+            }catch(e){
+              note.textContent="Fitur berbagi belum aktif — penyimpanan tautan di cloud belum tersedia. Portal investor di dalam aplikasi di atas tetap berfungsi seperti biasa.";
+            }
+            btn.disabled=false;
+          });
+          var bc=gid("btnCopyShare");
+          if(bc) bc.addEventListener("click", function(){
+            var inp=gid("shareLinkInput"); if(!inp || !inp.value) return;
+            function done(){ try{ toast("Tautan tersalin — siap ditempel ke WhatsApp / email"); }catch(e){} }
+            if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(inp.value).then(done, function(){ inp.select(); try{ document.execCommand("copy"); done(); }catch(e){} }); }
+            else { inp.select(); try{ document.execCommand("copy"); done(); }catch(e){} }
+          });
+          var br=gid("btnRevokeShare");
+          if(br) br.addEventListener("click", async function(){
+            var note=gid("shareNote");
+            if(!shareToken){ note.textContent="Belum ada tautan berbagi yang aktif di perangkat ini."; return; }
+            br.disabled=true; note.textContent="Sedang mencabut tautan…";
+            try{
+              /* Pencabutan juga lewat fungsi khusus yang mencocokkan token persis —
+                 tidak ada jalan menghapus baris lain. */
+              if(sbExt){ var r=await sbExt.rpc("portal_cabut", {p_token: shareToken}); if(r.error) throw r.error; }
+              shareToken=null;
+              try{ localStorage.removeItem(SHARE_KEY); }catch(e){}
+              var box=gid("shareResult"); if(box) box.style.display="none";
+              var inp=gid("shareLinkInput"); if(inp) inp.value="";
+              note.textContent="Tautan sudah dicabut — tautan lama tidak bisa dibuka lagi. Anda bisa membuat tautan baru kapan saja.";
+              try{ audit("Tautan berbagi portal investor dicabut."); }catch(e){}
+            }catch(e){
+              note.textContent="Tautan belum bisa dicabut — periksa koneksi internet Anda lalu coba lagi. Selama belum tercabut, tautan lama masih aktif.";
+            }
+            br.disabled=false;
+          });
+        })();
+
+        /* ================= 4. PENILAIAN KEMASAN TERBANTU FOTO ================= */
+        var angleFacts={}, packMainFact=null, lastAspects=[];
+        function analyzeFile(file, cb){
+          var url=URL.createObjectURL(file); var img=new Image();
+          img.onload=function(){
+            try{
+              var mx=160, sc=Math.min(1, mx/Math.max(img.width||1, img.height||1));
+              var w=Math.max(8, Math.round((img.width||8)*sc)), h=Math.max(8, Math.round((img.height||8)*sc));
+              var cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+              var cx=cv.getContext("2d"); cx.drawImage(img,0,0,w,h);
+              var data=cx.getImageData(0,0,w,h).data;
+              var lum=new Float32Array(w*h); var sum=0, p=0;
+              for(var i=0;i<data.length;i+=4,p++){ var l=0.2126*data[i]+0.7152*data[i+1]+0.0722*data[i+2]; lum[p]=l; sum+=l; }
+              var mean=sum/(w*h), vr=0;
+              for(var j=0;j<lum.length;j++){ var dv=lum[j]-mean; vr+=dv*dv; }
+              var std=Math.sqrt(vr/lum.length);
+              var g=0, gn=0, x, y;
+              for(y=0;y<h;y++) for(x=0;x<w-1;x++){ g+=Math.abs(lum[y*w+x+1]-lum[y*w+x]); gn++; }
+              for(y=0;y<h-1;y++) for(x=0;x<w;x++){ g+=Math.abs(lum[(y+1)*w+x]-lum[y*w+x]); gn++; }
+              URL.revokeObjectURL(url);
+              cb({mean:mean, std:std, grad:gn?g/gn:0});
+            }catch(e){ URL.revokeObjectURL(url); cb(null); }
+          };
+          img.onerror=function(){ URL.revokeObjectURL(url); cb(null); };
+          img.src=url;
+        }
+        function factLabels(m){
+          if(!m) return null;
+          var terang= m.mean<55 ? {t:"kurang — foto terlalu gelap", s:25} : m.mean<=215 ? {t:"baik", s:100} : {t:"sangat terang — hati-hati silau", s:60};
+          var kontras= m.std<18 ? {t:"rendah — foto tampak datar", s:30} : m.std<40 ? {t:"cukup", s:70} : {t:"baik", s:100};
+          var tajam= m.grad<3.5 ? {t:"kurang — foto agak blur", s:25} : m.grad<8 ? {t:"cukup", s:70} : {t:"baik", s:100};
+          return { terang:terang, kontras:kontras, tajam:tajam, score:Math.round((terang.s+kontras.s+tajam.s)/3) };
+        }
+        function factText(l){ return "Terang: "+l.terang.t+" · Kontras: "+l.kontras.t+" · Ketajaman: "+l.tajam.t; }
+        function photoScoreAvg(){
+          var arr=[]; if(packMainFact) arr.push(packMainFact.score);
+          Object.keys(angleFacts).forEach(function(k){ arr.push(angleFacts[k].score); });
+          if(!arr.length) return null;
+          return Math.round(arr.reduce(function(a,b){ return a+b; },0)/arr.length);
+        }
+        function renderPackAspects(){
+          var el=gid("packAspects"); if(!el) return;
+          var chk=(typeof packState!=="undefined"?packState:[0,0,0,0,0,0]).map(function(v){ return v?100:0; });
+          var foto=photoScoreAvg();
+          lastAspects=[
+            {nama:"Perlindungan produk", skor:chk[5], basis:"dari periksa 'kemasan kuat untuk kirim luar kota'"},
+            {nama:"Informasi label", skor:Math.round((chk[0]+chk[1]+chk[2]+chk[3]+chk[4])/5), basis:"dari 5 periksa isi label (nama, komposisi, berat, izin, kedaluwarsa)"},
+            {nama:"Keterbacaan & branding", skor:foto==null?chk[0]:Math.round((foto+chk[0])/2), basis:foto==null?"dari periksa nama produk & merek (belum ada foto yang terukur)":"dari pengukuran foto (terang, kontras, ketajaman) digabung periksa nama produk & merek"},
+            {nama:"Kelayakan kanal jual", skor:Math.round((chk[3]+chk[5])/2), basis:"dari periksa nomor izin + kekuatan kemasan untuk kirim"},
+            {nama:"Efisiensi biaya", skor:Math.round((chk[2]+chk[5])/2), basis:"dari periksa berat bersih tercantum (takaran jelas) + kesiapan kirim"}
+          ];
+          el.innerHTML=lastAspects.map(function(a){
+            return "<div class='aspect-row'><span>"+escF(a.nama)+"</span><div class='bar'><i class='"+(a.skor>=66?"":a.skor>=40?"mid":"low")+"' style='width:"+a.skor+"%'></i></div><b>"+a.skor+"/100</b><span class='basis'>"+escF(a.basis)+"</span></div>";
+          }).join("");
+          var fs=gid("packFactsSummary");
+          if(fs){
+            var lines=[];
+            if(packMainFact) lines.push("Foto utama — "+factText(packMainFact)+".");
+            var slotNama=["Sudut 1 (tampak atas)","Sudut 2 (kemasan tertutup)","Sudut 3 (isi / label dekat)"];
+            Object.keys(angleFacts).forEach(function(k){ lines.push(slotNama[+k]+" — "+factText(angleFacts[k])+"."); });
+            fs.textContent= lines.length ? ("Fakta terukur dari foto Anda: "+lines.join(" ")) : "Unggah foto produk di atas untuk melihat fakta terukurnya di sini.";
+          }
+        }
+        (function initKemasanFoto(){
+          var pp=gid("packPhoto");
+          if(pp) pp.addEventListener("change", function(e){
+            var f=e.target.files && e.target.files[0]; if(!f) return;
+            analyzeFile(f, function(m){
+              packMainFact=factLabels(m);
+              var el=gid("packPhotoFacts");
+              if(el) el.textContent= packMainFact ? ("Fakta terukur foto utama: "+factText(packMainFact)+".") : "Foto utama tidak bisa diukur di peramban ini — nilainya tetap dari daftar periksa.";
+              renderPackAspects();
+            });
+          });
+          document.querySelectorAll(".anglePhoto").forEach(function(inp, idx){
+            inp.addEventListener("change", function(e){
+              var f=e.target.files && e.target.files[0]; if(!f) return;
+              analyzeFile(f, function(m){
+                var labels=factLabels(m);
+                if(labels) angleFacts[idx]=labels;
+                try{
+                  var prev=gid("anglePreviews");
+                  var imgs=prev ? prev.querySelectorAll("img") : [];
+                  var img=imgs[imgs.length-1];
+                  if(img){
+                    var cell=img.closest ? img.closest(".angle-cell") : null;
+                    if(!cell){
+                      cell=document.createElement("div"); cell.className="angle-cell";
+                      img.parentNode.insertBefore(cell, img); cell.appendChild(img);
+                      var cap=document.createElement("div"); cap.className="fact-lines";
+                      cap.textContent= labels ? factText(labels) : "Foto ini tidak bisa diukur di peramban — nilai manual lewat daftar periksa.";
+                      cell.appendChild(cap);
+                    } else {
+                      var cap2=cell.querySelector(".fact-lines"); if(cap2 && labels) cap2.textContent=factText(labels);
+                    }
+                  }
+                }catch(e2){}
+                renderPackAspects();
+              });
+            });
+          });
+          var pc=gid("packChecks");
+          if(pc) pc.addEventListener("click", function(){ setTimeout(renderPackAspects, 60); });
+          var lastSig="";
+          setInterval(function(){
+            var sig="";
+            try{ sig=(typeof packState!=="undefined"?packState.join(","):"")+"|"+Object.keys(angleFacts).length+"|"+(packMainFact?packMainFact.score:"-"); }catch(e){}
+            if(sig!==lastSig){ lastSig=sig; renderPackAspects(); }
+          }, 2000);
+          renderPackAspects();
+          var bai=gid("btnPackAI");
+          if(bai) bai.addEventListener("click", function(){
+            var target=gid("packAIAnswer"); if(!target) return;
+            renderPackAspects();
+            var chkNama=["Label memuat nama produk & merek","Komposisi / bahan tertulis jelas","Berat bersih & ukuran tercantum","Nomor izin tercantum (PIRT/halal/BPOM)","Tanggal produksi & kedaluwarsa tercantum","Kemasan kuat untuk kirim luar kota + kontak pemesanan"];
+            var chkText=chkNama.map(function(n,i){ return n+": "+(((typeof packState!=="undefined"&&packState[i])?"Sudah":"Belum")); }).join("; ");
+            var fakta=[];
+            if(packMainFact) fakta.push("Foto utama — "+factText(packMainFact));
+            Object.keys(angleFacts).forEach(function(k){ fakta.push("Foto sudut "+(+k+1)+" — "+factText(angleFacts[k])); });
+            var aspekText=lastAspects.map(function(a){ return a.nama+" "+a.skor+"/100"; }).join("; ");
+            var prompt="Nilai kemasan produk UMKM saya dari data berikut. Ini pengukuran sederhana di peramban (terang, kontras, ketajaman piksel) plus jawaban daftar periksa — bukan deteksi objek, jadi jangan mengarang isi foto. Fakta foto terukur: "+(fakta.length?fakta.join("; "):"(belum ada foto yang terukur)")+". Jawaban daftar periksa label: "+chkText+". Skor per aspek: "+aspekText+". Beri penilaian tertulis dalam Bahasa Indonesia sederhana: kekuatan kemasan saya, kekurangan paling penting, dan 3 langkah perbaikan paling berdampak. Jangan membuat angka baru di luar data ini.";
+            target.textContent="Sedang meminta penilaian AI — yang dikirim hanya fakta terukur dan jawaban periksa, bukan fotonya…";
+            function lokal(){
+              var sorted=lastAspects.slice().sort(function(a,b){ return a.skor-b.skor; });
+              var lemah=sorted[0], kuat=sorted[sorted.length-1];
+              var t="Penilaian lokal dari pengukuran foto + daftar periksa (AI online belum tersambung):\n";
+              t+="Aspek terkuat Anda: "+kuat.nama+" ("+kuat.skor+"/100). Aspek terlemah: "+lemah.nama+" ("+lemah.skor+"/100) — "+lemah.basis+".\n";
+              if(packMainFact || Object.keys(angleFacts).length){ t+="Kualitas teknis foto Anda: "+(fakta.join("; "))+ ". Foto yang terang dan tajam membuat label terbaca jelas oleh calon pembeli.\n"; }
+              else { t+="Belum ada foto yang terukur — unggah foto produk agar terang, kontras, dan ketajamannya bisa dinilai.\n"; }
+              t+="Langkah perbaikan: lengkapi dulu periksa label yang masih 'Belum', ambil ulang foto yang gelap atau blur dengan cahaya terang dan latar bersih, lalu nilai ulang di sini.";
+              target.textContent=t;
+            }
+            try{
+              fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt, question:prompt, context:{jenis:"penilaian_kemasan_terbantu", skor_kemasan_total:(function(){ var p=gid("packScore"); return p?(parseInt(p.textContent,10)||0):0; })()}})})
+                .then(function(r){ if(!r.ok) throw new Error("belum tersambung"); return r.json(); })
+                .then(function(data){
+                  var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
+                  if(ans && String(ans).trim()) target.textContent=String(ans).trim(); else lokal();
+                })
+                .catch(function(){ lokal(); });
+            }catch(e){ lokal(); }
+          });
+        })();
       })();
     </script>
   </body>
