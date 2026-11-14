@@ -102,6 +102,7 @@
       .suara-panel.suara-diam .suara-mic-garis{display:block;color:var(--ink-soft)}
       @keyframes suaraDenyut{0%{box-shadow:0 0 0 0 rgba(227,185,89,.55)}70%{box-shadow:0 0 0 14px rgba(227,185,89,0)}100%{box-shadow:0 0 0 0 rgba(227,185,89,0)}}
       .suara-status{font-weight:700;font-size:.98rem}
+      .suara-teks{margin-top:10px;font-size:.95rem;line-height:1.5}
       .suara-meter{display:flex;gap:4px;margin-top:12px}
       .suara-seg{flex:1;height:12px;border-radius:3px;background:var(--field-border);opacity:.55}
       .suara-seg.nyala{background:var(--gold);opacity:1}
@@ -2395,20 +2396,75 @@
          Satu panel yang sama tampilannya di kedua tombol suara, muncul saat
          rekaman mulai, tepat di atas baris hasil suara. Ikon mikrofon berubah
          lewat event SpeechRecognition: onspeechstart → sedang bicara (emas +
-         denyut), onspeechend → suara berhenti (garis abu-abu). Meter 10 segmen
-         hidup dari Web Audio API (getUserMedia → AudioContext → AnalyserNode,
-         RMS tiap frame). Bila analyser tidak bisa jalan (izin ditolak, tidak
+         denyut), onspeechend → suara berhenti (garis abu-abu) — panel TIDAK
+         menutup saat suara berhenti: hasil interim/final ditulis dulu di
+         dalam panel ("Terdengar: …") dan panel beralih ke keadaan selesai
+         (tombol jadi "Tutup", meter dihentikan) sampai pengguna menutupnya.
+         Panel hanya menutup bila pengguna menekan tombolnya, bila error,
+         atau bila rekaman baru dimulai. Meter 10 segmen hidup dari Web Audio
+         API (getUserMedia → AudioContext → AnalyserNode, RMS tiap frame). Bila analyser tidak bisa jalan (izin ditolak, tidak
          tersedia), meter disembunyikan diam-diam — ikon tetap jalan dan alur
          suara tidak terganggu, tanpa popup apa pun. Stream dan loop animasi
          selalu ditutup saat rekaman selesai/berhenti agar mikrofon tidak
          terus terbuka. */
-      var __suaraPanel=null, __suaraR=null, __suaraRaf=null, __suaraStream=null, __suaraCtx=null, __suaraAnalyser=null, __suaraData=null;
-      function __suaraSetStatus(bicara){
+      var __suaraPanel=null, __suaraR=null, __suaraRaf=null, __suaraStream=null, __suaraCtx=null, __suaraAnalyser=null, __suaraData=null, __suaraSelesaiFlag=false;
+      function __suaraSetStatus(bicara, teks){
         if(!__suaraPanel) return;
         var st=__suaraPanel.querySelector("#voiceStatusText");
         __suaraPanel.classList.toggle("suara-bicara", !!bicara);
         __suaraPanel.classList.toggle("suara-diam", !bicara);
-        if(st) st.textContent=bicara ? "Anda sedang berbicara…" : "Suara berhenti — bicara lagi, atau tekan Berhenti";
+        if(st) st.textContent=(teks!==undefined&&teks!==null)?teks:(bicara ? "Anda sedang berbicara…" : "Suara berhenti — bicara lagi, atau tekan Berhenti");
+      }
+      function __suaraSetStatusTeks(teks){
+        if(!__suaraPanel) return;
+        var st=__suaraPanel.querySelector("#voiceStatusText");
+        if(st) st.textContent=teks;
+      }
+      /* Baris transkrip di dalam panel: tampil live saat interim, dipertahankan
+         saat final, supaya pengguna melihat apakah suaranya tertangkap. */
+      function __suaraTeks(teks, final){
+        if(!__suaraPanel) return;
+        var el=__suaraPanel.querySelector("#voiceTeks");
+        if(!el) return;
+        el.textContent="Terdengar: "+teks+(final?"":"…");
+        el.style.display="block";
+      }
+      /* Keadaan selesai: meter dihentikan (mikrofon tidak terus terbuka),
+         tombol berubah jadi "Tutup". Panel TIDAK menutup sendiri — pengguna
+         yang menutupnya dengan menekan "Tutup". */
+      function __suaraSelesai(){
+        __suaraSelesaiFlag=true;
+        __suaraBersihMeter();
+        __suaraR=null;
+        if(__suaraPanel){
+          __suaraSetStatus(false, "Selesai — periksa teks di atas, lalu tekan Tutup");
+          var b=__suaraPanel.querySelector("#voiceStopBtn"); if(b) b.textContent="Tutup";
+        }
+      }
+      /* Rekaman berakhir TANPA hasil final (mis. suara berhenti begitu saja):
+         panel TIDAK ditutup — meter dihentikan supaya mikrofon tidak terus
+         terbuka, status mengarahkan pengguna ke tombol Berhenti. Bila hasil
+         final sudah ada, keadaan selesai yang berlaku (tidak diubah). */
+      function __suaraAkhir(){
+        if(__suaraSelesaiFlag) return;
+        __suaraBersihMeter();
+        if(!__suaraPanel) return;
+        __suaraSetStatus(false, "Suara berhenti — tekan Berhenti untuk menutup");
+      }
+      /* Rangkum event onresult (dengan interimResults): gabung semua
+         transcript sejauh ini (untuk tampil live) + gabung transcript final
+         saja (untuk parse — satu kalimat, sama seperti sebelum interim). */
+      function __suaraRangkumHasil(ev){
+        var semua="", akhir="", adaFinal=false;
+        try{
+          var res=(ev&&ev.results)||[];
+          for(var i=0;i<res.length;i++){
+            var t=(res[i]&&res[i][0]&&res[i][0].transcript)||"";
+            if(t) semua+=(semua?" ":"")+t;
+            if(res[i]&&res[i].isFinal){ adaFinal=true; if(t) akhir+=(akhir?" ":"")+t; }
+          }
+        }catch(e){}
+        return {teks:semua, final:adaFinal, finalTeks:akhir};
       }
       function __suaraSetLevel(rms){
         if(!__suaraPanel) return;
@@ -2464,12 +2520,14 @@
         p.innerHTML='<div class="suara-atas"><span class="suara-ikon" aria-hidden="true">'
           +'<svg class="suara-mic-isi" viewBox="0 0 24 24" width="40" height="40"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V23h2v-3.06A9 9 0 0 0 21 11h-2z"/></svg>'
           +'<svg class="suara-mic-garis" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg>'
-          +'</span><span class="suara-status" id="voiceStatusText">Suara berhenti — bicara lagi, atau tekan Berhenti</span></div>'
+          +'</span><span class="suara-status" id="voiceStatusText">Mendengarkan… silakan bicara</span></div>'
+          +'<div class="suara-teks" id="voiceTeks" style="display:none"></div>'
           +'<div class="suara-meter" aria-hidden="true"><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span><span class="suara-seg"></span></div>'
           +'<div class="suara-bawah"><span id="voiceLevelText">Suara: sangat lemah</span><button type="button" class="btn ghost suara-berhenti" id="voiceStopBtn">Berhenti</button></div>';
         document.body.appendChild(p);
         var b=p.querySelector("#voiceStopBtn");
         if(b) b.addEventListener("click", function(){
+          if(__suaraSelesaiFlag){ __suaraTutup(); return; }
           if(__suaraR){ try{ __suaraR.stop(); }catch(e){} }
           __suaraTutup();
         });
@@ -2479,34 +2537,43 @@
       function __suaraTutup(){
         __suaraBersihMeter();
         __suaraR=null;
+        __suaraSelesaiFlag=false;
         if(__suaraPanel) __suaraPanel.style.display="none";
       }
       function __suaraBuka(r, resEl){
         var p=__suaraBangunPanel();
         __suaraBersihMeter();
+        __suaraSelesaiFlag=false;
         if(resEl && resEl.parentNode) resEl.parentNode.insertBefore(p, resEl);
         var m=p.querySelector(".suara-meter"); if(m) m.style.display="";
+        var tx=p.querySelector("#voiceTeks"); if(tx){ tx.textContent=""; tx.style.display="none"; }
+        var b=p.querySelector("#voiceStopBtn"); if(b) b.textContent="Berhenti";
         __suaraSetLevel(0);
-        __suaraSetStatus(false);
+        __suaraSetStatus(false, "Mendengarkan… silakan bicara");
         p.style.display="block";
         __suaraR=r||null;
         __suaraMulaiMeter();
       }
-      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter};
+      window.__panelSuara={buka:__suaraBuka, tutup:__suaraTutup, bicara:__suaraSetStatus, level:__suaraSetLevel, bersihMeter:__suaraBersihMeter, teks:__suaraTeks, selesai:__suaraSelesai, akhir:__suaraAkhir, rangkum:__suaraRangkumHasil, statusTeks:__suaraSetStatusTeks, sudahSelesai:function(){ return !!__suaraSelesaiFlag; }};
       $("btnVoice").addEventListener("click",function(){
         const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
         const resEl=$("voiceResult");
         if(!SR){ popupRamah("Suara belum bisa dipakai","Input suara tidak didukung peramban ini.","Ketik keterangannya seperti biasa — catatan tetap bisa disimpan. Suara umumnya jalan di peramban Chrome pada HP Android."); return; }
-        const r=new SR(); r.lang="id-ID";
+        const r=new SR(); r.lang="id-ID"; r.interimResults=true;
         if(window.__panelSuara) window.__panelSuara.buka(r, resEl);
         r.onspeechstart=function(){ if(window.__panelSuara) window.__panelSuara.bicara(true); };
-        r.onspeechend=function(){ if(window.__panelSuara) window.__panelSuara.bicara(false); };
-        r.onend=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); };
-        r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); };
+        r.onspeechend=function(){ if(window.__panelSuara) window.__panelSuara.bicara(false, "Suara berhenti — menulis hasil…"); };
+        r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
+        r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
         r.onresult=function(ev){
-          const teks=ev.results[0][0].transcript;
+          var PS=window.__panelSuara;
+          if(PS && PS.sudahSelesai()) return;
+          var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
+          if(h.teks && PS) PS.teks(h.final ? (h.finalTeks||h.teks) : h.teks, h.final);
+          if(!h.final) return;
+          const teks=h.finalTeks||h.teks;
           const p=parseUcapanTransaksi(teks);
-          if(!p.mentah){ popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
+          if(!p.mentah){ if(PS) PS.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); return; }
           if(p.keterangan) $("txKet").value=p.keterangan;
           let msg;
           if(p.jumlah!==null){
@@ -2521,6 +2588,7 @@
             resEl.textContent=msg; resEl.style.display="block";
             toast("Angka tidak terdengar — isi jumlahnya, lalu tekan Tambah.");
           }
+          if(PS) PS.selesai();
         };
         r.onerror=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
         r.start(); toast("Mendengarkan… ucapkan keterangan dan jumlahnya, contoh: penjualan lima puluh ribu");
@@ -6459,14 +6527,19 @@
           var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
           var resEl=gid("hiVoiceResult");
           if(!SR){ popupRamah("Suara belum bisa dipakai","Input suara tidak didukung peramban ini.","Ketik keterangannya seperti biasa — catatan tetap bisa disimpan. Suara umumnya jalan di peramban Chrome pada HP Android."); return; }
-          var r=new SR(); r.lang="id-ID";
+          var r=new SR(); r.lang="id-ID"; r.interimResults=true;
           if(window.__panelSuara) window.__panelSuara.buka(r, resEl);
           r.onspeechstart=function(){ if(window.__panelSuara) window.__panelSuara.bicara(true); };
-          r.onspeechend=function(){ if(window.__panelSuara) window.__panelSuara.bicara(false); };
-          r.onend=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); };
-          r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); };
+          r.onspeechend=function(){ if(window.__panelSuara) window.__panelSuara.bicara(false, "Suara berhenti — menulis hasil…"); };
+          r.onend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
+          r.onaudioend=function(){ if(window.__panelSuara) window.__panelSuara.akhir(); };
           r.onresult=function(ev){
-            var teks=ev.results[0][0].transcript;
+            var PS=window.__panelSuara;
+            if(PS && PS.sudahSelesai()) return;
+            var h=PS ? PS.rangkum(ev) : {teks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:""), final:true, finalTeks:(ev.results[0]&&ev.results[0][0]?ev.results[0][0].transcript:"")};
+            if(h.teks && PS) PS.teks(h.final ? (h.finalTeks||h.teks) : h.teks, h.final);
+            if(!h.final) return;
+            var teks=h.finalTeks||h.teks;
             var p=parseUcapanTransaksi(teks);
             var f=gid("hiForm"); if(!f) return;
             var ket=f.querySelector('[name="ket"]'), jml=f.querySelector('[name="jumlah"]');
@@ -6478,6 +6551,7 @@
               resEl.style.display="block";
             }
             toast("Keterangan dan jumlah terisi dari suara — periksa kembali angkanya");
+            if(PS) PS.selesai();
           };
           r.onerror=function(){ if(window.__panelSuara) window.__panelSuara.tutup(); popupRamah("Suara tidak tertangkap","Ucapannya tidak terdengar jelas barusan.","Coba lagi di tempat yang lebih tenang — dekatkan HP, lalu ucapkan keterangan dan jumlahnya."); };
           try{ r.start(); }catch(e){}
