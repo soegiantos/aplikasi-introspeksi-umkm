@@ -114,6 +114,34 @@
       body.masuk-kembali #hiLangkahNote,
       body.masuk-kembali #proaktifIntro{display:none}
 
+      /* ---------- Layar per menu (navigasi berbasis layar) ----------
+         Satu layar penuh terlihat dalam satu waktu: layar Hari Ini memuat
+         hero + sapaan + Hari Ini + Perlu Perhatian; layar lain memuat satu
+         bagian saja. Aturan ini HANYA MENYEMBUNYIKAN layar yang tidak aktif
+         (!important supaya menang atas display inline) dan tidak pernah
+         memaksa apa pun tampil — visibilitas di dalam layar tetap diatur
+         logika masing-masing (lipatan formulir, kartu sapaan, dsb). Tanpa
+         atribut data-layar (mode portal berbagi, atau JS mati) halaman
+         tampil seperti sebelumnya: semua bagian terlihat. */
+      body[data-layar]:not([data-layar="hariini"]) header.hero,
+      body[data-layar]:not([data-layar="hariini"]) #sapaNudgeCard,
+      body[data-layar]:not([data-layar="hariini"]) #hariini,
+      body[data-layar]:not([data-layar="hariini"]) #proaktifWrap{display:none!important}
+      body[data-layar]:not([data-layar="data"]) #data{display:none!important}
+      body[data-layar]:not([data-layar="dashboard"]) #dashboard{display:none!important}
+      body[data-layar]:not([data-layar="valuasi"]) #valuasi{display:none!important}
+      body[data-layar]:not([data-layar="introspeksi"]) #introspeksi{display:none!important}
+      body[data-layar]:not([data-layar="keuangan"]) #keuangan{display:none!important}
+      body[data-layar]:not([data-layar="saran"]) #saran{display:none!important}
+      body[data-layar]:not([data-layar="kemasan"]) #kemasan{display:none!important}
+      body[data-layar]:not([data-layar="buku"]) #buku{display:none!important}
+      body[data-layar]:not([data-layar="cekdata"]) #cekdata{display:none!important}
+      body[data-layar]:not([data-layar="legalitas"]) #legalitas{display:none!important}
+      body[data-layar]:not([data-layar="pemasaran"]) #pemasaran{display:none!important}
+      body[data-layar]:not([data-layar="sop"]) #sop{display:none!important}
+      body[data-layar]:not([data-layar="portal"]) #portal{display:none!important}
+      .btn-kembali-layar{margin:0 0 10px}
+
       /* ---------- scores ---------- */
       .score-card .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
       .score-num{font-size:1.9rem;font-weight:800}
@@ -618,7 +646,7 @@
            Tanpa argumen ini perilakunya persis seperti sebelumnya. */
         var ab = document.getElementById("btnFriendlyPopupAction");
         if(ab){
-          if(aksi && aksi.label){ ab.textContent = aksi.label; ab.style.display = ""; ab.onclick = function(){ window.tutupPopupRamah(); if(aksi.href){ var el=document.getElementById(aksi.href); if(el){ try{ el.scrollIntoView(); }catch(e){} } } if(typeof aksi.fn==="function"){ try{ aksi.fn(); }catch(e){} } }; }
+          if(aksi && aksi.label){ ab.textContent = aksi.label; ab.style.display = ""; ab.onclick = function(){ window.tutupPopupRamah(); if(aksi.href){ if(typeof window.__fokusKeKolom==="function"){ try{ window.__fokusKeKolom(aksi.href); }catch(e){} } else { var el=document.getElementById(aksi.href); if(el){ try{ el.scrollIntoView(); }catch(e){} } } } if(typeof aksi.fn==="function"){ try{ aksi.fn(); }catch(e){} } }; }
           else { ab.style.display = "none"; ab.onclick = null; }
         }
         ov.classList.add("show");
@@ -756,6 +784,24 @@
         </div>
       </section>
 
+      <!-- Perlu Perhatian tinggal di layar Hari Ini (bukan di Dasbor lagi):
+           saran proaktif dari data usaha sendiri — diperiksa otomatis setiap
+           aplikasi dibuka dan setiap angka berubah. -->
+      <div id="proaktifWrap" style="margin-top:14px">
+        <div id="proaktifSummary"></div>
+        <div class="card pro-panel" id="proaktifPanel">
+          <div class="pro-head">
+            <div>
+              <h3>Perlu Perhatian</h3>
+              <p class="note" id="proaktifIntro" style="margin-top:4px">Saran proaktif dari data usaha Anda sendiri — diperiksa otomatis setiap aplikasi dibuka dan setiap angka berubah. AI Coach hanya menjelaskan; semua angka dihitung rumus aplikasi dari data Anda.</p>
+            </div>
+            <span class="pro-count ok" id="proaktifCount">Memeriksa…</span>
+          </div>
+          <div id="proaktifList"></div>
+          <div id="proaktifDue"></div>
+        </div>
+      </div>
+
       <!-- ============ 1. DATA USAHA ============ -->
       <section id="data">
         <div class="sec-head"><span class="sec-num">01</span><h2>Data usaha</h2></div>
@@ -795,7 +841,7 @@
                 <option value="Mas">Mas</option>
                 <option value="Mbak">Mbak</option>
                 <option value="Ibu">Ibu</option>
-                <option value="Ayah">Ayah</option>
+                <option value="Bapak">Bapak</option>
               </select>
             </label>
             <label class="f"><span>Provinsi</span><select id="inProvinsi"><option value="" selected disabled>Pilih provinsi…</option></select></label>
@@ -805,7 +851,7 @@
             <label class="f"><span>Omzet per bulan (Rp)</span><input type="number" id="inOmzet" placeholder="contoh: 45000000" min="0" step="100000" /></label>
             <label class="f"><span>Pertumbuhan omzet per tahun (%)</span><input type="number" id="inTumbuh" placeholder="contoh: 10" step="1" /><small>Perkiraan jujur dari tren penjualan Anda.</small></label>
 
-            <label class="f"><span>HPP / biaya bahan (% dari omzet)</span><input type="number" id="inHpp" placeholder="contoh: 42" min="0" max="95" step="1" /></label>
+            <label class="f"><span>HPP / biaya bahan (% dari omzet)</span><input type="number" id="inHpp" placeholder="contoh: 42" min="0" max="95" step="0.1" /></label>
             <label class="f"><span>Biaya operasional per bulan (Rp)</span><input type="number" id="inOpex" placeholder="contoh: 11000000" min="0" step="100000" /><small>Sewa, gaji karyawan, listrik, transport — di luar gaji pemilik.</small></label>
             <label class="f"><span>Gaji wajar pemilik per bulan (Rp)</span><input type="number" id="inGaji" placeholder="contoh: 5000000" min="0" step="100000" /><small>Upah yang pantas bila posisi Anda diganti orang lain.</small></label>
 
@@ -896,20 +942,6 @@
           <div class="card score-card"><div class="top"><h3>Kesehatan Keuangan (saja)</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><div class="explain-answer" id="explain-keuangan" role="status"></div><p class="note">Hanya aspek keuangan: margin, utang, dan pencatatan.</p></div>
           <div class="card score-card"><div class="top"><h3>Kematangan digital</h3><span class="score-num" id="scDig">—</span></div><div class="bar"><i id="scDigBar"></i></div><p class="note" id="scDigNote">—</p></div>
           <div class="card score-card"><div class="top"><h3>Kesiapan investasi</h3><span class="score-num" id="scInv">—</span></div><div class="bar"><i id="scInvBar"></i></div><p class="note" id="scInvNote">—</p><button class="btn-explain" type="button" data-explain="investasi">Jelaskan ini</button><div class="explain-answer" id="explain-investasi" role="status"></div></div>
-        </div>
-        <div id="proaktifWrap" style="margin-top:14px">
-          <div id="proaktifSummary"></div>
-          <div class="card pro-panel" id="proaktifPanel">
-            <div class="pro-head">
-              <div>
-                <h3>Perlu Perhatian</h3>
-                <p class="note" id="proaktifIntro" style="margin-top:4px">Saran proaktif dari data usaha Anda sendiri — diperiksa otomatis setiap aplikasi dibuka dan setiap angka berubah. AI Coach hanya menjelaskan; semua angka dihitung rumus aplikasi dari data Anda.</p>
-              </div>
-              <span class="pro-count ok" id="proaktifCount">Memeriksa…</span>
-            </div>
-            <div id="proaktifList"></div>
-            <div id="proaktifDue"></div>
-          </div>
         </div>
         <div class="grid-2" style="margin-top:14px">
           <div class="card score-card"><div class="top"><h3>Skor Konsistensi Data</h3><span class="score-num" id="scCons">0</span></div><div class="bar"><i id="scConsBar"></i></div><p class="note" id="scConsNote">Isi cek 9 sumber data lokal di Modul Cek Data di bawah — skor membandingkan klaim Anda dengan jejak usaha yang bisa diverifikasi pihak lain.</p><button class="btn-explain" type="button" data-explain="konsistensi">Jelaskan ini</button><div class="explain-answer" id="explain-konsistensi" role="status"></div></div>
@@ -1443,7 +1475,7 @@
               <option value="Mas">Mas</option>
               <option value="Mbak">Mbak</option>
               <option value="Ibu">Ibu</option>
-              <option value="Ayah">Ayah</option>
+              <option value="Bapak">Bapak</option>
             </select>
           </label>
           <label class="f" style="margin-top:12px"><span>Provinsi</span><select id="wizProvinsi"><option value="" selected disabled>Pilih provinsi…</option></select></label>
@@ -2363,6 +2395,187 @@
     </script>
 
     <script>
+      /* ================= NAVIGASI BERBASIS LAYAR =================
+         Satu layar penuh terlihat dalam satu waktu — bukan satu halaman
+         panjang yang digulir. Layar Hari Ini memuat hero + sapaan + Hari
+         Ini + Perlu Perhatian; layar lain memuat satu bagian saja.
+         Aturan tampil diatur CSS (body[data-layar] hanya MENYEMBUNYIKAN
+         layar yang tidak aktif); skrip ini yang memilih layarnya. Tanpa
+         data-layar (mode portal berbagi, hash pemulihan kata sandi, atau
+         JS mati) halaman tampil seperti sebelumnya. */
+      (function(){
+        "use strict";
+        function gid(id){ return document.getElementById(id); }
+        /* Semua layar: satu layar per bagian. "hariini" istimewa karena
+           memuat hero + sapaan + #hariini + #proaktifWrap. "langganan"
+           sengaja TIDAK masuk daftar (fitur langganan mati — saklar
+           LANGGANAN_AKTIF false; bila suatu hari dinyalakan, daftarkan
+           sebagai layar di sini). */
+        var LAYAR_DAFTAR=["hariini","data","dashboard","valuasi","introspeksi","keuangan","saran","kemasan","buku","cekdata","legalitas","pemasaran","sop","portal"];
+        /* Alias tautan dalam yang bukan nama bagian (mis. #coach untuk
+           AI Coach, #ekonomi untuk Ekonomi & Investasi): dibuka layarnya
+           yang sesuai, hash lalu menjadi nama layar yang baku. */
+        var LAYAR_ALIAS={coach:"saran", ekonomi:"keuangan", teknologi:"saran", legal:"legalitas", orang:"sop"};
+        function layarDariNama(nama){
+          if(!nama) return null;
+          if(LAYAR_DAFTAR.indexOf(nama)>=0) return nama;
+          if(LAYAR_ALIAS[nama]) return LAYAR_ALIAS[nama];
+          return null;
+        }
+        var layarAktif="hariini";
+        function modePortalBerbagi(){
+          try{ if(window.__bagikanMode) return true; }catch(e){}
+          try{ return !!new URLSearchParams(window.location.search).get("bagikan"); }catch(e){ return false; }
+        }
+        function hashAdalahPemulihan(){
+          try{
+            var h=String(window.location.hash||"");
+            return h.indexOf("type=recovery")>=0 || h.indexOf("access_token")>=0 || h.indexOf("error_code")>=0 || h.indexOf("error=")>=0;
+          }catch(e){ return false; }
+        }
+        function layarDariHash(){
+          try{
+            var h=String(window.location.hash||"").replace(/^#/,"");
+            return layarDariNama(h);
+          }catch(e){}
+          return null;
+        }
+        function hashAdalahLayar(){
+          try{ var h=String(window.location.hash||"").replace(/^#/,""); return !!layarDariNama(h); }catch(e){ return false; }
+        }
+        function tampilkanLayar(nama, opsi){
+          opsi=opsi||{};
+          if(modePortalBerbagi()) return false;
+          if(LAYAR_DAFTAR.indexOf(nama)<0) return false;
+          layarAktif=nama;
+          try{ document.body.setAttribute("data-layar", nama); }catch(e){}
+          /* Perbarui hash (replaceState — tombol kembali tidak menumpuk
+             entri layar). Jangan sentuh hash bila hash saat ini bukan
+             hash layar (mis. hash pemulihan kata sandi #type=recovery —
+             isinya token, bukan layar). */
+          if(opsi.hash!==false){
+            var hSaatIni="";
+            try{ hSaatIni=String(window.location.hash||""); }catch(e){}
+            if(hSaatIni==="" || hashAdalahLayar()){
+              try{
+                var h=(nama==="hariini")?"":"#"+nama;
+                window.history.replaceState(null,"",window.location.pathname+window.location.search+h);
+              }catch(e){}
+            }
+          }
+          try{
+            document.querySelectorAll(".bottom-nav a").forEach(function(a){
+              a.classList.toggle("active", a.getAttribute("data-nav")===nama);
+            });
+          }catch(e){}
+          if(opsi.scroll!==false){ try{ window.scrollTo(0,0); }catch(e){} }
+          return true;
+        }
+        /* Layar yang memuat elemen tertentu (dipakai fokusKeKolom dan
+           tombol aksi supaya mengganti layar dulu sebelum menggulir —
+           menggulir ke bagian yang tersembunyi tidak ada gunanya). */
+        function layarUntukEl(el){
+          if(!el) return null;
+          var n=el;
+          while(n){
+            if(n.id){
+              if(n.id==="dataFormWrap") return "data";
+              if(n.id==="proaktifWrap") return "hariini";
+              if(n.id==="sapaNudgeCard") return "hariini";
+              if(LAYAR_DAFTAR.indexOf(n.id)>=0) return n.id;
+            }
+            if(n.classList && n.classList.contains && n.classList.contains("hero")) return "hariini";
+            n=n.parentElement;
+          }
+          return null;
+        }
+        function tampilkanLayarAwal(){
+          var h=layarDariHash();
+          return tampilkanLayar(h||"hariini", {scroll:false});
+        }
+        /* Tombol "← Kembali" di atas tiap layar selain Hari Ini. */
+        function pasangTombolKembali(){
+          LAYAR_DAFTAR.forEach(function(nama){
+            if(nama==="hariini") return;
+            var sec=gid(nama); if(!sec) return;
+            if(sec.querySelector(".btn-kembali-layar")) return;
+            var b=document.createElement("button");
+            b.type="button";
+            b.className="btn ghost small btn-kembali-layar";
+            b.textContent="← Kembali";
+            b.setAttribute("aria-label","Kembali ke Hari Ini");
+            b.addEventListener("click", function(){ tampilkanLayar("hariini"); });
+            sec.insertBefore(b, sec.firstChild);
+          });
+        }
+        /* Semua tautan dalam halaman yang menunjuk ke sebuah layar
+           (nav bawah, nav atas, kartu modul, bilah valuasi HP) membuka
+           layar itu — bukan menggulir halaman panjang. Tautan yang
+           sudah dicegat handler lain (wizard, href="#") dan tautan
+           bukan layar (#langganan — fitur mati) dibiarkan apa adanya. */
+        document.addEventListener("click", function(ev){
+          if(!ev || ev.defaultPrevented) return;
+          var t=ev.target;
+          var a=(t && t.closest) ? t.closest('a[href^="#"]') : null;
+          if(!a) return;
+          var frag=String(a.getAttribute("href")||"").replace(/^#/,"");
+          if(!frag) return;
+          var layarTujuan=layarDariNama(frag);
+          if(!layarTujuan) return;
+          if(modePortalBerbagi()) return;
+          ev.preventDefault();
+          tampilkanLayar(layarTujuan);
+        });
+        window.addEventListener("hashchange", function(){
+          var h=layarDariHash();
+          if(h && h!==layarAktif) tampilkanLayar(h, {hash:false});
+        });
+        /* Audit ketinggian layar (tanpa tata letak sungguhan di jsdom):
+           hitung blok isi per layar — anak langsung tiap unit + kartu,
+           grid formulir, tabel, dan daftar di dalamnya — sebagai
+           perkiraan kasar tinggi layar. Dipakai harness + laporan,
+           bukan fitur pengguna. */
+        function auditLayar(){
+          var hasil={};
+          LAYAR_DAFTAR.forEach(function(nama){
+            var unit=[];
+            if(nama==="hariini"){
+              var hero=document.querySelector("header.hero"); if(hero) unit.push(hero);
+              ["sapaNudgeCard","hariini","proaktifWrap"].forEach(function(id){ var e=gid(id); if(e) unit.push(e); });
+            } else {
+              var s=gid(nama); if(s) unit.push(s);
+            }
+            var anak=0, blok=0, baris=0, input=0;
+            unit.forEach(function(u){
+              try{ anak+=u.children.length; }catch(e){}
+              try{ blok+=u.querySelectorAll(".card,.form-grid,table,.coach-box,.plan").length; }catch(e){}
+              try{ baris+=u.querySelectorAll(".check-row,.pro-item,.q-row").length; }catch(e){}
+              try{ input+=u.querySelectorAll("input,select,textarea").length; }catch(e){}
+            });
+            hasil[nama]={anak:anak, blok:blok, baris:baris, input:input};
+          });
+          return hasil;
+        }
+        window.__tampilkanLayar=tampilkanLayar;
+        window.__layarUntukEl=layarUntukEl;
+        window.__tampilkanLayarAwal=tampilkanLayarAwal;
+        window.__layarAktif=function(){ return layarAktif; };
+        window.__layarDaftar=LAYAR_DAFTAR.slice();
+        window.__layarAudit=auditLayar;
+        /* Muat awal: tautan dalam (#data, #saran, ...) membuka layarnya;
+           tanpa hash (atau hash bukan layar) buka Hari Ini. Mode portal
+           berbagi dan hash pemulihan kata sandi tidak disentuh sama
+           sekali — tidak ada data-layar, tidak ada perubahan hash. */
+        try{
+          pasangTombolKembali();
+          if(!modePortalBerbagi() && !hashAdalahPemulihan()){
+            tampilkanLayar(layarDariHash()||"hariini", {scroll:false});
+          }
+        }catch(e){}
+      })();
+    </script>
+
+    <script>
       /* ================= MULTI-USER: MASUK AKUN + SINKRONISASI CLOUD ================= */
       /* ---------- LANGGANAN (Pro) — SAKLAR UTAMA. false = fitur MATI total:
          tidak ada modul/tombol langganan, tidak ada kuota AI, tidak ada
@@ -2908,6 +3121,15 @@
             formDibukaManual=true;
             if(typeof aturTampilanFormulir==="function"){ try{ aturTampilanFormulir(); }catch(e){} }
           }
+          /* Layar: bila kolom target berada di layar lain (mis. stok di
+             layar Buku, HPP di layar Data), buka dulu layar itu — menggulir
+             ke bagian yang tersembunyi tidak ada gunanya. */
+          if(typeof window.__layarUntukEl==="function" && typeof window.__tampilkanLayar==="function"){
+            try{
+              var layarTujuan=window.__layarUntukEl(el);
+              if(layarTujuan) window.__tampilkanLayar(layarTujuan, {scroll:false});
+            }catch(e){}
+          }
           /* Gulir + fokus langsung (sinkron): mengubah display lalu memanggil
              scrollIntoView memaksa peramban menata ulang dulu, jadi posisi
              kolom yang baru dibuka sudah benar tanpa perlu jeda. */
@@ -2984,6 +3206,7 @@
           };
         }
         window.__collectSnapshot=collectSnapshot;
+        window.__applySnapshot=applySnapshot; /* seam uji: pemulihan data tersimpan */
         window.__gabungkanSnapshot=gabungkanSnapshot;
         window.__cloudAdaDataUsaha=cloudAdaDataUsaha;
         function refreshSegs(containerId, vals){
@@ -3059,7 +3282,7 @@
           loading=true;
           if(snap.lokasi){ window.__lokasiUsaha=snap.lokasi; } else if(snap.inputs && snap.inputs.gpsDiambilPada){ /* lokasi lama tanpa objek: abaikan */ }
           renderLokasi();
-          if(snap.inputs){ Object.keys(snap.inputs).forEach(function(id){ var el=gid(id); if(el && el.type!=="file"){ try{ el.value=snap.inputs[id]; }catch(e){} } }); }
+          if(snap.inputs){ Object.keys(snap.inputs).forEach(function(id){ var el=gid(id); if(el && el.type!=="file"){ try{ var val=snap.inputs[id]; if((id==="inPanggilan"||id==="wizPanggilan")&&val==="Ayah") val="Bapak"; /* nilai lama dibaca sebagai Bapak */ el.value=val; }catch(e){} } }); }
           if(window.__applyWilayahFromInputs){ try{ window.__applyWilayahFromInputs(snap.inputs||{}); }catch(e){} }
           if(snap.proaktif){ if(snap.proaktif.last_seen) proaktifState.last_seen=snap.proaktif.last_seen; if(snap.proaktif.lastConsCheck) proaktifState.lastConsCheck=snap.proaktif.lastConsCheck; }
           if(snap.answers) Object.assign(answers, snap.answers);
@@ -3231,8 +3454,11 @@
           clearPendingConfirm();
           var pcp=gid("pendingConfirmPanel"); if(pcp) pcp.style.display="none";
           gid("authGate").style.display="none";
-          /* Halaman awal adalah Hari Ini, bukan dashboard. */
-          if(window.__keHariIni){ try{ window.__keHariIni(); }catch(e){} }
+          /* Halaman awal adalah Hari Ini, bukan dashboard — kecuali bila
+             aplikasi dibuka lewat tautan dalam (#data, #saran, ...) yang
+             membuka layarnya sendiri. */
+          if(window.__tampilkanLayarAwal){ try{ window.__tampilkanLayarAwal(); }catch(e){} }
+          else if(window.__keHariIni){ try{ window.__keHariIni(); }catch(e){} }
           var gb=gid("guestBanner"); if(gb) gb.classList.remove("show");
           var gr=gid("btnGuestRegister"); if(gr) gr.style.display="none";
           gid("btnLogout").textContent="Keluar";
@@ -3646,9 +3872,11 @@
           if(window.__bagikanMode) return; // mode portal berbagi: jangan buka sapaan/wizard
           if(recoveryMode) return; // dibuka dari tautan atur ulang: layar kata sandi baru / kedaluwarsa yang tampil, bukan sapaan/wizard
           var sudahPunyaUsaha=enterGuest();
-          /* Halaman awal adalah Hari Ini, bukan dashboard — gulir ke sana saat
-             masuk, sebelum sapaan/wizard atau panel konfirmasi tampil. */
-          if(window.__keHariIni){ try{ window.__keHariIni(); }catch(e){} }
+          /* Halaman awal adalah Hari Ini, bukan dashboard — kecuali bila
+             aplikasi dibuka lewat tautan dalam (#data, #saran, ...) yang
+             membuka layarnya sendiri. */
+          if(window.__tampilkanLayarAwal){ try{ window.__tampilkanLayarAwal(); }catch(e){} }
+          else if(window.__keHariIni){ try{ window.__keHariIni(); }catch(e){} }
           /* Pendaftaran yang masih menunggu konfirmasi: tampilkan panel
              "Menunggu konfirmasi email" langsung saat pengguna kembali,
              sebelum sapaan/wizard atau dashboard. Cek ini harus sesudah
@@ -4121,7 +4349,7 @@
         function teksKotaDiskusi(u){
           return (u && [u.kota,u.provinsi].filter(Boolean).join(", ")) || "kota belum diisi";
         }
-        /* ---------- sebutan sapaan (Mas/Mbak/Ibu/Ayah) ----------
+        /* ---------- sebutan sapaan (Mas/Mbak/Ibu/Bapak) ----------
            Satu-satunya sumber: kolom Panggilan di formulir Data Usaha
            (inPanggilan; wizard menulis ke sana lewat applyWizard). Bila belum
            dipilih, kembalikan "" — AI memakai sapaan netral dan TIDAK PERNAH
@@ -4129,7 +4357,8 @@
         function sapaanPengguna(){
           var el=gid("inPanggilan");
           var v=el?String(el.value||"").trim():"";
-          return (v==="Mas"||v==="Mbak"||v==="Ibu"||v==="Ayah") ? v : "";
+          if(v==="Ayah") v="Bapak"; /* nilai lama (sebelum "Bapak") dibaca sebagai Bapak */
+          return (v==="Mas"||v==="Mbak"||v==="Ibu"||v==="Bapak") ? v : "";
         }
         function kalimatSapaan(){
           var s=sapaanPengguna();
@@ -4138,7 +4367,7 @@
         window.__sapaanPengguna=sapaanPengguna;
         function diskusiCadangan(qid, label){
           var p=PERTANYAAN_DISKUSI[qid]; if(!p) return "";
-          /* "A" adalah sebutan sapaan bila dipilih (Mas/Mbak/Ibu/Ayah),
+          /* "A" adalah sebutan sapaan bila dipilih (Mas/Mbak/Ibu/Bapak),
              bila tidak dipilih tetap "Anda" — teks cadangan netral. */
           var sp=sapaanPengguna(); var A=sp||"Anda"; var awal=sp?sp+", ":"";
           if(qid===HPP_QID){
@@ -4268,6 +4497,10 @@
              (hanya saat topik baru disematkan — buka ulang topik yang sama
              tidak mengulang gelembung). */
           if(baru) postingGelembungDiskusi(qid);
+          /* Buka dulu layar Saran (AI Coach ada di sana), baru gulir ke
+             kotak percakapan — menggulir ke bagian yang tersembunyi
+             tidak ada gunanya. */
+          if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("saran", {scroll:false}); }catch(e){} }
           var box=gid("coachBox"); if(box){ try{ box.scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){} }
           var inp=gid("coachQ"); if(inp){ try{ inp.focus(); }catch(e){} }
         }
@@ -4560,12 +4793,12 @@
         function rp(n){ try{ return fmtShort(n||0); }catch(e){ return "Rp "+Math.round(n||0).toLocaleString("id-ID"); } }
         function numOf(id){ var el=gid(id); var v=el?parseFloat(el.value):0; return isNaN(v)?0:v; }
 
-        /* Sebutan sapaan (Mas/Mbak/Ibu/Ayah) — dibaca dari kolom Panggilan
+        /* Sebutan sapaan (Mas/Mbak/Ibu/Bapak) — dibaca dari kolom Panggilan
            (inPanggilan); bila belum dipilih, "" (netral, tidak pernah menebak).
            Dipakai di semua konteks/petunjuk AI di blok ini. */
         function sapaanPenggunaCoach(){
           try{ if(typeof window.__sapaanPengguna==="function") return window.__sapaanPengguna(); }catch(e){}
-          var el=gid("inPanggilan"); var v=el?String(el.value||"").trim():""; return (v==="Mas"||v==="Mbak"||v==="Ibu"||v==="Ayah")?v:"";
+          var el=gid("inPanggilan"); var v=el?String(el.value||"").trim():""; if(v==="Ayah") v="Bapak"; /* nilai lama dibaca sebagai Bapak */ return (v==="Mas"||v==="Mbak"||v==="Ibu"||v==="Bapak")?v:"";
         }
         function kalimatSapaanCoach(){
           var s=sapaanPenggunaCoach();
@@ -5312,6 +5545,9 @@
         gid("btnWizDetail").addEventListener("click", function(){
           closeWizard();
           try{ toast("Jawaban Anda sudah terisi — ini detail lengkap 9 modulnya."); }catch(e){}
+          /* "Lihat detail lengkap" membuka layar Data Usaha (bukan sekadar
+             menggulir — layar lain tersembunyi). */
+          if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("data"); return; }catch(e){} }
           var d=gid("data"); if(d) d.scrollIntoView({behavior:"smooth"});
         });
 
@@ -5423,6 +5659,10 @@
           try{ var tag=(el.tagName||"").toLowerCase(); if(tag==="input"||tag==="select"||tag==="textarea") el.focus(); }catch(e){}
         }
         function keHariIni(){
+          /* Layar awal aplikasi adalah Hari Ini — buka layarnya (bukan
+             sekadar menggulir), supaya berlaku juga saat pengguna sedang
+             berada di layar lain. */
+          if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("hariini"); return; }catch(e){} }
           var h=gid("hariini"); if(!h) return;
           try{ h.scrollIntoView(); }catch(e){}
         }
@@ -5521,7 +5761,7 @@
           newPassConfirm:{s:"Ketik ulang kata sandi baru yang sama persis seperti kolom di atasnya, supaya tidak ada salah ketik.",e:"Isinya harus sama persis dengan kolom Kata sandi baru, termasuk huruf besar dan kecilnya.",h:"Bila muncul pesan tidak sama, periksa lagi kedua kolom huruf demi huruf, lalu ketuk Simpan kata sandi baru lagi."},
           inNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan.",e:"Dapur Bu Sari.",h:"Cukup nama yang dikenal pelanggan."},
           inSektor:{s:"Bidang usaha utama Anda. Pilihan ini menentukan saran kemasan, cara hitung, dan angka pembanding yang dipakai aplikasi.",e:"Warung makan memilih Kuliner, toko kelontong memilih Retail, laundry memilih Jasa.",h:"Pilih yang paling dekat dengan kegiatan yang menghasilkan uang paling besar."},
-          inPanggilan:{s:"Sebutan ramah yang dipakai AI Coach saat menyapa dan memandu Anda (Mas, Mbak, Ibu, atau Ayah).",e:"Pilih Ibu bila Anda ingin disapa Ibu, atau Mas bila Anda ingin disapa Mas.",h:"Pilih yang paling nyaman untuk Anda. Boleh dikosongkan — AI akan menyapa secara netral tanpa sebutan."},
+          inPanggilan:{s:"Sebutan ramah yang dipakai AI Coach saat menyapa dan memandu Anda (Mas, Mbak, Ibu, atau Bapak).",e:"Pilih Ibu bila Anda ingin disapa Ibu, atau Mas bila Anda ingin disapa Mas.",h:"Pilih yang paling nyaman untuk Anda. Boleh dikosongkan — AI akan menyapa secara netral tanpa sebutan."},
           inProvinsi:{s:"Provinsi tempat usaha Anda berjalan saat ini.",e:"Usaha di Surabaya memilih Jawa Timur.",h:"Ketuk daftarnya, lalu pilih satu provinsi. Setelah itu kolom kota/kabupaten di sebelahnya terisi daftar dari provinsi itu."},
           inKota:{s:"Kota atau kabupaten tempat usaha Anda berjalan.",e:"Kota Surabaya, Kabupaten Sidoarjo.",h:"Pilih provinsi dulu — daftar di kolom ini hanya berisi kota/kabupaten dari provinsi tersebut."},
           wizProvinsi:{s:"Provinsi tempat usaha Anda berjalan saat ini.",e:"Usaha di Surabaya memilih Jawa Timur.",h:"Pilih satu provinsi, lalu lanjut memilih kota/kabupatennya."},
@@ -5590,7 +5830,7 @@
           sopTujuan:{s:"Hasil akhir yang diharapkan bila langkah-langkah ini dijalankan dengan benar.",e:"Warung siap jualan pukul 06.00 dengan rasa dan tampilan yang sama setiap hari.",h:"Tulis dalam satu kalimat yang bisa diperiksa benar atau salahnya."},
           wizNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan.",e:"Dapur Bu Sari.",h:"Cukup nama yang dikenal pelanggan."},
           wizSektor:{s:"Bidang usaha utama Anda. Pilihan ini menentukan saran dan angka pembanding untuk usaha Anda.",e:"Warung makan memilih Kuliner; laundry memilih Jasa.",h:"Pilih yang paling dekat dengan penghasilan utama Anda."},
-          wizPanggilan:{s:"Sebutan ramah yang dipakai AI Coach saat menyapa dan memandu Anda (Mas, Mbak, Ibu, atau Ayah).",e:"Pilih Ibu bila Anda ingin disapa Ibu.",h:"Pilih yang paling nyaman untuk Anda. Boleh dilewati — AI akan menyapa secara netral tanpa sebutan."},
+          wizPanggilan:{s:"Sebutan ramah yang dipakai AI Coach saat menyapa dan memandu Anda (Mas, Mbak, Ibu, atau Bapak).",e:"Pilih Ibu bila Anda ingin disapa Ibu.",h:"Pilih yang paling nyaman untuk Anda. Boleh dilewati — AI akan menyapa secara netral tanpa sebutan."},
           cekUrl1:{s:"Tautan halaman publik usaha Anda di Google Maps / Profil Bisnis Google. Aplikasi meminta server membaca halaman publik itu dan menampilkan rating serta jumlah ulasan yang terbaca untuk Anda bandingkan.",e:"Tautan dari tombol Bagikan di Google Maps untuk tempat usaha Anda.",h:"Buka Google Maps, cari usaha Anda, ketuk Bagikan, salin tautannya, lalu tempel di sini dan ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda."},
           cekUrl2:{s:"Tautan halaman publik toko Anda di Tokopedia. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Tokopedia.",h:"Salin tautan toko Tokopedia Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
           cekUrl3:{s:"Tautan halaman publik toko Anda di Shopee. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Shopee.",h:"Salin tautan toko Shopee Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
