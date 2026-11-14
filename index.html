@@ -846,9 +846,9 @@
         <p class="sec-sub"><span id="hiSalam">Selamat pagi</span> · <span id="hiTanggal">—</span></p>
         <div class="card">
           <div class="stat-row" style="margin-top:2px">
-            <div class="stat"><div class="k">Uang masuk hari ini</div><div class="v" id="hiIn">Rp 0</div></div>
-            <div class="stat"><div class="k">Uang keluar hari ini</div><div class="v" id="hiOut">Rp 0</div></div>
-            <div class="stat"><div class="k">Saldo kas</div><div class="v" id="hiSaldo">Rp 0</div></div>
+            <div class="stat"><div class="k">Uang masuk hari ini</div><div class="v" id="hiIn">Rp 0</div><button class="btn-explain kompak" type="button" data-explain="hi-masuk">Jelaskan ini</button><div class="explain-answer" id="explain-hi-masuk" role="status"></div></div>
+            <div class="stat"><div class="k">Uang keluar hari ini</div><div class="v" id="hiOut">Rp 0</div><button class="btn-explain kompak" type="button" data-explain="hi-keluar">Jelaskan ini</button><div class="explain-answer" id="explain-hi-keluar" role="status"></div></div>
+            <div class="stat"><div class="k">Saldo kas</div><div class="v" id="hiSaldo">Rp 0</div><button class="btn-explain kompak" type="button" data-explain="hi-saldo">Jelaskan ini</button><div class="explain-answer" id="explain-hi-saldo" role="status"></div></div>
           </div>
           <p class="note" id="hiSaldoNote" style="margin-top:10px">Saldo kas dihitung dari semua catatan Anda — total yang masuk dikurangi total yang keluar.</p>
         </div>
@@ -6285,6 +6285,48 @@
             valDcf=Math.max(0,valDcf);
             return {valuasi_tengah:Math.round(s.weighted||0), valuasi_rendah:Math.round(s.valLow||0), valuasi_tinggi:Math.round(s.valHigh||0), laba_pemilik_tahunan_sde:sdeThn, multiple_valuasi:mult, multiple_dasar_sektor:multDasar, penyesuaian_multiple:adj, nilai_aset_bersih:Math.round(s.asetBersih||0), nilai_metode_aset_bersih:Math.round(s.asetBersih||0), nilai_metode_sde:Math.round(valSde), nilai_metode_dcf_3_tahun:Math.round(valDcf), hpp_persen:Math.round(hppPct*1000)/10, ketergantungan_pemilik:terg, level_pembukuan:buku, laba_belum_positif:sdeThn<=0};
           }
+          if(kunci==="hi-masuk"||kunci==="hi-keluar"||kunci==="hi-saldo"){
+            /* Chip Hari Ini memakai data yang SAMA dengan renderHariIni:
+               daftar hari ini disaring txAdalahHariIni (yang sama dipakai
+               render), saldo memakai agregat txAgg yang sama dengan Laba
+               Rugi / Posisi Keuangan / Arus Kas / BEP. Tidak ada state
+               baru — semua dibaca dari txs yang hidup. */
+            var aggHi={inn:0,out:0,hppTx:0,opexTx:0,net:0};
+            try{ if(typeof txAgg==="function") aggHi=txAgg(); }catch(e){}
+            var hariIni=[];
+            try{
+              var cekHariIni=(typeof window.__txAdalahHariIni==="function")?window.__txAdalahHariIni:null;
+              (txs||[]).forEach(function(t){
+                var ya=false;
+                if(cekHariIni){ try{ ya=cekHariIni(t); }catch(e){ ya=false; } }
+                else { ya=String((t&&t.tgl)||"").trim()==="hari ini"; }
+                if(ya) hariIni.push(t);
+              });
+            }catch(e){}
+            function ringkasanHariIni(jenis){
+              var daftar=hariIni.filter(function(t){ return t.jenis===jenis; });
+              var total=0, terbesar=null, katHitung={};
+              daftar.forEach(function(t){
+                var j=+t.jumlah||0; total+=j;
+                if(!terbesar || j>terbesar.jumlah) terbesar={keterangan:(t.ket||""), jumlah:j};
+                var kk=t.kat||"Lainnya"; katHitung[kk]=(katHitung[kk]||0)+1;
+              });
+              var katTop=Object.keys(katHitung).sort(function(a,b){ return katHitung[b]-katHitung[a]; }).slice(0,3).map(function(kk){ return kk+" ("+katHitung[kk]+" transaksi)"; });
+              return {total:total, jumlah:daftar.length, terbesar:terbesar, kategori_teratas:katTop};
+            }
+            var ringMasuk=ringkasanHariIni("masuk"), ringKeluar=ringkasanHariIni("keluar");
+            if(kunci==="hi-masuk"){
+              return {uang_masuk_hari_ini:ringMasuk.total, jumlah_transaksi_masuk_hari_ini:ringMasuk.jumlah, transaksi_masuk_terbesar_hari_ini:ringMasuk.terbesar, kategori_teratas_masuk_hari_ini:ringMasuk.kategori_teratas, ada_catatan_hari_ini:hariIni.length>0};
+            }
+            if(kunci==="hi-keluar"){
+              return {uang_keluar_hari_ini:ringKeluar.total, jumlah_transaksi_keluar_hari_ini:ringKeluar.jumlah, transaksi_keluar_terbesar_hari_ini:ringKeluar.terbesar, kategori_teratas_keluar_hari_ini:ringKeluar.kategori_teratas, ada_catatan_hari_ini:hariIni.length>0};
+            }
+            /* hi-saldo: saldo kas = txAgg().net atas SEMUA catatan (bukan
+               hanya hari ini) — sama persis dengan angka "Kas dari catatan
+               transaksi" di Posisi Keuangan dan "Saldo kas dari catatan
+               transaksi saja" di Arus Kas. */
+            return {saldo_kas:aggHi.net, total_masuk_semua_catatan:aggHi.inn, total_keluar_semua_catatan:aggHi.out, jumlah_semua_transaksi:(txs||[]).length, uang_masuk_hari_ini:ringMasuk.total, uang_keluar_hari_ini:ringKeluar.total, jumlah_transaksi_hari_ini:hariIni.length, saldo_negatif:aggHi.net<0, ada_catatan:(txs||[]).length>0};
+          }
           return {};
         }
         window.__konteksPenjelasan=konteksPenjelasan;
@@ -6365,6 +6407,21 @@
             else { penahanV="tidak ada penahan tunggal yang dominan"; langkahV="tumbuhkan omzet yang tercatat dan buka kanal penjualan baru"; }
             return "Artinya: estimasi nilai wajar usaha Anda "+rp(k.valuasi_tengah||0)+" (rentang "+rp(k.valuasi_rendah||0)+" – "+rp(k.valuasi_tinggi||0)+"). Nilai tengah ini gabungan tiga metode: aset bersih "+rp(k.nilai_metode_aset_bersih||0)+", laba pemilik (SDE) "+rp(k.laba_pemilik_tahunan_sde||0)+"/tahun dikali pengali "+String(k.multiple_valuasi||0).replace(".",",")+" = "+rp(k.nilai_metode_sde||0)+", dan DCF 3 tahun "+rp(k.nilai_metode_dcf_3_tahun||0)+". Pengali dasar sektor "+String(k.multiple_dasar_sektor||0).replace(".",",")+" disesuaikan oleh: "+((k.penyesuaian_multiple||[]).length?k.penyesuaian_multiple.join("; "):"kondisi usaha yang standar")+". Yang paling menahan nilai: "+penahanV+". Langkah konkret berikutnya: "+langkahV+". Ini estimasi untuk bahan diskusi awal — bukan penilaian resmi.";
           }
+          if(kunci==="hi-masuk"){
+            if((k.jumlah_transaksi_masuk_hari_ini||0)===0) return "Belum ada catatan hari ini — uang masuk hari ini masih Rp 0 karena belum ada pemasukan yang dicatat hari ini. Catat penjualan pertama Anda lewat tombol Uang masuk di bawah ini, lalu angka ini berubah dan penjelasannya menyebut catatan Anda yang sebenarnya.";
+            var besarM=k.transaksi_masuk_terbesar_hari_ini;
+            return "Artinya: uang masuk hari ini "+rp(k.uang_masuk_hari_ini||0)+" dari "+(k.jumlah_transaksi_masuk_hari_ini||0)+" pemasukan yang dicatat hari ini. Angka ini hanya menghitung catatan hari ini — pemasukan kemarin atau minggu lalu tidak ikut di sini. Angka yang membentuknya: pemasukan terbesar hari ini "+(besarM?("\""+besarM.keterangan+"\" "+rp(besarM.jumlah||0)):"—")+((k.kategori_teratas_masuk_hari_ini&&k.kategori_teratas_masuk_hari_ini.length)?"; kategori terbanyak hari ini: "+k.kategori_teratas_masuk_hari_ini.join(", "):"")+". Yang paling memengaruhi angka ini: "+(besarM?("\""+besarM.keterangan+"\" ("+rp(besarM.jumlah||0)+")"):"satu-satunya pemasukan hari ini")+". Langkah konkret berikutnya: catat setiap penjualan hari ini begitu terjadi, supaya angka ini selalu sama dengan uang yang benar-benar masuk.";
+          }
+          if(kunci==="hi-keluar"){
+            if((k.jumlah_transaksi_keluar_hari_ini||0)===0) return "Belum ada catatan hari ini — uang keluar hari ini masih Rp 0 karena belum ada pengeluaran yang dicatat hari ini. Catat pengeluaran pertama Anda lewat tombol Uang keluar di bawah ini, lalu angka ini berubah dan penjelasannya menyebut catatan Anda yang sebenarnya.";
+            var besarK=k.transaksi_keluar_terbesar_hari_ini;
+            return "Artinya: uang keluar hari ini "+rp(k.uang_keluar_hari_ini||0)+" dari "+(k.jumlah_transaksi_keluar_hari_ini||0)+" pengeluaran yang dicatat hari ini. Angka ini hanya menghitung catatan hari ini — pengeluaran kemarin atau minggu lalu tidak ikut di sini. Angka yang membentuknya: pengeluaran terbesar hari ini "+(besarK?("\""+besarK.keterangan+"\" "+rp(besarK.jumlah||0)):"—")+((k.kategori_teratas_keluar_hari_ini&&k.kategori_teratas_keluar_hari_ini.length)?"; kategori terbanyak hari ini: "+k.kategori_teratas_keluar_hari_ini.join(", "):"")+". Yang paling memengaruhi angka ini: "+(besarK?("\""+besarK.keterangan+"\" ("+rp(besarK.jumlah||0)+")"):"satu-satunya pengeluaran hari ini")+". Langkah konkret berikutnya: periksa pengeluaran terbesar hari ini — bila itu bahan baku, pastikan harganya sudah masuk hitungan HPP, dan bila ada pengeluaran yang bisa ditunda, tunda sampai besok.";
+          }
+          if(kunci==="hi-saldo"){
+            if(!k.ada_catatan) return "Saldo kas belum bisa dihitung karena belum ada satu pun catatan transaksi. Saldo kas adalah total semua uang masuk yang pernah Anda catat dikurangi total semua uang keluar yang pernah Anda catat. Mulai dari satu catatan — penjualan atau pengeluaran hari ini — lalu saldo ini muncul.";
+            var neg=(k.saldo_kas||0)<0;
+            return "Artinya: saldo kas Anda "+rp(k.saldo_kas||0)+". Saldo ini BUKAN hanya hari ini — ini total semua catatan Anda sejak awal: total masuk "+rp(k.total_masuk_semua_catatan||0)+" dikurangi total keluar "+rp(k.total_keluar_semua_catatan||0)+" dari "+(k.jumlah_semua_transaksi||0)+" catatan. Perbedaan pentingnya: uang masuk hari ini ("+rp(k.uang_masuk_hari_ini||0)+") dan uang keluar hari ini ("+rp(k.uang_keluar_hari_ini||0)+") hanya menghitung catatan hari ini, sedangkan saldo kas menghitung semuanya. Angka yang sama dipakai Laba Rugi, Posisi Keuangan, Arus Kas, dan BEP & prediksi arus kas — jadi saldo ini konsisten dengan laporan keuangan Anda."+(neg?" Saldo negatif artinya total uang keluar yang tercatat lebih besar dari total uang masuk yang tercatat — ini bukan utang, melainkan catatan kas Anda defisit; periksa apakah ada pemasukan yang belum dicatat, atau pengeluaran besar yang perlu ditekan.":"")+" Langkah konkret berikutnya: "+(neg?"catat semua pemasukan yang belum tercatat dan tahan pengeluaran yang tidak mendesak sampai saldo kembali positif.":"catat setiap transaksi baru setiap hari, supaya saldo ini selalu sama dengan uang kas usaha Anda yang sebenarnya.");
+          }
           return null;
         }
 
@@ -6379,7 +6436,10 @@
           }
           function templateKunci(kk){ try{ return templatePenjelasan(kk, konteksPenjelasan(kk)); }catch(e){ return null; } }
           var jt=null;
-          if(t.indexOf("konsistensi")>=0) jt=templateKunci("konsistensi");
+          if(t.indexOf("saldo kas")>=0) jt=templateKunci("hi-saldo");
+          else if(t.indexOf("uang masuk hari ini")>=0) jt=templateKunci("hi-masuk");
+          else if(t.indexOf("uang keluar hari ini")>=0) jt=templateKunci("hi-keluar");
+          else if(t.indexOf("konsistensi")>=0) jt=templateKunci("konsistensi");
           else if(t.indexOf("investasi")>=0) jt=templateKunci("investasi");
           else if(t.indexOf("naik level")>=0) jt=templateKunci("naiklevel");
           else if(t.indexOf("digital")>=0) jt=templateKunci("digital");
@@ -6968,8 +7028,8 @@
         if(btnCoach) btnCoach.addEventListener("click", coachAsk);
         if(gid("coachQ")) gid("coachQ").addEventListener("keydown", function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); coachAsk(); } });
 
-        /* ---------- Tombol Jelaskan ini di tiap angka: hero + dasbor ----------
-           10 kunci penjelasan, 12 penempatan tombol. Satu angka yang tampil
+        /* ---------- Tombol Jelaskan ini di tiap angka: hero + dasbor + chip Hari Ini ----------
+           13 kunci penjelasan, 15 penempatan tombol. Satu angka yang tampil
            dua kali (Level UMKM, Siap Investasi) memakai penjelasan yang
            sama, tetapi tiap penempatan punya panel sendiri (target per
            tombol) supaya panel selalu satu layar dengan tombolnya. */
@@ -6983,12 +7043,15 @@
           keuangan:"Jelaskan Skor Kesehatan Keuangan saya secara rinci. Pakai hanya angka yang ada di konteks: margin laba bersih, HPP, utang dan aset beserta rasionya, skor pencatatan keuangan, pembukuan, dan laba pemilik bulanan. Jawaban tersusun: pertama apa arti skor ini; kedua angka mana yang paling menurunkannya beserta angkanya; terakhir satu langkah konkret yang paling berdampak. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
           konsistensi:"Jelaskan Skor Konsistensi Data saya secara rinci. Pakai hanya data yang ada di konteks: skor konsistensi, dan status kesembilan sumber (sesuai, beda, atau belum dicek) beserta namanya. Jawaban tersusun: pertama apa arti skor ini; kedua sumber mana yang sudah sesuai dan mana yang beda; ketiga sumber mana yang paling mendesak dicek atau diperbaiki; terakhir satu langkah konkret. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
           bep:"Jelaskan Titik Impas (BEP) dan prediksi arus kas usaha saya secara rinci. Pakai hanya angka yang ada di konteks: BEP bulanan, biaya tetap bulanan, margin kontribusi, HPP, omzet bulanan saat ini, laba bersih bulanan, pertumbuhan omzet, dan prediksi saldo 3 bulan. Jawaban tersusun: pertama apa arti BEP ini; kedua angka mana yang membentuk BEP; ketiga apakah omzet saat ini di atas atau di bawah BEP dan apa artinya; terakhir satu langkah konkret. Bila omzet belum diisi, katakan jujur bahwa BEP belum bisa dihitung dan minta isi omzet dulu. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
-          naiklevel:"Jelaskan kartu Naik Level usaha saya secara rinci. Pakai hanya data yang ada di konteks: level kematangan saat ini, level berikut, dan daftar langkah konkret yang tampil di kartu. Jawaban tersusun: pertama mengapa ini level berikut untuk usaha saya; kedua langkah konkret apa saja yang perlu dilakukan beserta urutannya; terakhir satu langkah yang paling berdampak untuk dikerjakan minggu ini. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru."
+          naiklevel:"Jelaskan kartu Naik Level usaha saya secara rinci. Pakai hanya data yang ada di konteks: level kematangan saat ini, level berikut, dan daftar langkah konkret yang tampil di kartu. Jawaban tersusun: pertama mengapa ini level berikut untuk usaha saya; kedua langkah konkret apa saja yang perlu dilakukan beserta urutannya; terakhir satu langkah yang paling berdampak untuk dikerjakan minggu ini. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          "hi-masuk":"Jelaskan Uang masuk hari ini saya secara rinci. Pakai hanya angka yang ada di konteks: total uang masuk hari ini, jumlah transaksi masuk hari ini, pemasukan terbesar hari ini beserta keterangannya, dan kategori terbanyak hari ini. Jawaban tersusun: pertama apa arti angka ini dan bahwa angka ini hanya menghitung catatan hari ini; kedua pemasukan mana yang paling besar dan berapa kontribusinya; ketiga kategori apa yang paling banyak hari ini; terakhir satu langkah konkret untuk mencatat pemasukan dengan rapi. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          "hi-keluar":"Jelaskan Uang keluar hari ini saya secara rinci. Pakai hanya angka yang ada di konteks: total uang keluar hari ini, jumlah transaksi keluar hari ini, pengeluaran terbesar hari ini beserta keterangannya, dan kategori terbanyak hari ini. Jawaban tersusun: pertama apa arti angka ini dan bahwa angka ini hanya menghitung catatan hari ini; kedua pengeluaran mana yang paling besar dan berapa kontribusinya; ketiga kategori apa yang paling banyak hari ini; terakhir satu langkah konkret untuk menekan pengeluaran yang tidak perlu. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
+          "hi-saldo":"Jelaskan Saldo kas saya secara rinci. Pakai hanya angka yang ada di konteks: saldo kas, total masuk semua catatan, total keluar semua catatan, jumlah semua transaksi, serta uang masuk dan uang keluar hari ini. Jawaban tersusun: pertama apa arti saldo kas dan tegaskan bahwa saldo ini menghitung SEMUA catatan sejak awal, bukan hanya hari ini; kedua bedakan dengan jelas antara uang masuk dan uang keluar hari ini (hanya hari ini) dengan saldo kas (semua catatan); ketiga apa yang paling memengaruhi saldo ini; terakhir satu langkah konkret. Bila saldo negatif, katakan jujur bahwa total uang keluar yang tercatat lebih besar dari total uang masuk yang tercatat dan itu bukan utang. Sebutkan bahwa angka yang sama dipakai Laba Rugi, Posisi Keuangan, Arus Kas, dan BEP. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru."
         };
         /* Panel "Jelaskan ini" di bawah skor ikut aturan lipatan penjelasan:
            satu yang terbuka, terlipat sendiri setelah 30 detik. */
-        var EXPLAIN_NAMA={level:"Level UMKM",kesehatan:"Skor Kesehatan Usaha",investasi:"Kesiapan Investasi",valuasi:"Estimasi Valuasi",kematangan:"Level Kematangan",digital:"Kematangan Digital",keuangan:"Kesehatan Keuangan",konsistensi:"Konsistensi Data",bep:"Titik Impas (BEP) & Prediksi Arus Kas",naiklevel:"Naik Level"};
-        var EXPLAIN_PANEL=[["level","explain-hero-level"],["level","explain-level"],["kesehatan","explain-hero-kesehatan"],["investasi","explain-hero-investasi"],["investasi","explain-investasi"],["valuasi","explain-hero-valuasi"],["kematangan","explain-kematangan"],["digital","explain-digital"],["keuangan","explain-keuangan"],["konsistensi","explain-konsistensi"],["bep","explain-bep"],["naiklevel","explain-naiklevel"]];
+        var EXPLAIN_NAMA={level:"Level UMKM",kesehatan:"Skor Kesehatan Usaha",investasi:"Kesiapan Investasi",valuasi:"Estimasi Valuasi",kematangan:"Level Kematangan",digital:"Kematangan Digital",keuangan:"Kesehatan Keuangan",konsistensi:"Konsistensi Data",bep:"Titik Impas (BEP) & Prediksi Arus Kas",naiklevel:"Naik Level","hi-masuk":"Uang Masuk Hari Ini","hi-keluar":"Uang Keluar Hari Ini","hi-saldo":"Saldo Kas"};
+        var EXPLAIN_PANEL=[["level","explain-hero-level"],["level","explain-level"],["kesehatan","explain-hero-kesehatan"],["investasi","explain-hero-investasi"],["investasi","explain-investasi"],["valuasi","explain-hero-valuasi"],["kematangan","explain-kematangan"],["digital","explain-digital"],["keuangan","explain-keuangan"],["konsistensi","explain-konsistensi"],["bep","explain-bep"],["naiklevel","explain-naiklevel"],["hi-masuk","explain-hi-masuk"],["hi-keluar","explain-hi-keluar"],["hi-saldo","explain-hi-saldo"]];
         EXPLAIN_PANEL.forEach(function(p){
           var t=gid(p[1]);
           if(t && window.__daftarPenjelasan) window.__daftarPenjelasan(t, "Penjelasan "+EXPLAIN_NAMA[p[0]]+" — ketuk untuk baca lagi");
