@@ -603,7 +603,7 @@
     <div class="sql-modal" id="sqlModal" role="dialog" aria-label="SQL pembuatan tabel cloud">
       <div class="sql-box">
         <h3>SQL tabel cloud — jalankan sekali</h3>
-        <p class="note" style="margin-top:6px">Buka <b>Dashboard cloud → SQL Editor</b> untuk proyek aplikasi ini, tempel seluruh SQL di bawah, lalu klik <b>Run</b>. Setelah itu masuk kembali ke aplikasi — data akan tersimpan di cloud. Setiap user hanya bisa mengakses data miliknya sendiri.</p>
+        <p class="note" style="margin-top:6px">Buka <b>Dasbor cloud → SQL Editor</b> untuk proyek aplikasi ini, tempel seluruh SQL di bawah, lalu klik <b>Run</b>. Setelah itu masuk kembali ke aplikasi — data akan tersimpan di cloud. Setiap pengguna hanya bisa mengakses data miliknya sendiri.</p>
         <textarea id="sqlText" readonly></textarea>
         <div class="actions"><button class="btn" id="btnCopySql" type="button">Salin SQL</button><button class="btn ghost" id="btnCloseSql" type="button">Tutup</button></div>
       </div>
@@ -615,7 +615,7 @@
         <nav class="main" aria-label="Navigasi utama">
           <a href="#" id="navWizardTop">Mulai</a>
           <a href="#data">Data Usaha</a>
-          <a href="#dashboard">Dashboard</a>
+          <a href="#dashboard">Dasbor</a>
           <a href="#valuasi">Valuasi</a>
           <a href="#introspeksi">Introspeksi</a>
           <a href="#keuangan">Keuangan</a>
@@ -664,7 +664,7 @@
           <a href="#pemasaran"><b>5 · Pemasaran &amp; Kanal</b><span>Kanal jual &amp; kalender konten</span></a>
           <a href="#saran"><b>6 · Teknologi</b><span>Tangga teknologi tepat guna</span></a>
           <a href="#legalitas"><b>7 · Legalitas</b><span>NIB, PIRT, halal, NPWP, izin edar</span></a>
-          <a href="#sop"><b>8 · Orang &amp; SOP</b><span>SOP builder &amp; pembagian peran</span></a>
+          <a href="#sop"><b>8 · Orang &amp; SOP</b><span>Pembuat SOP &amp; pembagian peran</span></a>
           <a href="#saran"><b>9 · AI Coach</b><span>Rencana 30–60–90 hari</span></a>
           <a href="#langganan" id="modLanggananLink" style="display:none"><b>10 · Langganan</b><span>Paket Pro &amp; pembayaran</span></a>
         </div>
@@ -721,7 +721,7 @@
       <!-- ============ 1. DATA USAHA ============ -->
       <section id="data">
         <div class="sec-head"><span class="sec-num">01</span><h2>Data usaha</h2></div>
-        <p class="sec-sub">Sepuluh isian inti. Semua hitungan di halaman ini berubah langsung mengikuti angka yang Anda masukkan. Untuk user terdaftar, perubahan tersimpan otomatis ke akun cloud Anda — hanya Anda yang bisa mengaksesnya. Untuk mode coba, data hanya tersimpan di HP ini dan hilang saat halaman ditutup. Status penyimpanan tampil di bagian atas halaman.</p>
+        <p class="sec-sub">Sepuluh isian inti. Semua hitungan di halaman ini berubah langsung mengikuti angka yang Anda masukkan. Untuk pengguna terdaftar, perubahan tersimpan otomatis ke akun cloud Anda — hanya Anda yang bisa mengaksesnya. Untuk mode coba, data hanya tersimpan di HP ini dan hilang saat halaman ditutup. Status penyimpanan tampil di bagian atas halaman.</p>
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
             <span class="demo-tag" style="margin:0">Formulir kosong — kolom berwarna keemasan siap diisi dengan data usaha Anda</span>
@@ -796,9 +796,9 @@
           <div class="switch-wrap">
             <span class="switch"><input type="checkbox" id="inKalibrasi" /><span class="track" aria-hidden="true"></span></span>
             <div>
-              <b>Kalibrasi multiple lokal</b>
+              <b>Kalibrasi pengali lokal</b>
               <label for="inKalibrasi" style="display:block;margin-top:2px">Izinkan data valuasi anonim saya dipakai untuk menghitung angka pembanding usaha sejenis di kota saya (tanpa nama, alamat, atau kontak)</label>
-              <p class="note" style="margin-top:6px">Saklar ini <b>mati secara bawaan</b>. Bila Anda menyalakannya, saat Anda menyimpan data aplikasi mengirim satu baris angka anonim (jenis usaha, provinsi, kota, omzet, laba pemilik, multiple, dan valuasi) ke cloud untuk dihitung ramai-ramai dengan usaha sejenis. Tidak ada nama usaha, email, nomor HP, alamat, atau lokasi GPS di dalamnya. Bila data usaha sejenis di kota Anda sudah terkumpul minimal 5, multiple valuasi Anda akan digabung dari angka pembanding lokal itu — jumlahnya selalu ditulis terbuka di penjelasan valuasi.</p>
+              <p class="note" style="margin-top:6px">Saklar ini <b>mati secara bawaan</b>. Bila Anda menyalakannya, saat Anda menyimpan data aplikasi mengirim satu baris angka anonim (jenis usaha, provinsi, kota, omzet, laba pemilik, pengali, dan valuasi) ke cloud untuk dihitung ramai-ramai dengan usaha sejenis. Tidak ada nama usaha, email, nomor HP, alamat, atau lokasi GPS di dalamnya. Bila data usaha sejenis di kota Anda sudah terkumpul minimal 5, pengali valuasi Anda akan digabung dari angka pembanding lokal itu — jumlahnya selalu ditulis terbuka di penjelasan valuasi.</p>
               <p class="note" id="kalibrasiStatus" style="margin-top:6px" role="status"></p>
             </div>
           </div>
@@ -807,7 +807,7 @@
 
       <!-- ============ 2. DASHBOARD ============ -->
       <section id="dashboard">
-        <div class="sec-head"><span class="sec-num">02</span><h2>Dashboard level UMKM</h2></div>
+        <div class="sec-head"><span class="sec-num">02</span><h2>Dasbor level UMKM</h2></div>
         <p class="sec-sub">Level skala mengikuti kriteria omzet PP No. 7 Tahun 2021. Level kematangan (0–4) menilai seberapa siap usaha Anda dikelola secara modern dan diajukan untuk kerjasama investasi.</p>
         <div class="grid-2">
           <div class="card">
@@ -863,7 +863,7 @@
       <!-- ============ 3. VALUASI ============ -->
       <section id="valuasi">
         <div class="sec-head"><span class="sec-num">03</span><h2>Valuasi usaha — tiga metode</h2></div>
-        <p class="sec-sub">Penilai profesional tidak memakai satu rumus. Hasil akhir adalah rentang nilai wajar dari gabungan metode aset bersih, multiple laba pemilik (SDE), dan arus kas terdiskon (DCF) sederhana 3 tahun.</p>
+        <p class="sec-sub">Penilai profesional tidak memakai satu rumus. Hasil akhir adalah rentang nilai wajar dari gabungan metode aset bersih, pengali laba pemilik (SDE), dan arus kas terdiskon (DCF) sederhana 3 tahun.</p>
         <div class="card">
           <div class="k" style="font-size:.82rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)">Rentang nilai wajar usaha Anda</div>
           <div class="val-big" id="valMid">—</div>
@@ -871,12 +871,12 @@
         </div>
         <div class="grid-3" style="margin-top:14px">
           <div class="card method"><h3>1 · Aset bersih</h3><div class="amt" id="mAset">—</div><p>Cocok untuk usaha padat aset. Nilai lantai: berapa yang tersisa bila semua aset dijual dan utang dilunasi hari ini.</p><div class="formula" id="mAsetF">Aset − Utang</div></div>
-          <div class="card method"><h3>2 · Multiple SDE</h3><div class="amt" id="mSde">—</div><p>Metode utama UMKM kecil: laba pemilik yang dinormalisasi dikali multiple sesuai sektor dan risiko usaha Anda.</p><div class="formula" id="mSdeF">SDE × multiple</div></div>
-          <div class="card method"><h3>3 · DCF sederhana</h3><div class="amt" id="mDcf">—</div><p>Proyeksi laba 3 tahun ke depan, didiskon 18% per tahun untuk mencerminkan risiko usaha kecil.</p><div class="formula" id="mDcfF">PV laba tahun 1–3</div></div>
+          <div class="card method"><h3>2 · Pengali SDE</h3><div class="amt" id="mSde">—</div><p>Metode utama UMKM kecil: laba pemilik yang dinormalisasi dikali pengali sesuai sektor dan risiko usaha Anda.</p><div class="formula" id="mSdeF">SDE × pengali</div></div>
+          <div class="card method"><h3>3 · DCF sederhana</h3><div class="amt" id="mDcf">—</div><p>Proyeksi laba 3 tahun ke depan, didiskon 18% per tahun untuk mencerminkan risiko usaha kecil.</p><div class="formula" id="mDcfF">Nilai sekarang laba tahun 1–3</div></div>
         </div>
         <div class="ai-box">
           <h3><span aria-hidden="true">✦</span> Penjelasan otomatis atas angka Anda</h3>
-          <p class="note" style="margin-top:2px">Versi awal: penjelasan ini dihasilkan rumus &amp; aturan transparan langsung di halaman ini — setiap angka bisa Anda telusur ke hitungannya. Lapisan AI/LLM penjelas adalah tahap berikutnya di versi server.</p>
+          <p class="note" style="margin-top:2px">Versi awal: penjelasan ini dihasilkan rumus &amp; aturan transparan langsung di halaman ini — setiap angka bisa Anda telusur ke hitungannya. Lapisan AI penjelas adalah tahap berikutnya di versi server.</p>
           <p id="aiExplain">—</p>
           <p id="aiExplain2" style="margin-top:6px">—</p>
         </div>
@@ -885,7 +885,7 @@
       <!-- ============ 4. INTROSPEKSI ============ -->
       <section id="introspeksi">
         <div class="sec-head"><span class="sec-num">04</span><h2>Introspeksi usaha — 12 pertanyaan jujur</h2></div>
-        <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dashboard, multiple valuasi, dan isi rencana perbaikan di bawah.</p>
+        <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dasbor, pengali valuasi, dan isi rencana perbaikan di bawah.</p>
         <div class="card" id="quizCard"></div>
         <div class="grid-2" style="margin-top:14px">
           <div class="card"><h3 style="color:var(--accent)">Kekuatan Anda</h3><ul class="tick good" id="strengthList"></ul></div>
@@ -913,7 +913,7 @@
               <thead><tr><th>Kanal jual</th><th>Komisi*</th><th>Harga yang dipasang</th></tr></thead>
               <tbody id="priceRows"></tbody>
             </table>
-            <p class="note" style="margin-top:10px">HPP per porsi: <b id="hppTotal">—</b>. Harga dihitung agar margin Anda tetap utuh setelah komisi dipotong. *Perkiraan komisi umum — periksa angka pasti di aplikasi merchant Anda.</p>
+            <p class="note" style="margin-top:10px">HPP per porsi: <b id="hppTotal">—</b>. Harga dihitung agar margin Anda tetap utuh setelah komisi dipotong. *Perkiraan komisi umum — periksa angka pasti di aplikasi tempat Anda berjualan.</p>
             <p class="note" id="stockHppNote" style="margin-top:8px">Hubungkan stok: catat stok barang di Modul Keuangan — biaya pokok tersirat dari stok (harga beli ÷ harga jual) akan tampil di sini dan bisa diterapkan ke kolom HPP Data Usaha.</p>
           </div>
           <div class="card">
@@ -1008,7 +1008,7 @@
         </div>
         <div class="grid-2" style="margin-top:14px">
           <div class="card">
-            <h3>Template label produk (siap cetak)</h3>
+            <h3>Contoh label produk (siap cetak)</h3>
             <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:10px">
               <label class="f"><span>Nama produk</span><input type="text" id="lblProduk" placeholder="contoh: Sambal Bawang Bu Sari" /></label>
               <label class="f"><span>Berat bersih</span><input type="text" id="lblBerat" placeholder="contoh: 200 g" /></label>
@@ -1018,14 +1018,14 @@
               <label class="f"><span>Kontak pemesanan</span><input type="text" id="lblKontak" placeholder="contoh: WA 08xx-xxxx-xxxx" /></label>
             </div>
             <div class="code-box" id="labelPreview" style="white-space:pre-line;text-align:center;font-family:inherit">Isi kolom label untuk melihat pratinjau label Anda.</div>
-            <div class="actions"><button class="btn" id="btnLabel" type="button">Unduh template label (.txt)</button></div>
+            <div class="actions"><button class="btn" id="btnLabel" type="button">Unduh contoh label (.txt)</button></div>
           </div>
           <div class="card">
             <h3>Direktori jenis pemasok kemasan</h3>
             <ul style="margin:8px 0 0;padding-left:19px">
               <li style="margin:6px 0"><b>Percetakan label stiker</b> — untuk label tahan air; minta contoh bahan vinyl/chromo dan harga per roll sebelum pesan besar. Cari di kota Anda dengan kata kunci “cetak stiker label kemasan”.</li>
               <li style="margin:6px 0"><b>Toko plastik &amp; kemasan</b> — standing pouch, botol, vakum, dan seal; bandingkan minimal 3 toko untuk harga per 100 pcs.</li>
-              <li style="margin:6px 0"><b>Pabrik / distributor karton box</b> — untuk kemasan sekunder &amp; hampers; tanyakan minimum order dan ongkir antar kota.</li>
+              <li style="margin:6px 0"><b>Pabrik / distributor karton box</b> — untuk kemasan sekunder &amp; hampers; tanyakan jumlah pesanan minimum dan ongkir antar kota.</li>
               <li style="margin:6px 0"><b>Pemasok bahan baku utama</b> — grosir pasar induk / distributor resmi; kunci harga dengan kontrak sederhana 3 bulan bila volume stabil.</li>
               <li style="margin:6px 0"><b>Jasa desain kemasan lokal</b> — desainer lepas / SMK / kampus desain di kota Anda untuk tata letak label yang siap cetak (file PDF + font tertanam).</li>
             </ul>
@@ -1155,7 +1155,7 @@
           </div>
           <div style="margin-top:16px"><h3 style="font-size:.98rem">Arus Kas (Data Usaha per bulan + catatan transaksi)</h3><table class="mini-table"><tbody id="akBody"></tbody></table></div>
           <div class="actions"><button class="btn" id="btnReportPdf" type="button">Unduh laporan lengkap (PDF)</button><button class="btn ghost" id="btnReport" type="button">Unduh laporan lengkap (.txt)</button><button class="btn ghost" id="btnReportHtml" type="button">Unduh laporan untuk dicetak (.html)</button></div>
-          <p class="note" id="ocrNote" style="margin-top:10px">OCR nota: unggah foto nota di atas — teks nota dibaca otomatis di peramban Anda (Tesseract.js) dan jumlah terbesar yang terbaca diisikan sebagai jumlah transaksi untuk Anda periksa.</p>
+          <p class="note" id="ocrNote" style="margin-top:10px">Baca nota: unggah foto nota di atas — teks nota dibaca otomatis di peramban Anda (Tesseract.js) dan jumlah terbesar yang terbaca diisikan sebagai jumlah transaksi untuk Anda periksa.</p>
         </div>
       </section>
 
@@ -1187,8 +1187,8 @@
 
       <!-- ============ 12. ORANG & SOP ============ -->
       <section id="sop">
-        <div class="sec-head"><span class="sec-num">12</span><h2>Orang &amp; SOP builder</h2></div>
-        <p class="sec-sub">SOP tertulis adalah cara tercepat menurunkan ketergantungan pada pemilik — dan menaikkan multiple valuasi. Susun langkahnya di sini, lalu unduh sebagai dokumen SOP.</p>
+        <div class="sec-head"><span class="sec-num">12</span><h2>Orang &amp; Pembuat SOP</h2></div>
+        <p class="sec-sub">SOP tertulis adalah cara tercepat menurunkan ketergantungan pada pemilik — dan menaikkan pengali valuasi. Susun langkahnya di sini, lalu unduh sebagai dokumen SOP.</p>
         <div class="card">
           <div class="form-grid">
             <label class="f"><span>Nama SOP / proses</span><input type="text" id="sopNama" placeholder="contoh: SOP Membuka Warung Pagi" /></label>
@@ -1203,10 +1203,10 @@
 
       <!-- ============ 13. PORTAL INVESTOR & LAPISAN AI ============ -->
       <section id="portal">
-        <div class="sec-head"><span class="sec-num">13</span><h2>Portal investor — tampilan read-only &amp; jejak audit</h2></div>
+        <div class="sec-head"><span class="sec-num">13</span><h2>Portal investor — tampilan hanya-baca &amp; jejak audit</h2></div>
         <p class="sec-sub">Inilah yang akan dilihat calon investor bila Anda membagikan hasil introspeksi — hanya atas izin Anda sebagai pemilik UMKM: ringkasan tanpa formulir isian, kode verifikasi dari angka Anda, dan jejak kegiatan selama sesi ini. Bagikan dengan tombol Unduh laporan di Modul Keuangan atau Salin ringkasan di bagian Saran.</p>
         <div class="portal-box">
-          <h3>Tampilan untuk calon investor (read-only)</h3>
+          <h3>Tampilan untuk calon investor (hanya-baca)</h3>
           <div class="grid-2" style="margin-top:10px">
             <div><p class="note">Usaha</p><p><b id="invNama">—</b></p><p class="note" style="margin-top:8px">Level &amp; skor</p><p id="invSkor">—</p></div>
             <div><p class="note">Valuasi tengah &amp; rentang</p><p><b id="invVal">—</b></p><p class="note" style="margin-top:8px">Skor Konsistensi · Legalitas · Kemasan</p><p id="invSkor2">—</p></div>
@@ -1219,7 +1219,7 @@
         </div>
         <div class="card" style="margin-top:14px">
           <h3>Bagikan portal ini lewat tautan</h3>
-          <p class="note" style="margin-top:6px">Buat satu tautan khusus yang bisa dibuka calon investor <b>tanpa masuk akun</b> — isinya hanya ringkasan read-only di atas (nama usaha, jenis usaha, kota, level, skor-skor, rentang valuasi, ringkasan laporan, skor konsistensi, dan jejak audit). Tautan <b>tidak</b> berisi email, nomor HP, lokasi GPS, atau rincian transaksi Anda. Siapa pun yang memegang tautan bisa membukanya, jadi bagikan hanya ke orang yang Anda percaya — dan Anda bisa mencabutnya kapan saja; setelah dicabut, tautan itu berhenti bekerja.</p>
+          <p class="note" style="margin-top:6px">Buat satu tautan khusus yang bisa dibuka calon investor <b>tanpa masuk akun</b> — isinya hanya ringkasan hanya-baca di atas (nama usaha, jenis usaha, kota, level, skor-skor, rentang valuasi, ringkasan laporan, skor konsistensi, dan jejak audit). Tautan <b>tidak</b> berisi email, nomor HP, lokasi GPS, atau rincian transaksi Anda. Siapa pun yang memegang tautan bisa membukanya, jadi bagikan hanya ke orang yang Anda percaya — dan Anda bisa mencabutnya kapan saja; setelah dicabut, tautan itu berhenti bekerja.</p>
           <div class="actions"><button class="btn" id="btnSharePortal" type="button">Buat tautan berbagi</button></div>
           <div id="shareResult" style="display:none;margin-top:12px">
             <label class="f"><span>Tautan portal investor Anda</span><input type="text" id="shareLinkInput" readonly /></label>
@@ -1229,7 +1229,7 @@
         </div>
         <div class="ai-box">
           <h3><span aria-hidden="true">✦</span> 7 lapisan kecerdasan di aplikasi ini</h3>
-          <p><b>1 Ekstraksi data</b> — foto nota dibaca dengan OCR yang berjalan di peramban (Tesseract.js) dan input suara membantu mengubah bukti transaksi menjadi catatan. <b>2 Prediksi multiple lokal</b> — multiple dasar per sektor disesuaikan usia usaha, pertumbuhan, pembukuan, dan ketergantungan pemilik; bila data kalibrasi anonim usaha sejenis di kota Anda sudah terkumpul minimal 5 (dan Anda mengizinkan berbagi data anonim), median multiple lokal ikut digabungkan dan jumlah sampelnya ditulis terbuka di penjelasan valuasi. <b>3 Deteksi anomali</b> — margin negatif, Rasio Kemampuan Bagi Hasil di bawah 1, dan utang di atas aset ditandai otomatis sebagai peringatan. <b>4 Penjelasan angka</b> — setiap valuasi disertai penjelasan yang bisa ditelusur ke rumusnya. <b>5 Penilaian kemasan</b> — penilaian terbantu: pengukuran foto di peramban (terang, kontras, ketajaman) + 6 periksa label, digabung menjadi skor 5 aspek. <b>6 Verifikasi konsistensi</b> — Skor Konsistensi dari 9 sumber lokal. <b>7 AI Coach</b> — rencana 30–60–90 hari yang berubah mengikuti jawaban dan angka Anda. Pada versi statis ini ketujuh lapisan berjalan sebagai mesin aturan transparan langsung di halaman; lapisan model AI generatif/ML penuh adalah tahap server berikutnya.</p>
+          <p><b>1 Ekstraksi data</b> — foto nota dibaca otomatis di peramban (Tesseract.js) dan input suara membantu mengubah bukti transaksi menjadi catatan. <b>2 Prediksi pengali lokal</b> — pengali dasar per sektor disesuaikan usia usaha, pertumbuhan, pembukuan, dan ketergantungan pemilik; bila data kalibrasi anonim usaha sejenis di kota Anda sudah terkumpul minimal 5 (dan Anda mengizinkan berbagi data anonim), median pengali lokal ikut digabungkan dan jumlah sampelnya ditulis terbuka di penjelasan valuasi. <b>3 Deteksi anomali</b> — margin negatif, Rasio Kemampuan Bagi Hasil di bawah 1, dan utang di atas aset ditandai otomatis sebagai peringatan. <b>4 Penjelasan angka</b> — setiap valuasi disertai penjelasan yang bisa ditelusur ke rumusnya. <b>5 Penilaian kemasan</b> — penilaian terbantu: pengukuran foto di peramban (terang, kontras, ketajaman) + 6 periksa label, digabung menjadi skor 5 aspek. <b>6 Verifikasi konsistensi</b> — Skor Konsistensi dari 9 sumber lokal. <b>7 AI Coach</b> — rencana 30–60–90 hari yang berubah mengikuti jawaban dan angka Anda. Pada versi statis ini ketujuh lapisan berjalan sebagai mesin aturan transparan langsung di halaman; lapisan model AI generatif penuh adalah tahap server berikutnya.</p>
         </div>
       </section>
 
@@ -1285,8 +1285,8 @@
       </section>
 
       <footer>
-        <p><b>Tentang angka di halaman ini.</b> Valuasi adalah <b>estimasi nilai wajar</b> untuk introspeksi dan bahan diskusi awal dengan calon investor atau calon mitra kerjasama investasi — <b>bukan appraisal resmi</b> dan tidak menggantikan penilaian KJPP (Kantor Jasa Penilai Publik). Multiple, tingkat diskonto, dan komisi kanal adalah asumsi umum pasar UMKM yang ditampilkan terbuka agar bisa Anda periksa dan perdebatkan.</p>
-        <p>Aplikasi Introspeksi UMKM versi multi-user: akun dan data tiap pengguna tersimpan aman di cloud — setiap pengguna hanya dapat mengakses data miliknya sendiri. Perubahan tersimpan otomatis ke cloud saat Anda terhubung internet; saat offline, data tersimpan lokal sementara di perangkat dan disinkronkan begitu kembali online.</p>
+        <p><b>Tentang angka di halaman ini.</b> Valuasi adalah <b>estimasi nilai wajar</b> untuk introspeksi dan bahan diskusi awal dengan calon investor atau calon mitra kerjasama investasi — <b>bukan appraisal resmi</b> dan tidak menggantikan penilaian KJPP (Kantor Jasa Penilai Publik). Pengali, tingkat diskonto, dan komisi kanal adalah asumsi umum pasar UMKM yang ditampilkan terbuka agar bisa Anda periksa dan perdebatkan.</p>
+        <p>Aplikasi Introspeksi UMKM versi multi-user: akun dan data tiap pengguna tersimpan aman di cloud — setiap pengguna hanya dapat mengakses data miliknya sendiri. Perubahan tersimpan otomatis ke cloud saat Anda terhubung internet; saat tidak ada internet, data tersimpan sementara di perangkat dan disinkronkan begitu internet kembali.</p>
       </footer>
     </div>
 
@@ -1647,7 +1647,7 @@
         "Pencatatan: aplikasi kasir (POS) gratis/murah agar setiap penjualan otomatis jadi data valuasi.",
         "Kanal: masuk marketplace dan/atau GoFood–GrabFood–ShopeeFood dengan harga khusus kanal (lihat kalkulator HPP).",
         "Otomasi: pembukuan aplikasi yang terhubung POS, pengingat stok, dan laporan laba rugi bulanan otomatis.",
-        "Integrasi: API multi-kanal, dashboard stok antar outlet, dan data transaksi rapi yang bisa diverifikasi calon investor."
+        "Integrasi: API multi-kanal, dasbor stok antar outlet, dan data transaksi rapi yang bisa diverifikasi calon investor."
       ];
 
       let S = {}; // computed state
@@ -1752,8 +1752,8 @@
         /* penjelasan AI (aturan transparan, angka dari rumus di atas) */
         const sektorName=$("inSektor").value ? $("inSektor").selectedOptions[0].textContent.split(" /")[0] : "UMKM";
         if (sdeThn>0){
-          $("aiExplain").textContent="Usaha "+($("inNama").value||"Anda")+" ("+sektorName+", "+($("inKota").value||"kota Anda")+") menghasilkan laba pemilik (SDE) "+fmtShort(sdeThn)+" per tahun setelah gaji wajar pemilik diperhitungkan kembali. Dengan multiple "+mult.toLocaleString("id-ID",{maximumFractionDigits:2})+"× — multiple dasar sektor "+SECTOR[sektor].mult+"× disesuaikan oleh "+(adj.length?adj.join(", "):"kondisi usaha Anda yang standar")+" — metode SDE memberi nilai "+fmtShort(valSde)+"."+(kalNote?" "+kalNote:"");
-          $("aiExplain2").textContent=(terg>70?"Catatan terpenting: usaha masih sangat tergantung pada Anda ("+terg+"/100). Pembeli atau calon investor akan menilai nilai usaha lebih rendah karena usaha berisiko berhenti saat Anda absen — mendokumentasikan SOP dan melatih satu pengganti adalah cara tercepat menaikkan multiple. ":dimScore.fin<50?"Catatan terpenting: pencatatan keuangan ("+dimScore.fin+"/100) masih lemah. Angka laba yang tidak bisa dibuktikan biasanya ditawar jauh di bawah nilai wajar — rapikan pembukuan 3 bulan berturut-turut sebelum bernegosiasi. ":"Profil Anda relatif seimbang. Kenaikan nilai berikutnya paling cepat datang dari pertumbuhan omzet yang tercatat dan kanal penjualan baru.")+" Nilai aset bersih "+fmtShort(asetBersih)+" menjadi lantai negosiasi Anda: jangan menerima tawaran di bawah itu tanpa alasan kuat.";
+          $("aiExplain").textContent="Usaha "+($("inNama").value||"Anda")+" ("+sektorName+", "+($("inKota").value||"kota Anda")+") menghasilkan laba pemilik (SDE) "+fmtShort(sdeThn)+" per tahun setelah gaji wajar pemilik diperhitungkan kembali. Dengan pengali "+mult.toLocaleString("id-ID",{maximumFractionDigits:2})+"× — pengali dasar sektor "+SECTOR[sektor].mult+"× disesuaikan oleh "+(adj.length?adj.join(", "):"kondisi usaha Anda yang standar")+" — metode SDE memberi nilai "+fmtShort(valSde)+"."+(kalNote?" "+kalNote:"");
+          $("aiExplain2").textContent=(terg>70?"Catatan terpenting: usaha masih sangat tergantung pada Anda ("+terg+"/100). Pembeli atau calon investor akan menilai nilai usaha lebih rendah karena usaha berisiko berhenti saat Anda absen — mendokumentasikan SOP dan melatih satu pengganti adalah cara tercepat menaikkan pengali. ":dimScore.fin<50?"Catatan terpenting: pencatatan keuangan ("+dimScore.fin+"/100) masih lemah. Angka laba yang tidak bisa dibuktikan biasanya ditawar jauh di bawah nilai wajar — rapikan pembukuan 3 bulan berturut-turut sebelum bernegosiasi. ":"Profil Anda relatif seimbang. Kenaikan nilai berikutnya paling cepat datang dari pertumbuhan omzet yang tercatat dan kanal penjualan baru.")+" Nilai aset bersih "+fmtShort(asetBersih)+" menjadi lantai negosiasi Anda: jangan menerima tawaran di bawah itu tanpa alasan kuat.";
         } else {
           $("aiExplain").textContent="Dengan angka saat ini, laba pemilik (SDE) Anda "+(sdeThn<0?"negatif":"nol")+" ("+fmtShort(sdeThn)+"/tahun). Artinya usaha belum menghasilkan laba di atas gaji wajar pemilik, sehingga metode laba dan DCF belum bisa dipakai — valuasi sementara bertumpu pada aset bersih "+fmtShort(asetBersih)+".";
           $("aiExplain2").textContent="Prioritasnya bukan mencari pembeli, melainkan mengembalikan laba: periksa HPP ("+Math.round(hppPct*100)+"% dari omzet) dan harga jual per kanal di bagian Keuangan, lalu evaluasi biaya operasional terbesar. Setelah SDE positif 6 bulan berturut-turut, valuasi berbasis laba akan jauh lebih tinggi daripada nilai aset saja.";
@@ -1765,7 +1765,7 @@
           if(v===2) strengths.push(q[0]+" — "+d.name.toLowerCase()+".");
           if(v===0) weaks.push(q[0]+" — berdampak langsung ke skor "+d.name.toLowerCase()+" dan kepercayaan calon investor/pembeli."); }));
         if (margin>0.15) strengths.push("Margin laba bersih sehat di "+(margin*100).toLocaleString("id-ID",{maximumFractionDigits:1})+"%.");
-        if (terg>70) weaks.push("Ketergantungan pada pemilik sangat tinggi ("+terg+"/100) — menekan multiple valuasi sebesar 0,5 poin.");
+        if (terg>70) weaks.push("Ketergantungan pada pemilik sangat tinggi ("+terg+"/100) — menekan pengali valuasi sebesar 0,5 poin.");
         if (buku===0) weaks.push("Keuangan usaha dan pribadi masih tercampur — alasan paling umum calon investor belum bersedia bekerjasama.");
         if (!strengths.length) strengths.push("Belum ada aspek yang berstatus 'Sudah' — selesaikan satu item termudah minggu ini untuk memulai.");
         if (!weaks.length) weaks.push("Tidak ada aspek berstatus 'Belum'. Pertahankan konsistensi dan naikkan item 'Sebagian' menjadi 'Sudah'.");
@@ -1783,7 +1783,7 @@
         const hpp=num("hBahan")+num("hKemasan")+num("hEnergi")+num("hTenaga")+num("hLain");
         const margin=Math.min(0.8,Math.max(0.05,num("hMargin")/100));
         const base=hpp/(1-margin);
-        const channels=[["Jual langsung / offline",0],["GoFood",0.20],["GrabFood",0.20],["ShopeeFood",0.20],["Marketplace (Shopee/Tokopedia)",0.065]];
+        const channels=[["Jual langsung di tempat",0],["GoFood",0.20],["GrabFood",0.20],["ShopeeFood",0.20],["Marketplace (Shopee/Tokopedia)",0.065]];
         $("priceRows").innerHTML=channels.map(c=>{
           const price=Math.ceil(base/(1-c[1])/100)*100;
           return '<tr'+(c[1]===0?' class="hl"':'')+'><td>'+c[0]+'</td><td>'+(c[1]*100).toLocaleString("id-ID")+'%</td><td>'+fmtFull(price)+'</td></tr>';
@@ -1817,7 +1817,7 @@
         $("advFin").innerHTML="<ul>"+fin.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
 
         let ladder=TECH_LADDER.slice();
-        if (answers["mkt-2"]===2) ladder[2]="Optimasi kanal online yang sudah berjalan: samakan katalog di semua kanal, pasang harga khusus per kanal (lihat kalkulator HPP), dan balas chat dengan template cepat.";
+        if (answers["mkt-2"]===2) ladder[2]="Optimasi kanal online yang sudah berjalan: samakan katalog di semua kanal, pasang harga khusus per kanal (lihat kalkulator HPP), dan balas chat dengan balasan cepat.";
         const start=Math.min(c.matLevel, ladder.length-1);
         const tech=ladder.slice(start, start+3).map((x,i)=> (i===0?"<b>Langkah Anda berikutnya:</b> ":"")+x);
         if (c.dimScore.tech<40) tech.unshift("Skor teknologi Anda baru "+c.dimScore.tech+"/100 — jangan loncat ke alat canggih; kuasai satu anak tangga dalam satu waktu.");
@@ -1831,13 +1831,13 @@
         if (!p30.length) p30.push("Kunci kebiasaan baik yang sudah berjalan: tutup buku bulanan dan evaluasi margin per produk.");
         if (answers["ops-0"]<2) p60.push("Tulis SOP / resep baku untuk proses inti agar kualitas tidak bergantung ingatan.");
         if (answers["mkt-0"]<2) p60.push("Perbarui kemasan: label lengkap + foto produk baru dari 3 sudut.");
-        if (answers["mkt-2"]<2) p60.push("Buka satu kanal online baru dengan harga khusus kanal (bukan harga offline).");
+        if (answers["mkt-2"]<2) p60.push("Buka satu kanal online baru dengan harga khusus kanal (bukan harga jual langsung).");
         if (answers["ops-2"]<2) p60.push("Rapikan catatan stok dan aset — cocokkan fisik dengan catatan sebulan sekali.");
         if (!p60.length) p60.push("Uji satu produk / paket baru ke pelanggan setia dan ukur responsnya selama 30 hari.");
         if (c.terg>=50) p90.push("Latih satu orang pengganti untuk tugas paling kritis; targetkan usaha tetap jalan 3 hari tanpa Anda.");
         if (c.scInv>=45) p90.push("Susun berkas penawaran kerjasama investasi: laporan 3–6 bulan, NIB, dan hasil uji Rasio Kemampuan Bagi Hasil dari halaman ini.");
         else p90.push("Genapkan 3 bulan laporan rapi berturut-turut, lalu uji ulang skor siap investasi Anda di sini.");
-        p90.push("Hitung ulang valuasi setelah 90 hari — bandingkan multiple dan SDE dengan hari ini untuk melihat kemajuan nyata.");
+        p90.push("Hitung ulang valuasi setelah 90 hari — bandingkan pengali dan SDE dengan hari ini untuk melihat kemajuan nyata.");
         $("plan30").innerHTML=p30.map(x=>"<li>"+x+"</li>").join("");
         $("plan60").innerHTML=p60.map(x=>"<li>"+x+"</li>").join("");
         $("plan90").innerHTML=p90.map(x=>"<li>"+x+"</li>").join("");
@@ -1862,7 +1862,7 @@
         L.push("");
         L.push("VALUASI (estimasi, bukan appraisal resmi KJPP)");
         L.push("Rentang nilai wajar: "+fmtShort(S.valLow)+" – "+fmtShort(S.valHigh)+" (tengah "+fmtShort(S.weighted)+")");
-        L.push("SDE: "+fmtShort(S.sdeThn)+"/tahun · Multiple: "+S.mult.toLocaleString("id-ID",{maximumFractionDigits:2})+"x · Aset bersih: "+fmtShort(S.asetBersih));
+        L.push("SDE: "+fmtShort(S.sdeThn)+"/tahun · Pengali: "+S.mult.toLocaleString("id-ID",{maximumFractionDigits:2})+"x · Aset bersih: "+fmtShort(S.asetBersih));
         L.push("");
         L.push("SKOR DIMENSI — Keuangan "+S.dimScore.fin+", Operasional "+S.dimScore.ops+", Pasar & Kemasan "+S.dimScore.mkt+", Teknologi & Legalitas "+S.dimScore.tech+" (dari 100)");
         L.push("");
@@ -2127,7 +2127,7 @@
         ["Shopee","Nama toko, alamat kirim, dan produk aktif di Shopee sesuai?",["Belum dicek","Beda","Sesuai"]],
         ["Aplikasi pesan-antar (GoFood/GrabFood/ShopeeFood)","Menu, harga, dan jam operasional sesuai? (lewati bila tidak relevan — tandai Sesuai)",["Belum dicek","Beda","Sesuai"]],
         ["Media sosial usaha (Instagram/TikTok/Facebook)","Nama usaha & kontak sama dengan label kemasan?",["Belum dicek","Beda","Sesuai"]],
-        ["QRIS / rekening usaha","Nama merchant/pemilik rekening atas nama usaha/pemilik yang sama?",["Belum dicek","Beda","Sesuai"]],
+        ["QRIS / rekening usaha","Nama pemilik rekening sesuai nama usaha/pemilik?",["Belum dicek","Beda","Sesuai"]],
         ["NPWP & data pajak","Nama & alamat di NPWP sama dengan NIB?",["Belum dicek","Beda","Sesuai"]],
         ["Ulasan pelanggan online","Rating & keluhan terakhir mencerminkan kondisi usaha saat ini?",["Belum dicek","Beda","Sesuai"]]
       ],consState,updateCons);
@@ -2162,7 +2162,7 @@
         retail:["Produk baru datang minggu ini","Bundel hemat keluarga","Harga spesial stok terbatas","Tips memilih produk (beras/minyak/dll)","Layanan antar lingkungan sekitar","Stok kebutuhan bulanan checklist","Promo tanggal muda / gajian"],
         jasa:["Sebelum–sesudah hasil layanan","Harga paket tertulis jelas","Testimoni pelanggan","Cara booking via WhatsApp","Garansi & keunggulan layanan","Jadwal slot kosong minggu ini","Tips perawatan dari ahli Anda"],
         manufaktur:["Proses produksi di workshop","Spesifikasi produk unggulan","Testimoni pembeli grosir","Harga tier grosir","Stok siap kirim minggu ini","Cara pakai / perawatan produk","Open reseller / agen"],
-        fashion:["Lookbook koleksi terbaru","Detail bahan & jahitan (close-up)","Testimoni / foto pelanggan","Bundel set hemat","Cara ukur & pilih ukuran","Proses pembuatan handmade","Sale stok terakhir"],
+        fashion:["Lookbook koleksi terbaru","Detail bahan & jahitan (dari dekat)","Testimoni / foto pelanggan","Bundel set hemat","Cara ukur & pilih ukuran","Proses pembuatan handmade","Sale stok terakhir"],
         agribisnis:["Panen hari ini (foto lapangan)","Grading kualitas A/B/C","Harga per grade minggu ini","Cara simpan hasil panen","Testimoni pembeli / reseller","Paket curah untuk katering/restoran","Edukasi manfaat produk"],
         digital:["Portofolio / hasil kerja terbaru","Studi kasus singkat klien","Harga paket layanan tertulis","Testimoni klien","Tips gratis sesuai keahlian","Proses kerja di balik layar","Slot proyek bulan ini"],
         lainnya:["Foto produk andalan + harga","Testimoni pelanggan","Proses pembuatan / layanan","Promo minggu ini","Cara pesan via WhatsApp","Edukasi seputar produk","Bundel / paket hemat"]
@@ -2190,7 +2190,7 @@
       function labelText(){ return ($("lblProduk").value||"(Nama Produk)")+"\n"+($("inNama").value||"(Nama Usaha)")+"\nKomposisi: "+($("lblKomp").value||"—")+"\nBerat bersih: "+($("lblBerat").value||"—")+"\n"+($("lblIzin").value||"")+"\n"+($("lblExp").value||"")+"\nPesan: "+($("lblKontak").value||"—"); }
       function updateLabel(){ $("labelPreview").textContent=labelText(); }
       ["lblProduk","lblBerat","lblKomp","lblIzin","lblExp","lblKontak"].forEach(function(id){ $(id).addEventListener("input",updateLabel); });
-      $("btnLabel").addEventListener("click",function(){ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([labelText()],{type:"text/plain;charset=utf-8"})); a.download="template-label-produk.txt"; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000); toast("Template label diunduh — bawa ke percetakan stiker"); });
+      $("btnLabel").addEventListener("click",function(){ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([labelText()],{type:"text/plain;charset=utf-8"})); a.download="contoh-label-produk.txt"; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000); toast("Contoh label diunduh — bawa ke percetakan stiker"); });
       function drawQr(text){ const box=$("invQr"); if(!box) return; if(typeof qrcode==="undefined"){ box.textContent="QR: "+text; return; } try{ const qr=qrcode(0,"M"); qr.addData(text); qr.make(); box.innerHTML=qr.createSvgTag({cellSize:4,margin:8,scalable:true}); const svg=box.querySelector("svg"); if(svg){ svg.style.width="148px"; svg.style.height="148px"; } }catch(err){ box.textContent="QR: "+text; } }
       $("btnReportPdf").addEventListener("click",function(){
         if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh bundle siap investor"); return; }
@@ -2200,15 +2200,15 @@
       $("notaPhoto").addEventListener("change",function(e){
         const f=e.target.files && e.target.files[0]; if(!f) return;
         const note=$("ocrNote"); if(!note) return;
-        if(typeof Tesseract==="undefined"){ note.textContent="OCR: pustaka pembaca nota belum termuat di peramban ini — baca angka di foto nota dan masukkan sendiri."; popupRamah("Foto nota belum bisa dibaca otomatis","Pustaka pembaca nota belum termuat di peramban ini.","Baca angka di foto nota, lalu masukkan jumlahnya sendiri pada formulir — catatan tetap bisa disimpan."); return; }
-        note.textContent="OCR: sedang membaca teks nota… (proses berjalan di peramban Anda)";
+        if(typeof Tesseract==="undefined"){ note.textContent="Pembaca nota belum termuat di peramban ini — baca angka di foto nota dan masukkan sendiri."; popupRamah("Foto nota belum bisa dibaca otomatis","Pustaka pembaca nota belum termuat di peramban ini.","Baca angka di foto nota, lalu masukkan jumlahnya sendiri pada formulir — catatan tetap bisa disimpan."); return; }
+        note.textContent="Membaca teks nota… (proses berjalan di peramban Anda)";
         Tesseract.recognize(f,"ind+eng").then(function(res){
           const text=(res.data.text||"").trim();
           const nums=(text.replace(/\./g,"").match(/\d{3,}/g)||[]).map(function(x){return parseInt(x,10)}).filter(function(x){return x>=500});
           if(nums.length){ const mx=Math.max.apply(null,nums); $("txJumlah").value=mx; }
           if(text && !$("txKet").value) $("txKet").value=text.split("\n")[0].slice(0,60);
-          note.textContent="OCR selesai: "+(nums.length?("jumlah terbesar terbaca "+fmtFull(Math.max.apply(null,nums))+" sudah diisikan — periksa kembali sebelum menambah transaksi."):"teks terbaca, tetapi jumlah tidak ditemukan — masukkan jumlah manual.")+" Teks nota: "+text.slice(0,180);
-          audit("OCR nota selesai dibaca di peramban.");
+          note.textContent="Baca nota selesai: "+(nums.length?("jumlah terbesar terbaca "+fmtFull(Math.max.apply(null,nums))+" sudah diisikan — periksa kembali sebelum menambah transaksi."):"teks terbaca, tetapi jumlah tidak ditemukan — masukkan jumlah manual.")+" Teks nota: "+text.slice(0,180);
+          audit("Nota selesai dibaca di peramban.");
         }).catch(function(){ note.textContent="Foto nota belum bisa dibaca otomatis — coba foto yang lebih terang dan rata, atau masukkan jumlahnya sendiri."; popupRamah("Foto nota belum bisa dibaca","Foto nota ini belum bisa dibaca otomatis — mungkin terlalu gelap, miring, atau buram.","Coba foto yang lebih terang dan rata, atau masukkan jumlahnya sendiri pada formulir."); });
       });
 
@@ -2900,9 +2900,9 @@
              angka anonim dikirim ke tabel kalibrasi. Fungsi ini tidak pernah
              melempar error dan tidak pernah menghambat penyimpanan utama. */
           try{ if(window.__kalibrasiOnSave) window.__kalibrasiOnSave(snap); }catch(e){}
-          if(isGuest || !currentUser){ persistLocal(snap); lastJson=json; setSync(isGuest?"Mode coba — tersimpan hanya di HP ini":"Tersimpan lokal (mode tanpa akun)","warn"); return; }
-          if(tablesMissing){ persistLocal(snap); lastJson=json; setSync("Tersimpan lokal — tabel cloud belum dibuat","warn"); popupGagalSimpan("tabel"); return; }
-          if(!navigator.onLine){ persistLocal(snap); lastJson=json; setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn"); popupGagalSimpan("gagal"); return; }
+          if(isGuest || !currentUser){ persistLocal(snap); lastJson=json; setSync(isGuest?"Mode coba — tersimpan hanya di HP ini":"Tersimpan di HP ini (mode tanpa akun)","warn"); return; }
+          if(tablesMissing){ persistLocal(snap); lastJson=json; setSync("Tersimpan di HP ini — tabel cloud belum dibuat","warn"); popupGagalSimpan("tabel"); return; }
+          if(!navigator.onLine){ persistLocal(snap); lastJson=json; setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn"); popupGagalSimpan("gagal"); return; }
           setSync("Menyimpan...","");
           try{
             var uid=currentUser.id;
@@ -2919,8 +2919,8 @@
             audit("Data tersinkron ke cloud.");
           }catch(e){
             persistLocal(snap); lastJson=json;
-            if(isMissingTable(e)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan lokal — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
-            else { setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn"); popupGagalSimpan("gagal"); }
+            if(isMissingTable(e)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan di HP ini — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
+            else { setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn"); popupGagalSimpan("gagal"); }
           }
         }
         async function loadData(){
@@ -2942,8 +2942,8 @@
             ]);
             var bad=res.filter(function(r){ return r.error; })[0];
             if(bad){
-              if(isMissingTable(bad.error)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan lokal — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
-              else { setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn"); popupGagalSimpan("gagal"); }
+              if(isMissingTable(bad.error)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan di HP ini — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
+              else { setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn"); popupGagalSimpan("gagal"); }
               var loc=readLocal(); if(loc) applySnapshot(loc);
             } else {
               var core=(res[0].data&&res[0].data.data)||{};
@@ -2971,7 +2971,7 @@
             }
           }catch(e){
             var loc3=readLocal(); if(loc3) applySnapshot(loc3);
-            setSync("Tersimpan lokal (offline) — akan disinkronkan saat online","warn");
+            setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn");
           }
           // Migrasi data coba tamu -> akun baru (v2: GABUNG, bukan menang-semua).
           // Keputusan memakai DUA ukuran cloud yang berbeda:
@@ -3393,7 +3393,7 @@
             var lok={lat:+pos.coords.latitude.toFixed(7), lng:+pos.coords.longitude.toFixed(7), akurasi_m:pos.coords.accuracy!=null?Math.round(pos.coords.accuracy):null, diambil_pada:new Date().toISOString()};
             window.__lokasiUsaha=lok; renderLokasi();
             try{ persistLocal(collectSnapshot()); }catch(e){}
-            audit("Lokasi GPS usaha diambil (satu kali, atas aksi user).");
+            audit("Lokasi GPS usaha diambil (satu kali, saat Anda mengetuk tombolnya).");
             toast("Lokasi usaha tersimpan — "+lok.lat+", "+lok.lng);
             if(typeof recalc==="function") recalc();
           }, function(err){
@@ -3687,7 +3687,7 @@
             if(typeof window.__renderHariIni==="function"){ try{ window.__renderHariIni(); }catch(e){} }
           }
         }, 2000);
-        window.addEventListener("online",function(){ lastJson=""; if(entered) setSync("Kembali online — menyinkronkan...",""); });
+        window.addEventListener("online",function(){ lastJson=""; if(entered) setSync("Internet kembali — menyinkronkan...",""); });
         window.addEventListener("beforeunload",function(){ if(entered){ try{ persistLocal(collectSnapshot()); }catch(e){} } });
       })();
     </script>
@@ -3736,7 +3736,7 @@
             return "Skor Kesehatan Keuangan Anda "+ctx.skor_kesehatan_keuangan+"/100, dan skor kesehatan usaha keseluruhan "+ctx.skor_kesehatan_usaha+"/100. Skor keuangan dihitung dari margin laba bersih, perbandingan utang terhadap aset, dan kerapian pencatatan keuangan Anda. Cara tercepat menaikkannya: catat semua transaksi setiap hari dan periksa HPP tiap produk supaya margin tidak bocor.";
           }
           if(t.indexOf("valuasi")>=0 || t.indexOf("nilai usaha")>=0){
-            return "Perkiraan nilai usaha Anda adalah "+rp(ctx.valuasi_tengah)+", dengan rentang "+rp(ctx.valuasi_rendah)+" sampai "+rp(ctx.valuasi_tinggi)+". Angka ini dihitung dari laba pemilik "+rp(ctx.laba_pemilik_per_tahun)+" per tahun dikali multiple "+String(ctx.multiple_valuasi).replace(".",",")+", lalu digabung dengan nilai aset bersih dan proyeksi laba 3 tahun. Ini estimasi untuk bahan diskusi awal — bukan penilaian resmi.";
+            return "Perkiraan nilai usaha Anda adalah "+rp(ctx.valuasi_tengah)+", dengan rentang "+rp(ctx.valuasi_rendah)+" sampai "+rp(ctx.valuasi_tinggi)+". Angka ini dihitung dari laba pemilik "+rp(ctx.laba_pemilik_per_tahun)+" per tahun dikali pengali "+String(ctx.multiple_valuasi).replace(".",",")+", lalu digabung dengan nilai aset bersih dan proyeksi laba 3 tahun. Ini estimasi untuk bahan diskusi awal — bukan penilaian resmi.";
           }
           var ans="Berdasarkan perhitungan aplikasi: level usaha Anda "+(ctx.level_umkm||"—")+", valuasi tengah "+rp(ctx.valuasi_tengah)+" (rentang "+rp(ctx.valuasi_rendah)+" – "+rp(ctx.valuasi_tinggi)+"), skor kesehatan usaha keseluruhan "+ctx.skor_kesehatan_usaha+"/100, dan skor siap investasi "+ctx.skor_siap_investasi+"/100.";
           ans+=" Langkah pertama yang paling berdampak biasanya memperbaiki hal yang paling lemah di antara pencatatan, kemasan, dan kanal jualan — urutannya ada di rencana 30 hari pada bagian Saran.";
@@ -3804,7 +3804,7 @@
           if(!target) return;
           if(kuotaAiHabis()){ popupKuotaHabis(); return; }
           target.textContent="Sedang berpikir… AI Coach sedang menyiapkan penjelasan sederhana untuk Anda.";
-          function fallback(){ target.textContent=localExplain(prompt)+"\n\nAI online belum tersambung — ini penjelasan dari perhitungan aplikasi."; }
+          function fallback(){ target.textContent=localExplain(prompt)+"\n\nAI belum tersambung — ini penjelasan dari perhitungan aplikasi."; }
           try{
             fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt, question:prompt, context:aiContext()})})
               .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
@@ -3873,7 +3873,7 @@
               scrollBottom();
               try{ input.focus(); }catch(e){}
             }
-            function fallback(){ done(localExplain(q)+"\n\nAI online belum tersambung — ini penjelasan dari perhitungan aplikasi."); }
+            function fallback(){ done(localExplain(q)+"\n\nAI belum tersambung — ini penjelasan dari perhitungan aplikasi."); }
             try{
               fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:q, question:q, context:aiContext(), history:history.slice(), petunjuk:"Bila perlu bertanya balik, ajukan maksimal satu pertanyaan sederhana dan akhiri dengan kalimat: Silakan jawab di kolom chat di bawah ini."})})
                 .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
@@ -4657,7 +4657,7 @@
           cekUrl2:{s:"Tautan halaman publik toko Anda di Tokopedia. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Tokopedia.",h:"Salin tautan toko Tokopedia Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
           cekUrl3:{s:"Tautan halaman publik toko Anda di Shopee. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Shopee.",h:"Salin tautan toko Shopee Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
           cekUrl5:{s:"Tautan profil publik media sosial usaha Anda, misalnya Instagram. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan.",e:"Tautan profil Instagram usaha Anda dari tombol Bagikan profil.",h:"Salin tautan profil, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda."},
-          shareLinkInput:{s:"Tautan khusus portal investor Anda. Siapa pun yang membuka tautan ini melihat ringkasan read-only usaha Anda — tanpa bisa mengubah apa pun, dan tanpa melihat email, nomor HP, lokasi GPS, atau rincian transaksi Anda.",e:"Tautan berakhir dengan kode acak panjang yang hanya Anda yang tahu sebelum dibagikan.",h:"Salin tautan ini dan kirim hanya ke calon investor yang Anda percaya. Bila berubah pikiran, ketuk Cabut tautan — tautan langsung berhenti bekerja."}
+          shareLinkInput:{s:"Tautan khusus portal investor Anda. Siapa pun yang membuka tautan ini melihat ringkasan hanya-baca usaha Anda — tanpa bisa mengubah apa pun, dan tanpa melihat email, nomor HP, lokasi GPS, atau rincian transaksi Anda.",e:"Tautan berakhir dengan kode acak panjang yang hanya Anda yang tahu sebelum dibagikan.",h:"Salin tautan ini dan kirim hanya ke calon investor yang Anda percaya. Bila berubah pikiran, ketuk Cabut tautan — tautan langsung berhenti bekerja."}
         };
         var LABEL_H = {
           "catat dengan suara":{s:"Tombol ini mengisi tiga kolom transaksi sekaligus dari satu kalimat ucapan Anda: keterangan, jumlah rupiah, dan jenis masuk atau keluar. Hasilnya hanya mengisi kolom — belum tersimpan, Anda tetap menekan Tambah transaksi sendiri.",e:"Ucapkan: 'penjualan lima puluh ribu' (terisi Masuk Rp50.000) atau 'beli bahan dua ratus ribu' (terisi Keluar Rp200.000).",h:"Tekan tombolnya, ucapkan keterangan dan jumlahnya dalam satu kalimat dengan jelas. Lalu periksa kembali angkanya sebelum menekan Tambah transaksi — suara kadang salah dengar angka. Bila angka tidak terdengar, isi jumlahnya dengan mengetik."},
@@ -4716,7 +4716,7 @@
           var prompt="Saya belum paham kolom \""+(current.title||"")+"\". Penjelasan awalnya: \""+(current.simple||"")+"\" "+(current.example?("Contoh awalnya: \""+current.example+"\" "):"")+"Pertanyaan saya: "+q+" Tolong jelaskan kolom ini saja dengan bahasa Indonesia yang sangat sederhana, beri satu contoh dari usaha kecil, dan akhiri dengan satu langkah praktis cara mengisinya. Jangan membuat angka hasil perhitungan baru.";
           ansEl.textContent="Sedang berpikir… AI sedang menyiapkan penjelasan untuk kolom ini.";
           if(window.__askAICoach){ window.__askAICoach(prompt, ansEl); }
-          else { ansEl.textContent=localFieldAnswer(q)+"\n\nAI online belum tersambung — ini penjelasan dari aplikasi."; }
+          else { ansEl.textContent=localFieldAnswer(q)+"\n\nAI belum tersambung — ini penjelasan dari aplikasi."; }
           /* Bila jalur online gagal, __askAICoach sendiri menampilkan penjelasan lokal umumnya;
              jawaban lokal khusus kolom tampil bila fungsi itu tidak tersedia sama sekali. */
         }
@@ -4842,7 +4842,7 @@
             h+="<p class='note' style='margin-top:6px'>"+escF(d.sektor||"")+(d.kota?" · "+escF(d.kota):"")+(d.provinsi?" · "+escF(d.provinsi):"")+"</p>";
             h+="<p style='margin-top:10px'>Level UMKM: <b>"+escF(d.level||"—")+"</b> · Level kematangan: <b>"+(d.level_kematangan==null?"—":escF(d.level_kematangan))+" dari 4</b></p>";
             h+="<div class='share-scores'>"+skorCard("Kesehatan usaha keseluruhan", sk.kesehatan)+skorCard("Siap investasi", sk.siap_investasi)+skorCard("Kesehatan keuangan", sk.kesehatan_keuangan)+skorCard("Konsistensi data", sk.konsistensi)+skorCard("Legalitas", sk.legalitas)+skorCard("Kemasan", sk.kemasan)+"</div>";
-            h+="<div class='card' style='margin-top:16px'><h3>Estimasi valuasi</h3><p style='margin-top:8px'>Nilai tengah <b>"+fmtF(v.tengah||0)+"</b> · rentang "+fmtF(v.rendah||0)+" – "+fmtF(v.tinggi||0)+"</p><p class='note' style='margin-top:6px'>Laba pemilik (SDE) "+fmtF(v.sde_tahunan||0)+"/tahun · multiple "+(v.multiple!=null?String(v.multiple).replace(".",","):"—")+"×. Estimasi untuk bahan diskusi awal — bukan appraisal resmi KJPP.</p></div>";
+            h+="<div class='card' style='margin-top:16px'><h3>Estimasi valuasi</h3><p style='margin-top:8px'>Nilai tengah <b>"+fmtF(v.tengah||0)+"</b> · rentang "+fmtF(v.rendah||0)+" – "+fmtF(v.tinggi||0)+"</p><p class='note' style='margin-top:6px'>Laba pemilik (SDE) "+fmtF(v.sde_tahunan||0)+"/tahun · pengali "+(v.multiple!=null?String(v.multiple).replace(".",","):"—")+"×. Estimasi untuk bahan diskusi awal — bukan appraisal resmi KJPP.</p></div>";
             h+="<div class='card' style='margin-top:14px'><h3>Ringkasan laporan (SAK EMKM)</h3><p style='margin-top:8px'>Pendapatan "+fmtF(sak.pendapatan_per_bulan||0)+"/bulan · Laba bersih "+fmtF(sak.laba_bersih_per_bulan||0)+"/bulan · Aset bersih "+fmtF(sak.aset_bersih||0)+"</p><p class='note' style='margin-top:6px'>Skor Konsistensi Data pemilik: <b>"+(sk.konsistensi==null?"—":escF(sk.konsistensi)+"/100")+"</b> — dihitung dari 9 sumber data lokal yang biasa diperiksa calon mitra.</p></div>";
             if(Array.isArray(d.jejak_audit) && d.jejak_audit.length){ h+="<div class='card' style='margin-top:14px'><h3>Jejak audit</h3><ul class='tick' style='margin-top:8px'>"+d.jejak_audit.slice(0,10).map(function(x){ return "<li>"+escF(x)+"</li>"; }).join("")+"</ul></div>"; }
             h+="<p class='note' style='margin-top:16px'>Ringkasan ini dibuat pemilik usaha pada "+fmtTgl(d.dibuat_pada || row.created_at)+" dan dibagikan atas izinnya. Halaman ini hanya menampilkan ringkasan — tidak ada formulir, tidak ada data pribadi, dan tidak ada yang bisa diubah dari sini.</p>";
@@ -4966,7 +4966,7 @@
             var use=chosen||fallback||{n:0,median:0,scope:k.kota||k.prov||"Indonesia"};
             kalCache.ready=true; kalCache.n=use.n; kalCache.median=use.median; kalCache.scope=use.scope; kalCache.blendable=!!chosen;
             var st=gid("kalibrasiStatus");
-            if(st){ st.textContent= use.n>0 ? ("Data pembanding lokal saat ini: "+use.n+" usaha sejenis di "+use.scope+" sudah berbagi data anonim. "+(chosen?"Jumlahnya sudah cukup (minimal 5) — median multiple lokal ikut digabungkan ke multiple valuasi Anda.":"Belum cukup untuk dipakai (perlu minimal 5) — multiple Anda masih memakai angka acuan.")) : "Belum ada data anonim usaha sejenis yang terkumpul untuk sektor dan kota ini — multiple masih memakai angka acuan."; }
+            if(st){ st.textContent= use.n>0 ? ("Data pembanding lokal saat ini: "+use.n+" usaha sejenis di "+use.scope+" sudah berbagi data anonim. "+(chosen?"Jumlahnya sudah cukup (minimal 5) — median pengali lokal ikut digabungkan ke pengali valuasi Anda.":"Belum cukup untuk dipakai (perlu minimal 5) — pengali Anda masih memakai angka acuan.")) : "Belum ada data anonim usaha sejenis yang terkumpul untuk sektor dan kota ini — pengali masih memakai angka acuan."; }
             try{ recalc(); }catch(e){}
           }catch(e){
             /* Tabel belum ada / koneksi gagal: diam-diam saja — multiple literatur
@@ -4980,7 +4980,7 @@
           function fmtM(x){ return x.toLocaleString("id-ID",{maximumFractionDigits:2}); }
           if(kalCache.blendable && kalCache.n>=5 && kalCache.median>0){
             var blended=Math.max(1.5, Math.min(5, Math.round(((kalCache.median+multLit)/2)*100)/100));
-            return { mult:blended, note:"Multiple dipakai "+fmtM(blended)+"× — dari "+kalCache.n+" usaha sejenis di "+kalCache.scope+" (kalibrasi lokal) digabung angka acuan." };
+            return { mult:blended, note:"Pengali dipakai "+fmtM(blended)+"× — dari "+kalCache.n+" usaha sejenis di "+kalCache.scope+" (kalibrasi lokal) digabung angka acuan." };
           }
           if(kalCache.n>0) return { mult:multLit, note:"Data lokal usaha sejenis baru terkumpul "+kalCache.n+" (perlu minimal 5) — belum cukup data lokal, memakai angka acuan." };
           return { mult:multLit, note:"Belum ada data lokal usaha sejenis — memakai angka acuan." };
@@ -5245,7 +5245,7 @@
             function lokal(){
               var sorted=lastAspects.slice().sort(function(a,b){ return a.skor-b.skor; });
               var lemah=sorted[0], kuat=sorted[sorted.length-1];
-              var t="Penilaian lokal dari pengukuran foto + daftar periksa (AI online belum tersambung):\n";
+              var t="Penilaian lokal dari pengukuran foto + daftar periksa (AI belum tersambung):\n";
               t+="Aspek terkuat Anda: "+kuat.nama+" ("+kuat.skor+"/100). Aspek terlemah: "+lemah.nama+" ("+lemah.skor+"/100) — "+lemah.basis+".\n";
               if(packMainFact || Object.keys(angleFacts).length){ t+="Kualitas teknis foto Anda: "+(fakta.join("; "))+ ". Foto yang terang dan tajam membuat label terbaca jelas oleh calon pembeli.\n"; }
               else { t+="Belum ada foto yang terukur — unggah foto produk agar terang, kontras, dan ketajamannya bisa dinilai.\n"; }
