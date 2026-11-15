@@ -9124,7 +9124,13 @@
           if(!omzet){ var d=numOf("wizJualHari"), h=numOf("wizHariJual"); if(d>0 && h>0) omzet=Math.round(d*h); }
           if(omzet>0) gid("inOmzet").value=omzet;
           var bahan=numOf("wizBahan");
-          if(bahan>0 && omzet>0){ var pct=Math.round(bahan/omzet*100); if(pct>0 && pct<=95) gid("inHpp").value=Math.round(pct*10)/10; }
+          /* HPP dari wizard hanya diisi bila kolom HPP di formulir utama
+             masih kosong (belum ada angka). Bila pengguna sudah mengisi
+             HPP sendiri, angka itu tidak boleh ditimpa hitungan
+             bahan/omzet dari wizard — HPP yang sudah diisi harus tetap
+             sama sampai pengguna sendiri yang mengubahnya di formulir
+             utama, tombol isi dari stok, atau kalkulator diskusi HPP. */
+          if(bahan>0 && omzet>0 && !(numOf("inHpp")>0)){ var pct=Math.round(bahan/omzet*100); if(pct>0 && pct<=95) gid("inHpp").value=Math.round(pct*10)/10; }
           if(numOf("wizOpex")>0) gid("inOpex").value=numOf("wizOpex");
           if(numOf("wizGaji")>0) gid("inGaji").value=numOf("wizGaji");
           try{ recalc(); }catch(e){}
