@@ -6167,7 +6167,7 @@
           setSync("Menyimpan...","");
           try{
             var uid=currentUser.id;
-            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, sops:snap.sops, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, ai_pakai: snap.ai_pakai || {bulan:bulanSekarang(), jumlah:0}, paket_tier: snap.paket_tier||null, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
+            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, sops:snap.sops, struktur:snap.struktur, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, ai_pakai: snap.ai_pakai || {bulan:bulanSekarang(), jumlah:0}, paket_tier: snap.paket_tier||null, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
