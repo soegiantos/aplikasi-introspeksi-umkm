@@ -710,12 +710,14 @@
         <h2 id="authTitle" style="margin-top:20px">Masuk ke akun usaha Anda</h2>
         <p class="note" style="margin-top:6px">Setiap akun hanya melihat data usahanya sendiri. Data tersimpan aman di cloud dan termuat kembali setiap kali Anda masuk — di HP atau perangkat mana pun.</p>
         <div class="gate-note" id="guestGateMsg" role="alert"><b>Daftar dulu supaya data Anda tersimpan dan bisa dibuka di HP lain.</b><br />Anda sedang memakai mode coba — data coba Anda di HP ini akan dipindahkan ke akun baru Anda setelah pendaftaran dan masuk berhasil.</div>
+        <p class="note" id="noteBelumPernahMasuk" style="margin:0 0 12px">Belum pernah masuk? Pilih <b>Daftar baru</b> — formulir aplikasi akan tampil kosong, siap diisi data usaha Anda. Bila pendaftaran meminta konfirmasi, periksa kotak masuk email Anda lalu kembali ke sini untuk masuk.</p>
         <div class="auth-tabs" role="group" aria-label="Pilih masuk atau daftar">
           <button type="button" id="tabLogin" aria-pressed="true">Masuk</button>
           <button type="button" id="tabReg" aria-pressed="false">Daftar baru</button>
         </div>
         <form id="authForm" style="margin-top:16px">
           <div id="regFields" style="display:none">
+            <p class="note" id="infoGratisDaftar" style="margin:0 0 12px">Pendaftaran gratis — Anda mendapat Paket Gratis: 50 transaksi per bulan, 20 stok, 10 piutang, 10 utang, dan AI Coach 20 pertanyaan per bulan. Bayar hanya bila Anda memilih Pro (Mikro Rp35.000/bulan, Kecil Rp75.000/bulan, Menengah Rp150.000/bulan) — pendaftaran langganan belum dibuka.</p>
             <label class="f" style="margin-bottom:12px"><span>Nama usaha</span><input type="text" id="authNama" placeholder="contoh: Dapur Bu Sari" autocomplete="organization" /></label>
             <label class="f" style="margin-bottom:12px"><span>Nomor HP (WhatsApp)</span><input type="tel" id="authHp" placeholder="contoh: 0812-3456-7890" autocomplete="tel" /></label>
             <label class="f" style="margin-bottom:12px"><span>Kode marketing (jika ada)</span><input type="text" id="authKode" placeholder="contoh: UMKM30" maxlength="6" autocomplete="off" style="text-transform:uppercase" /></label>
@@ -764,10 +766,6 @@
           <div style="text-align:center">
             <button class="forgot-link" id="btnPendingOtherEmail" type="button">Daftar dengan email lain</button>
           </div>
-        </div>
-        <p class="note" style="margin-top:14px">Belum pernah masuk? Pilih <b>Daftar baru</b> — formulir aplikasi akan tampil kosong, siap diisi data usaha Anda. Bila pendaftaran meminta konfirmasi, periksa kotak masuk email Anda lalu kembali ke sini untuk masuk.</p>
-        <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px">
-          <button class="btn ghost" id="btnBackToApp" type="button" style="width:100%;display:none">Kembali ke mode coba</button>
         </div>
       </div>
     </div>
@@ -864,7 +862,6 @@
           <button class="btn ghost small" id="btnUbahUsahaTop" type="button">Ubah usaha</button>
           <button class="btn ghost small" id="btnSaveCloud" type="button">Register</button>
           <button class="btn ghost small" id="btnAdminMarketing" type="button" style="display:none">Admin marketing</button>
-          <button class="btn small" id="btnGuestRegister" type="button" style="display:none">Daftar untuk menyimpan</button>
           <button class="btn ghost small" id="btnLogout" type="button">Keluar</button>
         </div>
       </div>
@@ -4053,7 +4050,7 @@
              pernah ditandai emas. btnQrisCloseFull sengaja TIDAK masuk:
              tombol Tutup di dalam overlay QRIS putih menjaga desain
              hitam-putih overlay itu sendiri. */
-          var ID_NAVIGASI=["btnUbahUsahaTop","btnDataSelesai","btnTutupTopik","btnCloseSql","btnForgotCancel","btnWizardClose","btnFieldHelpCloseTop","btnFieldHelpClose","btnQrisFull","btnGreetStart","btnWizFinish","btnWizDetail","btnBatalBayar","btnSapaIsi","btnHiMasuk","btnHiKeluar","btnHiLangkah","btnUbahUsahaData","btnUbahData","btnVoiceKoreksi","btnShowSql","btnBackToApp","btnAdminMarketing"];
+          var ID_NAVIGASI=["btnUbahUsahaTop","btnDataSelesai","btnTutupTopik","btnCloseSql","btnForgotCancel","btnWizardClose","btnFieldHelpCloseTop","btnFieldHelpClose","btnQrisFull","btnGreetStart","btnWizFinish","btnWizDetail","btnBatalBayar","btnSapaIsi","btnHiMasuk","btnHiKeluar","btnHiLangkah","btnUbahUsahaData","btnUbahData","btnVoiceKoreksi","btnShowSql","btnAdminMarketing"];
           function bacaSet(){ try{ var s=localStorage.getItem(KUNCI_TOMBOL); if(!s) return {}; var o=JSON.parse(s); return (o&&typeof o==="object")?o:{}; }catch(e){ return {}; } }
           function simpanSet(o){ try{ localStorage.setItem(KUNCI_TOMBOL, JSON.stringify(o)); }catch(e){} }
           function bolehDitandai(el){
@@ -5076,7 +5073,6 @@
           if(window.__tampilkanLayarAwal){ try{ window.__tampilkanLayarAwal(); }catch(e){} }
           else if(window.__keHariIni){ try{ window.__keHariIni(); }catch(e){} }
           var gb=gid("guestBanner"); if(gb) gb.classList.remove("show");
-          var gr=gid("btnGuestRegister"); if(gr) gr.style.display="none";
           gid("btnLogout").textContent="Keluar";
           gid("accountBar").classList.add("show");
           gid("userEmail").textContent=user.email||"";
@@ -5114,7 +5110,6 @@
           gid("userEmail").textContent="Mode coba — tanpa daftar";
           if(typeof perbaruiStatusAkun==="function"){ try{ perbaruiStatusAkun(); }catch(e){} }
           var gb=gid("guestBanner"); if(gb) gb.classList.add("show");
-          var gr=gid("btnGuestRegister"); if(gr) gr.style.display="";
           gid("btnLogout").textContent="Keluar mode coba";
           var loc=null; try{ var s=localStorage.getItem("umkm-introspeksi-cache:lokal"); loc=s?JSON.parse(s):null; }catch(e){}
           if(loc) applySnapshot(loc);
@@ -5137,7 +5132,6 @@
           entered=false; // izinkan enterApp setelah daftar/masuk
           gid("authGate").style.display="block";
           gid("guestGateMsg").classList.add("show");
-          var bb=gid("btnBackToApp"); if(bb) bb.style.display="";
           setAuthMode("reg");
           window.scrollTo(0,0);
           if(reason) authMsg("Untuk melanjutkan ("+reason+"), daftar dulu supaya data Anda tersimpan dan bisa dibuka di HP lain.");
@@ -5466,8 +5460,6 @@
           }catch(e){ popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini.", "Tidak bisa terhubung"); }
           if(!authCooldownTimer) gid("authSubmit").disabled=false;
         });
-        var bba=gid("btnBackToApp"); if(bba) bba.addEventListener("click",function(){ entered=true; gid("authGate").style.display="none"; gid("guestGateMsg").classList.remove("show"); if(typeof perbaruiStatusAkun==="function"){ try{ perbaruiStatusAkun(); }catch(e){} } });
-        var bgr=gid("btnGuestRegister"); if(bgr) bgr.addEventListener("click",function(){ window.__showRegisterGate("Simpan ke cloud"); });
         var bbr=gid("btnBannerRegister"); if(bbr) bbr.addEventListener("click",function(){ window.__showRegisterGate("Simpan ke cloud"); });
 
         /* ---------- GPS lokasi usaha (satu kali per aksi user) ---------- */
@@ -7514,8 +7506,14 @@
            memulai hitung segar dari 10. Di angka 0, satu kali upaya
            window.close() — tab biasa umumnya tidak bisa ditutup skrip, jadi
            itu hanya UPAYA terbaik; layar tertutup tetap tampil bila peramban
-           mengabaikannya. Rantai setTimeout (bukan setInterval) supaya
-           harness bisa memajukan waktu secara deterministis. */
+           mengabaikannya. Karena itu, sesudah upaya tutup di angka 0, baris
+           hitung mundur diganti kalimat akhir "Aplikasi sudah ditutup.
+           Silakan tutup tab ini." (tanpa span angka lagi) supaya tidak
+           menggantung di "0 detik". Ketuk sesudah 0 memulihkan baris hitung
+           mundur semula (mulaiHitungTutup membangun ulang barisnya dengan
+           span #hitungTutupAngka baru) dan mengulang hitung dari 10. Rantai
+           setTimeout (bukan setInterval) supaya harness bisa memajukan waktu
+           secara deterministis. */
         var timerTutup=null, sisaTutup=10;
         function hentikanHitungTutup(){ if(timerTutup!==null){ try{ clearTimeout(timerTutup); }catch(e){} timerTutup=null; } }
         function tampilHitungTutup(){ var a=gid("hitungTutupAngka"); if(a) a.textContent=String(sisaTutup); }
@@ -7529,6 +7527,11 @@
           if(sisaTutup<=0){
             sisaTutup=0; tampilHitungTutup();
             try{ window.close(); }catch(e){}
+            /* Tab yang dibuka pengguna umumnya tidak bisa ditutup skrip:
+               ganti baris hitung mundur dengan kalimat akhir supaya tidak
+               menggantung di "0 detik". Span #hitungTutupAngka ikut hilang;
+               mulaiHitungTutup membangun ulang barisnya saat hitung diulang. */
+            var ht=gid("hitungTutup"); if(ht) ht.textContent="Aplikasi sudah ditutup. Silakan tutup tab ini.";
             return; /* tepat satu upaya per hitung mundur; tidak dijadwalkan lagi */
           }
           tampilHitungTutup();
@@ -7536,6 +7539,14 @@
         }
         function mulaiHitungTutup(){
           hentikanHitungTutup();
+          /* Pulihkan baris hitung mundur semula: sesudah angka 0, baris sudah
+             diganti kalimat akhir (span #hitungTutupAngka hilang), jadi bangun
+             ulang barisnya — teks + span angka baru + " detik." — sebelum
+             menampilkan angka 10. (Span dibuat lewat createElement, bukan
+             innerHTML berisi id="...", supaya pemindaian id duplikat di
+             berkas tetap melihat satu #hitungTutupAngka.) Bila baris masih
+             utuh, pembangunan ulang ini tidak mengubah apa pun. */
+          var ht=gid("hitungTutup"); if(ht){ ht.textContent=""; ht.appendChild(document.createTextNode("Aplikasi ini akan ditutup dalam ")); var sp=document.createElement("span"); sp.setAttribute("id", "hitungTutupAngka"); sp.textContent="10"; ht.appendChild(sp); ht.appendChild(document.createTextNode(" detik.")); }
           sisaTutup=10; tampilHitungTutup();
           timerTutup=setTimeout(detikHitungTutup, 1000);
         }
