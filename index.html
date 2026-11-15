@@ -872,13 +872,11 @@
       <span class="status-pill" id="statusAkunPill">Mode coba — belum daftar</span>
       <span class="status-sub" id="statusAkunSub">Data tersimpan di HP ini saja</span>
       <span class="status-hint" id="statusAkunHint">Ketuk untuk detail</span>
-      <button class="btn small" id="statusAkunDaftar" type="button" style="display:none">Daftar</button>
     </div>
 
     <div class="guest-banner" id="guestBanner" role="status">
       <div class="guest-banner-in">
-        <span>Mode coba — data hanya di HP ini dan hilang saat halaman ditutup. Daftar untuk menyimpan ke cloud.</span>
-        <button class="btn small" id="btnBannerRegister" type="button">Daftar untuk menyimpan</button>
+        <span>Mode coba — data hanya di HP ini dan hilang saat halaman ditutup. Ketuk Register untuk menyimpan ke cloud.</span>
       </div>
     </div>
 
@@ -1736,8 +1734,7 @@
         <p class="sec-sub">Apa yang Anda dapat di setiap tahap — tanpa daftar, setelah daftar, dan bila berlangganan.</p>
         <div class="card">
           <h3>1. Mode Coba — tanpa daftar</h3>
-          <p>Semua bisa dicoba tanpa daftar: 9 modul aplikasi, valuasi usaha, dan AI Coach bisa dipakai. Data usaha hanya tersimpan di HP ini — tidak tersimpan di cloud dan tidak bisa dibuka di HP lain. Daftar kapan saja, dan data coba Anda pindah ke akun baru Anda.</p>
-          <div class="actions"><button class="btn" id="btnPaketDaftar" type="button">Daftar</button></div>
+          <p>Semua bisa dicoba tanpa daftar: 9 modul aplikasi, valuasi usaha, dan AI Coach bisa dipakai. Data usaha hanya tersimpan di HP ini — tidak tersimpan di cloud dan tidak bisa dibuka di HP lain. Daftar kapan saja lewat tombol Register, dan data coba Anda pindah ke akun baru Anda.</p>
         </div>
         <div class="card" style="margin-top:14px">
           <h3>2. Terdaftar — Gratis</h3>
@@ -5460,7 +5457,6 @@
           }catch(e){ popupAuth("Tidak bisa terhubung — periksa internet Anda, lalu coba lagi sebentar lagi. Data coba Anda tetap aman di HP ini.", "Tidak bisa terhubung"); }
           if(!authCooldownTimer) gid("authSubmit").disabled=false;
         });
-        var bbr=gid("btnBannerRegister"); if(bbr) bbr.addEventListener("click",function(){ window.__showRegisterGate("Simpan ke cloud"); });
 
         /* ---------- GPS lokasi usaha (satu kali per aksi user) ---------- */
         var btnGps=gid("btnGps");
@@ -7757,7 +7753,7 @@
       }
       async function perbaruiStatusAkun(){
         var strip=gid("statusAkunStrip"); if(!strip) return;
-        var pill=gid("statusAkunPill"), sub=gid("statusAkunSub"), hint=gid("statusAkunHint"), daf=gid("statusAkunDaftar");
+        var pill=gid("statusAkunPill"), sub=gid("statusAkunSub"), hint=gid("statusAkunHint");
         var user=null; try{ user=(window.__penggunaAktif && window.__penggunaAktif())||null; }catch(e){}
         var pending=""; try{ pending=(window.__pendingConfirmEmail && window.__pendingConfirmEmail())||""; }catch(e){}
         var mode="coba", pillTxt="Mode coba — belum daftar", subTxt="Data tersimpan di HP ini saja", daftar=false;
@@ -7775,7 +7771,6 @@
         if(pill) pill.textContent=pillTxt;
         if(sub) sub.textContent=subTxt;
         if(hint) hint.style.display=daftar?"none":"";
-        if(daf) daf.style.display=daftar?"":"none";
         /* Tombol #btnSaveCloud berganti label menurut status akun: tamu —
            termasuk yang masih menunggu konfirmasi email (user null) —
            melihat "Register"; pengguna terdaftar melihat "Upgrade".
@@ -7788,7 +7783,6 @@
            menyembunyikan penanda Gratis ini dan tier Pro membawa "Dipilih"
            lewat aturPaketPro). */
         var pa=gid("paketPaketAnda"); if(pa) pa.style.display=(mode==="gratis")?"":"none";
-        var pd=gid("btnPaketDaftar"); if(pd) pd.style.display=daftar?"":"none";
         strip.setAttribute("data-mode", mode);
         strip.setAttribute("aria-label","Status akun: "+pillTxt+". Ketuk untuk detail.");
         /* Entri "Admin marketing" (blok marketing) ikut diperbarui di sini —
@@ -7828,10 +7822,6 @@
         var strip=gid("statusAkunStrip"); if(!strip) return;
         strip.addEventListener("click", function(){ bukaHalamanPaket(); });
         strip.addEventListener("keydown", function(ev){ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); bukaHalamanPaket(); } });
-        var daf=gid("statusAkunDaftar");
-        if(daf) daf.addEventListener("click", function(ev){ ev.stopPropagation(); if(window.__showRegisterGate) window.__showRegisterGate("Simpan ke cloud"); });
-        var pd=gid("btnPaketDaftar");
-        if(pd) pd.addEventListener("click", function(){ if(window.__showRegisterGate) window.__showRegisterGate("Simpan ke cloud"); });
         var bl=gid("btnPaketLangganan");
         if(bl) bl.addEventListener("click", function(){
           /* Alur berlangganan modul langganan yang sudah ada (paket Bulanan,
