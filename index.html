@@ -148,7 +148,6 @@
       body.masuk-kembali .hero>p.lede,
       body.masuk-kembali .hero>p.note,
       body.masuk-kembali .hero>.guided-cta,
-      body.masuk-kembali .hero>#demoBanner,
       body.masuk-kembali .hero>.module-grid,
       body.masuk-kembali #stHealthSub,
       body.masuk-kembali #hiSaldoNote,
@@ -296,7 +295,16 @@
       /* ---------- modul lengkap ---------- */
       .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
       @media(max-width:760px){.module-grid{grid-template-columns:repeat(3,1fr);gap:7px}.module-grid a{padding:9px 8px}.module-grid a b{font-size:.78rem;line-height:1.25}.module-grid a span{display:none}}
-      .module-grid a{display:flex;flex-direction:column;justify-content:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:13px 14px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+      /* Keadaan diam pil modul dibuat jelas seperti tombol (permintaan
+         pemilik 2026-11-15, tangkapan layar HP: hanya pil yang diklik
+         (emas) dan yang disentuh (garis hijau :hover) yang terbaca
+         sebagai tombol; 7 lainnya menyatu dengan latar gelap karena
+         --surface + garis --line terlalu dekat dengan --bg). Latar
+         dinaikkan ke --surface-2, garis diperjelas ke hijau-abu terang,
+         plus sorot dalam tipis di tepi atas supaya terangkat. Bentuk
+         pil (999px), hover (garis hijau --accent), dan emas sesudah
+         diklik (.sudah-diklik) TIDAK berubah. */
+      .module-grid a{display:flex;flex-direction:column;justify-content:center;background:var(--surface-2);border:1px solid #4f6f5e;border-radius:999px;padding:13px 14px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow),inset 0 1px 0 rgba(233,241,236,.07);transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
       .module-grid a b{display:block;font-size:.95rem}
       .module-grid a span{font-size:.8rem;color:var(--ink-soft)}
       .module-grid a:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.4),0 14px 28px -12px rgba(0,0,0,.65)}
@@ -621,7 +629,6 @@
         .hero{padding:20px 0 4px}
         h1{font-size:1.85rem;line-height:1.12}
         .hero p.lede{font-size:.98rem;margin-top:8px}
-        #demoBanner span{display:block;line-height:1.4}
         /* kartu ringkasan: valuasi jadi pahlawan, lebar penuh di atas */
         .stat-row{grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
         .stat{padding:13px 14px;border-radius:12px}
@@ -891,7 +898,6 @@
           </div>
           <button class="btn big" id="btnWizardHero" type="button">Mulai langkah demi langkah</button>
         </div>
-        <p id="demoBanner" style="margin-top:14px"><span class="demo-tag" style="margin:0">Mode gelap · Formulir masih kosong — isi kolom berwarna keemasan di bawah dengan data usaha Anda, angka akan terhitung otomatis</span></p>
         <div class="sql-banner" id="sqlBanner" role="alert">
           <b>Tabel cloud belum dibuat.</b> Aplikasi tetap bisa dipakai dan data tersimpan lokal sementara di perangkat ini. Agar data tersimpan di cloud per akun, jalankan SQL pembuatan tabel sekali di SQL Editor cloud.
           <div class="actions" style="margin-top:10px"><button class="btn small" id="btnShowSql" type="button">Lihat &amp; salin SQL tabel</button></div>
@@ -3690,7 +3696,6 @@
       })();
 
       document.querySelectorAll("input,select").forEach(el=>{ el.addEventListener("input",recalc); el.addEventListener("change",recalc); });
-      document.querySelectorAll("#data input, #data select").forEach(el=> el.addEventListener("input",()=>{ $("demoBanner").style.display="none"; }));
       recalc();
     </script>
 
@@ -4674,9 +4679,7 @@
           try{ if(typeof window.__renderNaikLevel==="function") window.__renderNaikLevel(); }catch(e){}
           var wrap=gid("dataFormWrap"), ring=gid("dataRingkasan"), selesai=gid("btnDataSelesai");
           var pil=document.querySelector("#data .demo-tag");
-          var banner=gid("demoBanner");
           if(pil) pil.style.display=ada?"none":"";
-          if(ada && banner) banner.style.display="none";
           if(ada && !formDibukaManual){
             if(wrap) wrap.style.display="none";
             if(ring){ isiRingkasanData(); ring.style.display=""; }
@@ -5070,7 +5073,7 @@
           else if(window.__keHariIni){ try{ window.__keHariIni(); }catch(e){} }
           var gb=gid("guestBanner"); if(gb) gb.classList.remove("show");
           gid("accountBar").classList.add("show");
-          gid("userEmail").textContent=user.email||"";
+          var ue=gid("userEmail"); if(ue){ ue.textContent=user.email||""; ue.style.display=""; }
           /* Strip status akun memakai keadaan sesi yang sama. */
           if(typeof perbaruiStatusAkun==="function"){ try{ perbaruiStatusAkun(); }catch(e){} }
           /* Langganan: segarkan status Pro & kartu langganan (diam bila saklar mati). */
@@ -5102,7 +5105,9 @@
           if(typeof resetSapa==="function") resetSapa(); /* penghitung diam mulai dari nol saat masuk */
           gid("authGate").style.display="none";
           gid("accountBar").classList.add("show");
-          gid("userEmail").textContent="Mode coba — tanpa daftar";
+          /* Tamu: slot email pemilik di bilah akun disembunyikan (tanpa ruang
+             kosong) — pil "Mode coba" di sebelahnya sudah cukup. */
+          var ue=gid("userEmail"); if(ue){ ue.textContent=""; ue.style.display="none"; }
           if(typeof perbaruiStatusAkun==="function"){ try{ perbaruiStatusAkun(); }catch(e){} }
           var gb=gid("guestBanner"); if(gb) gb.classList.add("show");
           var loc=null; try{ var s=localStorage.getItem("umkm-introspeksi-cache:lokal"); loc=s?JSON.parse(s):null; }catch(e){}
@@ -7770,6 +7775,12 @@
            Penentunya objek pengguna yang sama dengan penentu klik, jadi
            label dan perilaku tidak pernah berbeda. */
         var bsc=gid("btnSaveCloud"); if(bsc) bsc.textContent=user?"Upgrade":"Register";
+        /* Slot email pemilik di bilah akun: hanya untuk pengguna terdaftar.
+           Tamu tidak menampilkannya (pil "Mode coba" sudah cukup) dan tanpa
+           ruang kosong saat disembunyikan. Dijaga di sini juga supaya setiap
+           perubahan keadaan akun — termasuk sesi berakhir — konsisten, bukan
+           hanya saat masuk tamu/terdaftar. */
+        var ue=gid("userEmail"); if(ue) ue.style.display=user?"":"none";
         /* Penanda paket saat ini di halaman Paket & Layanan: hanya untuk
            pengguna terdaftar paket Gratis (billing belum aktif, jadi tidak
            ada pengguna Pro di keadaan hidup; bila kelak ada, mode "pro"
