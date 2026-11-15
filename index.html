@@ -1763,15 +1763,27 @@
               <label class="f"><span>Nama pegawai</span><input type="text" id="timNama" placeholder="contoh: Rina Wati" /></label>
               <label class="f"><span>Email pegawai</span><input type="email" id="timEmail" placeholder="contoh: rina@contoh.id" /></label>
             </div>
-            <p class="note" style="margin-top:10px">Peran yang sudah dilatih:</p>
-            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px">
-              <label><input type="checkbox" id="timPeranKas" /> Kas</label>
-              <label><input type="checkbox" id="timPeranProduksi" /> Produksi &amp; layanan</label>
-              <label><input type="checkbox" id="timPeranStok" /> Stok</label>
-            </div>
+            <p class="note" style="margin-top:10px">Peran yang sudah dilatih (diambil dari struktur usaha di bawah):</p>
+            <div id="timPeranWrap" style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px"></div>
             <div class="actions" style="margin-top:10px"><button class="btn" id="btnTambahTim" type="button">Tambah pegawai</button></div>
             <div class="actions" style="margin-top:10px"><button class="btn ghost small" id="btnMuatTim" type="button">Muat ulang</button></div>
             <div id="timList" style="margin-top:12px"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px" id="strukturCard">
+          <h3>Struktur usaha</h3>
+          <p class="note" id="strukturTamu" style="display:none">Daftar dulu untuk menyusun struktur usaha.</p>
+          <div id="strukturIsi">
+            <p class="note">Tentukan peran-peran di usaha Anda — siapa memegang peran apa. Peran di sini muncul sebagai pilihan saat Anda menambahkan pegawai di kartu Tim usaha di atas, dan pegawai melihat nama perannya di Aplikasi Pegawai.</p>
+            <div class="actions" style="margin-top:10px"><button class="btn" id="btnStrukturAi" type="button">Bantu susun struktur</button></div>
+            <p class="note" id="strukturAiNote" role="status" style="display:none;margin-top:10px"></p>
+            <div id="strukturSaran" style="display:none;margin-top:12px"></div>
+            <div class="form-grid" style="margin-top:12px">
+              <label class="f"><span>Nama peran</span><input type="text" id="strukturNama" placeholder="contoh: Bendahara" /></label>
+              <label class="f"><span>Deskripsi singkat</span><input type="text" id="strukturDeskripsi" placeholder="contoh: Mengelola uang dan catatan usaha" /></label>
+            </div>
+            <div class="actions" style="margin-top:10px"><button class="btn" id="btnTambahStruktur" type="button">Tambah peran</button><button class="btn ghost" id="btnBatalStruktur" type="button" style="display:none">Batal</button></div>
+            <div id="strukturList" style="margin-top:12px"></div>
           </div>
         </div>
         <div class="card" style="margin-top:14px" id="timLogCard">
@@ -4211,11 +4223,14 @@
         return "Belum dicek";
       }
       var timDaftar=[];
-      function timPeranLabel(p){ return p==="kas"?"Kas":p==="produksi"?"Produksi & layanan":p==="stok"?"Stok":p; }
-      function timBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("timTamu"), isi=$("timIsi"), logTamu=$("timLogTamu"), logIsi=$("timLogIsi"), lapTamu=$("lapTamu"), lapIsi=$("lapIsi"), presTamu=$("presTamu"), presIsi=$("presIsi"), aiTamu=$("aiPakaiTamu"), aiIsi=$("aiPakaiIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; if(logTamu) logTamu.style.display=""; if(logIsi) logIsi.style.display="none"; if(lapTamu) lapTamu.style.display=""; if(lapIsi) lapIsi.style.display="none"; if(presTamu) presTamu.style.display=""; if(presIsi) presIsi.style.display="none"; if(aiTamu) aiTamu.style.display=""; if(aiIsi) aiIsi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; if(logTamu) logTamu.style.display="none"; if(logIsi) logIsi.style.display=""; if(lapTamu) lapTamu.style.display="none"; if(lapIsi) lapIsi.style.display=""; if(presTamu) presTamu.style.display="none"; if(presIsi) presIsi.style.display=""; if(aiTamu) aiTamu.style.display="none"; if(aiIsi) aiIsi.style.display=""; timMuat(); timLogMuat(); lapMuat(); presMuat(); aiPakaiMuat(); }
+      /* Nama peran dari struktur usaha pemilik (bila ada), lalu peta
+         bawaan — bendahara dan kas tetap berbeda: bendahara dari
+         struktur pemilik, kas dari peta bawaan. */
+      function timPeranLabel(p){ var daftar=null; try{ daftar=strukturEfektif(); }catch(e){ daftar=null; } if(daftar){ for(var i=0;i<daftar.length;i++){ if(daftar[i].id===p) return daftar[i].nama||p; } } return p==="kas"?"Kas":p==="produksi"?"Produksi & layanan":p==="stok"?"Stok":p; }
+      function timBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("timTamu"), isi=$("timIsi"), logTamu=$("timLogTamu"), logIsi=$("timLogIsi"), lapTamu=$("lapTamu"), lapIsi=$("lapIsi"), presTamu=$("presTamu"), presIsi=$("presIsi"), aiTamu=$("aiPakaiTamu"), aiIsi=$("aiPakaiIsi"), strTamu=$("strukturTamu"), strIsi=$("strukturIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; if(logTamu) logTamu.style.display=""; if(logIsi) logIsi.style.display="none"; if(lapTamu) lapTamu.style.display=""; if(lapIsi) lapIsi.style.display="none"; if(presTamu) presTamu.style.display=""; if(presIsi) presIsi.style.display="none"; if(aiTamu) aiTamu.style.display=""; if(aiIsi) aiIsi.style.display="none"; if(strTamu) strTamu.style.display=""; if(strIsi) strIsi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; if(logTamu) logTamu.style.display="none"; if(logIsi) logIsi.style.display=""; if(lapTamu) lapTamu.style.display="none"; if(lapIsi) lapIsi.style.display=""; if(presTamu) presTamu.style.display="none"; if(presIsi) presIsi.style.display=""; if(aiTamu) aiTamu.style.display="none"; if(aiIsi) aiIsi.style.display=""; if(strTamu) strTamu.style.display="none"; if(strIsi) strIsi.style.display=""; renderStruktur(); renderTimPeran(); timMuat(); timLogMuat(); lapMuat(); presMuat(); aiPakaiMuat(); }
       async function timMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var wadah=$("timList"); if(!sb){ if(wadah) wadah.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu buka lagi layar ini.</p>"; return; } var r=await sb.from("akses_pegawai").select("email,nama,peran,aktif,foto_path").eq("pemilik_id", u.id).order("nama",{ascending:true}); if(r.error){ if(timBelumAktif(r.error)){ if(wadah) wadah.innerHTML="<p class=\"note\"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b> Salinan pengaturannya ada di <a href=\""+TIM_URL_PEGAWAI+"\" target=\"_blank\" rel=\"noopener\">Aplikasi Pegawai</a>.</p>"; return; } popupRamah("Daftar tim belum bisa dimuat","Periksa koneksi internet Anda, lalu buka lagi layar ini."); return; } timDaftar=r.data||[]; renderTim(); }
-      function renderTim(){ var wadah=$("timList"); if(!wadah) return; wadah.innerHTML=""; if(!timDaftar.length){ var k=document.createElement("p"); k.className="note"; k.textContent="Belum ada pegawai terdaftar — tambahkan pegawai pertama Anda di atas."; wadah.appendChild(k); return; } timDaftar.forEach(function(p){ var baris=document.createElement("div"); baris.className="tim-baris"; var foto=document.createElement("span"); foto.className="foto-sel"; if(p.foto_path){ var im=document.createElement("img"); im.className="foto-mini"; im.alt="Pas foto "+(p.nama||"pegawai"); im.setAttribute("data-foto-path", p.foto_path); im.setAttribute("data-foto-nama", p.nama||""); foto.appendChild(im); }else{ var ini=document.createElement("span"); ini.className="foto-inisial"; ini.textContent=inisialNama(p.nama); foto.appendChild(ini); } baris.appendChild(foto); var info=document.createElement("div"); info.className="tim-baris-info"; var nm=document.createElement("b"); nm.textContent=p.nama||"—"; info.appendChild(nm); var ket=document.createElement("span"); ket.textContent=(p.email||"")+" · "+(Array.isArray(p.peran)?p.peran.map(timPeranLabel).join(", "):"—")+" · "+(p.aktif?"Aktif":"Nonaktif"); info.appendChild(ket); baris.appendChild(info); var aksi=document.createElement("div"); aksi.className="actions"; var bT=document.createElement("button"); bT.type="button"; bT.className="btn ghost small"; bT.textContent=p.aktif?"Nonaktifkan":"Aktifkan"; bT.setAttribute("data-toggle-tim",(p.email||"")+"|"+(p.aktif?"0":"1")); var bH=document.createElement("button"); bH.type="button"; bH.className="btn ghost small"; bH.textContent="Hapus"; bH.setAttribute("data-hapus-tim",p.email||""); aksi.appendChild(bT); aksi.appendChild(bH); baris.appendChild(aksi); wadah.appendChild(baris); }); timIsiFoto(); presTampilBelum(); }
-      async function tambahTim(nama, email, peran){ var u=timPemilikMasuk(); if(!u){ popupRamah("Daftar dulu","Daftar dulu untuk mengelola tim."); return false; } nama=String(nama||"").trim(); email=String(email||"").trim().toLowerCase(); if(!nama){ popupRamah("Isi nama pegawai dulu","Tulis nama pegawainya, contoh: Rina Wati."); return false; } if(!email || !/^\S+@\S+\.\S+$/.test(email)){ popupRamah("Email pegawai belum benar","Tulis email aktif pegawai, contoh: rina@contoh.id."); return false; } if(!Array.isArray(peran)||!peran.length){ popupRamah("Pilih peran yang sudah dilatih","Centang minimal satu peran: Kas, Produksi & layanan, atau Stok."); return false; } if(timDaftar.some(function(p){ return String(p.email||"").toLowerCase()===email; })){ popupRamah("Sudah terdaftar","Pegawai dengan email ini sudah ada di daftar tim Anda."); return false; } var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return false; } var r=await sb.from("akses_pegawai").insert({email:email, pemilik_id:u.id, nama:nama, peran:peran, aktif:true}); if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); return false; } if(/duplicate|23505/i.test((r.error.message||"")+" "+(r.error.code||""))){ popupRamah("Sudah terdaftar","Pegawai dengan email ini sudah ada di daftar tim Anda."); return false; } popupRamah("Belum bisa menyimpan","Pegawai belum tersimpan — periksa koneksi internet Anda, lalu coba lagi."); return false; } toast("Pegawai ditambahkan"); audit("Pegawai ditambahkan ke tim: "+nama); await timMuat(); return true; }
+      function renderTim(){ var wadah=$("timList"); if(!wadah) return; wadah.innerHTML=""; if(!timDaftar.length){ var k=document.createElement("p"); k.className="note"; k.textContent="Belum ada pegawai terdaftar — tambahkan pegawai pertama Anda di atas."; wadah.appendChild(k); return; } timDaftar.forEach(function(p){ var baris=document.createElement("div"); baris.className="tim-baris"; var foto=document.createElement("span"); foto.className="foto-sel"; if(p.foto_path){ var im=document.createElement("img"); im.className="foto-mini"; im.alt="Pas foto "+(p.nama||"pegawai"); im.setAttribute("data-foto-path", p.foto_path); im.setAttribute("data-foto-nama", p.nama||""); foto.appendChild(im); }else{ var ini=document.createElement("span"); ini.className="foto-inisial"; ini.textContent=inisialNama(p.nama); foto.appendChild(ini); } baris.appendChild(foto); var info=document.createElement("div"); info.className="tim-baris-info"; var nm=document.createElement("b"); nm.textContent=p.nama||"—"; info.appendChild(nm); var ket=document.createElement("span"); ket.textContent=(p.email||"")+" · "+(Array.isArray(p.peran)?p.peran.map(timPeranLabel).join(", "):"—")+" · "+(p.aktif?"Aktif":"Nonaktif"); info.appendChild(ket); baris.appendChild(info); var aksi=document.createElement("div"); aksi.className="actions"; var bT=document.createElement("button"); bT.type="button"; bT.className="btn ghost small"; bT.textContent=p.aktif?"Nonaktifkan":"Aktifkan"; bT.setAttribute("data-toggle-tim",(p.email||"")+"|"+(p.aktif?"0":"1")); var bH=document.createElement("button"); bH.type="button"; bH.className="btn ghost small"; bH.textContent="Hapus"; bH.setAttribute("data-hapus-tim",p.email||""); aksi.appendChild(bT); aksi.appendChild(bH); baris.appendChild(aksi); wadah.appendChild(baris); }); timIsiFoto(); presTampilBelum(); renderStruktur(); }
+      async function tambahTim(nama, email, peran){ var u=timPemilikMasuk(); if(!u){ popupRamah("Daftar dulu","Daftar dulu untuk mengelola tim."); return false; } nama=String(nama||"").trim(); email=String(email||"").trim().toLowerCase(); if(!nama){ popupRamah("Isi nama pegawai dulu","Tulis nama pegawainya, contoh: Rina Wati."); return false; } if(!email || !/^\S+@\S+\.\S+$/.test(email)){ popupRamah("Email pegawai belum benar","Tulis email aktif pegawai, contoh: rina@contoh.id."); return false; } if(!Array.isArray(peran)||!peran.length){ popupRamah("Pilih peran yang sudah dilatih","Centang minimal satu peran dari daftar peran di atas."); return false; } if(timDaftar.some(function(p){ return String(p.email||"").toLowerCase()===email; })){ popupRamah("Sudah terdaftar","Pegawai dengan email ini sudah ada di daftar tim Anda."); return false; } var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return false; } var r=await sb.from("akses_pegawai").insert({email:email, pemilik_id:u.id, nama:nama, peran:peran, aktif:true}); if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); return false; } if(/duplicate|23505/i.test((r.error.message||"")+" "+(r.error.code||""))){ popupRamah("Sudah terdaftar","Pegawai dengan email ini sudah ada di daftar tim Anda."); return false; } if(/peran pegawai tidak dikenal/i.test((r.error.message||""))){ popupRamah("Peran belum dikenal","Peran itu belum ada di struktur usaha Anda — tambah dulu di kartu Struktur usaha, lalu coba lagi."); return false; } popupRamah("Belum bisa menyimpan","Pegawai belum tersimpan — periksa koneksi internet Anda, lalu coba lagi."); return false; } toast("Pegawai ditambahkan"); audit("Pegawai ditambahkan ke tim: "+nama); await timMuat(); return true; }
       async function toggleTim(email, aktifBaru){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return; } var r=await sb.from("akses_pegawai").update({aktif:!!aktifBaru}).eq("email",email).eq("pemilik_id",u.id); if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); return; } popupRamah("Belum bisa mengubah","Status pegawai belum berubah — periksa koneksi internet Anda, lalu coba lagi."); return; } toast(aktifBaru?"Pegawai diaktifkan":"Pegawai dinonaktifkan"); await timMuat(); }
       function hapusTim(email){ var target=null; timDaftar.forEach(function(p){ if(String(p.email||"").toLowerCase()===String(email||"").toLowerCase()) target=p; }); var tampil=(target&&(target.nama||target.email))||email; if(window.tampilPopupRamah){ window.tampilPopupRamah("Hapus pegawai ini?","\""+tampil+"\" akan dihapus dari daftar tim dan tidak bisa lagi masuk Aplikasi Pegawai.","Ketuk Hapus pegawai bila sudah yakin — ketuk Mengerti untuk batal.",{label:"Hapus pegawai", fn:function(){ hapusTimJalankan(email); }}); } else { hapusTimJalankan(email); } }
       async function hapusTimJalankan(email){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return; } var r=await sb.from("akses_pegawai").delete().eq("email",email).eq("pemilik_id",u.id); if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); return; } popupRamah("Belum bisa menghapus","Pegawai belum terhapus — periksa koneksi internet Anda, lalu coba lagi."); return; } toast("Pegawai dihapus"); audit("Pegawai dihapus dari tim"); await timMuat(); }
@@ -4242,6 +4257,297 @@
         await timLogMuat();
         return true;
       }
+
+      /* --- Struktur usaha: peran-peran yang ditentukan pemilik ---
+         Daftar peran disimpan di snapshot data usaha (umkm_data.data ->
+         'struktur', lewat collectSnapshot / applySnapshot — sama
+         seperti daftar SOP), jadi ikut autosave berkala dan dibaca RPC
+         sops_untuk_pegawai untuk Aplikasi Pegawai. Satu entri =
+         {id, nama, deskripsi, bawaan}. Peran bawaan (kas / produksi /
+         stok) selalu tersedia bila pemilik belum menentukan struktur
+         sendiri; peran baru dari pemilik (misalnya bendahara) ditambah
+         ke daftar itu. id peran = nama peran yang dirapikan menjadi
+         huruf kecil (spasi jadi garis bawah) dan TIDAK berubah bila
+         namanya diubah — supaya pegawai yang sudah memegang peran itu
+         tidak kehilangan peran saat namanya diperbaiki. Bendahara dan
+         kas adalah peran BERBEDA: kas (kasir) menerima pembayaran
+         harian, bendahara mengelola uang dan catatan usaha.
+         AI hanya menyarankan peran; pemilik yang meninjau dan menekan
+         Tambah — AI tidak pernah menambahkan peran sendiri. */
+      var STRUKTUR_BAWAAN=[
+        {id:"kas", nama:"Kas", deskripsi:"Menerima pembayaran harian dari pelanggan.", bawaan:true},
+        {id:"produksi", nama:"Produksi & layanan", deskripsi:"Membuat produk atau melayani pelanggan.", bawaan:true},
+        {id:"stok", nama:"Stok", deskripsi:"Menjaga ketersediaan dan mencatat bahan atau barang.", bawaan:true}
+      ];
+      var strukturList=[];
+      var strukturEditId=null;
+      var strukturSaranDaftar=[];
+      function strukturSlug(nama){ return String(nama||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,""); }
+      function strukturBersih(r){ if(!r || typeof r!=="object") return null; var id=strukturSlug(r.id||r.nama||""); var nama=String(r.nama||"").trim(); if(!id || !nama) return null; return {id:id, nama:nama, deskripsi:String(r.deskripsi||"").trim(), bawaan:!!r.bawaan}; }
+      function strukturBersihDaftar(d){ var out=[]; (Array.isArray(d)?d:[]).forEach(function(r){ var b=strukturBersih(r); if(b && !out.some(function(x){ return x.id===b.id; })) out.push(b); }); return out; }
+      function strukturEfektif(){ return strukturList.length ? strukturBersihDaftar(strukturList) : STRUKTUR_BAWAAN.map(function(r){ return {id:r.id, nama:r.nama, deskripsi:r.deskripsi, bawaan:true}; }); }
+      function strukturPastikanAda(){ if(!strukturList.length){ strukturList=STRUKTUR_BAWAAN.map(function(r){ return {id:r.id, nama:r.nama, deskripsi:r.deskripsi, bawaan:true}; }); } }
+      function strukturPemegang(id){ var nama=[]; (timDaftar||[]).forEach(function(p){ if(Array.isArray(p.peran) && p.peran.indexOf(id)>=0) nama.push(p.nama||p.email||"—"); }); return nama; }
+      function renderStruktur(){
+        var wadah=$("strukturList"); if(!wadah) return;
+        wadah.innerHTML="";
+        var daftar=strukturEfektif();
+        if(!strukturList.length){
+          var nb=document.createElement("p"); nb.className="note"; nb.textContent="Ini peran bawaan — tambah peran Anda sendiri di atas, atau ubah deskripsi peran bawaan bila perlu.";
+          wadah.appendChild(nb);
+        }
+        if(!daftar.length){
+          var k=document.createElement("p"); k.className="note"; k.textContent="Belum ada peran — tambah peran pertama Anda di atas.";
+          wadah.appendChild(k); return;
+        }
+        daftar.forEach(function(r){
+          var baris=document.createElement("div"); baris.className="tim-baris";
+          var info=document.createElement("div"); info.className="tim-baris-info";
+          var nm=document.createElement("b"); nm.textContent=r.nama+(r.bawaan?" (bawaan)":""); info.appendChild(nm);
+          var ket=document.createElement("span"); ket.textContent=r.deskripsi||"—"; info.appendChild(ket);
+          var peg=strukturPemegang(r.id);
+          var pegEl=document.createElement("span"); pegEl.textContent=peg.length?("Diisi oleh: "+peg.join(", ")):"Belum ada yang memegang peran ini.";
+          info.appendChild(pegEl);
+          baris.appendChild(info);
+          var aksi=document.createElement("div"); aksi.className="actions";
+          var bU=document.createElement("button"); bU.type="button"; bU.className="btn ghost small"; bU.textContent="Ubah"; bU.setAttribute("data-ubah-struktur", r.id);
+          var bH=document.createElement("button"); bH.type="button"; bH.className="btn ghost small"; bH.textContent="Hapus"; bH.setAttribute("data-hapus-struktur", r.id);
+          aksi.appendChild(bU); aksi.appendChild(bH); baris.appendChild(aksi);
+          wadah.appendChild(baris);
+        });
+      }
+      /* Pilihan peran di kartu Tim usaha selalu mengikuti struktur
+         usaha — peran bawaan (id timPeranKas / timPeranProduksi /
+         timPeranStok dipertahankan) ditambah peran pemilik. Centang
+         yang sudah dipilih dipertahankan saat daftar digambar ulang. */
+      function renderTimPeran(){
+        var w=$("timPeranWrap"); if(!w) return;
+        var tercentang={};
+        Array.prototype.forEach.call(w.querySelectorAll("input[data-peran]"), function(c){ if(c.checked) tercentang[c.getAttribute("data-peran")]=true; });
+        w.innerHTML="";
+        var idPemetaan={kas:"timPeranKas", produksi:"timPeranProduksi", stok:"timPeranStok"};
+        strukturEfektif().forEach(function(r){
+          var lab=document.createElement("label");
+          var c=document.createElement("input"); c.type="checkbox";
+          c.id=idPemetaan[r.id]||("timPeran_"+r.id); c.setAttribute("data-peran", r.id);
+          if(tercentang[r.id]) c.checked=true;
+          lab.appendChild(c);
+          lab.appendChild(document.createTextNode(" "+r.nama));
+          w.appendChild(lab);
+        });
+      }
+      function strukturTambah(nama, deskripsi){
+        var u=timPemilikMasuk(); if(!u){ popupRamah("Daftar dulu","Daftar dulu untuk menyusun struktur usaha."); return false; }
+        nama=String(nama||"").trim(); deskripsi=String(deskripsi||"").trim();
+        if(!nama){ popupRamah("Isi nama peran dulu","Tulis nama perannya, contoh: Bendahara."); return false; }
+        var id=strukturSlug(nama);
+        if(!id){ popupRamah("Nama peran belum jelas","Tulis nama peran dengan huruf, contoh: Bendahara."); return false; }
+        strukturPastikanAda();
+        if(strukturList.some(function(r){ return r.id===id; })){ popupRamah("Peran sudah ada","Peran \""+nama+"\" sudah ada di struktur usaha Anda."); return false; }
+        strukturList.push({id:id, nama:nama, deskripsi:deskripsi, bawaan:false});
+        strukturEditId=null;
+        renderStruktur(); renderTimPeran();
+        toast("Peran ditambahkan");
+        audit("Peran ditambahkan ke struktur usaha: "+nama);
+        return true;
+      }
+      function strukturMulaiUbah(id){
+        var target=null; strukturEfektif().forEach(function(r){ if(r.id===id) target=r; });
+        if(!target) return false;
+        if($("strukturNama")) $("strukturNama").value=target.nama||"";
+        if($("strukturDeskripsi")) $("strukturDeskripsi").value=target.deskripsi||"";
+        strukturEditId=id;
+        var b=$("btnTambahStruktur"); if(b) b.textContent="Simpan perubahan";
+        var bB=$("btnBatalStruktur"); if(bB) bB.style.display="";
+        return true;
+      }
+      function strukturBatalUbah(){
+        strukturEditId=null;
+        if($("strukturNama")) $("strukturNama").value="";
+        if($("strukturDeskripsi")) $("strukturDeskripsi").value="";
+        var b=$("btnTambahStruktur"); if(b) b.textContent="Tambah peran";
+        var bB=$("btnBatalStruktur"); if(bB) bB.style.display="none";
+      }
+      function strukturSimpanUbah(id, nama, deskripsi){
+        var u=timPemilikMasuk(); if(!u){ popupRamah("Daftar dulu","Daftar dulu untuk menyusun struktur usaha."); return false; }
+        nama=String(nama||"").trim(); deskripsi=String(deskripsi||"").trim();
+        if(!nama){ popupRamah("Isi nama peran dulu","Tulis nama perannya, contoh: Bendahara."); return false; }
+        strukturPastikanAda();
+        var ketemu=false;
+        strukturList.forEach(function(r){ if(r.id===id){ r.nama=nama; r.deskripsi=deskripsi; ketemu=true; } });
+        if(!ketemu){ popupRamah("Peran tidak ditemukan","Muat ulang layar ini, lalu coba lagi."); return false; }
+        strukturBatalUbah();
+        renderStruktur(); renderTimPeran();
+        toast("Peran diperbarui");
+        audit("Peran diperbarui di struktur usaha: "+nama);
+        return true;
+      }
+      function strukturHapus(id){
+        var daftar=strukturEfektif();
+        if(daftar.length<=1){ popupRamah("Minimal satu peran","Struktur usaha harus punya minimal satu peran — ubah namanya bila perlu, atau tambah peran lain dulu."); return false; }
+        var nama=""; daftar.forEach(function(r){ if(r.id===id) nama=r.nama; });
+        var peg=strukturPemegang(id);
+        if(window.tampilPopupRamah){
+          window.tampilPopupRamah("Hapus peran ini?","\""+(nama||id)+"\" akan dihapus dari struktur usaha Anda."+(peg.length?" Pegawai yang memegang peran ini ("+peg.join(", ")+") tetap terdaftar, tetapi perannya tidak lagi muncul di struktur.":""),"Ketuk Hapus peran bila sudah yakin — ketuk Mengerti untuk batal.",{label:"Hapus peran", fn:function(){ strukturHapusJalankan(id); }});
+        } else { strukturHapusJalankan(id); }
+        return true;
+      }
+      function strukturHapusJalankan(id){
+        strukturPastikanAda();
+        strukturList=strukturList.filter(function(r){ return r.id!==id; });
+        if(strukturEditId===id) strukturBatalUbah();
+        renderStruktur(); renderTimPeran();
+        toast("Peran dihapus");
+        audit("Peran dihapus dari struktur usaha");
+        return true;
+      }
+      /* --- Saran struktur dari AI Coach (pola yang sama dengan pemetaan
+         SOP: kuota dulu, lalu /api/ai-chat dengan JSON saja, 8 detik,
+         baca JSON yang rusak bila bisa, lalu saran lokal yang jujur.
+         Prompt TIDAK menerima angka usaha apa pun: tanpa omzet,
+         valuasi, HPP, atau catatan apa pun — hanya nama usaha, jenis
+         usaha, level skala, jumlah pegawai, nama SOP, dan peran saat
+         ini. Level skala hanyalah kategori ukuran (mikro/kecil/
+         menengah), bukan angka keuangannya. --- */
+      var STRUKTUR_PROMPT_SARAN="Anda membantu pemilik sebuah UMKM menyusun struktur usaha (peran-peran di dalam usahanya) dalam Bahasa Indonesia. Usulkan peran yang masuk akal untuk usaha ini berdasarkan nama usaha, jenis usaha, level skala UMKM, jumlah pegawai, daftar SOP yang sudah ditulis, dan peran yang sudah ada. Kembalikan JSON saja, tanpa teks lain dan tanpa markdown. Kembalikan objek JSON dengan kunci: peran (array objek, masing-masing berisi nama (nama peran, string) dan deskripsi (tugas singkat peran itu, string, paling banyak 12 kata)). Aturan: usulkan paling banyak 5 peran; jangan menyarankan peran yang sudah ada di daftar peran saat ini; bedakan Bendahara (mengelola uang dan catatan usaha) dari Kas (kasir — menerima pembayaran harian dari pelanggan); untuk usaha dengan lebih dari satu pegawai atau yang perlu catatan usaha rapi, pertimbangkan peran Bendahara; sesuaikan dengan jenis usaha dan SOP yang ada; jangan membuat angka apa pun; kembalikan JSON yang valid saja.";
+      function strukturDataUsaha(){
+        var d={nama:"", sektor:"", sektorLabel:"", level:"", jmlPegawai:0, namaSop:[], peranSaatIni:[]};
+        try{ var nEl=$("inNama"); d.nama=nEl?String(nEl.value||"").trim():""; }catch(e){}
+        try{ var sEl=$("inSektor"); if(sEl && sEl.value){ d.sektor=sEl.value; d.sektorLabel=(sEl.selectedOptions && sEl.selectedOptions[0])?sEl.selectedOptions[0].textContent:""; } }catch(e){}
+        try{ d.level=(typeof S!=="undefined" && S.skala)?String(S.skala):""; }catch(e){}
+        try{ d.jmlPegawai=(timDaftar||[]).filter(function(p){ return p.aktif!==false; }).length; }catch(e){}
+        try{ (sopsList||[]).forEach(function(s){ if(s.nama) d.namaSop.push(String(s.nama)); }); }catch(e){}
+        d.peranSaatIni=strukturEfektif().map(function(r){ return r.nama; });
+        return d;
+      }
+      /* Saran lokal (deterministis, tanpa AI): bendahara bila pegawai
+         lebih dari satu; pemasaran bila belum ada — tidak ada yang
+         ditebak dari angka usaha. */
+      function strukturSaranLokal(){
+        var ada={}; strukturEfektif().forEach(function(r){ ada[r.id]=true; });
+        var jmlPegawai=0; try{ jmlPegawai=(timDaftar||[]).filter(function(p){ return p.aktif!==false; }).length; }catch(e){}
+        var saran=[];
+        if(jmlPegawai>1 && !ada["bendahara"]) saran.push({id:"bendahara", nama:"Bendahara", deskripsi:"Mengelola uang dan catatan usaha.", bawaan:false});
+        if(!ada["pemasaran"]) saran.push({id:"pemasaran", nama:"Pemasaran", deskripsi:"Mengenalkan usaha dan mengurus kanal penjualan.", bawaan:false});
+        return saran;
+      }
+      function strukturUraikanJsonAI(teks){
+        function coba(s){
+          try{
+            var o=JSON.parse(s);
+            if(!o || typeof o!=="object") return null;
+            var daftar=Array.isArray(o.peran)?o.peran:[];
+            var out=[];
+            daftar.forEach(function(v){ var b=strukturBersih(v); if(b){ b.bawaan=false; out.push(b); } });
+            return out;
+          }catch(e){ return null; }
+        }
+        var langsung=coba(String(teks||"").trim()); if(langsung) return langsung;
+        var bersih=String(teks||"").replace(/```(?:json)?/gi,"").trim();
+        var dariBersih=coba(bersih); if(dariBersih) return dariBersih;
+        var a=bersih.indexOf("{"), b=bersih.lastIndexOf("}");
+        if(a>=0 && b>a) return coba(bersih.slice(a,b+1));
+        return null;
+      }
+      function strukturSaranAI(){
+        var d=strukturDataUsaha();
+        var konteks={jenis:"susunan_struktur", nama_usaha:d.nama||null, jenis_usaha:d.sektor||null, level_umkm:d.level||null, jumlah_pegawai:d.jmlPegawai, jumlah_sop:d.namaSop.length, peran_saat_ini:d.peranSaatIni};
+        var teksData="Nama usaha: "+(d.nama||"(belum diisi)")+"\nJenis usaha: "+(d.sektorLabel||d.sektor||"(belum dipilih)")+"\nLevel skala UMKM: "+(d.level||"(belum diketahui)")+"\nJumlah pegawai aktif: "+d.jmlPegawai+"\nSOP yang sudah ditulis ("+d.namaSop.length+"): "+(d.namaSop.length?d.namaSop.join("; "):"(belum ada)")+"\nPeran yang sudah ada: "+(d.peranSaatIni.length?d.peranSaatIni.join(", "):"(belum ada)");
+        var body={prompt:STRUKTUR_PROMPT_SARAN+"\n\nDATA USAHA:\n"+teksData, question:STRUKTUR_PROMPT_SARAN, context:konteks, petunjuk:"Kembalikan JSON saja, tanpa teks lain dan tanpa markdown. Jangan menyarankan peran yang sudah ada."};
+        function batasWaktu(ms){ return new Promise(function(_, tolak){ setTimeout(function(){ tolak(new Error("waktu habis")); }, ms); }); }
+        return Promise.race([
+          fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+            .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
+            .then(function(data){
+              var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
+              if(!ans || !String(ans).trim()) return null;
+              var hasil=strukturUraikanJsonAI(String(ans));
+              if(hasil && window.__tambahHitunganAi) window.__tambahHitunganAi();
+              return hasil;
+            }),
+          batasWaktu(8000)
+        ]);
+      }
+      /* Saran ditampilkan untuk ditinjau — pemilik menekan Tambah per
+         peran atau Tambah semua; saran yang sudah ditambahkan hilang
+         dari daftar saran. Tanpa fetch bila kuota habis. */
+      function strukturTampilkanSaran(daftar, catatan){
+        var wadah=$("strukturSaran"); if(!wadah) return;
+        wadah.innerHTML="";
+        var nt=document.createElement("p"); nt.className="note"; nt.textContent=catatan||"";
+        wadah.appendChild(nt);
+        (daftar||[]).forEach(function(r, idx){
+          var baris=document.createElement("div"); baris.className="tim-baris";
+          var info=document.createElement("div"); info.className="tim-baris-info";
+          var nm=document.createElement("b"); nm.textContent=r.nama||"—"; info.appendChild(nm);
+          var ket=document.createElement("span"); ket.textContent=r.deskripsi||"—"; info.appendChild(ket);
+          baris.appendChild(info);
+          var aksi=document.createElement("div"); aksi.className="actions";
+          var bT=document.createElement("button"); bT.type="button"; bT.className="btn ghost small"; bT.textContent="Tambah"; bT.setAttribute("data-saran-tambah", String(idx));
+          aksi.appendChild(bT); baris.appendChild(aksi);
+          wadah.appendChild(baris);
+        });
+        if((daftar||[]).length){
+          var aksiSemua=document.createElement("div"); aksiSemua.className="actions"; aksiSemua.style.marginTop="10px";
+          var bS=document.createElement("button"); bS.type="button"; bS.className="btn"; bS.textContent="Tambah semua"; bS.setAttribute("data-saran-semua", "1");
+          var bT2=document.createElement("button"); bT2.type="button"; bT2.className="btn ghost"; bT2.textContent="Tutup saran"; bT2.setAttribute("data-saran-tutup", "1");
+          aksiSemua.appendChild(bS); aksiSemua.appendChild(bT2); wadah.appendChild(aksiSemua);
+        } else {
+          var aksiTutup=document.createElement("div"); aksiTutup.className="actions"; aksiTutup.style.marginTop="10px";
+          var bT3=document.createElement("button"); bT3.type="button"; bT3.className="btn ghost"; bT3.textContent="Tutup saran"; bT3.setAttribute("data-saran-tutup", "1");
+          aksiTutup.appendChild(bT3); wadah.appendChild(aksiTutup);
+        }
+        wadah.style.display="";
+      }
+      function strukturTambahSaran(idx){
+        var s=strukturSaranDaftar[Number(idx)];
+        if(!s) return false;
+        var ok=strukturTambah(s.nama, s.deskripsi);
+        if(!ok) return false;
+        strukturSaranDaftar.splice(Number(idx), 1);
+        if(!strukturSaranDaftar.length){ var w=$("strukturSaran"); if(w) w.style.display="none"; }
+        else { strukturTampilkanSaran(strukturSaranDaftar, "Saran dari AI Coach — periksa dulu, lalu ketuk Tambah pada peran yang Anda mau. AI tidak menambahkan peran sendiri."); }
+        return true;
+      }
+      function strukturTambahSemuaSaran(){
+        var daftar=strukturSaranDaftar.slice();
+        var n=0;
+        daftar.forEach(function(s){ if(strukturTambah(s.nama, s.deskripsi)) n++; });
+        strukturSaranDaftar=[];
+        var w=$("strukturSaran"); if(w) w.style.display="none";
+        var note=$("strukturAiNote"); if(note){ note.textContent=n?("Semua saran ditambahkan ("+n+" peran) — periksa dan ubah bila perlu."):"Tidak ada saran yang ditambahkan."; note.style.display=""; }
+        return n;
+      }
+      function strukturMintaSaran(){
+        var note=$("strukturAiNote");
+        function catat(teks){ if(note){ note.textContent=teks; note.style.display=""; } }
+        if(window.__kuotaAiHabis && window.__kuotaAiHabis()){
+          if(window.__popupKuotaHabis) window.__popupKuotaHabis();
+          catat("Kuota pertanyaan AI bulan ini sudah habis — saran belum dibuat. Tambah peran secara manual di bawah, atau tunggu bulan depan.");
+          return Promise.resolve(null);
+        }
+        catat("Meminta saran struktur dari AI Coach — sebentar…");
+        return strukturSaranAI().then(function(hasil){
+          if(hasil){
+            var baru=hasil.filter(function(r){ return !strukturEfektif().some(function(x){ return x.id===r.id; }); });
+            if(!baru.length){ strukturSaranDaftar=[]; strukturTampilkanSaran([], "AI Coach tidak menyarankan peran baru — peran yang disarankan sudah ada di struktur Anda."); return []; }
+            strukturSaranDaftar=baru;
+            strukturTampilkanSaran(baru, "Saran dari AI Coach — periksa dulu, lalu ketuk Tambah pada peran yang Anda mau. AI tidak menambahkan peran sendiri.");
+            return baru;
+          }
+          var lokal=strukturSaranLokal();
+          strukturSaranDaftar=lokal;
+          strukturTampilkanSaran(lokal, lokal.length?"Jawaban AI belum bisa dibaca — ini saran dari aturan aplikasi berdasarkan jumlah pegawai dan peran Anda.":"Jawaban AI belum bisa dibaca — saran dari aturan aplikasi: semua peran yang bisa disarankan sudah ada di struktur Anda.");
+          return lokal;
+        }).catch(function(){
+          var lokal=strukturSaranLokal();
+          strukturSaranDaftar=lokal;
+          strukturTampilkanSaran(lokal, lokal.length?"AI tidak terjangkau — ini saran dari aturan aplikasi berdasarkan jumlah pegawai dan peran Anda.":"AI tidak terjangkau — saran dari aturan aplikasi: semua peran yang bisa disarankan sudah ada di struktur Anda.");
+          return lokal;
+        });
+      }
+      window.__struktur={daftar:function(){ return strukturBersihDaftar(strukturList); }, efektif:function(){ return strukturEfektif(); }, tambah:strukturTambah, ubah:strukturSimpanUbah, mulaiUbah:strukturMulaiUbah, batalUbah:strukturBatalUbah, hapus:strukturHapus, hapusJalankan:strukturHapusJalankan, render:renderStruktur, renderPeran:renderTimPeran, label:timPeranLabel, pemegang:strukturPemegang, bawaan:function(){ return STRUKTUR_BAWAAN.map(function(r){ return {id:r.id, nama:r.nama, deskripsi:r.deskripsi, bawaan:true}; }); }, saranLokal:strukturSaranLokal, saranAI:strukturSaranAI, mintaSaran:strukturMintaSaran, tampilkanSaran:strukturTampilkanSaran, tambahSaran:strukturTambahSaran, tambahSemuaSaran:strukturTambahSemuaSaran, saran:function(){ return strukturSaranDaftar.slice(); }, uraikanJson:strukturUraikanJsonAI, dataUsaha:strukturDataUsaha, saranPrompt:function(){ return STRUKTUR_PROMPT_SARAN; }};
+      renderStruktur(); renderTimPeran();
 
       /* --- Laporan pegawai + pas foto tim ---
          Laporan pegawai dibaca lewat RPC laporan_tim_untuk_pemilik
@@ -4393,11 +4699,28 @@
       }
       (function(){
         var bT=$("btnTambahTim");
-        if(bT) bT.addEventListener("click", function(){ var peran=[]; if($("timPeranKas") && $("timPeranKas").checked) peran.push("kas"); if($("timPeranProduksi") && $("timPeranProduksi").checked) peran.push("produksi"); if($("timPeranStok") && $("timPeranStok").checked) peran.push("stok"); var nama=$("timNama")?$("timNama").value:""; var email=$("timEmail")?$("timEmail").value:""; tambahTim(nama, email, peran).then(function(ok){ if(ok){ if($("timNama")) $("timNama").value=""; if($("timEmail")) $("timEmail").value=""; ["timPeranKas","timPeranProduksi","timPeranStok"].forEach(function(id){ var c=$(id); if(c) c.checked=false; }); } }); });
+        if(bT) bT.addEventListener("click", function(){ var peran=[]; var w=$("timPeranWrap"); if(w){ Array.prototype.forEach.call(w.querySelectorAll("input[data-peran]"), function(c){ if(c.checked) peran.push(c.getAttribute("data-peran")); }); } var nama=$("timNama")?$("timNama").value:""; var email=$("timEmail")?$("timEmail").value:""; tambahTim(nama, email, peran).then(function(ok){ if(ok){ if($("timNama")) $("timNama").value=""; if($("timEmail")) $("timEmail").value=""; if(w){ Array.prototype.forEach.call(w.querySelectorAll("input[data-peran]"), function(c){ c.checked=false; }); } } }); });
         var bL=$("btnMuatTimLog");
         if(bL) bL.addEventListener("click", function(){ timLogMuat(); });
         var bTim=$("btnMuatTim");
         if(bTim) bTim.addEventListener("click", function(){ timMuat(); });
+        var bStr=$("btnTambahStruktur");
+        if(bStr) bStr.addEventListener("click", function(){
+          var nama=$("strukturNama")?$("strukturNama").value:"";
+          var desk=$("strukturDeskripsi")?$("strukturDeskripsi").value:"";
+          var ok;
+          if(strukturEditId){ ok=strukturSimpanUbah(strukturEditId, nama, desk); }
+          else { ok=strukturTambah(nama, desk); }
+          if(ok){ if($("strukturNama")) $("strukturNama").value=""; if($("strukturDeskripsi")) $("strukturDeskripsi").value=""; }
+        });
+        var bStrBatal=$("btnBatalStruktur");
+        if(bStrBatal) bStrBatal.addEventListener("click", function(){ strukturBatalUbah(); });
+        var bStrAi=$("btnStrukturAi");
+        if(bStrAi) bStrAi.addEventListener("click", function(){ strukturMintaSaran(); });
+        var wadahStr=$("strukturList");
+        if(wadahStr) wadahStr.addEventListener("click", function(ev){ var t=ev.target && ev.target.closest ? ev.target.closest("[data-ubah-struktur],[data-hapus-struktur]") : null; if(!t) return; if(t.hasAttribute("data-ubah-struktur")){ strukturMulaiUbah(t.getAttribute("data-ubah-struktur")); } else if(t.hasAttribute("data-hapus-struktur")){ strukturHapus(t.getAttribute("data-hapus-struktur")); } });
+        var wadahSaran=$("strukturSaran");
+        if(wadahSaran) wadahSaran.addEventListener("click", function(ev){ var t=ev.target && ev.target.closest ? ev.target.closest("[data-saran-tambah],[data-saran-semua],[data-saran-tutup]") : null; if(!t) return; if(t.hasAttribute("data-saran-tambah")){ strukturTambahSaran(t.getAttribute("data-saran-tambah")); } else if(t.hasAttribute("data-saran-semua")){ strukturTambahSemuaSaran(); } else if(t.hasAttribute("data-saran-tutup")){ strukturSaranDaftar=[]; wadahSaran.style.display="none"; } });
         var bLap=$("btnMuatLap");
         if(bLap) bLap.addEventListener("click", function(){ lapMuat(); });
         var bPres=$("btnMuatPres");
@@ -5684,6 +6007,7 @@
             pack:packState.slice(), cons:consState.slice(), legal:legalState.slice(), chan:chanState.slice(),
             sopSteps:Array.prototype.map.call(document.querySelectorAll(".sop-step"),function(t){return t.value;}),
             sops:sopDaftarTersimpan(),
+            struktur:strukturBersihDaftar(strukturList),
             txs:txs.map(function(t){ if(!t.cid) t.cid=uuid(); return {cid:t.cid,tgl:t.tgl,ket:t.ket,jenis:t.jenis,kat:t.kat,jumlah:t.jumlah}; }),
             stocks:stocks.map(function(s){ if(!s.cid) s.cid=uuid(); return {cid:s.cid,nama:s.nama,qty:s.qty,beli:s.beli,jual:s.jual}; }),
             pis:pis.map(function(p){ if(!p.cid) p.cid=uuid(); return {cid:p.cid,nama:p.nama,jumlah:p.jumlah,tempo:p.tempo}; }),
@@ -5806,6 +6130,10 @@
           if(daftarSop.length){ gid("sopNama").value=daftarSop[0].nama||""; gid("sopPj").value=daftarSop[0].pj||""; gid("sopTujuan").value=daftarSop[0].tujuan||""; gid("sopPengecek").value=daftarSop[0].pengecek||""; var noteDipilih=gid("sopDipilihNote"); if(noteDipilih) noteDipilih.textContent="Mengubah: "+(daftarSop[0].nama||"SOP tanpa nama")+" — "+sopLangkahTerisi(daftarSop[0]).length+" langkah."; }
           else { var noteKosong=gid("sopDipilihNote"); if(noteKosong) noteKosong.textContent="Belum ada SOP tersimpan — buat SOP baru atau unggah dokumen SOP."; }
           renderSopList();
+          /* Struktur usaha: pakai snap.struktur bila ada; bila tidak,
+             daftar tetap kosong dan peran bawaan yang berlaku. */
+          if(Array.isArray(snap.struktur)){ strukturList=strukturBersihDaftar(snap.struktur); }
+          renderStruktur(); renderTimPeran();
           txs.splice(0,txs.length); (snap.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||uuid(), tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0}); });
           stocks.splice(0,stocks.length); (snap.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||uuid(), nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0}); });
           pis.splice(0,pis.length); (snap.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||uuid(), nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—"}); });
