@@ -504,6 +504,7 @@
       .explain-card h3{font-size:1.3rem;margin-top:8px;line-height:1.3}
       .explain-body{margin-top:14px;font-size:1rem;line-height:1.65;white-space:pre-line}
       .explain-body:empty{display:none}
+      .explain-chat .chat-log:empty{display:none}
       /* ---------- Tombol mode tampilan HP / PC (bilah akun) ----------
          Tombol khusus berpindah mode; labelnya mode TUJUAN ("Mode PC"
          saat tampil HP). Garis teal supaya mudah dikenali sebagai
@@ -912,6 +913,17 @@
       </div>
     </div>
 
+    <!-- ============ POP-UP PENJAGA NAVIGASI: perubahan belum disimpan ============ -->
+    <div class="reg-popup-overlay friendly-popup-overlay" id="popupPenjaga" role="dialog" aria-modal="true" aria-labelledby="popupPenjagaJudul">
+      <div class="reg-popup-card friendly-popup-card">
+        <h3 id="popupPenjagaJudul">Simpan perubahan?</h3>
+        <p id="popupPenjagaTanya">Ada perubahan data yang belum disimpan. Apakah perubahan ini perlu disimpan?</p>
+        <button class="btn" id="btnPenjagaSimpan" type="button" style="width:100%;margin-top:18px">Ya, simpan</button>
+        <button class="btn ghost" id="btnPenjagaBuang" type="button" style="width:100%;margin-top:10px">Tidak, buang</button>
+        <button class="btn ghost" id="btnPenjagaBatal" type="button" style="width:100%;margin-top:10px">Batal</button>
+      </div>
+    </div>
+
     <script>
       /* Satu-satunya wadah pesan kesalahan di aplikasi: pop-up ramah berbahasa
          Indonesia sederhana — judul + apa yang terjadi + apa yang harus dilakukan.
@@ -973,8 +985,7 @@
           <span class="who" id="userEmail"></span>
           <a class="tautan-admin" id="btnAdminMarketing" style="display:none" tabindex="0">Admin marketing</a>
           <span class="sync-pill" id="syncStatus">Memuat…</span>
-          <button class="btn ghost small" id="btnUbahUsahaTop" type="button" style="display:none">Ubah usaha</button>
-          <button class="btn ghost small" id="btnSaveCloud" type="button">Register</button>
+          <a class="tautan-admin" id="btnSaveCloud" tabindex="0">Register</a>
           <button class="btn ghost small" id="btnModeTampilan" type="button" title="Pindah tampilan: HP atau PC">Mode PC</button>
         </div>
         <button class="btn ghost" id="btnLipatHeader" type="button" aria-expanded="true" aria-controls="navUtama accountBar">Lipat header</button>
@@ -1112,7 +1123,6 @@
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
             <span class="demo-tag" style="margin:0">Formulir kosong — kolom berwarna keemasan siap diisi dengan data usaha Anda</span>
-            <button class="btn ghost small" id="btnUbahUsahaData" type="button" style="display:none">Ubah usaha</button>
           </div>
           <div class="data-ringkas" id="dataRingkasan" style="display:none">
             <div class="ringkas-nama" id="ringkasNama">—</div>
@@ -1404,6 +1414,7 @@
             <input type="text" id="coachQ" placeholder="Tulis jawaban atau pertanyaan Anda di sini…" aria-label="Tulis jawaban atau pertanyaan untuk AI Coach" />
             <button class="btn chat-send" id="btnCoachAsk" type="button">Kirim</button>
           </div>
+          <p class="note" id="kuotaAiStatusCoach" role="status">AI Coach: 20 pertanyaan per bulan.</p>
           <div id="diskusiTombol" style="display:none" role="group" aria-label="Ubah jawaban introspeksi">
             <button class="btn ghost" type="button" data-v="0" aria-pressed="false">Belum</button>
             <button class="btn ghost" type="button" data-v="1" aria-pressed="false">Sebagian</button>
@@ -1432,6 +1443,25 @@
           </div>
           <p class="coach-answer" id="coachAnswer" role="status" hidden></p>
         </div>
+      <div class="card" id="risetCard">
+        <h3>Riset data usaha</h3>
+        <p class="note">Butuh data pembanding untuk usaha Anda? Minta riset ke admin lewat WhatsApp — admin akan membalas lewat WhatsApp.</p>
+        <p class="note" id="risetTamu" style="display:none">Daftar dulu untuk meminta riset data usaha.</p>
+        <div id="risetIsi" style="display:none">
+          <div id="risetInfoUsaha" class="note"></div>
+          <div class="form-grid">
+            <label class="f"><span>Topik riset</span><select id="risetTopik">
+              <option value="Data usaha saya">Data usaha saya</option>
+              <option value="Harga pasar &amp; kompetitor sejenis">Harga pasar &amp; kompetitor sejenis</option>
+              <option value="Pemasok &amp; harga bahan baku">Pemasok &amp; harga bahan baku</option>
+              <option value="Lainnya">Lainnya</option>
+            </select></label>
+            <label class="f"><span>Hal yang ingin diteliti</span><textarea id="risetCatatan" placeholder="contoh: Harga jual bakso di sekitar kampus dan pesaing terdekat"></textarea></label>
+          </div>
+          <div class="actions"><button class="btn" id="btnKirimRisetWa" type="button">Kirim permintaan lewat WhatsApp</button></div>
+          <p class="note" id="risetTerakhir" style="display:none"></p>
+        </div>
+      </div>
       <div class="menu-list">
         <a class="menu-row" href="#saran-rencana"><span><b>Rencana perbaikan 30–60–90 hari</b><span class="sub">Tiga saran penguatan dan rencana langkah demi langkah.</span></span><span class="arr">›</span></a>
       </div>
@@ -2225,6 +2255,14 @@
           </div>
           <h3 id="explainOverlayTitle">—</h3>
           <div class="explain-body" id="explainOverlayBody" role="status"></div>
+          <div class="explain-chat">
+            <div class="coach-row">
+              <input type="text" id="explainChatQ" placeholder="Tulis jawaban atau pertanyaan Anda di sini…" aria-label="Tulis jawaban atau pertanyaan Anda tentang penjelasan ini" />
+              <button class="btn" id="btnExplainKirim" type="button">Kirim</button>
+            </div>
+            <p class="note" id="kuotaAiStatusExplain" role="status">AI Coach: 20 pertanyaan per bulan.</p>
+            <div id="explainChatLog" class="chat-log" role="log" aria-live="polite" aria-label="Percakapan tentang penjelasan ini"></div>
+          </div>
           <div class="wiz-actions" style="margin-top:22px">
             <button class="btn" id="btnExplainTutup" type="button" style="flex:1 1 100%">Mengerti</button>
           </div>
@@ -4310,7 +4348,7 @@
         if(!teks.trim()){ sopCatatan("Dokumen kosong — tidak ada isi yang bisa dibaca."); sopTampilkanTempel(); return Promise.resolve(null); }
         if(window.__kuotaAiHabis && window.__kuotaAiHabis()){
           if(window.__popupKuotaHabis) window.__popupKuotaHabis();
-          sopCatatan("Kuota pertanyaan AI bulan ini sudah habis — dokumen belum dibaca. Isi kolom SOP secara manual atau tunggu bulan depan.");
+          sopCatatan("Kuota pertanyaan AI bulan ini sudah habis — dokumen belum dibaca. Isi kolom SOP secara manual atau tunggu bulan depan. Sementara itu, Anda bisa membaca info di aplikasi — ketuk tanda '?' di setiap kolom, buka 'Jelaskan ini' di setiap angka, dan baca panduan di setiap modul.");
           return Promise.resolve(null);
         }
         sopCatatan("Membaca dokumen dengan AI — sebentar…");
@@ -4444,6 +4482,78 @@
          struktur pemilik, kas dari peta bawaan. */
       function timPeranLabel(p){ var daftar=null; try{ daftar=strukturEfektif(); }catch(e){ daftar=null; } if(daftar){ for(var i=0;i<daftar.length;i++){ if(daftar[i].id===p) return daftar[i].nama||p; } } return p==="kas"?"Kas":p==="produksi"?"Produksi & layanan":p==="stok"?"Stok":p; }
       function timBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("timTamu"), isi=$("timIsi"), logTamu=$("timLogTamu"), logIsi=$("timLogIsi"), lapTamu=$("lapTamu"), lapIsi=$("lapIsi"), presTamu=$("presTamu"), presIsi=$("presIsi"), aiTamu=$("aiPakaiTamu"), aiIsi=$("aiPakaiIsi"), strTamu=$("strukturTamu"), strIsi=$("strukturIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; if(logTamu) logTamu.style.display=""; if(logIsi) logIsi.style.display="none"; if(lapTamu) lapTamu.style.display=""; if(lapIsi) lapIsi.style.display="none"; if(presTamu) presTamu.style.display=""; if(presIsi) presIsi.style.display="none"; if(aiTamu) aiTamu.style.display=""; if(aiIsi) aiIsi.style.display="none"; if(strTamu) strTamu.style.display=""; if(strIsi) strIsi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; if(logTamu) logTamu.style.display="none"; if(logIsi) logIsi.style.display=""; if(lapTamu) lapTamu.style.display="none"; if(lapIsi) lapIsi.style.display=""; if(presTamu) presTamu.style.display="none"; if(presIsi) presIsi.style.display=""; if(aiTamu) aiTamu.style.display="none"; if(aiIsi) aiIsi.style.display=""; if(strTamu) strTamu.style.display="none"; if(strIsi) strIsi.style.display=""; renderStruktur(); renderTimPeran(); timMuat(); timLogMuat(); lapMuat(); presMuat(); aiPakaiMuat(); }
+      /* Riset data usaha lewat WhatsApp (layar Saran): pemilik yang masuk
+         memilih topik dan menulis hal yang ingin diteliti, lalu membuka
+         WhatsApp ke nomor admin. Pesan hanya berisi identitas usaha dan
+         topik riset — tanpa data keuangan apa pun — dan tidak ada
+         penyimpanan ke server: hanya rekaman lokal tanggal permintaan
+         terakhir di perangkat ini. */
+      var NOMOR_WA_ADMIN = "6281221010125";
+      window.__NOMOR_WA_ADMIN = NOMOR_WA_ADMIN;
+      var RISET_KUNCI_TERAKHIR = "umkm-introspeksi-riset-terakhir";
+      function risetDataUsaha(){
+        var nama="", jenis="", kota="";
+        try{ var nEl=$("inNama"); if(nEl) nama=String(nEl.value||"").trim(); }catch(e){}
+        try{ var sEl=$("inSektor"); if(sEl && sEl.value && sEl.selectedOptions && sEl.selectedOptions[0]) jenis=String(sEl.selectedOptions[0].textContent||"").replace(/\s+/g," ").trim(); }catch(e){}
+        try{ var kEl=$("inKota"); if(kEl) kota=String(kEl.value||"").trim(); }catch(e){}
+        return {nama:nama, jenis:jenis, kota:kota};
+      }
+      function risetTampilTerakhir(){
+        var el=$("risetTerakhir"); if(!el) return;
+        var rek=null;
+        try{ rek=JSON.parse(localStorage.getItem(RISET_KUNCI_TERAKHIR)||"null"); }catch(e){ rek=null; }
+        if(!rek || !rek.topik || !rek.tanggal){ el.style.display="none"; el.textContent=""; return; }
+        var tgl="";
+        try{ var d=new Date(rek.tanggal); if(!isNaN(d.getTime())) tgl=d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }catch(e){}
+        el.textContent="Permintaan terakhir: "+rek.topik+" — "+(tgl||rek.tanggal);
+        el.style.display="";
+      }
+      function risetBukaLayar(){
+        var u=timPemilikMasuk();
+        var tamu=$("risetTamu"), isi=$("risetIsi");
+        if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; return; }
+        if(tamu) tamu.style.display="none";
+        if(isi) isi.style.display="";
+        var d=risetDataUsaha();
+        var info=$("risetInfoUsaha");
+        if(info) info.innerHTML="<b>Usaha Anda:</b> "+timEsc(d.nama||"Belum diisi")+" · "+timEsc(d.jenis||"Belum diisi")+" · "+timEsc(d.kota||"Belum diisi");
+        risetTampilTerakhir();
+      }
+      window.__risetBukaLayar=risetBukaLayar;
+      window.__bangunPesanRiset=function(){
+        var d=risetDataUsaha();
+        var u=timPemilikMasuk();
+        var email=(u && u.email)?String(u.email):"Belum diketahui";
+        var baris=["Permintaan riset data usaha dari aplikasi UMKM Tumbuh."];
+        if(!d.nama) baris.push("Data usaha belum diisi.");
+        baris.push("Nama usaha: "+(d.nama||"Belum diisi"));
+        baris.push("Jenis usaha: "+(d.jenis||"Belum diisi"));
+        baris.push("Kota/Kabupaten: "+(d.kota||"Belum diisi"));
+        var topik="Data usaha saya";
+        try{ var tEl=$("risetTopik"); if(tEl && tEl.value) topik=tEl.value; }catch(e){}
+        var catatan="";
+        try{ var cEl=$("risetCatatan"); if(cEl) catatan=String(cEl.value||"").trim(); }catch(e){}
+        baris.push("Topik riset: "+topik);
+        baris.push("Hal yang ingin diteliti: "+(catatan||"-"));
+        baris.push("Email pemilik: "+email);
+        return baris.join("\n");
+      };
+      window.__tautanRisetWa=function(){
+        return "https://wa.me/"+NOMOR_WA_ADMIN+"?text="+encodeURIComponent(window.__bangunPesanRiset());
+      };
+      (function(){
+        var b=$("btnKirimRisetWa"); if(!b) return;
+        b.addEventListener("click", function(){
+          var u=timPemilikMasuk();
+          if(!u){ popupRamah("Daftar dulu", "Daftar dulu untuk meminta riset data usaha."); return; }
+          try{ window.open(window.__tautanRisetWa(), "_blank"); }catch(e){}
+          var topik="Data usaha saya";
+          try{ var tEl=$("risetTopik"); if(tEl && tEl.value) topik=tEl.value; }catch(e){}
+          try{ localStorage.setItem(RISET_KUNCI_TERAKHIR, JSON.stringify({topik:topik, tanggal:new Date().toISOString()})); }catch(e){}
+          risetTampilTerakhir();
+          popupRamah("Permintaan riset terkirim", "WhatsApp terbuka — ketuk Kirim di WhatsApp untuk mengirim permintaan ke admin.", "Admin akan membalas lewat WhatsApp.");
+        });
+      })();
       async function timMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var wadah=$("timList"); if(!sb){ if(wadah) wadah.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu buka lagi layar ini.</p>"; return; } var r=await sb.from("akses_pegawai").select("email,nama,peran,aktif,foto_path").eq("pemilik_id", u.id).order("nama",{ascending:true}); if(r.error){ if(timBelumAktif(r.error)){ if(wadah) wadah.innerHTML="<p class=\"note\"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b> Salinan pengaturannya ada di <a href=\""+TIM_URL_PEGAWAI+"\" target=\"_blank\" rel=\"noopener\">Aplikasi Pegawai</a>.</p>"; return; } popupRamah("Daftar tim belum bisa dimuat","Periksa koneksi internet Anda, lalu buka lagi layar ini."); return; } timDaftar=r.data||[]; renderTim(); }
       function renderTim(){ var wadah=$("timList"); if(!wadah) return; wadah.innerHTML=""; if(!timDaftar.length){ var k=document.createElement("p"); k.className="note"; k.textContent="Belum ada pegawai terdaftar — tambahkan pegawai pertama Anda di atas."; wadah.appendChild(k); return; } timDaftar.forEach(function(p){ var baris=document.createElement("div"); baris.className="tim-baris"; var foto=document.createElement("span"); foto.className="foto-sel"; if(p.foto_path){ var im=document.createElement("img"); im.className="foto-mini"; im.alt="Pas foto "+(p.nama||"pegawai"); im.setAttribute("data-foto-path", p.foto_path); im.setAttribute("data-foto-nama", p.nama||""); foto.appendChild(im); }else{ var ini=document.createElement("span"); ini.className="foto-inisial"; ini.textContent=inisialNama(p.nama); foto.appendChild(ini); } baris.appendChild(foto); var info=document.createElement("div"); info.className="tim-baris-info"; var nm=document.createElement("b"); nm.textContent=p.nama||"—"; info.appendChild(nm); var ket=document.createElement("span"); ket.textContent=(p.email||"")+" · "+(Array.isArray(p.peran)?p.peran.map(timPeranLabel).join(", "):"—")+" · "+(p.aktif?"Aktif":"Nonaktif"); info.appendChild(ket); baris.appendChild(info); var aksi=document.createElement("div"); aksi.className="actions"; var bT=document.createElement("button"); bT.type="button"; bT.className="btn ghost small"; bT.textContent=p.aktif?"Nonaktifkan":"Aktifkan"; bT.setAttribute("data-toggle-tim",(p.email||"")+"|"+(p.aktif?"0":"1")); var bH=document.createElement("button"); bH.type="button"; bH.className="btn ghost small"; bH.textContent="Hapus"; bH.setAttribute("data-hapus-tim",p.email||""); aksi.appendChild(bT); aksi.appendChild(bH); baris.appendChild(aksi); wadah.appendChild(baris); }); timIsiFoto(); presTampilBelum(); renderStruktur(); }
       async function tambahTim(nama, email, peran){ var u=timPemilikMasuk(); if(!u){ popupRamah("Daftar dulu","Daftar dulu untuk mengelola tim."); return false; } nama=String(nama||"").trim(); email=String(email||"").trim().toLowerCase(); if(!nama){ popupRamah("Isi nama pegawai dulu","Tulis nama pegawainya, contoh: Rina Wati."); return false; } if(!email || !/^\S+@\S+\.\S+$/.test(email)){ popupRamah("Email pegawai belum benar","Tulis email aktif pegawai, contoh: rina@contoh.id."); return false; } if(!Array.isArray(peran)||!peran.length){ popupRamah("Pilih peran yang sudah dilatih","Centang minimal satu peran dari daftar peran di atas."); return false; } if(timDaftar.some(function(p){ return String(p.email||"").toLowerCase()===email; })){ popupRamah("Sudah terdaftar","Pegawai dengan email ini sudah ada di daftar tim Anda."); return false; } var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return false; } var r=await sb.from("akses_pegawai").insert({email:email, pemilik_id:u.id, nama:nama, peran:peran, aktif:true}); if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); return false; } if(/duplicate|23505/i.test((r.error.message||"")+" "+(r.error.code||""))){ popupRamah("Sudah terdaftar","Pegawai dengan email ini sudah ada di daftar tim Anda."); return false; } if(/peran pegawai tidak dikenal/i.test((r.error.message||""))){ popupRamah("Peran belum dikenal","Peran itu belum ada di struktur usaha Anda — tambah dulu di kartu Struktur usaha, lalu coba lagi."); return false; } popupRamah("Belum bisa menyimpan","Pegawai belum tersimpan — periksa koneksi internet Anda, lalu coba lagi."); return false; } toast("Pegawai ditambahkan"); audit("Pegawai ditambahkan ke tim: "+nama); await timMuat(); return true; }
@@ -4739,7 +4849,7 @@
         function catat(teks){ if(note){ note.textContent=teks; note.style.display=""; } }
         if(window.__kuotaAiHabis && window.__kuotaAiHabis()){
           if(window.__popupKuotaHabis) window.__popupKuotaHabis();
-          catat("Kuota pertanyaan AI bulan ini sudah habis — saran belum dibuat. Tambah peran secara manual di bawah, atau tunggu bulan depan.");
+          catat("Kuota pertanyaan AI bulan ini sudah habis — saran belum dibuat. Tambah peran secara manual di bawah, atau tunggu bulan depan. Sementara itu, Anda bisa membaca info di aplikasi — ketuk tanda '?' di setiap kolom, buka 'Jelaskan ini' di setiap angka, dan baca panduan di setiap modul.");
           return Promise.resolve(null);
         }
         catat("Meminta saran struktur dari AI Coach — sebentar…");
@@ -5118,10 +5228,96 @@
             return akanBuka?kunci:null;
           }catch(e){ return null; }
         }
+        /* ---------- Penjaga navigasi: perubahan belum disimpan ----------
+           Menahan pindah layar bila ada perubahan di formulir Data Usaha
+           yang belum tersimpan (autosave berkala biasanya sudah
+           menyimpan; penjaga menutup jeda di antara ketikan dan autosave).
+           Alur: ketikan di formulir menyalakan penanda -> pindah layar
+           menampilkan pop-up -> "Ya, simpan" menyimpan lalu lanjut,
+           "Tidak, buang" mengembalikan data tersimpan terakhir lalu
+           lanjut, "Batal" tetap di layar ini. Formulir riset TIDAK
+           tercakup (pengirimannya lewat pesan, bukan simpan). */
+        var adaPerubahanBelumDisimpan=false;
+        var navigasiTertunda=null;
+        var snapshotTerakhirDisimpan=null;
+        var penjagaTerbuka=false;
+        var lewatiPenjagaSekali=false;
+        function tandaiPerubahan(){ adaPerubahanBelumDisimpan=true; }
+        function bersihkanPerubahan(){ adaPerubahanBelumDisimpan=false; }
+        /* Kembalikan hash ke layar saat ini (tanpa menumpuk entri kembali):
+           dipakai bila pengguna memilih "Batal" sesudah hash sempat
+           berubah (mis. pindah lewat tombol kembali peramban). Hash
+           pemulihan kata sandi tidak pernah disentuh. */
+        function kembalikanHashKeLayarAktif(){
+          try{
+            var hSaatIni=String(window.location.hash||"");
+            var hTujuan=(layarAktif==="hariini")?"":"#"+layarAktif;
+            if(hSaatIni!==hTujuan && (hSaatIni==="" || hashAdalahLayar())){
+              window.history.replaceState(null,"",window.location.pathname+window.location.search+hTujuan);
+            }
+          }catch(e){}
+        }
+        function tampilkanPenjagaNavigasi(tujuan){
+          if(penjagaTerbuka) return false;
+          if(tujuan){
+            if(typeof tujuan==="string"){ navigasiTertunda={layar:tujuan, opsi:{}}; }
+            else if(tujuan.layar){ navigasiTertunda={layar:tujuan.layar, opsi:tujuan.opsi||{}}; }
+            else if(tujuan.nama){ navigasiTertunda={layar:tujuan.nama, opsi:tujuan.opsi||{}}; }
+          }
+          var ov=gid("popupPenjaga");
+          if(!ov) return false;
+          ov.classList.add("show");
+          penjagaTerbuka=true;
+          var b=gid("btnPenjagaSimpan"); if(b && b.focus) b.focus();
+          return true;
+        }
+        function tutupPenjagaNavigasi(){
+          var ov=gid("popupPenjaga");
+          if(ov) ov.classList.remove("show");
+          penjagaTerbuka=false;
+        }
+        /* Lanjutkan navigasi yang tertunda — dilewati penjaga SATU KALI
+           supaya tidak berputar kembali ke pop-up. */
+        function lanjutkanNavigasiTertunda(){
+          var t=navigasiTertunda;
+          navigasiTertunda=null;
+          if(!t || !t.layar) return false;
+          lewatiPenjagaSekali=true;
+          return tampilkanLayar(t.layar, t.opsi||{});
+        }
+        /* Batal: tutup pop-up, buang tujuan tertunda, tetap di layar ini
+           (penanda perubahan tetap menyala, hash kembali ke layar ini). */
+        function batalkanNavigasiTertunda(){
+          tutupPenjagaNavigasi();
+          navigasiTertunda=null;
+          kembalikanHashKeLayarAktif();
+        }
+        window.__adaPerubahanBelumDisimpan=function(){ return adaPerubahanBelumDisimpan; };
+        window.__tandaiPerubahan=tandaiPerubahan;
+        window.__bersihkanPerubahan=bersihkanPerubahan;
+        window.__navigasiTertunda=function(){ return navigasiTertunda; };
+        window.__snapshotTerakhirDisimpan=function(){ return snapshotTerakhirDisimpan; };
+        window.__setSnapshotTerakhirDisimpan=function(s){ snapshotTerakhirDisimpan=s; };
+        window.__tampilkanPenjagaNavigasi=tampilkanPenjagaNavigasi;
+        window.__tutupPenjagaNavigasi=tutupPenjagaNavigasi;
+        window.__lanjutkanNavigasiTertunda=lanjutkanNavigasiTertunda;
+        window.__batalkanNavigasiTertunda=batalkanNavigasiTertunda;
         function tampilkanLayar(nama, opsi){
           opsi=opsi||{};
           if(modePortalBerbagi()) return false;
           if(LAYAR_DAFTAR.indexOf(nama)<0) return false;
+          /* Penjaga navigasi: bila ada perubahan belum disimpan dan
+             tujuannya layar lain, tahan pindah dan tanyakan dulu.
+             Lewati-sekali dipakai saat melanjutkan navigasi tertunda
+             (tombol "Ya, simpan" / "Tidak, buang"); bila pop-up sudah
+             terbuka, abaikan permintaan berikutnya. */
+          if(lewatiPenjagaSekali){ lewatiPenjagaSekali=false; }
+          else if(penjagaTerbuka){ return false; }
+          else if(adaPerubahanBelumDisimpan && nama!==layarAktif){
+            navigasiTertunda={layar:nama, opsi:opsi};
+            tampilkanPenjagaNavigasi(navigasiTertunda);
+            return false;
+          }
           layarAktif=nama;
           try{ document.body.setAttribute("data-layar", nama); }catch(e){}
           /* Indikator "Anda di sini" selalu mengikuti layar aktif
@@ -5183,6 +5379,9 @@
           /* Masuk layar Orang & SOP: muat daftar tim + catatan jalankan SOP
              (hanya bila pemilik masuk; tamu hanya melihat ajakan daftar). */
           if(nama==="sop"){ try{ timBukaLayar(); }catch(e){} }
+          /* Masuk layar Saran: gerbang riset data usaha (hanya bila
+             pemilik masuk; tamu hanya melihat ajakan daftar). */
+          if(nama==="saran"){ try{ risetBukaLayar(); }catch(e){} }
           return true;
         }
         /* Layar yang memuat elemen tertentu (dipakai fokusKeKolom dan
@@ -5401,7 +5600,7 @@
              pernah ditandai emas. btnQrisCloseFull sengaja TIDAK masuk:
              tombol Tutup di dalam overlay QRIS putih menjaga desain
              hitam-putih overlay itu sendiri. */
-          var ID_NAVIGASI=["btnUbahUsahaTop","btnDataSelesai","btnTutupTopik","btnCloseSql","btnForgotCancel","btnWizardClose","btnFieldHelpCloseTop","btnFieldHelpClose","btnQrisFull","btnGreetStart","btnWizFinish","btnWizDetail","btnBatalBayar","btnSapaIsi","btnHiMasuk","btnHiKeluar","btnHiLangkah","btnUbahUsahaData","btnUbahData","btnVoiceKoreksi","btnShowSql","btnLipatHeader"];
+          var ID_NAVIGASI=["btnDataSelesai","btnTutupTopik","btnCloseSql","btnForgotCancel","btnWizardClose","btnFieldHelpCloseTop","btnFieldHelpClose","btnQrisFull","btnGreetStart","btnWizFinish","btnWizDetail","btnBatalBayar","btnSapaIsi","btnHiMasuk","btnHiKeluar","btnHiLangkah","btnUbahData","btnVoiceKoreksi","btnShowSql","btnLipatHeader"];
           function bacaSet(){ try{ var s=localStorage.getItem(KUNCI_TOMBOL); if(!s) return {}; var o=JSON.parse(s); return (o&&typeof o==="object")?o:{}; }catch(e){ return {}; } }
           function simpanSet(o){ try{ localStorage.setItem(KUNCI_TOMBOL, JSON.stringify(o)); }catch(e){} }
           function bolehDitandai(el){
@@ -6081,30 +6280,6 @@
           if(flagSudahMengisi()) return true;
           try{ return snapshotNyata(collectSnapshot()); }catch(e){ return false; }
         }
-        /* Tombol "Ubah usaha" — DUA penempatan: bilah akun
-           (#btnUbahUsahaTop) dan kartu formulir Data Usaha
-           (#btnUbahUsahaData) — hanya untuk pengguna yang sudah punya
-           data usaha nyata. Pengguna baru masuk lewat sapaan/wizard
-           atau formulir Data Usaha, jadi kedua tombol disembunyikan
-           sampai sudahMengisiNyata() benar (aturan yang sama dengan
-           sapaan, "Tutup", dan lipatan formulir: ketikan di wizard saja
-           TIDAK dihitung, hanya data di formulir utama / sesudah
-           applyWizard, lokasi, atau transaksi; pasangan contoh
-           "Dapur Bu Sari" + omzet Rp45.000.000 juga TIDAK dihitung).
-           Dipanggil dari perbaruiStatusAkun (setiap perubahan keadaan
-           akun) dan aturTampilanFormulir (setiap perubahan data,
-           termasuk autosave), jadi tampil/sembunyi mengikuti data tanpa
-           muat ulang. Bila data dihapus suatu saat, keputusan ini
-           dihitung ulang dan tombol bersembunyi lagi — saat ini belum
-           ada jalur hapus data di aplikasi. */
-        function aturTombolUbahUsaha(){
-          var ada=false; try{ ada=sudahMengisiNyata(); }catch(e){ ada=false; }
-          ["btnUbahUsahaTop","btnUbahUsahaData"].forEach(function(id){
-            var b=gid(id); if(b) b.style.display=ada?"":"none";
-          });
-        }
-        window.__aturTombolUbahUsaha=aturTombolUbahUsaha;
-
         /* ---------- Formulir Data Usaha dilipat bila sudah terisi ----------
            Supaya aplikasi tidak terkesan rumit: bila data usaha sudah nyata
            (sudahMengisiNyata() — aturan yang sama dengan sapaan proaktif dan
@@ -6132,7 +6307,6 @@
         }
         function aturTampilanFormulir(){
           var ada=false; try{ ada=sudahMengisiNyata(); }catch(e){ ada=false; }
-          try{ aturTombolUbahUsaha(); }catch(e){}
           /* Tampilan masuk kembali: pengguna TERDAFTAR (bukan tamu) yang
              sudah punya data usaha nyata melihat sedikit tulisan — kelas
              body.masuk-kembali menyembunyikan prosa panduan di hero (lihat
@@ -6410,6 +6584,9 @@
           utangs.splice(0,utangs.length); (snap.utangs||[]).forEach(function(u){ utangs.push({cid:u.cid||uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—"}); });
           window.__qrisImage = snap.qris_image || null;
           if(snap.ai_pakai && snap.ai_pakai.bulan){ window.__aiPakai={bulan:String(snap.ai_pakai.bulan), jumlah:(+snap.ai_pakai.jumlah||0)}; }
+          /* Data pemakaian AI baru tiba (lokal/cloud) — segarkan baris
+             status kuota bila fungsinya sudah terdaftar. */
+          if(window.__perbaruiStatusKuotaAi){ try{ window.__perbaruiStatusKuotaAi(); }catch(e){} }
           if(window.__renderQris){ try{ window.__renderQris(); }catch(e){} }
           renderTx(); renderStock(); renderPi(); renderUtang();
           updatePack(); updateCons(); updateLegal(); updateChannels(); buildContentCal();
@@ -6426,14 +6603,24 @@
           if(del.error) throw del.error;
           if(rows.length){ var ins=await sb.from(table).insert(rows); if(ins.error) throw ins.error; }
         }
+        /* Penjaga navigasi: catat hasil simpan — simpan berhasil berarti
+           tidak ada lagi perubahan yang belum disimpan, dan snapshot
+           inilah yang dipakai tombol "Tidak, buang" untuk mengembalikan
+           kolom. Dipanggil di semua jalur simpan (tamu, tanpa internet,
+           tabel belum dibuat, cloud berhasil, dan cadangan lokal saat
+           cloud gagal) karena datanya sudah tersimpan. */
+        function penjagaCatatSimpan(snap){
+          try{ if(window.__setSnapshotTerakhirDisimpan) window.__setSnapshotTerakhirDisimpan(snap); }catch(e){}
+          try{ if(window.__bersihkanPerubahan) window.__bersihkanPerubahan(); }catch(e){}
+        }
         async function saveData(snap, json){
           /* Kalibrasi anonim (Fase 2): bila saklar persetujuan AKTIF, satu baris
              angka anonim dikirim ke tabel kalibrasi. Fungsi ini tidak pernah
              melempar error dan tidak pernah menghambat penyimpanan utama. */
           try{ if(window.__kalibrasiOnSave) window.__kalibrasiOnSave(snap); }catch(e){}
-          if(isGuest || !currentUser){ persistLocal(snap); lastJson=json; setSync(isGuest?"Mode coba":"Tersimpan di HP ini (mode tanpa akun)","warn"); return; }
-          if(tablesMissing){ persistLocal(snap); lastJson=json; setSync("Tersimpan di HP ini — tabel cloud belum dibuat","warn"); popupGagalSimpan("tabel"); return; }
-          if(!navigator.onLine){ persistLocal(snap); lastJson=json; setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn"); popupGagalSimpan("gagal"); return; }
+          if(isGuest || !currentUser){ persistLocal(snap); lastJson=json; setSync(isGuest?"Mode coba":"Tersimpan di HP ini (mode tanpa akun)","warn"); penjagaCatatSimpan(snap); return; }
+          if(tablesMissing){ persistLocal(snap); lastJson=json; setSync("Tersimpan di HP ini — tabel cloud belum dibuat","warn"); popupGagalSimpan("tabel"); penjagaCatatSimpan(snap); return; }
+          if(!navigator.onLine){ persistLocal(snap); lastJson=json; setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn"); popupGagalSimpan("gagal"); penjagaCatatSimpan(snap); return; }
           setSync("Menyimpan...","");
           try{
             var uid=currentUser.id;
@@ -6448,8 +6635,10 @@
             lastJson=json; popupSimpanSudah=false;
             setSync("Tersimpan di cloud · "+new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}),"");
             audit("Data tersinkron ke cloud.");
+            penjagaCatatSimpan(snap);
           }catch(e){
             persistLocal(snap); lastJson=json;
+            penjagaCatatSimpan(snap);
             if(isMissingTable(e)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan di HP ini — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
             else { setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn"); popupGagalSimpan("gagal"); }
           }
@@ -7027,10 +7216,44 @@
            formulir Data Usaha yang menyalakannya. Pemuatan snapshot / data contoh
            tidak memicu event input/change dan dijaga flag loading, jadi tidak dihitung. */
         document.querySelectorAll("#data input, #data select, #data textarea").forEach(function(el){
-          el.addEventListener("input",function(){ if(!loading){ tandaiSudahMengisi(); try{ aturTombolUbahUsaha(); }catch(e){} } });
-          el.addEventListener("change",function(){ if(!loading){ tandaiSudahMengisi(); try{ aturTombolUbahUsaha(); }catch(e){} } });
+          el.addEventListener("input",function(){ if(!loading){ tandaiSudahMengisi(); try{ if(window.__tandaiPerubahan) window.__tandaiPerubahan(); }catch(e){} } });
+          el.addEventListener("change",function(){ if(!loading){ tandaiSudahMengisi(); try{ if(window.__tandaiPerubahan) window.__tandaiPerubahan(); }catch(e){} } });
         });
-        /* Tombol ini berganti peran menurut status akun (labelnya diatur
+        /* Tombol pop-up penjaga navigasi (sekali pakai — sengaja tidak
+           masuk daftar tombol navigasi). "Ya, simpan" menyimpan dulu
+           baru lanjut; "Tidak, buang" mengembalikan kolom ke snapshot
+           tersimpan terakhir (bila ada) baru lanjut; "Batal" menutup
+           pop-up dan tetap di layar ini. */
+        (function(){
+          var bSimpan=gid("btnPenjagaSimpan"), bBuang=gid("btnPenjagaBuang"), bBatal=gid("btnPenjagaBatal");
+          var sedangMemproses=false;
+          function lanjutSesudahTutup(){
+            try{ if(window.__tutupPenjagaNavigasi) window.__tutupPenjagaNavigasi(); }catch(e){}
+            try{ if(window.__lanjutkanNavigasiTertunda) window.__lanjutkanNavigasiTertunda(); }catch(e){}
+          }
+          if(bSimpan) bSimpan.addEventListener("click", async function(){
+            if(sedangMemproses) return; sedangMemproses=true;
+            try{ var snap=collectSnapshot(); await saveData(snap, JSON.stringify(snap)); }catch(e){}
+            try{ if(window.__bersihkanPerubahan) window.__bersihkanPerubahan(); }catch(e){}
+            sedangMemproses=false;
+            lanjutSesudahTutup();
+          });
+          if(bBuang) bBuang.addEventListener("click", function(){
+            if(sedangMemproses) return;
+            try{
+              var terakhir=null;
+              try{ if(window.__snapshotTerakhirDisimpan) terakhir=window.__snapshotTerakhirDisimpan(); }catch(e){}
+              if(terakhir){ applySnapshot(terakhir); try{ recalc(); }catch(e){} }
+            }catch(e){}
+            try{ if(window.__bersihkanPerubahan) window.__bersihkanPerubahan(); }catch(e){}
+            lanjutSesudahTutup();
+          });
+          if(bBatal) bBatal.addEventListener("click", function(){
+            if(sedangMemproses) return;
+            try{ if(window.__batalkanNavigasiTertunda) window.__batalkanNavigasiTertunda(); }catch(e){}
+          });
+        })();
+        /* Tautan ini berganti peran menurut status akun (labelnya diatur
            di perbaruiStatusAkun): tamu -> "Register" (membuka gerbang
            daftar); terdaftar -> "Upgrade" (membuka halaman Paket &
            Layanan). Penentu di sini SAMA dengan penentu label — pengguna
@@ -7039,7 +7262,7 @@
            null). Simpan manual tidak lagi diperlukan: autosave berkala
            (interval 2 dtk membandingkan snapshot + debounce 800 mdtk)
            sudah menyimpan setiap perubahan, dan pil sinkron (#syncStatus)
-           menunjukkan keadaan simpannya; mengklik tombol ini tidak
+           menunjukkan keadaan simpannya; mengklik tautan ini tidak
            berpindah halaman sungguhan (layar yang sama), jadi autosave
            tetap berjalan sesudahnya. */
         gid("btnSaveCloud").addEventListener("click",function(){
@@ -7048,6 +7271,10 @@
           if(typeof window.__bukaHalamanPaket==="function"){ try{ window.__bukaHalamanPaket(); return; }catch(e){} }
           if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("paket"); return; }catch(e){} }
           try{ document.body.setAttribute("data-layar","paket"); }catch(e){}
+        });
+        /* Tautan (bukan tombol): tetap bisa dipakai lewat papan ketik. */
+        gid("btnSaveCloud").addEventListener("keydown", function(ev){
+          if(ev.key==="Enter"||ev.key===" "){ try{ ev.preventDefault(); }catch(e){} gid("btnSaveCloud").click(); }
         });
 
         /* ---------- modal SQL ---------- */
@@ -8460,13 +8687,56 @@
           if(p.bulan!==bulanSekarang()) p={bulan:bulanSekarang(),jumlah:0};
           p.jumlah=(p.jumlah||0)+1;
           window.__aiPakai=p;
+          perbaruiStatusKuotaAi();
         }
+        /* ---------- Baris status kuota AI yang selalu terlihat ----------
+           Satu fungsi memperbarui kedua baris status sekaligus (Modul 9
+           AI Coach #kuotaAiStatusCoach dan kolom chat overlay "Jelaskan
+           ini" #kuotaAiStatusExplain), supaya angkanya selalu sama.
+           Pemakaian dibaca dari penghitung bulan berjalan yang sudah ada
+           (aiPakaiBulanIni), batas dari kuotaAiBatas() menurut tingkat
+           paket. Bila pemakaian 0, teksnya jujur ("belum dipakai").
+           Bila hitungan belum bisa dibaca, tampilkan batasnya saja —
+           jangan pernah menampilkan angka yang dikarang. */
+        function perbaruiStatusKuotaAi(){
+          var el1=gid("kuotaAiStatusCoach"), el2=gid("kuotaAiStatusExplain");
+          if(!el1 && !el2) return;
+          var teks="AI Coach: 20 pertanyaan per bulan.";
+          try{
+            var batas=kuotaAiBatas();
+            if(typeof batas==="number" && isFinite(batas) && batas>0){
+              var pakai=aiPakaiBulanIni();
+              if(typeof pakai==="number" && isFinite(pakai) && pakai>=0){
+                var sisa=Math.max(0, batas-pakai);
+                if(pakai<=0) teks="AI Coach bulan ini: belum dipakai — tersisa "+batas+" pertanyaan dari "+batas+".";
+                else if(pakai>=batas) teks="AI Coach bulan ini: sudah dipakai "+pakai+" dari "+batas+" pertanyaan (tersisa 0) — kuota kembali awal bulan depan.";
+                else teks="AI Coach bulan ini: sudah dipakai "+pakai+" dari "+batas+" pertanyaan (tersisa "+sisa+").";
+              } else {
+                teks="AI Coach: "+batas+" pertanyaan per bulan.";
+              }
+            }
+          }catch(e){}
+          if(el1) el1.textContent=teks;
+          if(el2) el2.textContent=teks;
+        }
+        window.__perbaruiStatusKuotaAi=perbaruiStatusKuotaAi;
+        /* Tampilkan status kuota saat halaman dimuat (bukan hanya sesudah
+           bertanya) — angka pemakaian lokal sudah terbaca di titik ini;
+           bila data cloud tiba belakangan, applySnapshot memanggil
+           fungsi ini lagi lewat window.__perbaruiStatusKuotaAi. */
+        perbaruiStatusKuotaAi();
         function popupKuotaHabis(){
           if(!window.tampilPopupRamah) return;
+          /* Kuota habis bukan jalan buntu: selain tawaran naik Pro
+             (Gratis) dan info kuota kembali bulan depan, pengguna
+             diarahkan ke info yang bisa dibaca di aplikasi ini —
+             tanda "?" di setiap kolom, "Jelaskan ini" di setiap angka,
+             dan panduan di setiap modul. */
+          var panduan="Sementara itu, di aplikasi ini banyak info yang bisa dibaca untuk petunjuk — ketuk tanda '?' di setiap kolom, buka 'Jelaskan ini' di setiap angka, dan baca panduan di setiap modul.";
           if(isPro()){
-            window.tampilPopupRamah("Kuota pertanyaan AI Pro bulan ini sudah habis ("+kuotaAiBatas()+").","Bulan ini Anda sudah memakai "+kuotaAiBatas()+" pertanyaan AI.","Kuota kembali awal bulan depan — tidak ada biaya tambahan.");
+            window.tampilPopupRamah("Kuota pertanyaan AI Pro bulan ini sudah habis ("+kuotaAiBatas()+").","Bulan ini Anda sudah memakai "+kuotaAiBatas()+" pertanyaan AI.","Kuota kembali awal bulan depan — tidak ada biaya tambahan. "+panduan);
           } else {
-            window.tampilPopupRamah("Kuota pertanyaan AI gratis bulan ini sudah habis (20).","Bulan ini Anda sudah memakai 20 pertanyaan AI gratis.","Naik ke Pro untuk lanjut bertanya — ketuk tombol Lihat langganan di bawah ini.", {label:"Lihat langganan", href:"langganan"});
+            window.tampilPopupRamah("Kuota pertanyaan AI gratis bulan ini sudah habis (20).","Bulan ini Anda sudah memakai 20 pertanyaan AI gratis.","Naik ke Pro untuk lanjut bertanya — ketuk tombol Lihat langganan di bawah ini. "+panduan, {label:"Lihat langganan", href:"langganan"});
           }
         }
 
@@ -9010,19 +9280,27 @@
            ketukan sebelumnya yang pulang belakangan tidak akan
            menimpa jawaban kunci yang sedang dibaca. */
         var EXPLAIN_NAMA={level:"Level UMKM",kesehatan:"Skor Kesehatan Usaha",investasi:"Kesiapan Investasi",valuasi:"Estimasi Valuasi",kematangan:"Level Kematangan",digital:"Kematangan Digital",keuangan:"Kesehatan Keuangan",konsistensi:"Konsistensi Data",bep:"Titik Impas (BEP) & Prediksi Arus Kas",naiklevel:"Naik Level","hi-masuk":"Uang Masuk Hari Ini","hi-keluar":"Uang Keluar Hari Ini","hi-saldo":"Saldo Kas"};
-        var explainToken=0, lastExplainBtn=null;
+        var explainToken=0, lastExplainBtn=null, explainKeyAktif=null;
         function bukaOverlayPenjelasan(key, pemicu){
           var ov=gid("explainOverlay"), judul=gid("explainOverlayTitle"), isi=gid("explainOverlayBody");
           if(!ov||!judul||!isi) return null;
           explainToken++;
           var token=explainToken;
           lastExplainBtn=pemicu||null;
+          explainKeyAktif=key;
+          /* Percakapan baru untuk penjelasan baru: log chat dan kolom
+             dikosongkan tiap kali overlay dibuka. */
+          var logLama=gid("explainChatLog"); if(logLama) logLama.innerHTML="";
+          var inpLama=gid("explainChatQ"); if(inpLama) inpLama.value="";
           judul.textContent=EXPLAIN_NAMA[key]||"Penjelasan";
           isi.textContent="Sedang berpikir… AI Coach sedang menyiapkan penjelasan sederhana untuk Anda.";
           var ovBantuan=gid("fieldHelpOverlay");
           if(ovBantuan) ovBantuan.classList.remove("show");
           if(window.__lipatUji && typeof window.__lipatUji.lipatSekarang==="function") window.__lipatUji.lipatSekarang();
           ov.classList.add("show");
+          /* Overlay dibuka — segarkan baris status kuota di dalamnya,
+             supaya angka pemakaian selalu yang terbaru saat dibaca. */
+          if(typeof perbaruiStatusKuotaAi==="function"){ try{ perbaruiStatusKuotaAi(); }catch(e){} }
           ov.scrollTop=0;
           var proxy={};
           Object.defineProperty(proxy, "textContent", {
@@ -9041,11 +9319,67 @@
           var ov=gid("explainOverlay");
           return !!ov && ov.classList.contains("show");
         }
+        /* ---------- Kolom chat di overlay "Jelaskan ini" ----------
+           Kolom chat di bawah penjelasan: pengguna menjawab pertanyaan
+           balik AI atau bertanya lanjut, dan percakapan berlanjut dari
+           penjelasan yang sedang dibuka (kunci yang sama dengan
+           EXPLAIN_NAMA, disimpan di explainKeyAktif). Jalurnya askAI
+           yang sudah ada — kuota dicek dulu, pop-up ramah bila habis,
+           pemakaian dihitung hanya bila jawaban berhasil, dan bila AI
+           tidak terjangkau askAI sendiri menampilkan penjelasan lokal
+           yang jujur. Jawaban lama tetap terlihat; jawaban baru muncul
+           di bawahnya, lalu overlay menggulir ke jawaban baru. */
+        function gulirChatPenjelasan(){
+          try{ var ov=gid("explainOverlay"); if(ov) ov.scrollTop=ov.scrollHeight; }catch(e){}
+        }
+        function kirimChatPenjelasan(){
+          var input=gid("explainChatQ"), log=gid("explainChatLog");
+          if(!input||!log) return;
+          var q=(input.value||"").trim();
+          if(!q) return;
+          if(kuotaAiHabis()){ popupKuotaHabis(); return; }
+          var tokenChat=explainToken;
+          function gelembung(cls, siapa, teks){
+            var w=document.createElement("div"); w.className="chat-msg "+cls;
+            var s=document.createElement("span"); s.className="chat-who"; s.textContent=siapa; w.appendChild(s);
+            var t=document.createElement("span"); t.className="chat-text"; t.textContent=teks; w.appendChild(t);
+            log.appendChild(w);
+            return t;
+          }
+          gelembung("user","Anda",q);
+          input.value="";
+          var teksAi=gelembung("ai thinking","AI Coach","Sedang berpikir…");
+          var bungkusAi=teksAi.parentNode;
+          gulirChatPenjelasan();
+          /* Proksi target untuk askAI: tulisan pertama ("Sedang
+             berpikir…") dan jawaban akhirnya sama-sama masuk ke
+             gelembung AI yang sama. Penjaga token: bila pengguna sudah
+             membuka penjelasan lain, jawaban lama tidak menimpa log
+             yang baru. */
+          var targetChat={};
+          Object.defineProperty(targetChat, "textContent", {
+            configurable:true,
+            get:function(){ return teksAi.textContent; },
+            set:function(v){
+              if(tokenChat!==explainToken) return;
+              teksAi.textContent=v;
+              if(bungkusAi) bungkusAi.classList.remove("thinking");
+              gulirChatPenjelasan();
+            }
+          });
+          var ctxChat=null;
+          try{ ctxChat=konteksPenjelasan(explainKeyAktif); }catch(e){ ctxChat=null; }
+          askAI(q, targetChat, ctxChat, explainKeyAktif);
+        }
         (function(){
           var t1=gid("btnExplainTutup");
           if(t1) t1.addEventListener("click", tutupOverlayPenjelasan);
           var t2=gid("btnExplainTutupAtas");
           if(t2) t2.addEventListener("click", tutupOverlayPenjelasan);
+          var krm=gid("btnExplainKirim");
+          if(krm) krm.addEventListener("click", kirimChatPenjelasan);
+          var inp=gid("explainChatQ");
+          if(inp) inp.addEventListener("keydown", function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); kirimChatPenjelasan(); } });
           var ov=gid("explainOverlay");
           if(ov) ov.addEventListener("click", function(ev){ if(ev.target===ov) tutupOverlayPenjelasan(); });
           document.addEventListener("keydown", function(ev){ if(ev.key==="Escape" && overlayPenjelasanTerbuka()) tutupOverlayPenjelasan(); });
@@ -9260,7 +9594,6 @@
         function selesaiWizardSingkat(){
           applyWizard();
           if(window.__tandaiSudahMengisi) window.__tandaiSudahMengisi();
-          try{ if(window.__aturTombolUbahUsaha) window.__aturTombolUbahUsaha(); }catch(e){}
           try{ audit("Wizard pertama selesai — jawaban terisi, lanjut mencatat hari ini."); }catch(e){}
           closeWizard();
         }
@@ -9284,7 +9617,6 @@
            menghidupkan lagi karena layar sudah tersembunyi. */
         (function(){ var dt=gid("layarDitutup"); if(dt){ dt.addEventListener("click", resetHitungTutup); dt.addEventListener("keydown", resetHitungTutup); } })();
         gid("btnWizardHero").addEventListener("click", openWizard);
-        ["btnUbahUsahaTop","btnUbahUsahaData"].forEach(function(id){ var el=gid(id); if(el) el.addEventListener("click", openWizard); });
         ["navWizardTop","navWizardBottom"].forEach(function(id){ var el=gid(id); if(el) el.addEventListener("click", function(ev){ ev.preventDefault(); openWizard(); }); });
 
         /* perkiraan omzet dari 2 pertanyaan lanjutan */
@@ -9341,7 +9673,6 @@
         gid("btnWizFinish").addEventListener("click", function(){
           applyWizard();
           if(window.__tandaiSudahMengisi) window.__tandaiSudahMengisi();
-          try{ if(window.__aturTombolUbahUsaha) window.__aturTombolUbahUsaha(); }catch(e){}
           try{
             var lvl=(S.skala||"—"); lvl=lvl.charAt(0).toUpperCase()+lvl.slice(1);
             gid("wizResLevel").textContent="Usaha "+lvl;
@@ -9449,7 +9780,7 @@
         if(pill) pill.textContent=pillTxt;
         if(sub) sub.textContent=subTxt;
         if(hint) hint.style.display=daftar?"none":"";
-        /* Tombol #btnSaveCloud berganti label menurut status akun: tamu —
+        /* Tautan #btnSaveCloud berganti label menurut status akun: tamu —
            termasuk yang masih menunggu konfirmasi email (user null) —
            melihat "Register"; pengguna terdaftar melihat "Upgrade".
            Penentunya objek pengguna yang sama dengan penentu klik, jadi
@@ -9461,12 +9792,6 @@
            perubahan keadaan akun — termasuk sesi berakhir — konsisten, bukan
            hanya saat masuk tamu/terdaftar. */
         var ue=gid("userEmail"); if(ue) ue.style.display=user?"":"none";
-        /* Tombol "Ubah usaha" hanya bila sudah ada data usaha nyata
-           (diatur helper di blok utama dari sudahMengisiNyata() yang
-           sama) — ikut diperbarui di sini supaya setiap perubahan
-           keadaan akun (masuk tamu/terdaftar, daftar, keluar) langsung
-           mengikuti keadaan data. */
-        try{ if(window.__aturTombolUbahUsaha) window.__aturTombolUbahUsaha(); }catch(e){}
         /* Penanda paket saat ini di halaman Paket & Layanan: hanya untuk
            pengguna terdaftar paket Gratis (billing belum aktif, jadi tidak
            ada pengguna Pro di keadaan hidup; bila kelak ada, mode "pro"
@@ -9478,6 +9803,9 @@
         /* Entri "Admin marketing" (blok marketing) ikut diperbarui di sini —
            fungsi itu ada bila blok marketing sudah dimuat; bila belum, lewati. */
         try{ if(window.__perbaruiAdminMarketing) window.__perbaruiAdminMarketing(); }catch(e){}
+        /* Gerbang riset data usaha (layar Saran) ikut diperbarui di sini —
+           fungsi itu ada bila blok tim sudah dimuat; bila belum, lewati. */
+        try{ if(window.__risetBukaLayar) window.__risetBukaLayar(); }catch(e){}
       }
       window.__perbaruiStatusAkun=perbaruiStatusAkun;
       window.__statusLanggananTerbaru=statusLanggananTerbaru;
@@ -10093,7 +10421,9 @@
           cekUrl2:{s:"Tautan halaman publik toko Anda di Tokopedia. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Tokopedia.",h:"Salin tautan toko Tokopedia Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
           cekUrl3:{s:"Tautan halaman publik toko Anda di Shopee. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Shopee.",h:"Salin tautan toko Shopee Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
           cekUrl5:{s:"Tautan profil publik media sosial usaha Anda, misalnya Instagram. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan.",e:"Tautan profil Instagram usaha Anda dari tombol Bagikan profil.",h:"Salin tautan profil, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda."},
-          shareLinkInput:{s:"Tautan khusus portal investor Anda. Siapa pun yang membuka tautan ini melihat ringkasan hanya-baca usaha Anda — tanpa bisa mengubah apa pun, dan tanpa melihat email, nomor HP, lokasi GPS, atau rincian transaksi Anda.",e:"Tautan berakhir dengan kode acak panjang yang hanya Anda yang tahu sebelum dibagikan.",h:"Salin tautan ini dan kirim hanya ke calon investor yang Anda percaya. Bila berubah pikiran, ketuk Cabut tautan — tautan langsung berhenti bekerja."}
+          shareLinkInput:{s:"Tautan khusus portal investor Anda. Siapa pun yang membuka tautan ini melihat ringkasan hanya-baca usaha Anda — tanpa bisa mengubah apa pun, dan tanpa melihat email, nomor HP, lokasi GPS, atau rincian transaksi Anda.",e:"Tautan berakhir dengan kode acak panjang yang hanya Anda yang tahu sebelum dibagikan.",h:"Salin tautan ini dan kirim hanya ke calon investor yang Anda percaya. Bila berubah pikiran, ketuk Cabut tautan — tautan langsung berhenti bekerja."},
+          risetTopik:{s:"Topik riset yang ingin Anda minta ke admin lewat WhatsApp. Admin meneliti topik ini dan membalas lewat WhatsApp.",e:"Data usaha saya, Harga pasar & kompetitor sejenis.",h:"Pilih satu topik yang paling Anda butuhkan saat ini — bila belum yakin, pilih Lainnya dan jelaskan di kolom bawahnya."},
+          risetCatatan:{s:"Hal spesifik yang ingin diteliti admin, supaya hasil risetnya sesuai kebutuhan Anda.",e:"Harga jual bakso di sekitar kampus dan pesaing terdekat.",h:"Tulis satu atau dua kalimat yang jelas — sebutkan produk, tempat, dan hal yang ingin dibandingkan. Boleh dikosongkan bila topik di atas sudah cukup jelas."}
         };
         var LABEL_H = {
           "catat dengan suara":{s:"Tombol ini mengisi tiga kolom transaksi sekaligus dari satu kalimat ucapan Anda: keterangan, jumlah rupiah, dan jenis masuk atau keluar. Hasilnya hanya mengisi kolom — belum tersimpan, Anda tetap menekan Tambah transaksi sendiri.",e:"Ucapkan: 'penjualan lima puluh ribu' (terisi Masuk Rp50.000) atau 'beli bahan dua ratus ribu' (terisi Keluar Rp200.000).",h:"Tekan tombolnya, ucapkan keterangan dan jumlahnya dalam satu kalimat dengan jelas. Lalu periksa kembali angkanya sebelum menekan Tambah transaksi — suara kadang salah dengar angka. Bila angka tidak terdengar, isi jumlahnya dengan mengetik."},
