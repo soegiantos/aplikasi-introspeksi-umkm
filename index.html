@@ -2039,6 +2039,9 @@
           <div style="margin-top:12px">
             <button class="wiz-skip" type="button" id="btnGreetBrowse" style="width:100%">Lihat dulu aplikasinya</button>
           </div>
+          <div style="margin-top:12px">
+            <button class="btn ghost" type="button" id="btnGreetMasuk" style="width:100%">Sudah punya akun? Masuk</button>
+          </div>
           <p class="note" style="margin-top:12px;text-align:center">Anda bisa melihat dulu seluruh aplikasinya tanpa mengisi apa pun.</p>
         </div>
 
@@ -3855,6 +3858,7 @@
          ikut autosave berkala lewat collectSnapshot, seperti isian lain. */
       function sopSimpanForm(){
         var cur=sopDariForm();
+        cur.steps=sopLangkahTerisi(cur); /* buang langkah kosong — formulir baru selalu mulai dengan 3 textarea kosong, jadi SOP 2 langkah harus tersimpan persis 2 langkah */
         if(!sopAdaIsi(cur)) return null;
         var ada=null;
         if(cur.id){ for(var i=0;i<sopsList.length;i++){ if(sopsList[i].id===cur.id){ ada=sopsList[i]; break; } } }
@@ -6425,6 +6429,7 @@
              supaya pengguna tidak menekan Daftar berulang-ulang. */
           if(m==="reg") maybeShowPendingConfirm();
         }
+        window.__setAuthMode=setAuthMode; /* dipakai tombol Masuk di layar selamat datang */
         /* ---------- Lupa kata sandi: kirim tautan & layar kata sandi baru ---------- */
         function forgotMsg(txt, ok){ var el=gid("forgotMsg"); if(el){ el.textContent=txt||""; el.className="auth-msg "+(ok?"ok":"err"); } }
         function recoveryMsg(txt, ok){ var el=gid("recoveryMsg"); if(el){ el.textContent=txt||""; el.className="auth-msg "+(ok?"ok":"err"); } }
@@ -8956,6 +8961,14 @@
         window.__openGreeting=openGreeting;
         var bgStart=gid("btnGreetStart"); if(bgStart) bgStart.addEventListener("click", function(){ showWiz("1"); });
         var bgBrowse=gid("btnGreetBrowse"); if(bgBrowse) bgBrowse.addEventListener("click", function(){ closeWizard(); });
+        var bgMasuk=gid("btnGreetMasuk"); if(bgMasuk) bgMasuk.addEventListener("click", function(){
+          closeWizard();
+          entered=false; /* izinkan enterApp setelah masuk */
+          gid("authGate").style.display="block";
+          var ggm=gid("guestGateMsg"); if(ggm) ggm.classList.remove("show");
+          if(window.__setAuthMode) window.__setAuthMode("login");
+          window.scrollTo(0,0);
+        });
 
         function selesaiWizardSingkat(){
           applyWizard();
