@@ -93,7 +93,7 @@
       .note{font-size:.85rem;color:var(--ink-soft)}
       .rujukan{font-size:.85rem;color:var(--ink-soft);margin-top:6px}
       .voice-result{display:none;background:var(--accent-soft);border:1px solid var(--accent);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.95rem;font-weight:600;margin-top:12px}
-      /* Panel rekaman suara (dipakai tombol suara Modul Keuangan + Hari Ini):
+      /* Panel rekaman suara (dipakai tombol suara Modul Keuangan + Mode Operasional):
          ikon mikrofon menunjukkan kapan pengguna bicara (emas + denyut) dan
          kapan suara berhenti (garis abu-abu), meter 10 segmen menunjukkan
          keras suara. Panel dibuat sekali oleh JS dan dipindah ke dekat tombol
@@ -155,8 +155,8 @@
       body.masuk-kembali #proaktifIntro{display:none}
 
       /* ---------- Layar per menu (navigasi berbasis layar) ----------
-         Satu layar penuh terlihat dalam satu waktu: layar Hari Ini memuat
-         hero + sapaan + Hari Ini; Perlu Perhatian dan Langkah berikutnya
+         Satu layar penuh terlihat dalam satu waktu: layar Mode Operasional memuat
+         hero + sapaan + Mode Operasional; Perlu Perhatian dan Langkah berikutnya
          punya layar sendiri; bagian panjang (Pembukuan, Kemasan, Saran,
          Keuangan, Introspeksi) dipecah jadi layar menu + sub-layar. Aturan ini HANYA MENYEMBUNYIKAN layar yang tidak aktif
          (!important supaya menang atas display inline) dan tidak pernah
@@ -557,7 +557,7 @@
       #diskusiTombol{display:none;gap:10px;flex-wrap:wrap;align-items:stretch;margin-top:12px}
       #diskusiTombol button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 
-      /* ---------- Layar Hari Ini: isian catat cepat (tanpa label.f, supaya
+      /* ---------- Layar Mode Operasional: isian catat cepat (tanpa label.f, supaya
          tidak ikut dipasangi tombol "?" penjelasan kolom) ---------- */
       .hi-field{display:block}
       .hi-field span{display:block;font-size:.86rem;font-weight:700;margin-bottom:6px}
@@ -969,7 +969,7 @@
       <header class="hero">
         <h1>Kenali kekuatan usaha Anda, lalu naikkan nilainya.</h1>
         <p class="lede">Isi data usaha sekali, lalu lihat level UMKM Anda, skor kesehatan usaha keseluruhan, estimasi valuasi dari tiga metode, hasil introspeksi, hitungan HPP dan simulasi dana investasi, serta rencana perbaikan 30–60–90 hari yang disusun dari angka Anda sendiri.</p>
-        <p class="note" style="margin-top:10px">Di HP: gunakan menu di bagian bawah layar untuk berpindah bagian — Hari Ini, Data, Level, Valuasi, Cek Diri, Uang, Saran, dan Mulai. Bilah hijau di atas menu menampilkan valuasi terbaru Anda setiap saat.</p>
+        <p class="note" style="margin-top:10px">Di HP: gunakan menu di bagian bawah layar untuk berpindah bagian — Mode Operasional, Data, Level, Valuasi, Cek Diri, Uang, Saran, dan Mulai. Bilah hijau di atas menu menampilkan valuasi terbaru Anda setiap saat.</p>
         <div class="guided-cta">
           <div class="txt">
             <h3>Cara paling mudah memulai</h3>
@@ -1010,7 +1010,7 @@
 
       <!-- ============ HARI INI — OPERASIONAL KESEHARIAN (halaman awal) ============ -->
       <section id="hariini">
-        <div class="sec-head"><span class="sec-num">☀</span><h2>Hari Ini</h2></div>
+        <div class="sec-head"><span class="sec-num">☀</span><h2>Mode Operasional</h2></div>
         <p class="sec-sub"><span id="hiSalam">Selamat pagi</span> · <span id="hiTanggal">—</span></p>
         <div class="card">
           <div class="stat-row" style="margin-top:2px">
@@ -1044,7 +1044,7 @@
       </section>
 
 
-      <!-- ============ LANGKAH BERIKUTNYA (dari layar Hari Ini) ============ -->
+      <!-- ============ LANGKAH BERIKUTNYA (dari layar Mode Operasional) ============ -->
       <section id="langkah">
         <div class="sec-head"><span class="sec-num">☀</span><h2>Langkah berikutnya</h2></div>
         <p class="sec-sub">Langkah paling penting berikutnya untuk usaha Anda.</p>
@@ -1056,7 +1056,7 @@
         </div>
       </section>
 
-      <!-- ============ PERLU PERHATIAN (dari layar Hari Ini) ============ -->
+      <!-- ============ PERLU PERHATIAN (dari layar Mode Operasional) ============ -->
       <section id="perhatian">
         <div class="sec-head"><span class="sec-num">⚠</span><h2>Perlu Perhatian</h2></div>
         <p class="sec-sub">Saran proaktif dari data usaha Anda sendiri — diperiksa otomatis setiap aplikasi dibuka dan setiap angka berubah.</p>
@@ -1904,7 +1904,7 @@
 
     <!-- Navigasi bawah ala aplikasi — hanya tampil di HP -->
     <nav class="bottom-nav" aria-label="Navigasi bawah">
-      <a href="#hariini" data-nav="hariini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Hari Ini</a>
+      <a href="#hariini" data-nav="hariini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Mode Operasional</a>
       <a href="#data" data-nav="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Data</a>
       <a href="#dashboard" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Level</a>
       <a href="#valuasi" data-nav="valuasi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v20M17 6.5c-.7-1-2.7-1.5-5-1.5-2.8 0-5 1.1-5 3 0 4.5 10 2.5 10 7 0 1.9-2.2 3-5 3-2.3 0-4.3-.5-5-1.5"/></svg>Valuasi</a>
@@ -2738,12 +2738,12 @@
         $("txIn").textContent=fmtFull(inn); $("txOut").textContent=fmtFull(out); $("txSaldo").textContent=fmtFull(inn-out);
         document.querySelectorAll("[data-del]").forEach(function(b){ b.addEventListener("click",function(){ const id=+b.dataset.del; const i=txs.findIndex(function(x){return x.id===id}); if(i>=0)txs.splice(i,1); renderTx(); renderReports(); }); });
         renderReports();
-        /* Layar Hari Ini memakai angka yang sama: segarkan chip dan daftar
+        /* Layar Mode Operasional memakai angka yang sama: segarkan chip dan daftar
            hari ini setiap kali daftar transaksi berubah. */
         if(typeof window.__renderHariIni==="function"){ try{ window.__renderHariIni(); }catch(e){} }
       }
       /* Satu jalur tambah transaksi — dipakai formulir Modul Keuangan DAN
-         catat cepat di layar Hari Ini, supaya validasi, batas gratis,
+         catat cepat di layar Mode Operasional, supaya validasi, batas gratis,
          autosave, dan penyimpanan cloud selalu sama persis. */
       async function tambahTransaksi(ket, jml, jenis, kat, tgl, aksiTombol){
         if(!ket||!jenis||!(jml>0)){ popupRamah("Isian transaksi belum lengkap","Isi keterangan, jenis, dan jumlah transaksi dulu — jumlahnya harus lebih dari Rp 0.", aksiTombol||"Lengkapi kolomnya, lalu tekan Tambah transaksi."); return false; }
@@ -3261,7 +3261,7 @@
         return true;
       }
       window.__suaraDialog={mulai:__dialogMulai, batalkan:__dialogBatalkan, hentikanDiam:__dialogHentikanDiam, aktif:function(){ return !!__dialogSuara.aktif; }, analisis:__dialogAnalisis, buatTanya:__dialogBuatTanya, terapkan:__dialogTerapkan, ucapkan:__dialogUcapkan, tanyaKe:function(){ return __dialogSuara.tanyaKe; }, pending:function(){ return __dialogSuara.pending; }};
-      /* ===== PANEL REKAMAN SUARA — bersama untuk Modul Keuangan + Hari Ini =====
+      /* ===== PANEL REKAMAN SUARA — bersama untuk Modul Keuangan + Mode Operasional =====
          Satu panel yang sama tampilannya di kedua tombol suara, muncul saat
          rekaman mulai, tepat di atas baris hasil suara. Pengenalan berjalan
          TERUS-MENERUS (continuous=true) supaya jeda sebentar antar-kata
@@ -3812,8 +3812,8 @@
     <script>
       /* ================= NAVIGASI BERBASIS LAYAR =================
          Satu layar penuh terlihat dalam satu waktu — bukan satu halaman
-         panjang yang digulir. Layar Hari Ini memuat hero + sapaan + Hari
-         Ini; Perlu Perhatian dan Langkah berikutnya punya layar sendiri;
+         panjang yang digulir. Layar Mode Operasional memuat hero + sapaan + Mode Operasional;
+         Perlu Perhatian dan Langkah berikutnya punya layar sendiri;
          bagian panjang dipecah jadi layar menu + sub-layar.
          Aturan tampil diatur CSS (body[data-layar] hanya MENYEMBUNYIKAN
          layar yang tidak aktif); skrip ini yang memilih layarnya. Tanpa
@@ -3831,9 +3831,9 @@
            sebagai layar di sini). */
         var LAYAR_DAFTAR=["hariini","langkah","perhatian","data","dashboard","valuasi","introspeksi","introspeksi-fin","introspeksi-ops","introspeksi-mkt","introspeksi-tech","keuangan","investasi","saran","saran-rencana","kemasan","kemasan-sudut","kemasan-label","buku","buku-transaksi","buku-qris","buku-stok","buku-hutang","buku-laporan","cekdata","legalitas","pemasaran","sop","portal","paket","adminmarketing"];
         /* Induk tiap sub-layar (untuk tombol "← Kembali" dan sorotan
-           nav bawah). Layar tanpa induk kembali ke Hari Ini. */
+           nav bawah). Layar tanpa induk kembali ke Mode Operasional. */
         var LAYAR_INDUK={langkah:"hariini",perhatian:"hariini","introspeksi-fin":"introspeksi","introspeksi-ops":"introspeksi","introspeksi-mkt":"introspeksi","introspeksi-tech":"introspeksi",investasi:"keuangan","saran-rencana":"saran","kemasan-sudut":"kemasan","kemasan-label":"kemasan","buku-transaksi":"buku","buku-qris":"buku","buku-stok":"buku","buku-hutang":"buku","buku-laporan":"buku"};
-        var LAYAR_JUDUL={hariini:"Hari Ini",langkah:"Langkah Berikutnya",perhatian:"Perlu Perhatian",data:"Data Usaha",dashboard:"Dasbor Level UMKM",valuasi:"Valuasi",introspeksi:"Introspeksi","introspeksi-fin":"Keuangan","introspeksi-ops":"Operasional","introspeksi-mkt":"Pasar & Kemasan","introspeksi-tech":"Teknologi & Legalitas",keuangan:"Keuangan",investasi:"Simulasi Dana Investasi",saran:"Saran","saran-rencana":"Rencana Perbaikan",kemasan:"Produk & Pemaketan","kemasan-sudut":"Foto 3 Sudut","kemasan-label":"Contoh Label",buku:"Pembukuan","buku-transaksi":"Tambah Transaksi","buku-qris":"Pembayaran QRIS","buku-stok":"Stok Barang","buku-hutang":"Piutang & Utang","buku-laporan":"Laporan",cekdata:"Cek Data",legalitas:"Legalitas",pemasaran:"Pemasaran",sop:"Orang & SOP",portal:"Portal Investor",paket:"Paket & Layanan",adminmarketing:"Admin Marketing"};
+        var LAYAR_JUDUL={hariini:"Mode Operasional",langkah:"Langkah Berikutnya",perhatian:"Perlu Perhatian",data:"Data Usaha",dashboard:"Dasbor Level UMKM",valuasi:"Valuasi",introspeksi:"Introspeksi","introspeksi-fin":"Keuangan","introspeksi-ops":"Operasional","introspeksi-mkt":"Pasar & Kemasan","introspeksi-tech":"Teknologi & Legalitas",keuangan:"Keuangan",investasi:"Simulasi Dana Investasi",saran:"Saran","saran-rencana":"Rencana Perbaikan",kemasan:"Produk & Pemaketan","kemasan-sudut":"Foto 3 Sudut","kemasan-label":"Contoh Label",buku:"Pembukuan","buku-transaksi":"Tambah Transaksi","buku-qris":"Pembayaran QRIS","buku-stok":"Stok Barang","buku-hutang":"Piutang & Utang","buku-laporan":"Laporan",cekdata:"Cek Data",legalitas:"Legalitas",pemasaran:"Pemasaran",sop:"Orang & SOP",portal:"Portal Investor",paket:"Paket & Layanan",adminmarketing:"Admin Marketing"};
         /* Judul dipakai indikator "Anda di sini" dan label tombol Kembali;
            sub-layar memakai judul pendeknya sendiri supaya jalurnya
            tetap satu baris (mis. "Keuangan › Tambah Transaksi"). */
@@ -4003,9 +4003,9 @@
           var h=layarDariHash();
           return tampilkanLayar(h||"hariini", {scroll:false, arah:"awal"});
         }
-        /* Tombol "← Kembali" di atas tiap layar selain Hari Ini:
+        /* Tombol "← Kembali" di atas tiap layar selain Mode Operasional:
            sub-layar kembali ke layar induknya, layar tingkat atas
-           kembali ke Hari Ini. Label yang terlihat menyebut tujuannya
+           kembali ke Mode Operasional. Label yang terlihat menyebut tujuannya
            ("← Kembali ke Keuangan"); ketukan kembali memakai arah
            "mundur" supaya layar induk masuk dari kiri. */
         function pasangTombolKembali(){
@@ -4017,11 +4017,11 @@
             var b=document.createElement("button");
             b.type="button";
             b.className="btn ghost small btn-kembali-layar";
-            b.textContent="← Kembali ke "+(LAYAR_JUDUL[kembaliKe]||"Hari Ini");
+            b.textContent="← Kembali ke "+(LAYAR_JUDUL[kembaliKe]||"Mode Operasional");
             /* Kunci stabil untuk warna "sudah diketuk": satu tombol per
                layar, dikunci oleh nama layarnya sendiri. */
             b.setAttribute("data-kembali-layar", nama);
-            b.setAttribute("aria-label","Kembali ke "+(LAYAR_JUDUL[kembaliKe]||"Hari Ini"));
+            b.setAttribute("aria-label","Kembali ke "+(LAYAR_JUDUL[kembaliKe]||"Mode Operasional"));
             b.addEventListener("click", function(){ tampilkanLayar(kembaliKe, {arah:"mundur"}); });
             sec.insertBefore(b, sec.firstChild);
           });
@@ -4085,7 +4085,7 @@
         window.__layarDaftar=LAYAR_DAFTAR.slice();
         window.__layarAudit=auditLayar;
         /* Muat awal: tautan dalam (#data, #saran, ...) membuka layarnya;
-           tanpa hash (atau hash bukan layar) buka Hari Ini. Mode portal
+           tanpa hash (atau hash bukan layar) buka Mode Operasional. Mode portal
            berbagi dan hash pemulihan kata sandi tidak disentuh sama
            sekali — tidak ada data-layar, tidak ada perubahan hash. */
         try{
@@ -5233,7 +5233,7 @@
           clearPendingConfirm();
           var pcp=gid("pendingConfirmPanel"); if(pcp) pcp.style.display="none";
           gid("authGate").style.display="none";
-          /* Halaman awal adalah Hari Ini, bukan dashboard — kecuali bila
+          /* Halaman awal adalah Mode Operasional, bukan dashboard — kecuali bila
              aplikasi dibuka lewat tautan dalam (#data, #saran, ...) yang
              membuka layarnya sendiri. */
           if(window.__tampilkanLayarAwal){ try{ window.__tampilkanLayarAwal(); }catch(e){} }
@@ -5698,7 +5698,7 @@
           if(window.__bagikanMode) return; // mode portal berbagi: jangan buka sapaan/wizard
           if(recoveryMode) return; // dibuka dari tautan atur ulang: layar kata sandi baru / kedaluwarsa yang tampil, bukan sapaan/wizard
           var sudahPunyaUsaha=enterGuest();
-          /* Halaman awal adalah Hari Ini, bukan dashboard — kecuali bila
+          /* Halaman awal adalah Mode Operasional, bukan dashboard — kecuali bila
              aplikasi dibuka lewat tautan dalam (#data, #saran, ...) yang
              membuka layarnya sendiri. */
           if(window.__tampilkanLayarAwal){ try{ window.__tampilkanLayarAwal(); }catch(e){} }
@@ -5811,7 +5811,7 @@
           }
           for(var i=0;i<LANGKAH_SAPA.length;i++){
             var l=LANGKAH_SAPA[i];
-            /* Kartu "langkah berikutnya" di layar Hari Ini memanggil dengan
+            /* Kartu "langkah berikutnya" di layar Mode Operasional memanggil dengan
                abaikanSudah=true, supaya topik yang pernah ditolak di sapaan
                tetap tampil sebagai langkah berikutnya selama masih kosong. */
             if(!abaikanSudah && sapaTopikSudah[l.topik]) continue;
@@ -6605,7 +6605,7 @@
           hppQid:function(){ return HPP_QID; }, sapaan:sapaanPengguna,
           dataTerkait:dataTerkaitDiskusi, kalimatData:kalimatDataTerkait
         };
-        /* Kartu "langkah berikutnya" di layar Hari Ini memakai penentu langkah
+        /* Kartu "langkah berikutnya" di layar Mode Operasional memakai penentu langkah
            yang sama dengan sapaan proaktif. */
         window.__langkahBerikutnya=langkahBerikutnya;
 
@@ -6616,7 +6616,7 @@
           if(json!==lastJson){
             if(saveTimer) clearTimeout(saveTimer);
             saveTimer=setTimeout(function(){ saveData(snap, json); }, 800);
-            /* Kartu "langkah berikutnya" di Hari Ini mengikuti perubahan data
+            /* Kartu "langkah berikutnya" di Mode Operasional mengikuti perubahan data
                apa pun (isian, jawaban kuis, stok) — segarkan bersamaan. */
             if(typeof window.__renderHariIni==="function"){ try{ window.__renderHariIni(); }catch(e){} }
             /* Formulir Data Usaha mengikuti perubahan data yang sama: bila
@@ -6815,7 +6815,7 @@
             return {valuasi_tengah:Math.round(s.weighted||0), valuasi_rendah:Math.round(s.valLow||0), valuasi_tinggi:Math.round(s.valHigh||0), laba_pemilik_tahunan_sde:sdeThn, multiple_valuasi:mult, multiple_dasar_sektor:multDasar, penyesuaian_multiple:adj, nilai_aset_bersih:Math.round(s.asetBersih||0), nilai_metode_aset_bersih:Math.round(s.asetBersih||0), nilai_metode_sde:Math.round(valSde), nilai_metode_dcf_3_tahun:Math.round(valDcf), hpp_persen:Math.round(hppPct*1000)/10, ketergantungan_pemilik:terg, level_pembukuan:buku, laba_belum_positif:sdeThn<=0};
           }
           if(kunci==="hi-masuk"||kunci==="hi-keluar"||kunci==="hi-saldo"){
-            /* Chip Hari Ini memakai data yang SAMA dengan renderHariIni:
+            /* Chip Mode Operasional memakai data yang SAMA dengan renderHariIni:
                daftar hari ini disaring txAdalahHariIni (yang sama dipakai
                render), saldo memakai agregat txAgg yang sama dengan Laba
                Rugi / Posisi Keuangan / Arus Kas / BEP. Tidak ada state
@@ -7561,7 +7561,7 @@
         if(btnCoach) btnCoach.addEventListener("click", coachAsk);
         if(gid("coachQ")) gid("coachQ").addEventListener("keydown", function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); coachAsk(); } });
 
-        /* ---------- Tombol Jelaskan ini di tiap angka: hero + dasbor + chip Hari Ini ----------
+        /* ---------- Tombol Jelaskan ini di tiap angka: hero + dasbor + chip Mode Operasional ----------
            13 kunci penjelasan, 15 penempatan tombol. Satu angka yang tampil
            dua kali (Level UMKM, Siap Investasi) memakai penjelasan yang
            sama, tetapi tiap penempatan punya panel sendiri (target per
@@ -7731,7 +7731,7 @@
            yang dibuka pengguna umumnya TIDAK bisa ditutup skrip, jadi layar
            tertutup tetap tampil bila panggilan itu diabaikan peramban.
            "Buka kembali aplikasi" menampilkan sapaan lagi (bukan langsung
-           Hari Ini sebagai tamu), sesuai tempat pengguna menutup. */
+           Mode Operasional sebagai tamu), sesuai tempat pengguna menutup. */
         function tutupAplikasi(){
           gid("wizardOverlay").classList.remove("show");
           var dt=gid("layarDitutup"); if(dt) dt.hidden=false;
@@ -7826,7 +7826,7 @@
           if(h>=15 && h<19) return "Selamat sore";
           return "Selamat malam";
         }
-        /* Sapaan di layar Hari Ini memakai logika waktu yang sama. */
+        /* Sapaan di layar Mode Operasional memakai logika waktu yang sama. */
         window.__greetingByHour=greetingByHour;
         function openGreeting(){
           wizSingkat=true; /* sapaan = jalur pertama: sapaan + langkah 1 saja */
@@ -8443,7 +8443,7 @@
           try{ var tag=(el.tagName||"").toLowerCase(); if(tag==="input"||tag==="select"||tag==="textarea") el.focus(); }catch(e){}
         }
         function keHariIni(){
-          /* Layar awal aplikasi adalah Hari Ini — buka layarnya (bukan
+          /* Layar awal aplikasi adalah Mode Operasional — buka layarnya (bukan
              sekadar menggulir), supaya berlaku juga saat pengguna sedang
              berada di layar lain. */
           if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("hariini"); return; }catch(e){} }
@@ -8499,9 +8499,9 @@
           if(window.__panelSuara) window.__panelSuara.buka(r, resEl);
           /* Penyelesaian tepat sekali — pemicu dan teks terkumpul sama
              seperti Modul Keuangan (lihat finalkanSuara di sana); hanya
-             pengisian kolomnya yang berbeda (form Hari Ini). */
+             pengisian kolomnya yang berbeda (form Mode Operasional). */
           var finalSudah=false;
-          /* Isi kolom Hari Ini dari hasil urai (dipakai langsung bila
+          /* Isi kolom Mode Operasional dari hasil urai (dipakai langsung bila
              tidak ada yang meragukan, atau sesudah dialog selesai). */
           function isiDariSuara(p){
             var f=gid("hiForm"); if(!f) return;
