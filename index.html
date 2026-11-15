@@ -866,7 +866,7 @@
         <div class="account-bar" id="accountBar">
           <span class="who" id="userEmail"></span>
           <span class="sync-pill" id="syncStatus">Memuat…</span>
-          <button class="btn ghost small" id="btnUbahUsahaTop" type="button">Ubah usaha</button>
+          <button class="btn ghost small" id="btnUbahUsahaTop" type="button" style="display:none">Ubah usaha</button>
           <button class="btn ghost small" id="btnSaveCloud" type="button">Register</button>
           <button class="btn ghost small" id="btnAdminMarketing" type="button" style="display:none">Admin marketing</button>
         </div>
@@ -903,16 +903,16 @@
           <div class="actions" style="margin-top:10px"><button class="btn small" id="btnShowSql" type="button">Lihat &amp; salin SQL tabel</button></div>
         </div>
         <div class="module-grid" aria-label="Daftar 9 modul aplikasi">
-          <a href="#data"><b>1 · Introspeksi &amp; Valuasi</b><span>Data, level, 3 metode valuasi</span></a>
-          <a href="#kemasan"><b>2 · Produk &amp; Pemaketan</b><span>Penilaian foto &amp; label kemasan</span></a>
-          <a href="#buku"><b>3 · Keuangan</b><span>Pembukuan, stok, piutang, SAK EMKM</span></a>
-          <a href="#keuangan"><b>4 · Ekonomi &amp; Investasi</b><span>HPP, BEP, dana investasi &amp; rasio bagi hasil</span></a>
-          <a href="#pemasaran"><b>5 · Pemasaran &amp; Kanal</b><span>Kanal jual &amp; kalender konten</span></a>
-          <a href="#saran"><b>6 · Teknologi</b><span>Tangga teknologi tepat guna</span></a>
-          <a href="#legalitas"><b>7 · Legalitas</b><span>NIB, PIRT, halal, NPWP, izin edar</span></a>
-          <a href="#sop"><b>8 · Orang &amp; SOP</b><span>Pembuat SOP &amp; pembagian peran</span></a>
-          <a href="#saran"><b>9 · AI Coach</b><span>Rencana 30–60–90 hari</span></a>
-          <a href="#langganan" id="modLanggananLink" style="display:none"><b>10 · Langganan</b><span>Paket Pro &amp; pembayaran</span></a>
+          <a href="#data"><b>Introspeksi &amp; Valuasi</b><span>Data, level, 3 metode valuasi</span></a>
+          <a href="#kemasan"><b>Produk &amp; Pemaketan</b><span>Penilaian foto &amp; label kemasan</span></a>
+          <a href="#buku"><b>Keuangan</b><span>Pembukuan, stok, piutang, SAK EMKM</span></a>
+          <a href="#keuangan"><b>Ekonomi &amp; Investasi</b><span>HPP, BEP, dana investasi &amp; rasio bagi hasil</span></a>
+          <a href="#pemasaran"><b>Pemasaran &amp; Kanal</b><span>Kanal jual &amp; kalender konten</span></a>
+          <a href="#saran"><b>Teknologi</b><span>Tangga teknologi tepat guna</span></a>
+          <a href="#legalitas"><b>Legalitas</b><span>NIB, PIRT, halal, NPWP, izin edar</span></a>
+          <a href="#sop"><b>Orang &amp; SOP</b><span>Pembuat SOP &amp; pembagian peran</span></a>
+          <a href="#saran"><b>AI Coach</b><span>Rencana 30–60–90 hari</span></a>
+          <a href="#langganan" id="modLanggananLink" style="display:none"><b>Langganan</b><span>Paket Pro &amp; pembayaran</span></a>
         </div>
         <div class="stat-row">
           <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div><p class="rujukan" id="rujLevelHero">—</p><button class="btn-explain kompak" type="button" data-explain="level" data-explain-target="explain-hero-level">Jelaskan ini</button><div class="explain-answer" id="explain-hero-level" role="status"></div></div>
@@ -4640,6 +4640,25 @@
           if(flagSudahMengisi()) return true;
           try{ return snapshotNyata(collectSnapshot()); }catch(e){ return false; }
         }
+        /* Tombol "Ubah usaha" di bilah akun hanya untuk pengguna yang sudah
+           punya data usaha nyata — pengguna baru masuk lewat sapaan/wizard
+           atau formulir Data Usaha, jadi tombol itu disembunyikan sampai
+           sudahMengisiNyata() benar (aturan yang sama dengan sapaan,
+           "Tutup", dan lipatan formulir: ketikan di wizard saja TIDAK
+           dihitung, hanya data di formulir utama / sesudah applyWizard,
+           lokasi, atau transaksi; pasangan contoh "Dapur Bu Sari" +
+           omzet Rp45.000.000 juga TIDAK dihitung). Dipanggil dari
+           perbaruiStatusAkun (setiap perubahan keadaan akun) dan
+           aturTampilanFormulir (setiap perubahan data, termasuk autosave),
+           jadi tampil/sembunyi mengikuti data tanpa muat ulang. Bila data
+           dihapus suatu saat, keputusan ini dihitung ulang dan tombol
+           bersembunyi lagi — saat ini belum ada jalur hapus data di aplikasi. */
+        function aturTombolUbahUsaha(){
+          var b=gid("btnUbahUsahaTop"); if(!b) return;
+          var ada=false; try{ ada=sudahMengisiNyata(); }catch(e){ ada=false; }
+          b.style.display=ada?"":"none";
+        }
+        window.__aturTombolUbahUsaha=aturTombolUbahUsaha;
 
         /* ---------- Formulir Data Usaha dilipat bila sudah terisi ----------
            Supaya aplikasi tidak terkesan rumit: bila data usaha sudah nyata
@@ -4668,6 +4687,7 @@
         }
         function aturTampilanFormulir(){
           var ada=false; try{ ada=sudahMengisiNyata(); }catch(e){ ada=false; }
+          try{ aturTombolUbahUsaha(); }catch(e){}
           /* Tampilan masuk kembali: pengguna TERDAFTAR (bukan tamu) yang
              sudah punya data usaha nyata melihat sedikit tulisan — kelas
              body.masuk-kembali menyembunyikan prosa panduan di hero (lihat
@@ -5485,8 +5505,8 @@
            formulir Data Usaha yang menyalakannya. Pemuatan snapshot / data contoh
            tidak memicu event input/change dan dijaga flag loading, jadi tidak dihitung. */
         document.querySelectorAll("#data input, #data select, #data textarea").forEach(function(el){
-          el.addEventListener("input",function(){ if(!loading) tandaiSudahMengisi(); });
-          el.addEventListener("change",function(){ if(!loading) tandaiSudahMengisi(); });
+          el.addEventListener("input",function(){ if(!loading){ tandaiSudahMengisi(); try{ aturTombolUbahUsaha(); }catch(e){} } });
+          el.addEventListener("change",function(){ if(!loading){ tandaiSudahMengisi(); try{ aturTombolUbahUsaha(); }catch(e){} } });
         });
         /* Tombol ini berganti peran menurut status akun (labelnya diatur
            di perbaruiStatusAkun): tamu -> "Register" (membuka gerbang
@@ -7588,6 +7608,7 @@
         function selesaiWizardSingkat(){
           applyWizard();
           if(window.__tandaiSudahMengisi) window.__tandaiSudahMengisi();
+          try{ if(window.__aturTombolUbahUsaha) window.__aturTombolUbahUsaha(); }catch(e){}
           try{ audit("Wizard pertama selesai — jawaban terisi, lanjut mencatat hari ini."); }catch(e){}
           closeWizard();
         }
@@ -7662,6 +7683,7 @@
         gid("btnWizFinish").addEventListener("click", function(){
           applyWizard();
           if(window.__tandaiSudahMengisi) window.__tandaiSudahMengisi();
+          try{ if(window.__aturTombolUbahUsaha) window.__aturTombolUbahUsaha(); }catch(e){}
           try{
             var lvl=(S.skala||"—"); lvl=lvl.charAt(0).toUpperCase()+lvl.slice(1);
             gid("wizResLevel").textContent="Usaha "+lvl;
@@ -7781,6 +7803,12 @@
            perubahan keadaan akun — termasuk sesi berakhir — konsisten, bukan
            hanya saat masuk tamu/terdaftar. */
         var ue=gid("userEmail"); if(ue) ue.style.display=user?"":"none";
+        /* Tombol "Ubah usaha" hanya bila sudah ada data usaha nyata
+           (diatur helper di blok utama dari sudahMengisiNyata() yang
+           sama) — ikut diperbarui di sini supaya setiap perubahan
+           keadaan akun (masuk tamu/terdaftar, daftar, keluar) langsung
+           mengikuti keadaan data. */
+        try{ if(window.__aturTombolUbahUsaha) window.__aturTombolUbahUsaha(); }catch(e){}
         /* Penanda paket saat ini di halaman Paket & Layanan: hanya untuk
            pengguna terdaftar paket Gratis (billing belum aktif, jadi tidak
            ada pengguna Pro di keadaan hidup; bila kelak ada, mode "pro"
