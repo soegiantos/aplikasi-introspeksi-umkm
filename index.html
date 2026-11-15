@@ -558,6 +558,10 @@
       .tabel-tim{width:100%;border-collapse:collapse;font-size:.92rem}
       .tabel-tim th,.tabel-tim td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
       .tabel-tim th{color:var(--muted)}
+      .foto-mini{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid var(--line);flex:0 0 44px}
+      .foto-inisial{width:44px;height:44px;border-radius:50%;background:var(--surface-2);border:1px solid var(--gold);color:var(--gold);font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;font-size:1.05rem}
+      .foto-sel{display:inline-flex;align-items:center;gap:8px}
+      .lap-foto{width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
       /* Baris satu-baris untuk penjelasan yang sudah dibaca dan terlipat:
          aksen emas seperti kartu diskusi, bukan merah; teks dipotong jadi
          satu baris dengan elipsis. Ketuk untuk membuka lagi. */
@@ -1744,6 +1748,7 @@
             <label class="f"><span>Nama SOP / proses</span><input type="text" id="sopNama" placeholder="contoh: SOP Membuka Warung Pagi" /></label>
             <label class="f"><span>Penanggung jawab</span><input type="text" id="sopPj" placeholder="contoh: Kepala dapur / kasir senior" /></label>
             <label class="f"><span>Tujuan SOP</span><input type="text" id="sopTujuan" placeholder="contoh: Warung siap jualan pukul 06.00 dengan kualitas sama setiap hari" /></label>
+            <label class="f"><span>Pengecek (yang memeriksa pekerjaan ini)</span><input type="text" id="sopPengecek" placeholder="contoh: Pemilik" /></label>
           </div>
           <div id="sopSteps" style="margin-top:14px"></div>
           <div class="actions"><button class="btn ghost" id="btnAddStep" type="button">+ Tambah langkah</button><button class="btn" id="btnSimpanSop" type="button">Simpan SOP</button><button class="btn" id="btnSop" type="button">Unduh dokumen SOP (.txt)</button></div>
@@ -1765,6 +1770,7 @@
               <label><input type="checkbox" id="timPeranStok" /> Stok</label>
             </div>
             <div class="actions" style="margin-top:10px"><button class="btn" id="btnTambahTim" type="button">Tambah pegawai</button></div>
+            <div class="actions" style="margin-top:10px"><button class="btn ghost small" id="btnMuatTim" type="button">Muat ulang</button></div>
             <div id="timList" style="margin-top:12px"></div>
           </div>
         </div>
@@ -1776,6 +1782,40 @@
             <div id="timLogTabel" style="margin-top:10px"></div>
             <p class="note" id="timLogKosong" style="display:none">Belum ada pegawai yang mencatat SOP hari ini.</p>
             <div id="timLogSetup" style="display:none"><p class="note"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b></p><p class="note" style="margin-top:6px">Salinan pengaturannya ada di <a href="https://dashboard-pegawai-umkm.vercel.app" target="_blank" rel="noopener">Aplikasi Pegawai</a> — buka dan salin SQL-nya dari sana, lalu jalankan di SQL Editor cloud.</p></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px" id="presCard">
+          <h3>Presensi hari ini</h3>
+          <p class="note" id="presTamu" style="display:none">Daftar dulu untuk melihat presensi pegawai.</p>
+          <div id="presIsi">
+            <div class="actions"><button class="btn ghost small" id="btnMuatPres" type="button">Muat ulang</button></div>
+            <div id="presTabel" style="margin-top:10px"></div>
+            <p class="note" id="presKosong" style="display:none">Belum ada pegawai yang masuk hari ini.</p>
+            <p class="note" id="presBelumMasuk" style="display:none"></p>
+            <div id="presSetup" style="display:none"><p class="note"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b></p><p class="note" style="margin-top:6px">Salinan pengaturannya ada di <a href="https://dashboard-pegawai-umkm.vercel.app" target="_blank" rel="noopener">Aplikasi Pegawai</a> — buka dan salin SQL-nya dari sana, lalu jalankan di SQL Editor cloud.</p></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px" id="lapCard">
+          <h3>Laporan pegawai</h3>
+          <p class="note" id="lapTamu" style="display:none">Daftar dulu untuk melihat laporan pegawai.</p>
+          <div id="lapIsi">
+            <div class="actions"><button class="btn ghost small" id="btnMuatLap" type="button">Muat ulang</button></div>
+            <div id="lapTabel" style="margin-top:10px"></div>
+            <p class="note" id="lapKosong" style="display:none">Belum ada laporan pegawai.</p>
+            <p class="note" id="lapRetensi" style="display:none">Ada foto/laporan lebih dari 12 bulan. Foto lama tetap tersimpan; arsipkan bila penyimpanan mulai penuh.</p>
+            <div id="lapSetup" style="display:none"><p class="note"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b></p><p class="note" style="margin-top:6px">Salinan pengaturannya ada di <a href="https://dashboard-pegawai-umkm.vercel.app" target="_blank" rel="noopener">Aplikasi Pegawai</a> — buka dan salin SQL-nya dari sana, lalu jalankan di SQL Editor cloud.</p></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px" id="aiPakaiCard">
+          <h3>Pemakaian AI tim</h3>
+          <p class="note" id="aiPakaiTamu" style="display:none">Daftar dulu untuk melihat pemakaian AI tim.</p>
+          <div id="aiPakaiIsi">
+            <div class="actions"><button class="btn ghost small" id="btnMuatAiPakai" type="button">Muat ulang</button></div>
+            <p class="note" id="aiPakaiRingkasan" style="margin-top:10px">Memuat pemakaian…</p>
+            <div id="aiPakaiTabel" style="margin-top:10px"></div>
+            <p class="note" id="aiPakaiKosong" style="display:none">Belum ada pemakaian AI tim bulan ini.</p>
+            <p class="note" style="margin-top:8px">Setiap pegawai bisa memakai bantuan AI sampai 20 kali per bulan. Tingkat paket di sini adalah tingkat paket di aplikasi ini — pemakaian pegawai mengikuti tingkat yang tersimpan di cloud.</p>
+            <div id="aiPakaiSetup" style="display:none"><p class="note"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b></p><p class="note" style="margin-top:6px">Salinan pengaturannya ada di <a href="https://dashboard-pegawai-umkm.vercel.app" target="_blank" rel="noopener">Aplikasi Pegawai</a> — buka dan salin SQL-nya dari sana, lalu jalankan di SQL Editor cloud.</p></div>
           </div>
         </div>
       </section>
@@ -3785,14 +3825,14 @@
       function sopBersih(s){
         s=s||{};
         var langkah=Array.isArray(s.steps)?s.steps.map(function(v){ return String(v==null?"":v); }):[];
-        return {id:String(s.id||sopIdBaru()), nama:String(s.nama||"").trim(), pj:String(s.pj||"").trim(), tujuan:String(s.tujuan||"").trim(), steps:langkah, dibuat:String(s.dibuat||new Date().toISOString())};
+        return {id:String(s.id||sopIdBaru()), nama:String(s.nama||"").trim(), pj:String(s.pj||"").trim(), tujuan:String(s.tujuan||"").trim(), pengecek:String(s.pengecek||"").trim(), steps:langkah, dibuat:String(s.dibuat||new Date().toISOString())};
       }
       function sopBersihDaftar(arr){ return (Array.isArray(arr)?arr:[]).map(sopBersih); }
       function sopLangkahTerisi(s){ return (s.steps||[]).filter(function(v){ return String(v).trim()!==""; }); }
-      function sopAdaIsi(s){ if(!s) return false; return !!(String(s.nama||"").trim() || String(s.pj||"").trim() || String(s.tujuan||"").trim() || sopLangkahTerisi(s).length); }
+      function sopAdaIsi(s){ if(!s) return false; return !!(String(s.nama||"").trim() || String(s.pj||"").trim() || String(s.tujuan||"").trim() || String(s.pengecek||"").trim() || sopLangkahTerisi(s).length); }
       function sopDariForm(){
         var langkah=Array.prototype.map.call(document.querySelectorAll(".sop-step"),function(t){ return t.value; });
-        return {id:sopTerpilihId, nama:($("sopNama").value||"").trim(), pj:($("sopPj").value||"").trim(), tujuan:($("sopTujuan").value||"").trim(), steps:langkah, dibuat:null};
+        return {id:sopTerpilihId, nama:($("sopNama").value||"").trim(), pj:($("sopPj").value||"").trim(), tujuan:($("sopTujuan").value||"").trim(), pengecek:($("sopPengecek").value||"").trim(), steps:langkah, dibuat:null};
       }
       /* Tulis isi formulir ke entri SOP yang dipilih (atau buat entri baru
          bila formulir berisi SOP baru). Mengembalikan entri atau null bila
@@ -3803,8 +3843,8 @@
         if(!sopAdaIsi(cur)) return null;
         var ada=null;
         if(cur.id){ for(var i=0;i<sopsList.length;i++){ if(sopsList[i].id===cur.id){ ada=sopsList[i]; break; } } }
-        if(ada){ ada.nama=cur.nama; ada.pj=cur.pj; ada.tujuan=cur.tujuan; ada.steps=cur.steps; }
-        else { ada=sopBersih({id:sopIdBaru(), nama:cur.nama, pj:cur.pj, tujuan:cur.tujuan, steps:cur.steps, dibuat:new Date().toISOString()}); sopsList.push(ada); sopTerpilihId=ada.id; }
+        if(ada){ ada.nama=cur.nama; ada.pj=cur.pj; ada.tujuan=cur.tujuan; ada.pengecek=cur.pengecek; ada.steps=cur.steps; }
+        else { ada=sopBersih({id:sopIdBaru(), nama:cur.nama, pj:cur.pj, tujuan:cur.tujuan, pengecek:cur.pengecek, steps:cur.steps, dibuat:new Date().toISOString()}); sopsList.push(ada); sopTerpilihId=ada.id; }
         renderSopList();
         return ada;
       }
@@ -3814,6 +3854,7 @@
         $("sopNama").value=sop.nama||"";
         $("sopPj").value=sop.pj||"";
         $("sopTujuan").value=sop.tujuan||"";
+        $("sopPengecek").value=sop.pengecek||"";
         var sw=$("sopSteps"); sw.innerHTML=""; sopCount=0;
         var langkah=(sop.steps&&sop.steps.length)?sop.steps:["","",""];
         langkah.forEach(function(v){ addSopStep(v||""); });
@@ -3823,7 +3864,7 @@
       function sopBaru(){
         sopSimpanForm();
         sopTerpilihId=null;
-        $("sopNama").value=""; $("sopPj").value=""; $("sopTujuan").value="";
+        $("sopNama").value=""; $("sopPj").value=""; $("sopTujuan").value=""; $("sopPengecek").value="";
         var sw=$("sopSteps"); sw.innerHTML=""; sopCount=0; addSopStep(""); addSopStep(""); addSopStep("");
         var note=$("sopDipilihNote"); if(note) note.textContent="SOP baru — belum disimpan.";
         renderSopList();
@@ -3842,7 +3883,7 @@
           if(sopsList.length){ sopMuatKeForm(sopsList[0]); }
           else {
             sopTerpilihId=null;
-            $("sopNama").value=""; $("sopPj").value=""; $("sopTujuan").value="";
+            $("sopNama").value=""; $("sopPj").value=""; $("sopTujuan").value=""; $("sopPengecek").value="";
             var sw=$("sopSteps"); sw.innerHTML=""; sopCount=0; addSopStep(""); addSopStep(""); addSopStep("");
             var note=$("sopDipilihNote"); if(note) note.textContent="Belum ada SOP tersimpan — buat SOP baru atau unggah dokumen SOP.";
           }
@@ -3863,7 +3904,7 @@
           if(s.id===sopTerpilihId) baris.classList.add("aktif");
           var info=document.createElement("div"); info.className="sop-baris-info";
           var nm=document.createElement("b"); nm.textContent=s.nama||"SOP tanpa nama"; info.appendChild(nm);
-          var ket=document.createElement("span"); ket.textContent=(s.pj?("Penanggung jawab: "+s.pj+" · "):"")+sopLangkahTerisi(s).length+" langkah"; info.appendChild(ket);
+          var ket=document.createElement("span"); ket.textContent=(s.pj?("Penanggung jawab: "+s.pj+" · "):"")+sopLangkahTerisi(s).length+" langkah · Dicek oleh: "+(s.pengecek||"Pemilik"); info.appendChild(ket);
           baris.appendChild(info);
           var aksi=document.createElement("div"); aksi.className="actions";
           var bBuka=document.createElement("button"); bBuka.type="button"; bBuka.className="btn ghost small"; bBuka.textContent="Buka"; bBuka.setAttribute("data-sop-buka",s.id);
@@ -3884,7 +3925,7 @@
       }
       function sopTeks(s){
         var langkah=sopLangkahTerisi(s);
-        return "DOKUMEN SOP — "+(s.nama||"SOP tanpa nama")+"\nPenanggung jawab: "+(s.pj||"—")+"\nTujuan: "+(s.tujuan||"—")+"\n\nLANGKAH KERJA:\n"+langkah.map(function(v,i){ return (i+1)+". "+v; }).join("\n")+"\n\nSOP ini bagian dari sistem usaha "+($("inNama").value||"")+" — tinjau ulang tiap 3 bulan.";
+        return "DOKUMEN SOP — "+(s.nama||"SOP tanpa nama")+"\nPenanggung jawab: "+(s.pj||"—")+"\nPengecek: "+(s.pengecek||"Pemilik")+"\nTujuan: "+(s.tujuan||"—")+"\n\nLANGKAH KERJA:\n"+langkah.map(function(v,i){ return (i+1)+". "+v; }).join("\n")+"\n\nSOP ini bagian dari sistem usaha "+($("inNama").value||"")+" — tinjau ulang tiap 3 bulan.";
       }
       function sopUnduhFile(s){
         var a=document.createElement("a");
@@ -4023,6 +4064,10 @@
         $("sopNama").value=hasil.nama||"";
         $("sopPj").value=hasil.pj||"";
         $("sopTujuan").value=hasil.tujuan||"";
+        /* Dokumen yang dipetakan tidak membawa pengecek (prompt pemetaan
+           tidak memintanya) — kolom dibiarkan kosong supaya pemilik
+           mengisinya sendiri; kosong berarti "Pemilik". */
+        $("sopPengecek").value=hasil.pengecek||"";
         var sw=$("sopSteps"); sw.innerHTML=""; sopCount=0;
         var langkah=(hasil.langkah&&hasil.langkah.length)?hasil.langkah:["","",""];
         langkah.forEach(function(v){ addSopStep(v||""); });
@@ -4107,10 +4152,10 @@
         if(Array.isArray(snap.sops) && snap.sops.length) return sopBersihDaftar(snap.sops);
         var inp=snap.inputs||{};
         var langkahLama=Array.isArray(snap.sopSteps)?snap.sopSteps:[];
-        var namaLama=String(inp.sopNama||"").trim(), pjLama=String(inp.sopPj||"").trim(), tjLama=String(inp.sopTujuan||"").trim();
+        var namaLama=String(inp.sopNama||"").trim(), pjLama=String(inp.sopPj||"").trim(), tjLama=String(inp.sopTujuan||"").trim(), pgLama=String(inp.sopPengecek||"").trim();
         var adaLangkah=langkahLama.some(function(v){ return String(v||"").trim()!==""; });
-        if(!adaLangkah && !namaLama && !pjLama && !tjLama) return [];
-        return [sopBersih({id:sopIdBaru(), nama:namaLama, pj:pjLama, tujuan:tjLama, steps:langkahLama.map(function(v){ return String(v==null?"":v); }), dibuat:new Date().toISOString()})];
+        if(!adaLangkah && !namaLama && !pjLama && !tjLama && !pgLama) return [];
+        return [sopBersih({id:sopIdBaru(), nama:namaLama, pj:pjLama, tujuan:tjLama, pengecek:pgLama, steps:langkahLama.map(function(v){ return String(v==null?"":v); }), dibuat:new Date().toISOString()})];
       }
       /* Sinkronkan ketikan formulir ke SOP yang dipilih — dipakai
          collectSnapshot supaya autosave tidak kehilangan ketikan terakhir
@@ -4120,7 +4165,7 @@
       function sopDaftarTersimpan(){
         var cur=sopDariForm();
         if(sopTerpilihId){
-          for(var i=0;i<sopsList.length;i++){ if(sopsList[i].id===sopTerpilihId){ sopsList[i].nama=cur.nama; sopsList[i].pj=cur.pj; sopsList[i].tujuan=cur.tujuan; sopsList[i].steps=cur.steps; break; } }
+          for(var i=0;i<sopsList.length;i++){ if(sopsList[i].id===sopTerpilihId){ sopsList[i].nama=cur.nama; sopsList[i].pj=cur.pj; sopsList[i].tujuan=cur.tujuan; sopsList[i].pengecek=cur.pengecek; sopsList[i].steps=cur.steps; break; } }
         }
         return sopBersihDaftar(sopsList);
       }
@@ -4141,7 +4186,10 @@
         petakanPrompt:function(){ return SOP_PROMPT_PETAKAN; }
       };
 
-      window.__tim={muat:timMuat, tambah:tambahTim, toggle:toggleTim, hapus:hapusTim, hapusJalankan:hapusTimJalankan, logMuat:timLogMuat, buka:timBukaLayar, daftar:function(){ return timDaftar.slice(); }, peranLabel:timPeranLabel};
+      window.__tim={muat:timMuat, tambah:tambahTim, toggle:toggleTim, hapus:hapusTim, hapusJalankan:hapusTimJalankan, logMuat:timLogMuat, buka:timBukaLayar, daftar:function(){ return timDaftar.slice(); }, peranLabel:timPeranLabel, verifikasi:timVerifikasi, statusJalankan:timStatusJalankan};
+      window.__lap={muat:lapMuat, catat:lapCatat, buka:lapBukaLayar, daftar:function(){ return lapDaftar.slice(); }};
+      window.__pres={muat:presMuat, buka:presBukaLayar, hariIni:function(){ return presHariIni.slice(); }};
+      window.__aiTim={muat:aiPakaiMuat, buka:aiPakaiBukaLayar, daftar:function(){ return aiPakaiDaftar.slice(); }, tier:aiPakaiTierLabel, batas:aiPakaiKuotaBatas};
 
       /* --- Tim usaha: daftar pegawai + siapa menjalankan SOP ---
          Pemilik usaha menambahkan pegawai di sini (email, nama, peran yang
@@ -4156,21 +4204,210 @@
       function timEsc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
       function timBelumAktif(err){ if(!err) return false; var m=((err.message||"")+" "+(err.code||"")); return /42P01|42883|PGRST205|Could not find the table|does not exist/i.test(m); }
       function timFmtTgl(iso){ try{ var d=new Date(iso); if(isNaN(d.getTime())) return "—"; return d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }catch(e){ return "—"; } }
+      function timFmtJam(t){ try{ if(!t) return "—"; var d=new Date(t); if(isNaN(d.getTime())) return "—"; return d.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return "—"; } }
+      function timStatusJalankan(x){
+        if(!x.selesai) return "Belum selesai";
+        if(x.dicek_oleh) return "Sudah dicek";
+        return "Belum dicek";
+      }
       var timDaftar=[];
       function timPeranLabel(p){ return p==="kas"?"Kas":p==="produksi"?"Produksi & layanan":p==="stok"?"Stok":p; }
-      function timBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("timTamu"), isi=$("timIsi"), logTamu=$("timLogTamu"), logIsi=$("timLogIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; if(logTamu) logTamu.style.display=""; if(logIsi) logIsi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; if(logTamu) logTamu.style.display="none"; if(logIsi) logIsi.style.display=""; timMuat(); timLogMuat(); }
-      async function timMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var wadah=$("timList"); if(!sb){ if(wadah) wadah.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu buka lagi layar ini.</p>"; return; } var r=await sb.from("akses_pegawai").select("email,nama,peran,aktif").eq("pemilik_id", u.id).order("nama",{ascending:true}); if(r.error){ if(timBelumAktif(r.error)){ if(wadah) wadah.innerHTML="<p class=\"note\"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b> Salinan pengaturannya ada di <a href=\""+TIM_URL_PEGAWAI+"\" target=\"_blank\" rel=\"noopener\">Aplikasi Pegawai</a>.</p>"; return; } popupRamah("Daftar tim belum bisa dimuat","Periksa koneksi internet Anda, lalu buka lagi layar ini."); return; } timDaftar=r.data||[]; renderTim(); }
-      function renderTim(){ var wadah=$("timList"); if(!wadah) return; wadah.innerHTML=""; if(!timDaftar.length){ var k=document.createElement("p"); k.className="note"; k.textContent="Belum ada pegawai terdaftar — tambahkan pegawai pertama Anda di atas."; wadah.appendChild(k); return; } timDaftar.forEach(function(p){ var baris=document.createElement("div"); baris.className="tim-baris"; var info=document.createElement("div"); info.className="tim-baris-info"; var nm=document.createElement("b"); nm.textContent=p.nama||"—"; info.appendChild(nm); var ket=document.createElement("span"); ket.textContent=(p.email||"")+" · "+(Array.isArray(p.peran)?p.peran.map(timPeranLabel).join(", "):"—")+" · "+(p.aktif?"Aktif":"Nonaktif"); info.appendChild(ket); baris.appendChild(info); var aksi=document.createElement("div"); aksi.className="actions"; var bT=document.createElement("button"); bT.type="button"; bT.className="btn ghost small"; bT.textContent=p.aktif?"Nonaktifkan":"Aktifkan"; bT.setAttribute("data-toggle-tim",(p.email||"")+"|"+(p.aktif?"0":"1")); var bH=document.createElement("button"); bH.type="button"; bH.className="btn ghost small"; bH.textContent="Hapus"; bH.setAttribute("data-hapus-tim",p.email||""); aksi.appendChild(bT); aksi.appendChild(bH); baris.appendChild(aksi); wadah.appendChild(baris); }); }
+      function timBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("timTamu"), isi=$("timIsi"), logTamu=$("timLogTamu"), logIsi=$("timLogIsi"), lapTamu=$("lapTamu"), lapIsi=$("lapIsi"), presTamu=$("presTamu"), presIsi=$("presIsi"), aiTamu=$("aiPakaiTamu"), aiIsi=$("aiPakaiIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; if(logTamu) logTamu.style.display=""; if(logIsi) logIsi.style.display="none"; if(lapTamu) lapTamu.style.display=""; if(lapIsi) lapIsi.style.display="none"; if(presTamu) presTamu.style.display=""; if(presIsi) presIsi.style.display="none"; if(aiTamu) aiTamu.style.display=""; if(aiIsi) aiIsi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; if(logTamu) logTamu.style.display="none"; if(logIsi) logIsi.style.display=""; if(lapTamu) lapTamu.style.display="none"; if(lapIsi) lapIsi.style.display=""; if(presTamu) presTamu.style.display="none"; if(presIsi) presIsi.style.display=""; if(aiTamu) aiTamu.style.display="none"; if(aiIsi) aiIsi.style.display=""; timMuat(); timLogMuat(); lapMuat(); presMuat(); aiPakaiMuat(); }
+      async function timMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var wadah=$("timList"); if(!sb){ if(wadah) wadah.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu buka lagi layar ini.</p>"; return; } var r=await sb.from("akses_pegawai").select("email,nama,peran,aktif,foto_path").eq("pemilik_id", u.id).order("nama",{ascending:true}); if(r.error){ if(timBelumAktif(r.error)){ if(wadah) wadah.innerHTML="<p class=\"note\"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b> Salinan pengaturannya ada di <a href=\""+TIM_URL_PEGAWAI+"\" target=\"_blank\" rel=\"noopener\">Aplikasi Pegawai</a>.</p>"; return; } popupRamah("Daftar tim belum bisa dimuat","Periksa koneksi internet Anda, lalu buka lagi layar ini."); return; } timDaftar=r.data||[]; renderTim(); }
+      function renderTim(){ var wadah=$("timList"); if(!wadah) return; wadah.innerHTML=""; if(!timDaftar.length){ var k=document.createElement("p"); k.className="note"; k.textContent="Belum ada pegawai terdaftar — tambahkan pegawai pertama Anda di atas."; wadah.appendChild(k); return; } timDaftar.forEach(function(p){ var baris=document.createElement("div"); baris.className="tim-baris"; var foto=document.createElement("span"); foto.className="foto-sel"; if(p.foto_path){ var im=document.createElement("img"); im.className="foto-mini"; im.alt="Pas foto "+(p.nama||"pegawai"); im.setAttribute("data-foto-path", p.foto_path); im.setAttribute("data-foto-nama", p.nama||""); foto.appendChild(im); }else{ var ini=document.createElement("span"); ini.className="foto-inisial"; ini.textContent=inisialNama(p.nama); foto.appendChild(ini); } baris.appendChild(foto); var info=document.createElement("div"); info.className="tim-baris-info"; var nm=document.createElement("b"); nm.textContent=p.nama||"—"; info.appendChild(nm); var ket=document.createElement("span"); ket.textContent=(p.email||"")+" · "+(Array.isArray(p.peran)?p.peran.map(timPeranLabel).join(", "):"—")+" · "+(p.aktif?"Aktif":"Nonaktif"); info.appendChild(ket); baris.appendChild(info); var aksi=document.createElement("div"); aksi.className="actions"; var bT=document.createElement("button"); bT.type="button"; bT.className="btn ghost small"; bT.textContent=p.aktif?"Nonaktifkan":"Aktifkan"; bT.setAttribute("data-toggle-tim",(p.email||"")+"|"+(p.aktif?"0":"1")); var bH=document.createElement("button"); bH.type="button"; bH.className="btn ghost small"; bH.textContent="Hapus"; bH.setAttribute("data-hapus-tim",p.email||""); aksi.appendChild(bT); aksi.appendChild(bH); baris.appendChild(aksi); wadah.appendChild(baris); }); timIsiFoto(); presTampilBelum(); }
       async function tambahTim(nama, email, peran){ var u=timPemilikMasuk(); if(!u){ popupRamah("Daftar dulu","Daftar dulu untuk mengelola tim."); return false; } nama=String(nama||"").trim(); email=String(email||"").trim().toLowerCase(); if(!nama){ popupRamah("Isi nama pegawai dulu","Tulis nama pegawainya, contoh: Rina Wati."); return false; } if(!email || !/^\S+@\S+\.\S+$/.test(email)){ popupRamah("Email pegawai belum benar","Tulis email aktif pegawai, contoh: rina@contoh.id."); return false; } if(!Array.isArray(peran)||!peran.length){ popupRamah("Pilih peran yang sudah dilatih","Centang minimal satu peran: Kas, Produksi & layanan, atau Stok."); return false; } if(timDaftar.some(function(p){ return String(p.email||"").toLowerCase()===email; })){ popupRamah("Sudah terdaftar","Pegawai dengan email ini sudah ada di daftar tim Anda."); return false; } var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return false; } var r=await sb.from("akses_pegawai").insert({email:email, pemilik_id:u.id, nama:nama, peran:peran, aktif:true}); if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); return false; } if(/duplicate|23505/i.test((r.error.message||"")+" "+(r.error.code||""))){ popupRamah("Sudah terdaftar","Pegawai dengan email ini sudah ada di daftar tim Anda."); return false; } popupRamah("Belum bisa menyimpan","Pegawai belum tersimpan — periksa koneksi internet Anda, lalu coba lagi."); return false; } toast("Pegawai ditambahkan"); audit("Pegawai ditambahkan ke tim: "+nama); await timMuat(); return true; }
       async function toggleTim(email, aktifBaru){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return; } var r=await sb.from("akses_pegawai").update({aktif:!!aktifBaru}).eq("email",email).eq("pemilik_id",u.id); if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); return; } popupRamah("Belum bisa mengubah","Status pegawai belum berubah — periksa koneksi internet Anda, lalu coba lagi."); return; } toast(aktifBaru?"Pegawai diaktifkan":"Pegawai dinonaktifkan"); await timMuat(); }
       function hapusTim(email){ var target=null; timDaftar.forEach(function(p){ if(String(p.email||"").toLowerCase()===String(email||"").toLowerCase()) target=p; }); var tampil=(target&&(target.nama||target.email))||email; if(window.tampilPopupRamah){ window.tampilPopupRamah("Hapus pegawai ini?","\""+tampil+"\" akan dihapus dari daftar tim dan tidak bisa lagi masuk Aplikasi Pegawai.","Ketuk Hapus pegawai bila sudah yakin — ketuk Mengerti untuk batal.",{label:"Hapus pegawai", fn:function(){ hapusTimJalankan(email); }}); } else { hapusTimJalankan(email); } }
       async function hapusTimJalankan(email){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return; } var r=await sb.from("akses_pegawai").delete().eq("email",email).eq("pemilik_id",u.id); if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); return; } popupRamah("Belum bisa menghapus","Pegawai belum terhapus — periksa koneksi internet Anda, lalu coba lagi."); return; } toast("Pegawai dihapus"); audit("Pegawai dihapus dari tim"); await timMuat(); }
-      async function timLogMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var tabel=$("timLogTabel"), kosong=$("timLogKosong"), setup=$("timLogSetup"); if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none"; if(!sb){ if(tabel) tabel.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>"; return; } var r=await sb.rpc("ringkasan_tim_untuk_pemilik",{}); if(r.error){ if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(tabel) tabel.innerHTML=""; return; } popupRamah("Catatan tim belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return; } var rows=r.data||[]; if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; return; } var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Email</th><th>SOP</th><th>Tanggal</th><th>Langkah</th><th>Status</th></tr></thead><tbody>"+rows.map(function(x){ var total=null; if(Array.isArray(sopsList)){ sopsList.forEach(function(s){ if(s.id===x.sop_id) total=(s.steps||[]).length; }); } var langkah=(total!=null)?((+x.langkah_selesai||0)+" dari "+total):((+x.langkah_selesai||0)+" langkah"); return "<tr><td>"+timEsc(x.pegawai_nama||"—")+"</td><td>"+timEsc(x.pegawai_email||"—")+"</td><td>"+timEsc(x.sop_nama||"—")+"</td><td>"+timEsc(timFmtTgl(x.tanggal))+"</td><td>"+timEsc(langkah)+"</td><td>"+(x.selesai?"Selesai":"Belum selesai")+"</td></tr>"; }).join("")+"</tbody></table>"; if(tabel) tabel.innerHTML=html; }
+      async function timLogMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var tabel=$("timLogTabel"), kosong=$("timLogKosong"), setup=$("timLogSetup"); if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none"; if(!sb){ if(tabel) tabel.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>"; return; } var r=await sb.rpc("ringkasan_tim_untuk_pemilik",{}); if(r.error){ if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(tabel) tabel.innerHTML=""; return; } popupRamah("Catatan tim belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return; } var rows=r.data||[]; if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; return; } var petaFoto=await petaFotoUrl(rows); var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Email</th><th>SOP</th><th>Tanggal</th><th>Langkah</th><th>Status</th><th>Dicek oleh</th><th></th></tr></thead><tbody>"+rows.map(function(x){ var total=null; if(Array.isArray(sopsList)){ sopsList.forEach(function(s){ if(s.id===x.sop_id) total=(s.steps||[]).length; }); } var langkah=(total!=null)?((+x.langkah_selesai||0)+" dari "+total):((+x.langkah_selesai||0)+" langkah"); var aksi=(x.selesai&&!x.dicek_oleh)?'<button type="button" class="btn ghost small" data-verifikasi="'+timEsc(x.pegawai_email||"")+"|"+timEsc(x.sop_id||"")+"|"+timEsc(x.tanggal||"")+'">Tandai sudah dicek</button>':""; return "<tr><td><span class=\"foto-sel\">"+selFotoHtml(petaFoto[x.foto_path], x.pegawai_nama)+"<span>"+timEsc(x.pegawai_nama||"—")+"</span></span></td><td>"+timEsc(x.pegawai_email||"—")+"</td><td>"+timEsc(x.sop_nama||"—")+"</td><td>"+timEsc(timFmtTgl(x.tanggal))+"</td><td>"+timEsc(langkah)+"</td><td>"+timEsc(timStatusJalankan(x))+"</td><td>"+timEsc(x.dicek_oleh||"—")+"</td><td>"+aksi+"</td></tr>"; }).join("")+"</tbody></table>"; if(tabel) tabel.innerHTML=html; }
+      /* Pemilik menandai pekerjaan SOP yang sudah selesai sebagai sudah
+         dicek (dicek_oleh "Pemilik"). Penjaga server juga menerima bila
+         baris sudah dicek — panggilan kedua mengembalikan baris yang
+         sama tanpa galat, dan tombolnya hilang setelah muat ulang. */
+      async function timVerifikasi(nilai){
+        var u=timPemilikMasuk(); if(!u) return false;
+        var bagian=String(nilai||"").split("|");
+        var email=bagian[0]||"", sopId=bagian[1]||"", tanggal=bagian[2]||"";
+        if(!email || !sopId || !tanggal){ popupRamah("Tidak bisa menandai","Muat ulang catatan tim, lalu coba lagi."); return false; }
+        var sb=timSb();
+        if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return false; }
+        var r=await sb.rpc("verifikasi_sop_jalankan",{p_pegawai_email:email, p_sop_id:sopId, p_tanggal:tanggal});
+        if(r.error){
+          if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); }
+          else { popupRamah("Belum bisa menandai", (r.error.message||"Periksa koneksi internet Anda, lalu coba lagi.")); }
+          return false;
+        }
+        toast("Sudah dicek");
+        audit("Pekerjaan SOP ditandai sudah dicek");
+        await timLogMuat();
+        return true;
+      }
+
+      /* --- Laporan pegawai + pas foto tim ---
+         Laporan pegawai dibaca lewat RPC laporan_tim_untuk_pemilik
+         (hanya laporan tim pemilik yang masuk); foto laporan + pas
+         foto dibuka lewat tautan bertanda tangan 1 jam, tidak pernah
+         tautan publik. Pegawai tanpa pas foto tampil dengan inisial
+         nama, bukan gambar rusak. Kwitansi yang belum dicatat bisa
+         dicatat pemilik ke dalam catatannya lewat tombol "Catat
+         sebagai transaksi": jalurnya SAMA dengan tambahTransaksi()
+         (validasi, batas gratis, autosave) lalu RPC tandai menandai
+         laporan sudah dicatat — penjaga dicatat menolak pencatatan
+         ganda walau tombol diketuk dua kali. */
+      var lapDaftar=[];
+      function inisialNama(nama){ var s=String(nama||"").trim(); return s ? s.charAt(0).toUpperCase() : "?"; }
+      function selFotoHtml(url, nama){
+        if(url) return '<img src="'+timEsc(url)+'" alt="Pas foto '+timEsc(nama||"pegawai")+'" class="foto-mini">';
+        return '<span class="foto-inisial" aria-hidden="true">'+timEsc(inisialNama(nama))+'</span>';
+      }
+      function lapFotoUrl(path){
+        var sb=timSb();
+        if(!sb || !path) return Promise.resolve(null);
+        try{
+          var p=sb.storage.from("bukti-pegawai").createSignedUrl(path, 3600);
+          return Promise.resolve(p).then(function(r){ return (r && !r.error && r.data && r.data.signedUrl) ? r.data.signedUrl : null; }).catch(function(){ return null; });
+        }catch(e){ return Promise.resolve(null); }
+      }
+      async function petaFotoUrl(baris){
+        var peta={}, daftar=[];
+        (Array.isArray(baris)?baris:[]).forEach(function(x){
+          ["foto_path","file_path"].forEach(function(k){
+            var p=x && x[k];
+            if(p && !(p in peta)){ peta[p]=null; daftar.push(p); }
+          });
+        });
+        var hasil=await Promise.all(daftar.map(function(p){ return lapFotoUrl(p); }));
+        daftar.forEach(function(p,i){ peta[p]=hasil[i]; });
+        return peta;
+      }
+      async function timIsiFoto(){
+        var daftar=Array.prototype.slice.call(document.querySelectorAll("img[data-foto-path]"));
+        if(!daftar.length) return;
+        var hasil=await Promise.all(daftar.map(function(im){ return lapFotoUrl(im.getAttribute("data-foto-path")); }));
+        daftar.forEach(function(im, i){
+          var u=hasil[i];
+          if(u){ im.src=u; }
+          else { var span=document.createElement("span"); span.className="foto-inisial"; span.textContent=inisialNama(im.getAttribute("data-foto-nama")||""); im.replaceWith(span); }
+        });
+      }
+      function lapBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("lapTamu"), isi=$("lapIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; lapMuat(); }
+      async function lapMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var tabel=$("lapTabel"), kosong=$("lapKosong"), setup=$("lapSetup"), retensi=$("lapRetensi"); if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none"; if(retensi) retensi.style.display="none"; if(!sb){ if(tabel) tabel.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>"; return; } var r=await sb.rpc("laporan_tim_untuk_pemilik",{}); if(r.error){ if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(tabel) tabel.innerHTML=""; return; } popupRamah("Laporan pegawai belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return; } var rows=r.data||[]; lapDaftar=rows; if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; return; } var petaFoto=await petaFotoUrl(rows); var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Jenis</th><th>Keterangan</th><th>Jumlah</th><th>Foto</th><th>SOP</th><th>Tanggal</th><th>Status</th><th></th></tr></thead><tbody>"+rows.map(function(x){ var jenis=x.jenis==="kwitansi"?"Kwitansi":"Foto"; var jumlah=(x.jenis==="kwitansi"&&x.jumlah!=null)?fmtFull(x.jumlah):"—"; var foto=x.file_path&&petaFoto[x.file_path]?'<a href="'+timEsc(petaFoto[x.file_path])+'" target="_blank" rel="noopener"><img src="'+timEsc(petaFoto[x.file_path])+'" alt="Foto laporan" class="lap-foto"></a>':"—"; var aksi=(x.jenis==="kwitansi"&&!x.dicatat)?'<button type="button" class="btn ghost small" data-catat-lap="'+timEsc(x.id)+'">Catat sebagai transaksi</button>':""; return "<tr><td><span class=\"foto-sel\">"+selFotoHtml(petaFoto[x.foto_path], x.pegawai_nama)+"<span>"+timEsc(x.pegawai_nama||"—")+"</span></span></td><td>"+jenis+"</td><td>"+timEsc(x.keterangan||"—")+"</td><td>"+timEsc(jumlah)+"</td><td>"+foto+"</td><td>"+timEsc(x.sop_nama||"—")+"</td><td>"+timEsc(timFmtTgl(x.tanggal))+"</td><td>"+(x.dicatat?"Sudah dicatat":"Tercatat")+"</td><td>"+aksi+"</td></tr>"; }).join("")+"</tbody></table>"; if(tabel) tabel.innerHTML=html; var batas=new Date(); batas.setMonth(batas.getMonth()-12); var lama=rows.some(function(x){ try{ var d=new Date(x.tanggal); return !isNaN(d.getTime()) && d<batas; }catch(e){ return false; } }); if(lama && retensi) retensi.style.display=""; }
+      async function lapCatat(id){
+        var u=timPemilikMasuk(); if(!u) return false;
+        var baris=null; lapDaftar.forEach(function(x){ if(String(x.id)===String(id)) baris=x; });
+        if(!baris){ popupRamah("Laporan tidak ditemukan","Muat ulang daftar laporan, lalu coba lagi."); return false; }
+        if(baris.dicatat){ popupRamah("Sudah dicatat","Kwitansi ini sudah dicatat — tidak dicatat dua kali."); return false; }
+        if(baris.jenis!=="kwitansi" || !(Number(baris.jumlah)>0)){ popupRamah("Bukan kwitansi","Hanya kwitansi yang bisa dicatat."); return false; }
+        var ket="Kwitansi pegawai: "+(baris.pegawai_nama||"pegawai")+" — "+(baris.keterangan||"");
+        var ok=false;
+        try{ ok=await tambahTransaksi(ket, Number(baris.jumlah), "keluar", "Lainnya", baris.tanggal||"hari ini"); }catch(e){ ok=false; }
+        if(!ok) return false;
+        var sb=timSb();
+        if(!sb){ popupRamah("Belum bisa menandai","Kwitansi sudah dicatat — penanda belum tersimpan. Muat ulang daftar laporan."); return false; }
+        var r=await sb.rpc("tandai_laporan_dicatat",{p_laporan_id:id});
+        if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); } else { popupRamah("Belum bisa menandai","Kwitansi sudah dicatat — penanda belum tersimpan. Muat ulang daftar laporan."); } return false; }
+        baris.dicatat=true;
+        audit("Kwitansi pegawai dicatat: "+(baris.pegawai_nama||"")+" "+fmtFull(Number(baris.jumlah)));
+        toast("Kwitansi dicatat");
+        await lapMuat();
+        return true;
+      }
+
+      /* --- Presensi hari ini (item 10) ---
+         Siapa yang masuk hari ini beserta jam masuk/pulangnya (RPC
+         presensi_hari_ini_untuk_pemilik). Pegawai yang belum punya
+         catatan presensi hari ini ditampilkan dari daftar tim sebagai
+         "belum masuk" — daftar tim dimuat timMuat() lebih dulu, dan
+         presTampilBelum() dipanggil lagi dari renderTim() bila daftar
+         tim berubah sesudahnya. Tanpa lokasi. */
+      var presHariIni=[];
+      function presBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("presTamu"), isi=$("presIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; presMuat(); }
+      function presTampilBelum(){
+        var belum=$("presBelumMasuk"); if(!belum) return;
+        var hadir={};
+        presHariIni.forEach(function(x){ hadir[String(x.pegawai_email||"").toLowerCase()]=true; });
+        var absen=(timDaftar||[]).filter(function(p){ return p.aktif!==false && !hadir[String(p.email||"").toLowerCase()]; }).map(function(p){ return p.nama||p.email||"—"; });
+        if(!absen.length){ belum.style.display="none"; belum.textContent=""; return; }
+        belum.textContent="Belum masuk hari ini: "+absen.join(", ")+".";
+        belum.style.display="";
+      }
+      async function presMuat(){
+        var u=timPemilikMasuk(); if(!u) return;
+        var sb=timSb();
+        var tabel=$("presTabel"), kosong=$("presKosong"), setup=$("presSetup");
+        if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none";
+        if(!sb){ if(tabel) tabel.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>"; return; }
+        var r=await sb.rpc("presensi_hari_ini_untuk_pemilik",{});
+        if(r.error){
+          if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(tabel) tabel.innerHTML=""; return; }
+          popupRamah("Presensi belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return;
+        }
+        var rows=r.data||[]; presHariIni=rows;
+        if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; presTampilBelum(); return; }
+        var petaFoto=await petaFotoUrl(rows);
+        var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Masuk</th><th>Pulang</th></tr></thead><tbody>"+rows.map(function(x){
+          return "<tr><td><span class=\"foto-sel\">"+selFotoHtml(petaFoto[x.foto_path], x.pegawai_nama)+"<span>"+timEsc(x.pegawai_nama||"—")+"</span></span></td><td>"+timEsc(timFmtJam(x.masuk_pada))+"</td><td>"+timEsc(timFmtJam(x.pulang_pada))+"</td></tr>";
+        }).join("")+"</tbody></table>";
+        if(tabel) tabel.innerHTML=html;
+        presTampilBelum();
+      }
+
+      /* --- Pemakaian AI tim (item 11) ---
+         Pemakaian AI tim bulan ini (RPC pemakaian_ai_tim_untuk_pemilik):
+         per pegawai (batas 20) + pemilik sendiri (batas tingkat paket).
+         Tingkat paket di sini adalah tingkat di aplikasi ini (Pro ?
+         tier yang dipilih : "gratis") — RPC memakai tingkat yang
+         tersimpan di cloud, yang disinkronkan setiap kali data usaha
+         disimpan (lihat tierEfektifUntukKuota). */
+      var aiPakaiDaftar=[];
+      function aiPakaiTierLabel(){
+        try{ if(window.__isPro && window.__isPro()) return window.__tierDipilih ? window.__tierDipilih() : "mikro"; }catch(e){}
+        return "gratis";
+      }
+      function aiPakaiKuotaBatas(){
+        try{ if(window.__kuotaAiBatas) return window.__kuotaAiBatas(); }catch(e){}
+        return 20;
+      }
+      function aiPakaiBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("aiPakaiTamu"), isi=$("aiPakaiIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; aiPakaiMuat(); }
+      async function aiPakaiMuat(){
+        var u=timPemilikMasuk(); if(!u) return;
+        var sb=timSb();
+        var ring=$("aiPakaiRingkasan"), tabel=$("aiPakaiTabel"), kosong=$("aiPakaiKosong"), setup=$("aiPakaiSetup");
+        if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none";
+        if(!sb){ if(ring) ring.textContent="Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang."; return; }
+        var r=await sb.rpc("pemakaian_ai_tim_untuk_pemilik",{});
+        if(r.error){
+          if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(ring) ring.textContent=""; if(tabel) tabel.innerHTML=""; return; }
+          popupRamah("Pemakaian AI tim belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return;
+        }
+        var rows=r.data||[]; aiPakaiDaftar=rows;
+        var tier=aiPakaiTierLabel(), batas=aiPakaiKuotaBatas();
+        var total=0; rows.forEach(function(x){ total+=(+x.dipakai||0); });
+        var labelTier=tier==="gratis"?"Gratis":(tier==="mikro"?"Mikro":tier==="kecil"?"Kecil":"Menengah");
+        if(ring) ring.textContent="Bulan ini tim memakai "+total+" dari "+batas+" bantuan AI (tingkat paket: "+labelTier+").";
+        if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; return; }
+        var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Dipakai bulan ini</th><th>Batas</th></tr></thead><tbody>"+rows.map(function(x){
+          return "<tr><td>"+timEsc(x.pegawai_nama||"—")+"</td><td>"+timEsc(String(+x.dipakai||0))+"</td><td>"+timEsc(String(+x.batas||0))+"</td></tr>";
+        }).join("")+"</tbody></table>";
+        if(tabel) tabel.innerHTML=html;
+      }
       (function(){
         var bT=$("btnTambahTim");
         if(bT) bT.addEventListener("click", function(){ var peran=[]; if($("timPeranKas") && $("timPeranKas").checked) peran.push("kas"); if($("timPeranProduksi") && $("timPeranProduksi").checked) peran.push("produksi"); if($("timPeranStok") && $("timPeranStok").checked) peran.push("stok"); var nama=$("timNama")?$("timNama").value:""; var email=$("timEmail")?$("timEmail").value:""; tambahTim(nama, email, peran).then(function(ok){ if(ok){ if($("timNama")) $("timNama").value=""; if($("timEmail")) $("timEmail").value=""; ["timPeranKas","timPeranProduksi","timPeranStok"].forEach(function(id){ var c=$(id); if(c) c.checked=false; }); } }); });
         var bL=$("btnMuatTimLog");
         if(bL) bL.addEventListener("click", function(){ timLogMuat(); });
+        var bTim=$("btnMuatTim");
+        if(bTim) bTim.addEventListener("click", function(){ timMuat(); });
+        var bLap=$("btnMuatLap");
+        if(bLap) bLap.addEventListener("click", function(){ lapMuat(); });
+        var bPres=$("btnMuatPres");
+        if(bPres) bPres.addEventListener("click", function(){ presMuat(); });
+        var bAi=$("btnMuatAiPakai");
+        if(bAi) bAi.addEventListener("click", function(){ aiPakaiMuat(); });
+        var wadahLog=$("timLogTabel");
+        if(wadahLog) wadahLog.addEventListener("click", function(ev){ var t=ev.target && ev.target.closest ? ev.target.closest("[data-verifikasi]") : null; if(!t) return; timVerifikasi(t.getAttribute("data-verifikasi")); });
+        var wadahLap=$("lapTabel");
+        if(wadahLap) wadahLap.addEventListener("click", function(ev){ var t=ev.target && ev.target.closest ? ev.target.closest("[data-catat-lap]") : null; if(!t) return; lapCatat(t.getAttribute("data-catat-lap")); });
         var wadah=$("timList");
         if(wadah) wadah.addEventListener("click", function(ev){ var t=ev.target && ev.target.closest ? ev.target.closest("[data-toggle-tim],[data-hapus-tim]") : null; if(!t) return; if(t.hasAttribute("data-toggle-tim")){ var bagian=String(t.getAttribute("data-toggle-tim")||"").split("|"); toggleTim(bagian[0], bagian[1]==="1"); } else if(t.hasAttribute("data-hapus-tim")){ hapusTim(t.getAttribute("data-hapus-tim")); } });
       })();
@@ -4497,7 +4734,23 @@
         });
         window.addEventListener("hashchange", function(){
           var h=layarDariHash();
-          if(h && h!==layarAktif) tampilkanLayar(h, {hash:false});
+          /* Tampilkan kembali layar yang sama pun bila hash menunjuk
+             ke layar yang sudah aktif: tampilkanLayar("sop") memuat
+             ulang daftar tim + log + laporan, sehingga baris pegawai
+             yang disetujui lewat jalur lain (mis. SQL) muncul tanpa
+             harus menambah pegawai baru lewat formulir. */
+          if(h) tampilkanLayar(h, {hash:false});
+        });
+        /* Kembali ke tab aplikasi (mis. setelah menyetujui pegawai
+           lewat SQL di tab lain): bila layar Orang & SOP sedang
+           aktif, muat ulang daftar tim + log + laporan — baris yang
+           baru disetujui muncul tanpa navigasi apa pun. Hanya layar
+           sop (dashboard monitoring); layar lain tidak ikut dimuat
+           ulang di sini. */
+        document.addEventListener("visibilitychange", function(){
+          try{
+            if(!document.hidden && layarAktif==="sop") timBukaLayar();
+          }catch(e){}
         });
         /* Audit ketinggian layar (tanpa tata letak sungguhan di jsdom):
            hitung blok isi per layar — anak langsung tiap unit + kartu,
@@ -5405,10 +5658,26 @@
         renderTx = function(){ _renderTx(); if(typeof extraUpdate==="function") extraUpdate(); };
 
         /* ---------- snapshot data aplikasi ---------- */
+        /* Tingkat paket EFEKTIF pemilik untuk kuota AI pegawai — disimpan
+           ke cloud (umkm_data.data -> 'paket_tier') setiap kali data
+           disimpan, supaya RPC pemakaian AI di cloud bisa membacanya.
+           Bila pemilik bukan Pro, tingkatnya "gratis" — tierDipilih()
+           sendiri default "mikro" bila belum dipilih, jadi TIDAK boleh
+           dipakai mentah-mentah di sini (pemilik gratis akan terbaca
+           sebagai Mikro 300). */
+        function tierEfektifUntukKuota(){
+          try{
+            if(window.__isPro && window.__isPro()){
+              return (window.__tierDipilih ? window.__tierDipilih() : "mikro");
+            }
+          }catch(e){}
+          return "gratis";
+        }
         function collectSnapshot(){
           var inputs={};
           document.querySelectorAll(".wrap input[id], .wrap select[id], .wrap textarea[id]").forEach(function(el){ if(el.type==="file") return; inputs[el.id]=el.value; });
           return {
+            paket_tier: tierEfektifUntukKuota(),
             lokasi: window.__lokasiUsaha ? {lat:window.__lokasiUsaha.lat, lng:window.__lokasiUsaha.lng, akurasi_m:window.__lokasiUsaha.akurasi_m, diambil_pada:window.__lokasiUsaha.diambil_pada} : null,
             inputs:inputs,
             answers:Object.assign({},answers),
@@ -5490,6 +5759,7 @@
           }
           return {
             lokasi: c.lokasi||t.lokasi||null,
+            paket_tier: c.paket_tier||t.paket_tier||null,
             qris_image: c.qris_image||t.qris_image||null,
             ai_pakai: c.ai_pakai||t.ai_pakai||null,
             proaktif: c.proaktif||t.proaktif||null,
@@ -5509,6 +5779,13 @@
         function applySnapshot(snap){
           if(!snap) return;
           loading=true;
+          /* Tingkat paket dari cloud (bila tersimpan): dipakai perangkat
+             lain yang belum pernah memilih tingkat — hanya bila perangkat
+             ini belum menyimpan pilihan tingkat apa pun. "gratis" tidak
+             disimpan (bukan nilai pilihan tingkat yang sah). */
+          if(snap.paket_tier && ["mikro","kecil","menengah"].indexOf(String(snap.paket_tier))>=0){
+            try{ if(!localStorage.getItem("umkm-introspeksi-tier-dipilih")) localStorage.setItem("umkm-introspeksi-tier-dipilih", snap.paket_tier); }catch(e){}
+          }
           if(snap.lokasi){ window.__lokasiUsaha=snap.lokasi; } else if(snap.inputs && snap.inputs.gpsDiambilPada){ /* lokasi lama tanpa objek: abaikan */ }
           renderLokasi();
           if(snap.inputs){ Object.keys(snap.inputs).forEach(function(id){ var el=gid(id); if(el && el.type!=="file"){ try{ var val=snap.inputs[id]; if((id==="inPanggilan"||id==="wizPanggilan")&&val==="Ayah") val="Bapak"; /* nilai lama dibaca sebagai Bapak */ el.value=val; }catch(e){} } }); }
@@ -5526,7 +5803,7 @@
           sopsList=daftarSop;
           sopTerpilihId=daftarSop.length?daftarSop[0].id:null;
           var sw=gid("sopSteps"); if(sw){ sw.innerHTML=""; sopCount=0; var steps=(daftarSop.length&&daftarSop[0].steps.length)?daftarSop[0].steps:((snap.sopSteps&&snap.sopSteps.length)?snap.sopSteps:["","",""]); steps.forEach(function(v){ addSopStep(v||""); }); }
-          if(daftarSop.length){ gid("sopNama").value=daftarSop[0].nama||""; gid("sopPj").value=daftarSop[0].pj||""; gid("sopTujuan").value=daftarSop[0].tujuan||""; var noteDipilih=gid("sopDipilihNote"); if(noteDipilih) noteDipilih.textContent="Mengubah: "+(daftarSop[0].nama||"SOP tanpa nama")+" — "+sopLangkahTerisi(daftarSop[0]).length+" langkah."; }
+          if(daftarSop.length){ gid("sopNama").value=daftarSop[0].nama||""; gid("sopPj").value=daftarSop[0].pj||""; gid("sopTujuan").value=daftarSop[0].tujuan||""; gid("sopPengecek").value=daftarSop[0].pengecek||""; var noteDipilih=gid("sopDipilihNote"); if(noteDipilih) noteDipilih.textContent="Mengubah: "+(daftarSop[0].nama||"SOP tanpa nama")+" — "+sopLangkahTerisi(daftarSop[0]).length+" langkah."; }
           else { var noteKosong=gid("sopDipilihNote"); if(noteKosong) noteKosong.textContent="Belum ada SOP tersimpan — buat SOP baru atau unggah dokumen SOP."; }
           renderSopList();
           txs.splice(0,txs.length); (snap.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||uuid(), tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0}); });
@@ -5562,7 +5839,7 @@
           setSync("Menyimpan...","");
           try{
             var uid=currentUser.id;
-            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, sops:snap.sops, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, ai_pakai: snap.ai_pakai || {bulan:bulanSekarang(), jumlah:0}, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
+            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, sops:snap.sops, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, ai_pakai: snap.ai_pakai || {bulan:bulanSekarang(), jumlah:0}, paket_tier: snap.paket_tier||null, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
@@ -5605,6 +5882,7 @@
               var core=(res[0].data&&res[0].data.data)||{};
               var snap={
                 lokasi:core.lokasi||null,
+                paket_tier:core.paket_tier||null,
                 qris_image:core.qris_image||null,
                 ai_pakai:core.ai_pakai||null,
                 proaktif:core.proaktif||null,
@@ -9141,6 +9419,7 @@
           sopNama:{s:"Nama kegiatan yang ingin dibuatkan langkah-langkah tertulisnya, supaya bisa dikerjakan orang lain dengan hasil yang sama.",e:"SOP Membuka Warung Pagi.",h:"Pilih satu kegiatan yang paling sering berantakan atau paling bergantung pada Anda."},
           sopPj:{s:"Orang atau peran yang bertanggung jawab menjalankan langkah-langkah ini.",e:"Kepala dapur, kasir senior.",h:"Tulis perannya; lebih baik lagi bila ditambah nama orangnya."},
           sopTujuan:{s:"Hasil akhir yang diharapkan bila langkah-langkah ini dijalankan dengan benar.",e:"Warung siap jualan pukul 06.00 dengan rasa dan tampilan yang sama setiap hari.",h:"Tulis dalam satu kalimat yang bisa diperiksa benar atau salahnya."},
+          sopPengecek:{s:"Nama orang yang memeriksa pekerjaan SOP ini setelah pegawai mencentang semua langkah — pemilik usaha atau pegawai yang Anda tunjuk.",e:"Pemilik memeriksa sendiri isi Pemilik; Rina Wati memeriksa isi Rina Wati.",h:"Kosong berarti pemilik usaha yang memeriksa. Pegawai yang ditunjuk melihat daftar Perlu dicek di aplikasi pegawai."},
           wizNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan.",e:"Dapur Bu Sari.",h:"Cukup nama yang dikenal pelanggan."},
           wizSektor:{s:"Bidang usaha utama Anda. Pilihan ini menentukan saran dan angka pembanding untuk usaha Anda.",e:"Warung makan memilih Kuliner; laundry memilih Jasa.",h:"Pilih yang paling dekat dengan penghasilan utama Anda."},
           wizPanggilan:{s:"Sebutan ramah yang dipakai AI Coach saat menyapa dan memandu Anda (Mas, Mbak, Ibu, atau Bapak).",e:"Pilih Ibu bila Anda ingin disapa Ibu.",h:"Pilih yang paling nyaman untuk Anda. Boleh dilewati — AI akan menyapa secara netral tanpa sebutan."},
