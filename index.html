@@ -478,8 +478,28 @@
       .btn-explain{margin-top:12px;background:transparent;color:#8fd3dc;border:1px solid var(--teal);font:inherit;font-weight:700;font-size:.88rem;padding:9px 14px;border-radius:999px;cursor:pointer;min-height:44px;box-shadow:var(--shadow);transition:background .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease,filter .18s ease}
       .btn-explain:hover{background:var(--teal-soft);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.4),0 14px 28px -12px rgba(0,0,0,.65)}
       .btn-explain.kompak{margin-top:10px;padding:7px 10px;font-size:.82rem;min-height:36px;width:100%}
-      .explain-answer{margin-top:10px;font-size:.93rem;background:var(--surface-2);border-radius:10px;padding:12px 14px;white-space:pre-line}
-      .explain-answer:empty{display:none}
+      /* ---------- Overlay penjelasan "Jelaskan ini" (layar penuh) ----------
+         Keputusan pemilik 2026-11-15: jawaban "Jelaskan ini" tampil
+         LAYAR PENUH, bukan di dalam bingkai kartu angka (15 div
+         .explain-answer inline dihapus total beserta pendaftarannya).
+         Kartu memenuhi seluruh layar (tanpa batas lebar); isinya
+         dibatasi 680px rata-tengah hanya supaya baris tetap nyaman
+         dibaca, bukan bingkai sempit. Isi memakai overflow-wrap supaya
+         kata panjang tidak pernah melebarkan halaman. */
+      .explain-overlay{position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.82);display:none;overflow-y:auto;overflow-x:hidden}
+      .explain-overlay.show{display:block}
+      .explain-card{min-height:100%;width:100%;max-width:none;background:var(--bg);padding:26px 18px calc(30px + env(safe-area-inset-bottom));overflow-wrap:anywhere}
+      .explain-card-in{max-width:680px;margin:0 auto}
+      .explain-card h3{font-size:1.3rem;margin-top:8px;line-height:1.3}
+      .explain-body{margin-top:14px;font-size:1rem;line-height:1.65;white-space:pre-line}
+      .explain-body:empty{display:none}
+      /* ---------- Tombol mode tampilan HP / PC (bilah akun) ----------
+         Tombol khusus berpindah mode; labelnya mode TUJUAN ("Mode PC"
+         saat tampil HP). Garis teal supaya mudah dikenali sebagai
+         pengatur tampilan, bukan emas "sudah diketuk" (tombol ini
+         sengaja TIDAK ikut sistem .sudah-diklik: keadaannya sudah
+         terlihat dari labelnya). */
+      #btnModeTampilan{border-color:var(--teal);color:#8fd3dc}
 
       /* ---------- Saran Proaktif: panel Perlu Perhatian ---------- */
       .pro-panel{border:1px solid var(--teal)}
@@ -548,9 +568,9 @@
       .field-help-btn.qbtn{margin-left:8px}
       .help-hint{display:flex;gap:9px;align-items:flex-start;background:var(--gold-soft);border:1px solid var(--field-border);border-radius:10px;padding:11px 13px;font-size:.9rem;margin-top:14px;color:var(--ink)}
       .help-hint .field-help-btn{margin-left:0;margin-top:1px;pointer-events:none}
-      .help-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.74);display:none;align-items:flex-start;justify-content:center;padding:20px 12px 40px;overflow-y:auto}
+      .help-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.74);display:none;align-items:flex-start;justify-content:center;padding:20px 12px 40px;overflow-y:auto;overflow-x:hidden}
       .help-overlay.show{display:flex}
-      .help-card{max-width:560px;width:100%;margin:auto;background:var(--surface);border:1.5px solid var(--teal);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+      .help-card{max-width:560px;width:100%;margin:auto;background:var(--surface);border:1.5px solid var(--teal);border-radius:16px;padding:22px;box-shadow:var(--shadow);overflow-wrap:anywhere}
       .help-kicker{font-size:.78rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8fd3dc}
       .help-card h3{font-size:1.22rem;margin-top:6px;line-height:1.3}
       .help-simple{margin-top:10px;font-size:1rem}
@@ -680,6 +700,64 @@
         .bottom-nav{display:grid;grid-template-columns:repeat(8,1fr);position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(0,0,0,.08)}
         .toast{bottom:calc(132px + env(safe-area-inset-bottom));width:calc(100vw - 28px)}
       }
+      /* ---------- MODE TAMPILAN HP (paksa) ----------
+         Salinan aturan @media (max-width:820px) di atas, dengan
+         pemilih diawali html.mode-hp — dipakai bila mode tampilan
+         = hp (bawaan), supaya tata letak HP dipaksa di lebar layar
+         berapa pun (termasuk peramban PC). Mode pc melepas kelas
+         ini: tata letak kembali responsif penuh (media query di
+         atas tetap menangani layar sempit secara alami). Isi blok
+         ini HARUS tetap sama dengan blok media di atas; bila salah
+         satu diubah, ubah juga yang lain. */
+      html.mode-hp{-webkit-text-size-adjust:100%}
+      html.mode-hp body{font-size:16px;padding-bottom:env(safe-area-inset-bottom)}
+      html.mode-hp .wrap{padding:0 14px 176px;max-width:640px}
+      html.mode-hp .topbar-in{padding:10px 14px;max-width:640px}
+      html.mode-hp nav.main{display:none}
+      html.mode-hp .brand{font-size:.98rem}
+      html.mode-hp .hero{padding:20px 0 4px}
+      html.mode-hp h1{font-size:1.85rem;line-height:1.12}
+      html.mode-hp .hero p.lede{font-size:.98rem;margin-top:8px}
+      html.mode-hp .stat-row{grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+      html.mode-hp .stat{padding:13px 14px;border-radius:12px}
+      html.mode-hp .stat .v{font-size:1.28rem}
+      html.mode-hp .stat.hero-val{grid-column:1 / -1;order:-1;padding:16px}
+      html.mode-hp .stat.hero-val .v{font-size:1.9rem}
+      html.mode-hp .stat.hero-val .s{font-size:.92rem}
+      html.mode-hp section{margin-top:32px;scroll-margin-top:64px}
+      html.mode-hp .card{padding:16px;border-radius:12px}
+      html.mode-hp .sec-sub{font-size:.94rem;margin-bottom:14px}
+      html.mode-hp h2{font-size:1.28rem}
+      html.mode-hp .form-grid{grid-template-columns:1fr!important;gap:12px}
+      html.mode-hp label.f{grid-column:auto!important}
+      html.mode-hp input[type="text"], html.mode-hp input[type="number"], html.mode-hp select{font-size:16px;min-height:50px;padding:12px 12px;border-radius:10px}
+      html.mode-hp input[type="range"]{min-height:44px}
+      html.mode-hp .ladder{grid-template-columns:1fr 1fr;gap:8px}
+      html.mode-hp .ladder div{padding:9px 6px;font-size:.8rem}
+      html.mode-hp .ladder div:last-child{grid-column:1 / -1}
+      html.mode-hp .val-big{font-size:2.35rem}
+      html.mode-hp .range-line{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      html.mode-hp .range-line span:nth-child(2){grid-column:1 / -1;order:-1;text-align:left!important;background:var(--surface-2);border-radius:10px;padding:10px 12px}
+      html.mode-hp .range-line span:last-child{text-align:right}
+      html.mode-hp .method .amt{font-size:1.4rem}
+      html.mode-hp .q-row{flex-direction:column;align-items:stretch;gap:10px;padding:14px 0}
+      html.mode-hp .q-row .q{flex:none}
+      html.mode-hp .seg{width:100%}
+      html.mode-hp .seg button{flex:1;padding:12px 6px;font-size:.92rem;min-height:48px}
+      html.mode-hp .tbl{font-size:.88rem}
+      html.mode-hp .tbl th, html.mode-hp .tbl td{padding:9px 5px}
+      html.mode-hp .tbl th{font-size:.72rem}
+      html.mode-hp .actions{flex-direction:column}
+      html.mode-hp .actions .btn{width:100%;min-height:52px;font-size:1rem}
+      html.mode-hp .plan, html.mode-hp .grid-2, html.mode-hp .grid-3{grid-template-columns:1fr}
+      html.mode-hp footer{margin-top:36px}
+      html.mode-hp .mobile-valbar{display:flex;align-items:center;justify-content:space-between;gap:12px;position:fixed;left:12px;right:12px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:40;background:var(--accent);color:var(--accent-ink);border-radius:12px;padding:10px 14px;box-shadow:0 8px 24px rgba(0,0,0,.22);text-decoration:none}
+      html.mode-hp .mobile-valbar small{display:block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.85}
+      html.mode-hp .mobile-valbar b{font-size:1.12rem;line-height:1.1}
+      html.mode-hp .mobile-valbar span.cta{font-size:.82rem;font-weight:800;background:rgba(255,255,255,.22);padding:7px 10px;border-radius:999px;white-space:nowrap}
+      html.mode-hp .mobile-valbar span.cta{background:rgba(0,0,0,.22)}
+      html.mode-hp .bottom-nav{display:grid;grid-template-columns:repeat(8,1fr);position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(0,0,0,.08)}
+      html.mode-hp .toast{bottom:calc(132px + env(safe-area-inset-bottom));width:calc(100vw - 28px)}
       /* ---------- saklar persetujuan kalibrasi ---------- */
       .switch-wrap{display:flex;gap:12px;align-items:flex-start;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:16px}
       .switch{position:relative;flex:none;width:52px;height:30px;margin-top:2px}
@@ -868,6 +946,7 @@
           <span class="sync-pill" id="syncStatus">Memuat…</span>
           <button class="btn ghost small" id="btnUbahUsahaTop" type="button" style="display:none">Ubah usaha</button>
           <button class="btn ghost small" id="btnSaveCloud" type="button">Register</button>
+          <button class="btn ghost small" id="btnModeTampilan" type="button" title="Pindah tampilan: HP atau PC">Mode PC</button>
           <button class="btn ghost small" id="btnAdminMarketing" type="button" style="display:none">Admin marketing</button>
         </div>
       </div>
@@ -915,10 +994,10 @@
           <a href="#langganan" id="modLanggananLink" style="display:none"><b>Langganan</b><span>Paket Pro &amp; pembayaran</span></a>
         </div>
         <div class="stat-row">
-          <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div><p class="rujukan" id="rujLevelHero">—</p><button class="btn-explain kompak" type="button" data-explain="level" data-explain-target="explain-hero-level">Jelaskan ini</button><div class="explain-answer" id="explain-hero-level" role="status"></div></div>
-          <div class="stat"><div class="k">Skor Kesehatan Usaha (keseluruhan)</div><div class="v" id="stHealth">—</div><div class="s" id="stHealthSub">Gabungan keuangan, produk, pasar &amp; teknologi — bukan skor keuangan saja.</div><p class="rujukan" id="rujHealth">—</p><button class="btn-explain kompak" type="button" data-explain="kesehatan" data-explain-target="explain-hero-kesehatan">Jelaskan ini</button><div class="explain-answer" id="explain-hero-kesehatan" role="status"></div></div>
-          <div class="stat"><div class="k">Skor Siap Investasi</div><div class="v" id="stInvest">—</div><div class="s" id="stInvestSub">kelengkapan untuk penawaran kerjasama investasi</div><p class="rujukan" id="rujInvestHero">—</p><button class="btn-explain kompak" type="button" data-explain="investasi" data-explain-target="explain-hero-investasi">Jelaskan ini</button><div class="explain-answer" id="explain-hero-investasi" role="status"></div></div>
-          <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><div class="s" id="stValRange">rentang rendah – tinggi</div><p class="rujukan" id="rujVal">—</p><button class="btn-explain kompak" type="button" data-explain="valuasi" data-explain-target="explain-hero-valuasi">Jelaskan ini</button><div class="explain-answer" id="explain-hero-valuasi" role="status"></div></div>
+          <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div><p class="rujukan" id="rujLevelHero">—</p><button class="btn-explain kompak" type="button" data-explain="level" data-explain-target="explain-hero-level">Jelaskan ini</button></div>
+          <div class="stat"><div class="k">Skor Kesehatan Usaha (keseluruhan)</div><div class="v" id="stHealth">—</div><div class="s" id="stHealthSub">Gabungan keuangan, produk, pasar &amp; teknologi — bukan skor keuangan saja.</div><p class="rujukan" id="rujHealth">—</p><button class="btn-explain kompak" type="button" data-explain="kesehatan" data-explain-target="explain-hero-kesehatan">Jelaskan ini</button></div>
+          <div class="stat"><div class="k">Skor Siap Investasi</div><div class="v" id="stInvest">—</div><div class="s" id="stInvestSub">kelengkapan untuk penawaran kerjasama investasi</div><p class="rujukan" id="rujInvestHero">—</p><button class="btn-explain kompak" type="button" data-explain="investasi" data-explain-target="explain-hero-investasi">Jelaskan ini</button></div>
+          <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><div class="s" id="stValRange">rentang rendah – tinggi</div><p class="rujukan" id="rujVal">—</p><button class="btn-explain kompak" type="button" data-explain="valuasi" data-explain-target="explain-hero-valuasi">Jelaskan ini</button></div>
         </div>
       </header>
 
@@ -935,9 +1014,9 @@
         <p class="sec-sub"><span id="hiSalam">Selamat pagi</span> · <span id="hiTanggal">—</span></p>
         <div class="card">
           <div class="stat-row" style="margin-top:2px">
-            <div class="stat"><div class="k">Uang masuk hari ini</div><div class="v" id="hiIn">Rp 0</div><button class="btn-explain kompak" type="button" data-explain="hi-masuk">Jelaskan ini</button><div class="explain-answer" id="explain-hi-masuk" role="status"></div></div>
-            <div class="stat"><div class="k">Uang keluar hari ini</div><div class="v" id="hiOut">Rp 0</div><button class="btn-explain kompak" type="button" data-explain="hi-keluar">Jelaskan ini</button><div class="explain-answer" id="explain-hi-keluar" role="status"></div></div>
-            <div class="stat"><div class="k">Saldo kas</div><div class="v" id="hiSaldo">Rp 0</div><button class="btn-explain kompak" type="button" data-explain="hi-saldo">Jelaskan ini</button><div class="explain-answer" id="explain-hi-saldo" role="status"></div></div>
+            <div class="stat"><div class="k">Uang masuk hari ini</div><div class="v" id="hiIn">Rp 0</div><button class="btn-explain kompak" type="button" data-explain="hi-masuk">Jelaskan ini</button></div>
+            <div class="stat"><div class="k">Uang keluar hari ini</div><div class="v" id="hiOut">Rp 0</div><button class="btn-explain kompak" type="button" data-explain="hi-keluar">Jelaskan ini</button></div>
+            <div class="stat"><div class="k">Saldo kas</div><div class="v" id="hiSaldo">Rp 0</div><button class="btn-explain kompak" type="button" data-explain="hi-saldo">Jelaskan ini</button></div>
           </div>
           <p class="note" id="hiSaldoNote" style="margin-top:10px">Saldo kas dihitung dari semua catatan Anda — total yang masuk dikurangi total yang keluar.</p>
         </div>
@@ -1004,7 +1083,7 @@
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
             <span class="demo-tag" style="margin:0">Formulir kosong — kolom berwarna keemasan siap diisi dengan data usaha Anda</span>
-            <button class="btn ghost small" id="btnUbahUsahaData" type="button">Ubah usaha</button>
+            <button class="btn ghost small" id="btnUbahUsahaData" type="button" style="display:none">Ubah usaha</button>
           </div>
           <div class="data-ringkas" id="dataRingkasan" style="display:none">
             <div class="ringkas-nama" id="ringkasNama">—</div>
@@ -1110,7 +1189,7 @@
           <h3>Naik Level</h3>
           <p class="note" style="margin-top:6px" id="naikLevelTarget">—</p>
           <ul id="naikLevelList"></ul>
-          <button class="btn-explain" type="button" data-explain="naiklevel" data-explain-target="explain-naiklevel">Jelaskan ini</button><div class="explain-answer" id="explain-naiklevel" role="status"></div>
+          <button class="btn-explain" type="button" data-explain="naiklevel" data-explain-target="explain-naiklevel">Jelaskan ini</button>
         </div>
         <p class="sec-sub" id="dashSecSub">Level skala mengikuti kriteria omzet PP No. 7 Tahun 2021. Level kematangan (0–4) menilai seberapa siap usaha Anda dikelola secara modern dan diajukan untuk kerjasama investasi.</p>
         <div class="grid-2">
@@ -1126,7 +1205,7 @@
               <div data-s="besar"><b>Besar</b>&gt; Rp50 M</div>
               <div data-s="korporat"><b>Korporat</b>di luar UMKM</div>
             </div>
-            <button class="btn-explain" type="button" data-explain="level" data-explain-target="explain-level">Jelaskan ini</button><div class="explain-answer" id="explain-level" role="status"></div>
+            <button class="btn-explain" type="button" data-explain="level" data-explain-target="explain-level">Jelaskan ini</button>
           </div>
           <div class="card">
             <h3>Level kematangan</h3>
@@ -1140,17 +1219,17 @@
               <div data-m="3"><b>Level 3</b>Tumbuh</div>
               <div data-m="4"><b>Level 4</b>Siap Ekspansi</div>
             </div>
-            <button class="btn-explain" type="button" data-explain="kematangan" data-explain-target="explain-kematangan">Jelaskan ini</button><div class="explain-answer" id="explain-kematangan" role="status"></div>
+            <button class="btn-explain" type="button" data-explain="kematangan" data-explain-target="explain-kematangan">Jelaskan ini</button>
           </div>
         </div>
         <div class="grid-3" style="margin-top:14px">
-          <div class="card score-card"><div class="top"><h3>Kesehatan Keuangan (saja)</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><p class="rujukan" id="rujFin">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><div class="explain-answer" id="explain-keuangan" role="status"></div><p class="note">Hanya aspek keuangan: margin, utang, dan pencatatan.</p></div>
-          <div class="card score-card"><div class="top"><h3>Kematangan digital</h3><span class="score-num" id="scDig">—</span></div><div class="bar"><i id="scDigBar"></i></div><p class="note" id="scDigNote">—</p><p class="rujukan" id="rujDig">—</p><button class="btn-explain" type="button" data-explain="digital">Jelaskan ini</button><div class="explain-answer" id="explain-digital" role="status"></div></div>
-          <div class="card score-card"><div class="top"><h3>Kesiapan investasi</h3><span class="score-num" id="scInv">—</span></div><div class="bar"><i id="scInvBar"></i></div><p class="note" id="scInvNote">—</p><p class="rujukan" id="rujInv">—</p><button class="btn-explain" type="button" data-explain="investasi">Jelaskan ini</button><div class="explain-answer" id="explain-investasi" role="status"></div></div>
+          <div class="card score-card"><div class="top"><h3>Kesehatan Keuangan (saja)</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><p class="rujukan" id="rujFin">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><p class="note">Hanya aspek keuangan: margin, utang, dan pencatatan.</p></div>
+          <div class="card score-card"><div class="top"><h3>Kematangan digital</h3><span class="score-num" id="scDig">—</span></div><div class="bar"><i id="scDigBar"></i></div><p class="note" id="scDigNote">—</p><p class="rujukan" id="rujDig">—</p><button class="btn-explain" type="button" data-explain="digital">Jelaskan ini</button></div>
+          <div class="card score-card"><div class="top"><h3>Kesiapan investasi</h3><span class="score-num" id="scInv">—</span></div><div class="bar"><i id="scInvBar"></i></div><p class="note" id="scInvNote">—</p><p class="rujukan" id="rujInv">—</p><button class="btn-explain" type="button" data-explain="investasi">Jelaskan ini</button></div>
         </div>
         <div class="grid-2" style="margin-top:14px">
-          <div class="card score-card"><div class="top"><h3>Skor Konsistensi Data</h3><span class="score-num" id="scCons">0</span></div><div class="bar"><i id="scConsBar"></i></div><p class="note" id="scConsNote">Isi cek 9 sumber data lokal di Modul Cek Data di bawah — skor membandingkan klaim Anda dengan jejak usaha yang bisa diverifikasi pihak lain.</p><p class="rujukan" id="rujCons">—</p><button class="btn-explain" type="button" data-explain="konsistensi">Jelaskan ini</button><div class="explain-answer" id="explain-konsistensi" role="status"></div></div>
-          <div class="card"><h3>Titik impas (BEP) &amp; prediksi arus kas</h3><p class="note" style="margin-top:6px" id="bepNote">Isi omzet, HPP, biaya operasional, dan gaji pemilik untuk melihat omzet minimum agar tidak rugi.</p><p class="rujukan" id="rujBep">—</p><div class="bar-wrap" id="cfChart"></div><p class="note" style="margin-top:8px">Prediksi 3 bulan ke depan memakai laba bersih bulanan saat ini dan pertumbuhan omzet yang Anda isi — bukan janji, melainkan proyeksi lurus untuk perencanaan kas.</p><button class="btn-explain" type="button" data-explain="bep">Jelaskan ini</button><div class="explain-answer" id="explain-bep" role="status"></div></div>
+          <div class="card score-card"><div class="top"><h3>Skor Konsistensi Data</h3><span class="score-num" id="scCons">0</span></div><div class="bar"><i id="scConsBar"></i></div><p class="note" id="scConsNote">Isi cek 9 sumber data lokal di Modul Cek Data di bawah — skor membandingkan klaim Anda dengan jejak usaha yang bisa diverifikasi pihak lain.</p><p class="rujukan" id="rujCons">—</p><button class="btn-explain" type="button" data-explain="konsistensi">Jelaskan ini</button></div>
+          <div class="card"><h3>Titik impas (BEP) &amp; prediksi arus kas</h3><p class="note" style="margin-top:6px" id="bepNote">Isi omzet, HPP, biaya operasional, dan gaji pemilik untuk melihat omzet minimum agar tidak rugi.</p><p class="rujukan" id="rujBep">—</p><div class="bar-wrap" id="cfChart"></div><p class="note" style="margin-top:8px">Prediksi 3 bulan ke depan memakai laba bersih bulanan saat ini dan pertumbuhan omzet yang Anda isi — bukan janji, melainkan proyeksi lurus untuk perencanaan kas.</p><button class="btn-explain" type="button" data-explain="bep">Jelaskan ini</button></div>
         </div>
       </section>
 
@@ -2005,6 +2084,29 @@
         </div>
         <div class="wiz-actions" style="margin-top:18px">
           <button class="btn" id="btnFieldHelpClose" type="button" style="flex:1 1 100%">Tutup — saya sudah paham</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ OVERLAY PENJELASAN "JELASKAN INI" (LAYAR PENUH) ============
+         Keputusan pemilik 2026-11-15: jawaban "Jelaskan ini" tampil layar
+         penuh, bukan di dalam bingkai kartu angka. Satu overlay bersama
+         untuk ke-15 penempatan; isinya sama (konteks + template lokal +
+         AI Coach), hanya permukaannya yang berubah. Ditutup oleh
+         "Mengerti", "Tutup", ketuk latar, atau Escape — TIDAK pernah
+         terlipat sendiri setelah 30 detik. -->
+    <div class="explain-overlay" id="explainOverlay" role="dialog" aria-modal="true" aria-labelledby="explainOverlayTitle">
+      <div class="explain-card">
+        <div class="explain-card-in">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+            <span class="help-kicker">Penjelasan angka</span>
+            <button class="btn ghost small" id="btnExplainTutupAtas" type="button">Tutup</button>
+          </div>
+          <h3 id="explainOverlayTitle">—</h3>
+          <div class="explain-body" id="explainOverlayBody" role="status"></div>
+          <div class="wiz-actions" style="margin-top:22px">
+            <button class="btn" id="btnExplainTutup" type="button" style="flex:1 1 100%">Mengerti</button>
+          </div>
         </div>
       </div>
     </div>
@@ -4130,6 +4232,47 @@
           }
           window.__tombolDiklik={kunci:kunciTombol, boleh:bolehDitandai, terapkan:terapkanDariSimpanan, kunciSimpan:KUNCI_TOMBOL};
         })();
+        /* ---------- MODE TAMPILAN: HP (bawaan) / PC ----------
+           Keputusan pemilik 2026-11-15: tampilan bawaan adalah HP.
+           Tombol khusus #btnModeTampilan di bilah akun memindah ke mode
+           PC dan kembali; pilihan tersimpan di localStorage
+           "umkm-introspeksi-mode-tampilan" ("hp"|"pc", bawaan "hp").
+           Mekanisme paksa: mode hp menambah kelas "mode-hp" pada <html>;
+           blok CSS "MODE TAMPILAN HP (paksa)" menyalin SEMUA aturan
+           @media (max-width:820px) dengan pemilih html.mode-hp, jadi
+           tata letak HP berlaku di lebar layar berapa pun — peramban PC
+           pun menampilkan kolom HP 640px + nav bawah + nav atas
+           tersembunyi. Mode pc melepas kelas itu: tata letak kembali
+           responsif penuh (media query di atas tetap menangani layar
+           sempit secara alami).
+           Tombol ini sengaja TIDAK ikut sistem emas .sudah-diklik
+           (bukan navigasi; keadaannya sudah terlihat dari label, yang
+           menunjukkan mode TUJUAN: "Mode PC" saat tampil HP). */
+        (function(){
+          var KUNCI_MODE="umkm-introspeksi-mode-tampilan";
+          function bacaMode(){
+            try{ var m=localStorage.getItem(KUNCI_MODE); return (m==="pc")?"pc":"hp"; }
+            catch(e){ return "hp"; }
+          }
+          function terapkanMode(){
+            var mode=bacaMode();
+            var akar=document.documentElement;
+            if(akar) akar.classList.toggle("mode-hp", mode==="hp");
+            var b=gid("btnModeTampilan");
+            if(b) b.textContent=(mode==="hp")?"Mode PC":"Mode HP";
+            return mode;
+          }
+          function gantiMode(){
+            var mode=(bacaMode()==="hp")?"pc":"hp";
+            try{ localStorage.setItem(KUNCI_MODE, mode); }catch(e){}
+            terapkanMode();
+            return mode;
+          }
+          var tombolMode=gid("btnModeTampilan");
+          if(tombolMode) tombolMode.addEventListener("click", function(){ gantiMode(); });
+          terapkanMode();
+          window.__modeTampilan={baca:bacaMode, terapkan:terapkanMode, ganti:gantiMode, kunci:KUNCI_MODE};
+        })();
       })();
     </script>
 
@@ -4640,23 +4783,27 @@
           if(flagSudahMengisi()) return true;
           try{ return snapshotNyata(collectSnapshot()); }catch(e){ return false; }
         }
-        /* Tombol "Ubah usaha" di bilah akun hanya untuk pengguna yang sudah
-           punya data usaha nyata — pengguna baru masuk lewat sapaan/wizard
-           atau formulir Data Usaha, jadi tombol itu disembunyikan sampai
-           sudahMengisiNyata() benar (aturan yang sama dengan sapaan,
-           "Tutup", dan lipatan formulir: ketikan di wizard saja TIDAK
-           dihitung, hanya data di formulir utama / sesudah applyWizard,
-           lokasi, atau transaksi; pasangan contoh "Dapur Bu Sari" +
-           omzet Rp45.000.000 juga TIDAK dihitung). Dipanggil dari
-           perbaruiStatusAkun (setiap perubahan keadaan akun) dan
-           aturTampilanFormulir (setiap perubahan data, termasuk autosave),
-           jadi tampil/sembunyi mengikuti data tanpa muat ulang. Bila data
-           dihapus suatu saat, keputusan ini dihitung ulang dan tombol
-           bersembunyi lagi — saat ini belum ada jalur hapus data di aplikasi. */
+        /* Tombol "Ubah usaha" — DUA penempatan: bilah akun
+           (#btnUbahUsahaTop) dan kartu formulir Data Usaha
+           (#btnUbahUsahaData) — hanya untuk pengguna yang sudah punya
+           data usaha nyata. Pengguna baru masuk lewat sapaan/wizard
+           atau formulir Data Usaha, jadi kedua tombol disembunyikan
+           sampai sudahMengisiNyata() benar (aturan yang sama dengan
+           sapaan, "Tutup", dan lipatan formulir: ketikan di wizard saja
+           TIDAK dihitung, hanya data di formulir utama / sesudah
+           applyWizard, lokasi, atau transaksi; pasangan contoh
+           "Dapur Bu Sari" + omzet Rp45.000.000 juga TIDAK dihitung).
+           Dipanggil dari perbaruiStatusAkun (setiap perubahan keadaan
+           akun) dan aturTampilanFormulir (setiap perubahan data,
+           termasuk autosave), jadi tampil/sembunyi mengikuti data tanpa
+           muat ulang. Bila data dihapus suatu saat, keputusan ini
+           dihitung ulang dan tombol bersembunyi lagi — saat ini belum
+           ada jalur hapus data di aplikasi. */
         function aturTombolUbahUsaha(){
-          var b=gid("btnUbahUsahaTop"); if(!b) return;
           var ada=false; try{ ada=sudahMengisiNyata(); }catch(e){ ada=false; }
-          b.style.display=ada?"":"none";
+          ["btnUbahUsahaTop","btnUbahUsahaData"].forEach(function(id){
+            var b=gid(id); if(b) b.style.display=ada?"":"none";
+          });
         }
         window.__aturTombolUbahUsaha=aturTombolUbahUsaha;
 
@@ -6215,18 +6362,25 @@
 
         /* ---------- Lipatan penjelasan yang sudah dibaca ----------
            Satu penjelasan penuh terlihat dalam satu waktu: membuka satu
-           penjelasan (kartu diskusi AI di bawah pertanyaan introspeksi
-           atau panel "Jelaskan ini" di bawah skor) langsung melipat
-           penjelasan lain yang sedang terbuka. Penjelasan yang terbuka
-           terlipat sendiri setelah LIPAT_DETIK detik menjadi satu baris
-           ("ketuk untuk baca lagi"); ketuk barisnya untuk membuka lagi
-           dan penghitung 30 detik mulai dari awal.
-           Yang TIDAK ikut aturan ini: kartu sapaan proaktif, baris
-           "Perlu Perhatian", riwayat AI Coach, overlay bantuan kolom,
-           dan panel Hitung HPP (kalkulator harus tetap terbuka saat
-           dipakai). Topik yang disematkan di Modul 9 juga tidak
-           disentuh — melipat kartu inline tidak menghentikan diskusi
-           yang sedang berjalan di AI Coach. */
+           penjelasan (kartu diskusi AI di bawah pertanyaan introspeksi)
+           langsung melipat penjelasan lain yang sedang terbuka.
+           Penjelasan yang terbuka terlipat sendiri setelah LIPAT_DETIK
+           detik menjadi satu baris ("ketuk untuk baca lagi"); ketuk
+           barisnya untuk membuka lagi dan penghitung 30 detik mulai
+           dari awal.
+           Yang TIDAK ikut aturan lipatan 30 detik ini: kartu sapaan
+           proaktif, baris "Perlu Perhatian", riwayat AI Coach, overlay
+           bantuan kolom, dan panel Hitung HPP (kalkulator harus tetap
+           terbuka saat dipakai) — dan overlay "Jelaskan ini" layar
+           penuh (keputusan pemilik 2026-11-15: menutup tampilan baca
+           layar penuh di tengah pengguna membaca akan buruk; panel
+           inline "Jelaskan ini" yang dulu ikut aturan ini sudah
+           dihapus). Overlay itu tetap ikut aturan SATU-terbuka:
+           membukanya melipat kartu yang sedang terbuka, dan membuka
+           kartu/overlay kolom menutup overlay itu. Topik yang
+           disematkan di Modul 9 juga tidak disentuh — melipat kartu
+           inline tidak menghentikan diskusi yang sedang berjalan di
+           AI Coach. */
         var LIPAT_DETIK=30;
         var lipatTimer=null, lipatTerbuka=null;
         function labelDiskusi(qid){ var p=PERTANYAAN_DISKUSI[qid]; return "Masukan AI soal "+(p?p.teks:qid)+" — ketuk untuk baca lagi"; }
@@ -6267,6 +6421,11 @@
              tidak ada efek fokus dari blok bantuan kolom). */
           var ovBantuan=document.getElementById("fieldHelpOverlay");
           if(ovBantuan) ovBantuan.classList.remove("show");
+          /* Aturan satu-penjelasan-terbuka (seksi 25): overlay
+             "Jelaskan ini" layar penuh ikut ditutup bila kartu diskusi
+             dibuka — dan sebaliknya (bukaOverlayPenjelasan melipat
+             kartu ini lewat lipatSekarang). */
+          if(window.__penjelasanLayar && typeof window.__penjelasanLayar.tutup==="function") window.__penjelasanLayar.tutup();
           if(teksChip) el.__lipatTeks=teksChip;
           if(lipatTerbuka && lipatTerbuka!==el) lipatPenjelasan(lipatTerbuka);
           var chip=el.__lipatChip; if(chip) chip.style.display="none";
@@ -6920,10 +7079,14 @@
           if(!target) return;
           if(kuotaAiHabis()){ popupKuotaHabis(); return; }
           target.textContent="Sedang berpikir… AI Coach sedang menyiapkan penjelasan sederhana untuk Anda.";
-          /* Panel "Jelaskan ini" yang terdaftar ikut aturan lipatan yang
-             sama dengan kartu diskusi (satu terbuka, terlipat sendiri
-             setelah 30 detik); target lain (overlay bantuan kolom, baris
-             proaktif, jawaban coach) tidak terdaftar dan tidak disentuh. */
+          /* Target yang terdaftar ikut aturan lipatan yang sama dengan
+             kartu diskusi (satu terbuka, terlipat sendiri setelah 30
+             detik). "Jelaskan ini" TIDAK lagi terdaftar: jawabannya
+             tampil di overlay layar penuh #explainOverlay (lewat proksi
+             textContent, tanpa __lipatTeks) sehingga aturan lipat 30
+             detik tidak pernah menyentuhnya; target lain (overlay
+             bantuan kolom, baris proaktif, jawaban coach) juga tidak
+             terdaftar dan tidak disentuh. */
           function tampilkan(){ if(window.__tampilPenjelasan) window.__tampilPenjelasan(target); }
           tampilkan();
           function fallback(){ target.textContent=localExplain(prompt, kunci)+"\n\nAI belum tersambung — ini penjelasan dari perhitungan aplikasi."; tampilkan(); }
@@ -7418,18 +7581,89 @@
           "hi-keluar":"Jelaskan Uang keluar hari ini saya secara rinci. Pakai hanya angka yang ada di konteks: total uang keluar hari ini, jumlah transaksi keluar hari ini, pengeluaran terbesar hari ini beserta keterangannya, dan kategori terbanyak hari ini. Jawaban tersusun: pertama apa arti angka ini dan bahwa angka ini hanya menghitung catatan hari ini; kedua pengeluaran mana yang paling besar dan berapa kontribusinya; ketiga kategori apa yang paling banyak hari ini; terakhir satu langkah konkret untuk menekan pengeluaran yang tidak perlu. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru.",
           "hi-saldo":"Jelaskan Saldo kas saya secara rinci. Pakai hanya angka yang ada di konteks: saldo kas, total masuk semua catatan, total keluar semua catatan, jumlah semua transaksi, serta uang masuk dan uang keluar hari ini. Jawaban tersusun: pertama apa arti saldo kas dan tegaskan bahwa saldo ini menghitung SEMUA catatan sejak awal, bukan hanya hari ini; kedua bedakan dengan jelas antara uang masuk dan uang keluar hari ini (hanya hari ini) dengan saldo kas (semua catatan); ketiga apa yang paling memengaruhi saldo ini; terakhir satu langkah konkret. Bila saldo negatif, katakan jujur bahwa total uang keluar yang tercatat lebih besar dari total uang masuk yang tercatat dan itu bukan utang. Sebutkan bahwa angka yang sama dipakai Laba Rugi, Posisi Keuangan, Arus Kas, dan BEP. Bahasa Indonesia sederhana, tanpa markdown, tanpa membuat angka baru."
         };
-        /* Panel "Jelaskan ini" di bawah skor ikut aturan lipatan penjelasan:
-           satu yang terbuka, terlipat sendiri setelah 30 detik. */
+        /* ---------- "Jelaskan ini" tampil LAYAR PENUH (overlay) ----------
+           Keputusan pemilik 2026-11-15: jawaban "Jelaskan ini" tampil
+           layar penuh, bukan di dalam bingkai kartu (15 div
+           .explain-answer inline DIHAPUS total beserta pendaftaran
+           panelnya; tombolnya tetap, begitu juga atribut
+           data-explain-target — kunci emas .sudah-diklik tetap memakai
+           atribut itu, bukan teks tombol).
+           Isi jawaban SAMA seperti dulu (konteksPenjelasan +
+           templatePenjelasan lokal + askAI via /api/ai-chat) untuk
+           ke-15 penempatan; yang berubah hanya permukaan tampilnya:
+           satu overlay bersama #explainOverlay.
+           Keputusan aturan lipatan (ditegaskan eksplisit, bukan dihapus
+           diam-diam):
+           - SATU TERBUKA tetap berlaku: hanya ada satu overlay; ketuk
+             "Jelaskan ini" lain saat overlay terbuka mengganti isinya
+             (judul + jawaban kunci yang baru). Membuka overlay juga
+             menutup overlay "Penjelasan kolom" dan melipat kartu
+             diskusi yang sedang terbuka; membuka kartu diskusi /
+             overlay kolom menutup overlay ini (seksi 25).
+           - LIPAT OTOMATIS 30 DETIK TIDAK berlaku untuk overlay ini:
+             menutup tampilan baca layar penuh di tengah pengguna
+             membaca akan buruk; aturan 30 detik dibuat untuk panel
+             inline yang berebut ruang layar, dan panel inline itu
+             sudah tidak ada. Overlay hanya tertutup oleh "Mengerti",
+             "Tutup", ketuk latar, atau Escape. Karena itu jawaban ini
+             TIDAK didaftarkan ke __daftarPenjelasan dan askAI tidak
+             memanggil bukaPenjelasan untuknya.
+           Penjaga tulisan basi: tiap pembukaan menaikkan token; askAI
+           menulis lewat proksi textContent yang hanya meneruskan
+           tulisan bila tokennya masih yang terbaru — jawaban dari
+           ketukan sebelumnya yang pulang belakangan tidak akan
+           menimpa jawaban kunci yang sedang dibaca. */
         var EXPLAIN_NAMA={level:"Level UMKM",kesehatan:"Skor Kesehatan Usaha",investasi:"Kesiapan Investasi",valuasi:"Estimasi Valuasi",kematangan:"Level Kematangan",digital:"Kematangan Digital",keuangan:"Kesehatan Keuangan",konsistensi:"Konsistensi Data",bep:"Titik Impas (BEP) & Prediksi Arus Kas",naiklevel:"Naik Level","hi-masuk":"Uang Masuk Hari Ini","hi-keluar":"Uang Keluar Hari Ini","hi-saldo":"Saldo Kas"};
-        var EXPLAIN_PANEL=[["level","explain-hero-level"],["level","explain-level"],["kesehatan","explain-hero-kesehatan"],["investasi","explain-hero-investasi"],["investasi","explain-investasi"],["valuasi","explain-hero-valuasi"],["kematangan","explain-kematangan"],["digital","explain-digital"],["keuangan","explain-keuangan"],["konsistensi","explain-konsistensi"],["bep","explain-bep"],["naiklevel","explain-naiklevel"],["hi-masuk","explain-hi-masuk"],["hi-keluar","explain-hi-keluar"],["hi-saldo","explain-hi-saldo"]];
-        EXPLAIN_PANEL.forEach(function(p){
-          var t=gid(p[1]);
-          if(t && window.__daftarPenjelasan) window.__daftarPenjelasan(t, "Penjelasan "+EXPLAIN_NAMA[p[0]]+" — ketuk untuk baca lagi");
-        });
+        var explainToken=0, lastExplainBtn=null;
+        function bukaOverlayPenjelasan(key, pemicu){
+          var ov=gid("explainOverlay"), judul=gid("explainOverlayTitle"), isi=gid("explainOverlayBody");
+          if(!ov||!judul||!isi) return null;
+          explainToken++;
+          var token=explainToken;
+          lastExplainBtn=pemicu||null;
+          judul.textContent=EXPLAIN_NAMA[key]||"Penjelasan";
+          isi.textContent="Sedang berpikir… AI Coach sedang menyiapkan penjelasan sederhana untuk Anda.";
+          var ovBantuan=gid("fieldHelpOverlay");
+          if(ovBantuan) ovBantuan.classList.remove("show");
+          if(window.__lipatUji && typeof window.__lipatUji.lipatSekarang==="function") window.__lipatUji.lipatSekarang();
+          ov.classList.add("show");
+          ov.scrollTop=0;
+          var proxy={};
+          Object.defineProperty(proxy, "textContent", {
+            configurable:true,
+            get:function(){ return isi.textContent; },
+            set:function(v){ if(token===explainToken) isi.textContent=v; }
+          });
+          return proxy;
+        }
+        function tutupOverlayPenjelasan(){
+          var ov=gid("explainOverlay");
+          if(ov) ov.classList.remove("show");
+          if(lastExplainBtn && lastExplainBtn.focus) lastExplainBtn.focus();
+        }
+        function overlayPenjelasanTerbuka(){
+          var ov=gid("explainOverlay");
+          return !!ov && ov.classList.contains("show");
+        }
+        (function(){
+          var t1=gid("btnExplainTutup");
+          if(t1) t1.addEventListener("click", tutupOverlayPenjelasan);
+          var t2=gid("btnExplainTutupAtas");
+          if(t2) t2.addEventListener("click", tutupOverlayPenjelasan);
+          var ov=gid("explainOverlay");
+          if(ov) ov.addEventListener("click", function(ev){ if(ev.target===ov) tutupOverlayPenjelasan(); });
+          document.addEventListener("keydown", function(ev){ if(ev.key==="Escape" && overlayPenjelasanTerbuka()) tutupOverlayPenjelasan(); });
+        })();
+        window.__penjelasanLayar={buka:bukaOverlayPenjelasan, tutup:tutupOverlayPenjelasan, terbuka:overlayPenjelasanTerbuka, token:function(){ return explainToken; }};
         document.querySelectorAll("[data-explain]").forEach(function(b){
           b.addEventListener("click", function(){
             var key=b.getAttribute("data-explain");
-            var target=gid(b.getAttribute("data-explain-target")||("explain-"+key));
+            /* Bila kuota AI habis, jangan buka overlay dengan teks
+               "Sedang berpikir…" yang basi — tampilkan pop-up kuota
+               saja, sama seperti askAI di dalam. */
+            if(kuotaAiHabis()){ popupKuotaHabis(); return; }
+            var target=bukaOverlayPenjelasan(key, b);
+            if(!target) return;
             var ctxTambahan=null;
             try{ ctxTambahan=konteksPenjelasan(key); }catch(e){ ctxTambahan=null; }
             askAI(EXPLAIN_PROMPTS[key]||"Jelaskan angka ini secara rinci memakai angka usaha saya.", target, ctxTambahan, key);
@@ -8479,8 +8713,10 @@
           qEl.value=""; ansEl.textContent="";
           /* Aturan satu-"?"-terbuka: lipat dulu penjelasan diskusi /
              "Jelaskan ini" yang sedang terbuka (chip lipatannya boleh
-             tetap ada — chip bukan penjelasan terbuka). */
+             tetap ada — chip bukan penjelasan terbuka; overlay
+             "Jelaskan ini" layar penuh ikut tertutup). */
           if(window.__lipatUji && typeof window.__lipatUji.lipatSekarang==="function") window.__lipatUji.lipatSekarang();
+          if(window.__penjelasanLayar && typeof window.__penjelasanLayar.tutup==="function") window.__penjelasanLayar.tutup();
           overlay.classList.add("show"); overlay.scrollTop=0;
         }
         function closeHelp(){ overlay.classList.remove("show"); if(lastBtn && lastBtn.focus) lastBtn.focus(); }
