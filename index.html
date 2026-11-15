@@ -6292,6 +6292,26 @@
               try{ localStorage.setItem("umkm-introspeksi-pending-migration", JSON.stringify(pendingMig)); }catch(e){}
             }
           }
+          /* Nama usaha pendaftaran (bila pendaftaran menunggu konfirmasi,
+             profil belum berisi namanya): ambil dari data akun (user_metadata,
+             tersimpan saat signUp) atau simpanan lokal, lalu simpan ke profil
+             dan ke kolom nama usaha — pola yang sama dengan kode marketing.
+             Dijalankan SETELAH blok migrasi supaya tidak tertimpa olehnya,
+             dan langsung disimpan ke cloud supaya tidak hilang. */
+          try{
+            if(currentUser){
+              var namaMeta=(currentUser.user_metadata && currentUser.user_metadata.nama_usaha)||"";
+              var namaLokal=""; try{ namaLokal=localStorage.getItem("umkm-introspeksi-nama-pendaftaran")||""; }catch(e2){}
+              var namaSimpan=String(namaMeta||namaLokal||"").trim();
+              if(namaSimpan && !gid("inNama").value){
+                gid("inNama").value=namaSimpan; recalc();
+                var upN=await sb.from("profiles").upsert({id:currentUser.id, nama_usaha:namaSimpan});
+                if(!upN.error){ try{ localStorage.removeItem("umkm-introspeksi-nama-pendaftaran"); }catch(e3){} }
+                var snapNama=collectSnapshot();
+                await saveData(snapNama, JSON.stringify(snapNama));
+              }
+            }
+          }catch(e){}
           // loading=false dan lastJson dihitung SETELAH blok migrasi selesai, dari
           // snapshot akhir — supaya autosave tidak menyimpan ulang state yang salah.
           loading=false;
@@ -6685,6 +6705,11 @@
                 if(!gid("inNama").value) gid("inNama").value=nama;
                 authMsg(""); enterApp(r.data.user); toast(isGuest||migrateSnapshot?"Data coba Anda sudah tersimpan.":"Selamat datang! Formulir masih kosong — silakan isi data usaha Anda.");
               } else {
+                /* Nama usaha dari formulir daftar: simpan ke kolom nama usaha
+                   SEBELUM snapshot tamu dikumpulkan, supaya migrasi ke cloud
+                   membawanya — dan titipkan juga ke localStorage sebagai
+                   cadangan bila migrasi tidak membawanya. */
+                try{ if(nama){ if(!gid("inNama").value) gid("inNama").value=nama; localStorage.setItem("umkm-introspeksi-nama-pendaftaran", nama); } }catch(e){}
                 if(isGuest){ try{ var gs=collectSnapshot(); localStorage.setItem("umkm-introspeksi-pending-migration", JSON.stringify(gs)); persistLocal(gs); }catch(e){} }
                 /* Pendaftaran menunggu konfirmasi: profil belum bisa ditulis
                    (belum ada sesi), jadi kodenya dititipkan dulu — saat masuk
