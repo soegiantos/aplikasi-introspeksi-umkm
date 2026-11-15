@@ -546,6 +546,11 @@
       .diskusi-card{border:1.5px solid var(--gold);background:var(--gold-soft);border-radius:var(--radius);padding:12px 14px;margin:10px 0 4px}
       .diskusi-card p{margin:0 0 8px;line-height:1.5}
       .diskusi-card .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+      .sop-baris{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin-top:8px;background:var(--surface-2)}
+      .sop-baris.aktif{border-color:var(--gold)}
+      .sop-baris-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+      .sop-baris-info span{color:var(--ink-soft);font-size:.88rem}
+      .sop-baris .actions{margin:0}
       /* Baris satu-baris untuk penjelasan yang sudah dibaca dan terlipat:
          aksen emas seperti kartu diskusi, bukan merah; teks dipotong jadi
          satu baris dengan elipsis. Ketuk untuk membuka lagi. */
@@ -1008,7 +1013,7 @@
         <p class="note" style="margin-top:8px">Jawab juga bisa di AI Coach di bawah.</p>
       </div>
 
-      <!-- ============ HARI INI — OPERASIONAL KESEHARIAN (halaman awal) ============ -->
+      <!-- ============ MODE OPERASIONAL — OPERASIONAL KESEHARIAN (halaman awal) ============ -->
       <section id="hariini">
         <div class="sec-head"><span class="sec-num">☀</span><h2>Mode Operasional</h2></div>
         <p class="sec-sub"><span id="hiSalam">Selamat pagi</span> · <span id="hiTanggal">—</span></p>
@@ -1718,13 +1723,23 @@
         <div class="sec-head"><span class="sec-num">12</span><h2>Orang &amp; Pembuat SOP</h2></div>
         <p class="sec-sub">SOP tertulis adalah cara tercepat menurunkan ketergantungan pada pemilik — dan menaikkan pengali valuasi. Susun langkahnya di sini, lalu unduh sebagai dokumen SOP.</p>
         <div class="card">
-          <div class="form-grid">
+          <h3 style="margin-bottom:4px">SOP tersimpan</h3>
+          <div id="sopList"></div>
+          <div class="actions" style="margin-top:10px"><button class="btn ghost" id="btnSopBaru" type="button">SOP baru</button><button class="btn ghost" id="btnSopUnggah" type="button">Unggah dokumen SOP</button><button class="btn ghost" id="btnSopTempelBuka" type="button">Tempel isi dokumen</button></div>
+          <input type="file" id="sopFile" accept=".txt,.docx,.pdf" style="display:none" />
+          <div id="sopTempelWrap" style="display:none;margin-top:12px">
+            <label class="f"><span>atau tempel isi dokumen di sini</span><textarea id="sopTempel" class="ta" placeholder="contoh: Tempel isi dokumen SOP Anda di sini, lalu tekan tombol di bawahnya."></textarea></label>
+            <div class="actions"><button class="btn" id="btnSopTempel" type="button">Baca dari teks yang ditempel</button></div>
+          </div>
+          <p class="note" id="sopUnggahNote" role="status" style="display:none;margin-top:10px"></p>
+          <p class="note" id="sopDipilihNote" style="margin-top:10px">SOP baru — belum disimpan.</p>
+          <div class="form-grid" style="margin-top:12px">
             <label class="f"><span>Nama SOP / proses</span><input type="text" id="sopNama" placeholder="contoh: SOP Membuka Warung Pagi" /></label>
             <label class="f"><span>Penanggung jawab</span><input type="text" id="sopPj" placeholder="contoh: Kepala dapur / kasir senior" /></label>
             <label class="f"><span>Tujuan SOP</span><input type="text" id="sopTujuan" placeholder="contoh: Warung siap jualan pukul 06.00 dengan kualitas sama setiap hari" /></label>
           </div>
           <div id="sopSteps" style="margin-top:14px"></div>
-          <div class="actions"><button class="btn ghost" id="btnAddStep" type="button">+ Tambah langkah</button><button class="btn" id="btnSop" type="button">Unduh dokumen SOP (.txt)</button></div>
+          <div class="actions"><button class="btn ghost" id="btnAddStep" type="button">+ Tambah langkah</button><button class="btn" id="btnSimpanSop" type="button">Simpan SOP</button><button class="btn" id="btnSop" type="button">Unduh dokumen SOP (.txt)</button></div>
           <p class="note" style="margin-top:10px">Peran minimum yang sehat untuk UMKM: pemilik tidak memegang semua peran. Pastikan ada minimal satu orang terlatih untuk kas, satu untuk produksi/layanan, dan satu untuk stok — nama-namanya tulis di SOP terkait.</p>
         </div>
       </section>
@@ -3714,18 +3729,381 @@
       };
       function buildContentCal(){ const sek=$("inSektor").value||"lainnya"; const ideas=CONTENT_IDEAS[sek]||CONTENT_IDEAS.lainnya; const days=["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu","Minggu"]; $("contentCal").innerHTML=days.map(function(d,i){ return "<tr><td><b>"+d+"</b></td><td>"+ideas[i]+"</td></tr>"; }).join(""); }
 
-      /* --- SOP Builder --- */
+      /* --- SOP Builder: daftar banyak SOP + unggah dokumen ---
+         Daftar (sopsList) adalah sumber kebenaran; formulir menampilkan SOP
+         yang dipilih. Cermin lama sopSteps (langkah SOP yang tampil di
+         formulir) tetap dipertahankan apa adanya supaya seluruh kode lama
+         yang membaca snap.sopSteps — cloudAdaIsi, gabungSop, applySnapshot,
+         muat cloud — tetap jalan tanpa perubahan. Nama/PJ/tujuan tiap SOP
+         kini ikut tersimpan sebagai bagian dari tiap entri daftar (dulu
+         hanya langkah yang tersimpan). */
       let sopCount=0;
       const SOP_EXAMPLES=["contoh: Buka tempat usaha, nyalakan peralatan, cek stok bahan hari ini","contoh: Siapkan bahan sesuai resep baku dan takaran yang tertulis","contoh: Sajikan / serahkan produk, catat penjualan di aplikasi kasir","contoh: Tutup kas, hitung uang, bersihkan area kerja, kunci tempat usaha"];
       function addSopStep(val){ sopCount++; const wrap=$("sopSteps"); const lab=document.createElement("label"); lab.className="f"; lab.style.display="block"; lab.style.marginTop="10px"; lab.innerHTML="<span>Langkah "+sopCount+"</span>"; const ta=document.createElement("textarea"); ta.className="ta sop-step"; ta.placeholder=SOP_EXAMPLES[Math.min(sopCount-1,SOP_EXAMPLES.length-1)]; if(val)ta.value=val; lab.appendChild(ta); wrap.appendChild(lab); }
       addSopStep(""); addSopStep(""); addSopStep("");
       $("btnAddStep").addEventListener("click",function(){ addSopStep(""); });
-      $("btnSop").addEventListener("click",function(){
-        const steps=Array.from(document.querySelectorAll(".sop-step")).map(function(t){return t.value.trim()}).filter(Boolean);
-        if(!$("sopNama").value||!steps.length){ popupRamah("Isian belum lengkap","Isi nama SOP dan minimal satu langkah — SOP perlu nama dan langkah kerja supaya bisa disimpan sebagai dokumen.","Lengkapi keduanya, lalu tekan tombol unduh SOP lagi."); return; }
-        const txt="DOKUMEN SOP — "+$("sopNama").value+"\nPenanggung jawab: "+($("sopPj").value||"—")+"\nTujuan: "+($("sopTujuan").value||"—")+"\n\nLANGKAH KERJA:\n"+steps.map(function(s,i){return (i+1)+". "+s}).join("\n")+"\n\nSOP ini bagian dari sistem usaha "+($("inNama").value||"")+" — tinjau ulang tiap 3 bulan.";
-        const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain;charset=utf-8"})); a.download="sop-umkm.txt"; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000); audit("Dokumen SOP diunduh: "+$("sopNama").value); toast("Dokumen SOP diunduh");
+
+      var sopsList=[];
+      var sopTerpilihId=null;
+      function sopIdBaru(){ try{ if(typeof uuid==="function") return uuid(); }catch(e){} return "sop-"+Date.now()+"-"+Math.floor(Math.random()*1e9); }
+      function sopBersih(s){
+        s=s||{};
+        var langkah=Array.isArray(s.steps)?s.steps.map(function(v){ return String(v==null?"":v); }):[];
+        return {id:String(s.id||sopIdBaru()), nama:String(s.nama||"").trim(), pj:String(s.pj||"").trim(), tujuan:String(s.tujuan||"").trim(), steps:langkah, dibuat:String(s.dibuat||new Date().toISOString())};
+      }
+      function sopBersihDaftar(arr){ return (Array.isArray(arr)?arr:[]).map(sopBersih); }
+      function sopLangkahTerisi(s){ return (s.steps||[]).filter(function(v){ return String(v).trim()!==""; }); }
+      function sopAdaIsi(s){ if(!s) return false; return !!(String(s.nama||"").trim() || String(s.pj||"").trim() || String(s.tujuan||"").trim() || sopLangkahTerisi(s).length); }
+      function sopDariForm(){
+        var langkah=Array.prototype.map.call(document.querySelectorAll(".sop-step"),function(t){ return t.value; });
+        return {id:sopTerpilihId, nama:($("sopNama").value||"").trim(), pj:($("sopPj").value||"").trim(), tujuan:($("sopTujuan").value||"").trim(), steps:langkah, dibuat:null};
+      }
+      /* Tulis isi formulir ke entri SOP yang dipilih (atau buat entri baru
+         bila formulir berisi SOP baru). Mengembalikan entri atau null bila
+         formulir kosong. TIDAK menyimpan ke cloud sendiri — penyimpanan
+         ikut autosave berkala lewat collectSnapshot, seperti isian lain. */
+      function sopSimpanForm(){
+        var cur=sopDariForm();
+        if(!sopAdaIsi(cur)) return null;
+        var ada=null;
+        if(cur.id){ for(var i=0;i<sopsList.length;i++){ if(sopsList[i].id===cur.id){ ada=sopsList[i]; break; } } }
+        if(ada){ ada.nama=cur.nama; ada.pj=cur.pj; ada.tujuan=cur.tujuan; ada.steps=cur.steps; }
+        else { ada=sopBersih({id:sopIdBaru(), nama:cur.nama, pj:cur.pj, tujuan:cur.tujuan, steps:cur.steps, dibuat:new Date().toISOString()}); sopsList.push(ada); sopTerpilihId=ada.id; }
+        renderSopList();
+        return ada;
+      }
+      function sopMuatKeForm(sop){
+        if(!sop) return;
+        sopTerpilihId=sop.id;
+        $("sopNama").value=sop.nama||"";
+        $("sopPj").value=sop.pj||"";
+        $("sopTujuan").value=sop.tujuan||"";
+        var sw=$("sopSteps"); sw.innerHTML=""; sopCount=0;
+        var langkah=(sop.steps&&sop.steps.length)?sop.steps:["","",""];
+        langkah.forEach(function(v){ addSopStep(v||""); });
+        var note=$("sopDipilihNote"); if(note) note.textContent="Mengubah: "+(sop.nama||"SOP tanpa nama")+" — "+sopLangkahTerisi(sop).length+" langkah.";
+        renderSopList();
+      }
+      function sopBaru(){
+        sopSimpanForm();
+        sopTerpilihId=null;
+        $("sopNama").value=""; $("sopPj").value=""; $("sopTujuan").value="";
+        var sw=$("sopSteps"); sw.innerHTML=""; sopCount=0; addSopStep(""); addSopStep(""); addSopStep("");
+        var note=$("sopDipilihNote"); if(note) note.textContent="SOP baru — belum disimpan.";
+        renderSopList();
+      }
+      function sopHapus(id){
+        var target=null; for(var i=0;i<sopsList.length;i++){ if(sopsList[i].id===id){ target=sopsList[i]; break; } }
+        if(!target) return;
+        var namaTampil=target.nama||"SOP tanpa nama";
+        if(window.tampilPopupRamah){
+          window.tampilPopupRamah("Hapus SOP ini?","SOP \""+namaTampil+"\" akan dihapus dari daftar.","Ketuk Hapus SOP bila sudah yakin — ketuk Mengerti untuk batal.",{label:"Hapus SOP", fn:function(){ sopHapusJalankan(id); }});
+        } else { sopHapusJalankan(id); }
+      }
+      function sopHapusJalankan(id){
+        sopsList=sopsList.filter(function(s){ return s.id!==id; });
+        if(sopTerpilihId===id){
+          if(sopsList.length){ sopMuatKeForm(sopsList[0]); }
+          else {
+            sopTerpilihId=null;
+            $("sopNama").value=""; $("sopPj").value=""; $("sopTujuan").value="";
+            var sw=$("sopSteps"); sw.innerHTML=""; sopCount=0; addSopStep(""); addSopStep(""); addSopStep("");
+            var note=$("sopDipilihNote"); if(note) note.textContent="Belum ada SOP tersimpan — buat SOP baru atau unggah dokumen SOP.";
+          }
+        }
+        renderSopList();
+        toast("SOP dihapus");
+        audit("SOP dihapus dari daftar");
+      }
+      function renderSopList(){
+        var wadah=$("sopList"); if(!wadah) return;
+        wadah.innerHTML="";
+        if(!sopsList.length){
+          var kosong=document.createElement("p"); kosong.className="note"; kosong.textContent="Belum ada SOP tersimpan — buat SOP baru atau unggah dokumen SOP.";
+          wadah.appendChild(kosong); return;
+        }
+        sopsList.forEach(function(s){
+          var baris=document.createElement("div"); baris.className="sop-baris";
+          if(s.id===sopTerpilihId) baris.classList.add("aktif");
+          var info=document.createElement("div"); info.className="sop-baris-info";
+          var nm=document.createElement("b"); nm.textContent=s.nama||"SOP tanpa nama"; info.appendChild(nm);
+          var ket=document.createElement("span"); ket.textContent=(s.pj?("Penanggung jawab: "+s.pj+" · "):"")+sopLangkahTerisi(s).length+" langkah"; info.appendChild(ket);
+          baris.appendChild(info);
+          var aksi=document.createElement("div"); aksi.className="actions";
+          var bBuka=document.createElement("button"); bBuka.type="button"; bBuka.className="btn ghost small"; bBuka.textContent="Buka"; bBuka.setAttribute("data-sop-buka",s.id);
+          bBuka.addEventListener("click",function(){ sopSimpanForm(); sopMuatKeForm(s); });
+          var bUnduh=document.createElement("button"); bUnduh.type="button"; bUnduh.className="btn ghost small"; bUnduh.textContent="Unduh"; bUnduh.setAttribute("data-sop-unduh",s.id);
+          bUnduh.addEventListener("click",function(){ sopUnduh(s); });
+          var bHapus=document.createElement("button"); bHapus.type="button"; bHapus.className="btn ghost small"; bHapus.textContent="Hapus"; bHapus.setAttribute("data-sop-hapus",s.id);
+          bHapus.addEventListener("click",function(){ sopHapus(s.id); });
+          aksi.appendChild(bBuka); aksi.appendChild(bUnduh); aksi.appendChild(bHapus);
+          baris.appendChild(aksi);
+          wadah.appendChild(baris);
+        });
+      }
+      function sopSlug(nama){
+        var s=String(nama||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+        s=s.replace(/^sop(-|$)/,""); /* nama sudah diawali "SOP" ("SOP Membuka …") jangan jadi "sop-sop-…" */
+        return s||"tanpa-nama";
+      }
+      function sopTeks(s){
+        var langkah=sopLangkahTerisi(s);
+        return "DOKUMEN SOP — "+(s.nama||"SOP tanpa nama")+"\nPenanggung jawab: "+(s.pj||"—")+"\nTujuan: "+(s.tujuan||"—")+"\n\nLANGKAH KERJA:\n"+langkah.map(function(v,i){ return (i+1)+". "+v; }).join("\n")+"\n\nSOP ini bagian dari sistem usaha "+($("inNama").value||"")+" — tinjau ulang tiap 3 bulan.";
+      }
+      function sopUnduhFile(s){
+        var a=document.createElement("a");
+        a.href=URL.createObjectURL(new Blob([sopTeks(s)],{type:"text/plain;charset=utf-8"}));
+        a.download="sop-"+sopSlug(s.nama)+".txt";
+        a.click();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
+        audit("Dokumen SOP diunduh: "+(s.nama||"SOP tanpa nama"));
+        toast("Dokumen SOP diunduh");
+      }
+      function sopUnduh(s){
+        if(!s || !s.nama || !sopLangkahTerisi(s).length){
+          popupRamah("Isian belum lengkap","Isi nama SOP dan minimal satu langkah — SOP perlu nama dan langkah kerja supaya bisa disimpan sebagai dokumen.","Lengkapi keduanya, lalu tekan tombol unduh SOP lagi.");
+          return;
+        }
+        sopUnduhFile(s);
+      }
+      $("btnSimpanSop").addEventListener("click",function(){
+        var cur=sopSimpanForm();
+        if(!cur){ popupRamah("Isian belum lengkap","Isi nama SOP dan minimal satu langkah — SOP perlu nama dan langkah kerja supaya tersimpan di daftar.","Lengkapi keduanya, lalu tekan Simpan SOP."); return; }
+        toast("SOP disimpan di daftar");
+        audit("SOP disimpan: "+(cur.nama||"SOP tanpa nama"));
       });
+      $("btnSop").addEventListener("click",function(){
+        var cur=sopSimpanForm();
+        if(!cur){ popupRamah("Isian belum lengkap","Isi nama SOP dan minimal satu langkah — SOP perlu nama dan langkah kerja supaya bisa disimpan sebagai dokumen.","Lengkapi keduanya, lalu tekan tombol unduh SOP lagi."); return; }
+        sopUnduh(cur);
+      });
+      $("btnSopBaru").addEventListener("click",function(){ sopBaru(); });
+
+      /* ---------- Unggah dokumen SOP: baca .txt/.docx/.pdf di peramban,
+         petakan ke kolom lewat AI; bila AI tidak terjangkau, petakan lokal.
+         Pustaka baca dokumen dimuat malas (hanya saat dibutuhkan) dari CDN
+         yang sama polanya dengan Tesseract.js; bila pustaka gagal dimuat
+         atau pengguna sedang tidak ada internet, kolom tempel teks
+         ditampilkan sebagai jalan keluar yang jujur. ---------- */
+      var SOP_URL_MAMMOTH="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js";
+      var SOP_URL_PDFJS="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js";
+      var SOP_URL_PDFJS_PEKERJA="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+      var SOP_PROMPT_PETAKAN="Anda menerima isi dokumen SOP (prosedur kerja) sebuah UMKM dalam Bahasa Indonesia. Baca isi dokumen di bawah dan petakan ke JSON saja, tanpa teks lain dan tanpa markdown. Kembalikan objek JSON dengan kunci: nama (nama SOP atau proses, string, kosong bila tidak ada di dokumen), pj (penanggung jawab, string, kosong bila tidak ada), tujuan (tujuan SOP, string, kosong bila tidak ada), langkah (daftar langkah kerja berurutan, array string, kosong bila tidak ada). Aturan: pakai HANYA informasi yang tertulis di dokumen; jangan menambahkan, menebak, atau mengarang nama, penanggung jawab, tujuan, atau langkah; bila suatu bagian tidak ada di dokumen, isi string kosong atau array kosong; jangan membuat angka apa pun; kembalikan JSON yang valid saja.";
+      function sopCatatan(teks){ var n=$("sopUnggahNote"); if(!n) return; if(!teks){ n.style.display="none"; n.textContent=""; return; } n.textContent=teks; n.style.display=""; }
+      function sopTampilkanTempel(pesan){ var w=$("sopTempelWrap"); if(w) w.style.display=""; if(pesan) sopCatatan(pesan); }
+      function sopMuatPustaka(url, kunci){
+        return new Promise(function(selesai, gagal){
+          if(kunci && window[kunci]){ selesai(); return; }
+          var batas=setTimeout(function(){ gagal(new Error("pustaka belum termuat")); },15000);
+          var s=document.createElement("script"); s.src=url; s.async=true;
+          s.onload=function(){ clearTimeout(batas); selesai(); };
+          s.onerror=function(){ clearTimeout(batas); gagal(new Error("pustaka belum termuat")); };
+          document.head.appendChild(s);
+        });
+      }
+      function sopBacaTeksFile(file){
+        return new Promise(function(selesai, gagal){
+          var r=new FileReader();
+          r.onload=function(){ selesai(String(r.result||"")); };
+          r.onerror=function(){ gagal(new Error("berkas tidak terbaca")); };
+          r.readAsText(file);
+        });
+      }
+      function sopBacaPdf(arrayBuffer){
+        if(typeof window.pdfjsLib==="undefined") throw new Error("pustaka PDF belum termuat");
+        if(window.pdfjsLib.GlobalWorkerOptions) window.pdfjsLib.GlobalWorkerOptions.workerSrc=SOP_URL_PDFJS_PEKERJA;
+        return window.pdfjsLib.getDocument({data:new Uint8Array(arrayBuffer)}).promise.then(function(pdf){
+          var janji=[];
+          for(var i=1;i<=pdf.numPages;i++){
+            janji.push(pdf.getPage(i).then(function(hal){ return hal.getTextContent().then(function(isi){ return isi.items.map(function(it){ return it.str||""; }).join(" "); }); }));
+          }
+          return Promise.all(janji).then(function(bagian){ return bagian.join("\n"); });
+        });
+      }
+      /* Pemetaan lokal (deterministis, tanpa AI): baris bernomor menjadi
+         langkah; baris berlabel mengisi nama/PJ/tujuan; selebihnya dibiarkan
+         kosong untuk diisi pengguna — tidak ada yang ditebak. */
+      function sopPetakanLokal(teks){
+        var hasil={nama:"", pj:"", tujuan:"", langkah:[]};
+        var baris=String(teks||"").split(/\r?\n/);
+        baris.forEach(function(mentah){
+          var b=String(mentah||"").trim();
+          if(!b) return;
+          var m;
+          m=b.match(/^dokumen\s+sop\s*[—\-:]\s*(.+)$/i);
+          if(m && !hasil.nama){ hasil.nama=m[1].trim(); return; }
+          m=b.match(/^(?:nama(?:\s+sop)?|nama\s+proses)\s*[:\-]\s*(.+)$/i);
+          if(m && !hasil.nama){ hasil.nama=m[1].trim(); return; }
+          m=b.match(/^(?:penanggung\s+jawab|pj)\s*[:\-]\s*(.+)$/i);
+          if(m && !hasil.pj){ hasil.pj=m[1].trim(); return; }
+          m=b.match(/^tujuan\s*[:\-]\s*(.+)$/i);
+          if(m && !hasil.tujuan){ hasil.tujuan=m[1].trim(); return; }
+          if(/^langkah\s+kerja\s*:?$/i.test(b)) return;
+          m=b.match(/^(?:langkah\s*)?\d+\s*[.)\-:]\s+(.+)$/);
+          if(m){ hasil.langkah.push(m[1].trim()); return; }
+          m=b.match(/^[-•*]\s+(.+)$/);
+          if(m){ hasil.langkah.push(m[1].trim()); return; }
+        });
+        return hasil;
+      }
+      function sopUraikanJsonAI(teks){
+        function coba(s){
+          try{
+            var o=JSON.parse(s);
+            if(!o || typeof o!=="object") return null;
+            return {nama:String(o.nama||"").trim(), pj:String(o.pj||"").trim(), tujuan:String(o.tujuan||"").trim(), langkah:Array.isArray(o.langkah)?o.langkah.map(function(v){ return String(v==null?"":v); }).filter(function(v){ return v.trim()!==""; }):[]};
+          }catch(e){ return null; }
+        }
+        var langsung=coba(String(teks||"").trim()); if(langsung) return langsung;
+        var bersih=String(teks||"").replace(/```(?:json)?/gi,"").trim();
+        var dariBersih=coba(bersih); if(dariBersih) return dariBersih;
+        var a=bersih.indexOf("{"), b=bersih.lastIndexOf("}");
+        if(a>=0 && b>a) return coba(bersih.slice(a,b+1));
+        return null;
+      }
+      function sopPetakanAI(teks){
+        var isi=teks.length>12000?teks.slice(0,12000):teks;
+        var body={prompt:SOP_PROMPT_PETAKAN+"\n\nISI DOKUMEN:\n"+isi, question:SOP_PROMPT_PETAKAN, context:{jenis:"sop_unggah", panjang_teks:teks.length}, petunjuk:"Kembalikan JSON saja, tanpa teks lain dan tanpa markdown. Pakai hanya informasi dari dokumen; jangan mengarang."};
+        function batasWaktu(ms){ return new Promise(function(_, tolak){ setTimeout(function(){ tolak(new Error("waktu habis")); }, ms); }); }
+        return Promise.race([
+          fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+            .then(function(res){ if(!res.ok) throw new Error("belum tersambung"); return res.json(); })
+            .then(function(data){
+              var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
+              if(!ans || !String(ans).trim()) return null;
+              var hasil=sopUraikanJsonAI(String(ans));
+              if(hasil && window.__tambahHitunganAi) window.__tambahHitunganAi();
+              return hasil;
+            }),
+          batasWaktu(8000)
+        ]);
+      }
+      /* Isi formulir SOP BARU dari hasil pemetaan; pengguna meninjau dan
+         mengoreksi, lalu menekan Simpan SOP — hasil TIDAK PERNAH
+         disimpan otomatis (pola yang sama dengan isian suara). */
+      function sopIsiFormDariHasil(hasil){
+        hasil=hasil||{nama:"",pj:"",tujuan:"",langkah:[]};
+        sopTerpilihId=null;
+        $("sopNama").value=hasil.nama||"";
+        $("sopPj").value=hasil.pj||"";
+        $("sopTujuan").value=hasil.tujuan||"";
+        var sw=$("sopSteps"); sw.innerHTML=""; sopCount=0;
+        var langkah=(hasil.langkah&&hasil.langkah.length)?hasil.langkah:["","",""];
+        langkah.forEach(function(v){ addSopStep(v||""); });
+        var note=$("sopDipilihNote"); if(note) note.textContent="SOP baru dari dokumen — belum disimpan.";
+        renderSopList();
+      }
+      /* Jalur utama: kuota dulu (popup ramah yang sama dengan "Jelaskan
+         ini"), lalu AI; bila jawaban AI tidak bisa dibaca atau AI tidak
+         terjangkau, baca lokal dan katakan sejujurnya. */
+      function sopPetakanDariTeks(teks){
+        teks=String(teks||"");
+        if(!teks.trim()){ sopCatatan("Dokumen kosong — tidak ada isi yang bisa dibaca."); sopTampilkanTempel(); return Promise.resolve(null); }
+        if(window.__kuotaAiHabis && window.__kuotaAiHabis()){
+          if(window.__popupKuotaHabis) window.__popupKuotaHabis();
+          sopCatatan("Kuota pertanyaan AI bulan ini sudah habis — dokumen belum dibaca. Isi kolom SOP secara manual atau tunggu bulan depan.");
+          return Promise.resolve(null);
+        }
+        sopCatatan("Membaca dokumen dengan AI — sebentar…");
+        return sopPetakanAI(teks).then(function(hasil){
+          if(hasil){ sopIsiFormDariHasil(hasil); sopCatatan("Kolom diisi dari dokumen oleh AI — periksa dan lengkapi, lalu tekan Simpan SOP."); return hasil; }
+          var lokal=sopPetakanLokal(teks);
+          sopIsiFormDariHasil(lokal);
+          sopCatatan("Jawaban AI belum bisa dibaca — isi dibaca secara lokal; periksa dan lengkapi sebelum menyimpan.");
+          return lokal;
+        }).catch(function(){
+          var lokal=sopPetakanLokal(teks);
+          sopIsiFormDariHasil(lokal);
+          sopCatatan("AI tidak terjangkau — isi dibaca secara lokal; periksa dan lengkapi sebelum menyimpan.");
+          return lokal;
+        });
+      }
+      function sopUnggahFile(file){
+        if(!file) return Promise.resolve(null);
+        var namaFile=file.name||"";
+        var ext=(namaFile.split(".").pop()||"").toLowerCase();
+        if(["txt","docx","pdf"].indexOf(ext)<0){
+          popupRamah("Format belum didukung","Dokumen SOP yang bisa dibaca adalah .txt, .docx, atau .pdf.","Pilih dokumen dengan format tersebut, atau tempel isinya pada kolom tempel teks.");
+          sopTampilkanTempel();
+          return Promise.resolve(null);
+        }
+        sopCatatan("Membaca dokumen…");
+        function jalan(){
+          if(ext==="txt") return sopBacaTeksFile(file);
+          if(ext==="docx"){
+            return sopMuatPustaka(SOP_URL_MAMMOTH,"mammoth").then(function(){
+              if(typeof window.mammoth==="undefined" || typeof window.mammoth.extractRawText!=="function") throw new Error("pustaka docx belum termuat");
+              return file.arrayBuffer();
+            }).then(function(buf){ return window.mammoth.extractRawText({arrayBuffer:buf}); }).then(function(hasil){ return (hasil&&hasil.value)||""; });
+          }
+          return sopMuatPustaka(SOP_URL_PDFJS,"pdfjsLib").then(function(){ return file.arrayBuffer(); }).then(function(buf){ return sopBacaPdf(buf); });
+        }
+        return jalan().then(function(teks){
+          if(!String(teks||"").trim()){
+            sopCatatan("Dokumen terbaca tetapi isinya kosong. Tempel isi dokumen pada kolom di bawah supaya tetap bisa dipetakan.");
+            sopTampilkanTempel();
+            return null;
+          }
+          return sopPetakanDariTeks(teks);
+        }).catch(function(){
+          sopCatatan("Dokumen tidak bisa dibaca otomatis — pustaka pembacanya belum termuat atau dokumennya rusak. Tempel isi dokumen pada kolom di bawah supaya tetap bisa dipetakan.");
+          sopTampilkanTempel();
+          return null;
+        });
+      }
+      $("btnSopUnggah").addEventListener("click",function(){ var f=$("sopFile"); if(f) f.click(); });
+      $("sopFile").addEventListener("change",function(e){ var f=e.target.files && e.target.files[0]; if(f) sopUnggahFile(f); e.target.value=""; });
+      $("btnSopTempelBuka").addEventListener("click",function(){ var w=$("sopTempelWrap"); if(!w) return; var buka=w.style.display==="none"; w.style.display=buka?"":"none"; if(buka){ var t=$("sopTempel"); if(t) t.focus(); } });
+      $("btnSopTempel").addEventListener("click",function(){
+        var t=$("sopTempel"); var teks=t?t.value:"";
+        if(!teks.trim()){ popupRamah("Kolom tempel masih kosong","Tempel dulu isi dokumen SOP pada kolom di atas.","Setelah ditempel, tekan tombol Baca dari teks yang ditempel."); return; }
+        sopPetakanDariTeks(teks);
+      });
+      renderSopList();
+
+      /* Migrasi SOP tunggal lama -> daftar: bila snapshot sudah punya
+         sops, pakai itu; bila tidak, gabungkan sopSteps lama + kolom
+         nama/PJ/tujuan yang tersimpan di inputs menjadi entri pertama.
+         Tidak ada yang hilang: snapshot lama tanpa sops tetapi berisi
+         langkah atau nama tetap menjadi satu entri daftar. */
+      function sopDaftarDariSnap(snap){
+        snap=snap||{};
+        if(Array.isArray(snap.sops) && snap.sops.length) return sopBersihDaftar(snap.sops);
+        var inp=snap.inputs||{};
+        var langkahLama=Array.isArray(snap.sopSteps)?snap.sopSteps:[];
+        var namaLama=String(inp.sopNama||"").trim(), pjLama=String(inp.sopPj||"").trim(), tjLama=String(inp.sopTujuan||"").trim();
+        var adaLangkah=langkahLama.some(function(v){ return String(v||"").trim()!==""; });
+        if(!adaLangkah && !namaLama && !pjLama && !tjLama) return [];
+        return [sopBersih({id:sopIdBaru(), nama:namaLama, pj:pjLama, tujuan:tjLama, steps:langkahLama.map(function(v){ return String(v==null?"":v); }), dibuat:new Date().toISOString()})];
+      }
+      /* Sinkronkan ketikan formulir ke SOP yang dipilih — dipakai
+         collectSnapshot supaya autosave tidak kehilangan ketikan terakhir
+         pada SOP yang sedang diubah. SOP baru yang belum disimpan TIDAK
+         dibuatkan entri di sini; isinya tetap tersimpan lewat inputs +
+         cermin sopSteps dan dipulihkan sebagai entri saat muat ulang. */
+      function sopDaftarTersimpan(){
+        var cur=sopDariForm();
+        if(sopTerpilihId){
+          for(var i=0;i<sopsList.length;i++){ if(sopsList[i].id===sopTerpilihId){ sopsList[i].nama=cur.nama; sopsList[i].pj=cur.pj; sopsList[i].tujuan=cur.tujuan; sopsList[i].steps=cur.steps; break; } }
+        }
+        return sopBersihDaftar(sopsList);
+      }
+      window.__sop={
+        list:function(){ return sopBersihDaftar(sopsList); },
+        pilih:function(id){ var s=null; sopsList.forEach(function(x){ if(x.id===id) s=x; }); if(s){ sopSimpanForm(); sopMuatKeForm(s); } return s; },
+        baru:function(){ sopBaru(); },
+        simpan:function(){ return sopSimpanForm(); },
+        hapus:function(id){ sopHapus(id); },
+        migrasi:function(snap){ return sopDaftarDariSnap(snap); },
+        petakanLokal:function(teks){ return sopPetakanLokal(teks); },
+        petakanAI:function(teks){ return sopPetakanAI(teks); },
+        petakanDariTeks:function(teks){ return sopPetakanDariTeks(teks); },
+        isiForm:function(hasil){ sopIsiFormDariHasil(hasil); },
+        unduhTeks:function(s){ return sopTeks(s); },
+        slug:function(nama){ return sopSlug(nama); },
+        terpilih:function(){ return sopTerpilihId; },
+        petakanPrompt:function(){ return SOP_PROMPT_PETAKAN; }
+      };
 
       /* --- Foto 3 sudut, template label, QR, PDF, OCR --- */
       let angleCount=0;
@@ -4753,6 +5131,7 @@
           if(adaIsian) return true;
           if(snap.answers && Object.keys(snap.answers).length>0) return true;
           if(Array.isArray(snap.sopSteps) && snap.sopSteps.some(function(s){ return s && String(s).trim()!==""; })) return true;
+          if(Array.isArray(snap.sops) && snap.sops.some(function(s){ return s && Array.isArray(s.steps) && s.steps.some(function(v){ return v && String(v).trim()!==""; }); })) return true;
           if(snap.qris_image) return true;
           return false;
         }
@@ -4962,6 +5341,7 @@
             answers:Object.assign({},answers),
             pack:packState.slice(), cons:consState.slice(), legal:legalState.slice(), chan:chanState.slice(),
             sopSteps:Array.prototype.map.call(document.querySelectorAll(".sop-step"),function(t){return t.value;}),
+            sops:sopDaftarTersimpan(),
             txs:txs.map(function(t){ if(!t.cid) t.cid=uuid(); return {cid:t.cid,tgl:t.tgl,ket:t.ket,jenis:t.jenis,kat:t.kat,jumlah:t.jumlah}; }),
             stocks:stocks.map(function(s){ if(!s.cid) s.cid=uuid(); return {cid:s.cid,nama:s.nama,qty:s.qty,beli:s.beli,jual:s.jual}; }),
             pis:pis.map(function(p){ if(!p.cid) p.cid=uuid(); return {cid:p.cid,nama:p.nama,jumlah:p.jumlah,tempo:p.tempo}; }),
@@ -5026,6 +5406,15 @@
             }
             return out.length?out:["","",""];
           }
+          /* Daftar SOP digabung per id: entri cloud menang; entri data coba
+             yang belum ada di cloud ditambahkan. Sisi yang masih memakai
+             format lama (tanpa sops) dimigrasikan dulu supaya tidak hilang. */
+          function gabungSopDaftar(cloudDaftar, trialDaftar){
+            var out=sopBersihDaftar(cloudDaftar); var ada={};
+            out.forEach(function(s){ if(s && s.id) ada[s.id]=true; });
+            sopBersihDaftar(trialDaftar).forEach(function(s){ if(s && s.id && !ada[s.id]){ out.push(s); ada[s.id]=true; } });
+            return out;
+          }
           return {
             lokasi: c.lokasi||t.lokasi||null,
             qris_image: c.qris_image||t.qris_image||null,
@@ -5037,6 +5426,7 @@
             legal: Array.isArray(c.legal)?c.legal:(Array.isArray(t.legal)?t.legal:undefined),
             chan: Array.isArray(c.chan)?c.chan:(Array.isArray(t.chan)?t.chan:undefined),
             sopSteps: gabungSop(c.sopSteps, t.sopSteps),
+            sops: gabungSopDaftar(sopDaftarDariSnap(c), sopDaftarDariSnap(t)),
             txs: gabungBaris(c.txs, t.txs),
             stocks: gabungBaris(c.stocks, t.stocks),
             pis: gabungBaris(c.pis, t.pis),
@@ -5055,7 +5445,17 @@
           [["pack",packState],["cons",consState],["legal",legalState],["chan",chanState]].forEach(function(pair){ var src=snap[pair[0]]; if(Array.isArray(src)){ pair[1].splice(0,pair[1].length); src.forEach(function(v){ pair[1].push(v); }); } });
           var quizVals=[]; DIMS.forEach(function(d){ d.qs.forEach(function(_,i){ quizVals.push(answers[d.key+"-"+i]); }); });
           (function(){ var off=0; DIMS.forEach(function(d){ refreshSegs("quiz-"+d.key, quizVals.slice(off, off+d.qs.length)); off+=d.qs.length; }); refreshSegs("quizCard", quizVals); })(); refreshSegs("packChecks", packState); refreshSegs("consChecks", consState); refreshSegs("legalChecks", legalState); refreshSegs("channelChecks", chanState);
-          var sw=gid("sopSteps"); if(sw){ sw.innerHTML=""; sopCount=0; var steps=(snap.sopSteps&&snap.sopSteps.length)?snap.sopSteps:["","",""]; steps.forEach(function(v){ addSopStep(v||""); }); }
+          /* Daftar SOP: pakai snap.sops bila ada; bila tidak, migrasikan SOP
+             tunggal lama (sopSteps + kolom nama/PJ/tujuan di inputs) menjadi
+             entri pertama — tidak ada yang hilang. Formulir menampilkan
+             entri pertama; cermin sopSteps tetap dibaca bila daftar kosong. */
+          var daftarSop=sopDaftarDariSnap(snap);
+          sopsList=daftarSop;
+          sopTerpilihId=daftarSop.length?daftarSop[0].id:null;
+          var sw=gid("sopSteps"); if(sw){ sw.innerHTML=""; sopCount=0; var steps=(daftarSop.length&&daftarSop[0].steps.length)?daftarSop[0].steps:((snap.sopSteps&&snap.sopSteps.length)?snap.sopSteps:["","",""]); steps.forEach(function(v){ addSopStep(v||""); }); }
+          if(daftarSop.length){ gid("sopNama").value=daftarSop[0].nama||""; gid("sopPj").value=daftarSop[0].pj||""; gid("sopTujuan").value=daftarSop[0].tujuan||""; var noteDipilih=gid("sopDipilihNote"); if(noteDipilih) noteDipilih.textContent="Mengubah: "+(daftarSop[0].nama||"SOP tanpa nama")+" — "+sopLangkahTerisi(daftarSop[0]).length+" langkah."; }
+          else { var noteKosong=gid("sopDipilihNote"); if(noteKosong) noteKosong.textContent="Belum ada SOP tersimpan — buat SOP baru atau unggah dokumen SOP."; }
+          renderSopList();
           txs.splice(0,txs.length); (snap.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||uuid(), tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0}); });
           stocks.splice(0,stocks.length); (snap.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||uuid(), nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0}); });
           pis.splice(0,pis.length); (snap.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||uuid(), nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—"}); });
@@ -5089,7 +5489,7 @@
           setSync("Menyimpan...","");
           try{
             var uid=currentUser.id;
-            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, ai_pakai: snap.ai_pakai || {bulan:bulanSekarang(), jumlah:0}, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
+            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, sops:snap.sops, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, ai_pakai: snap.ai_pakai || {bulan:bulanSekarang(), jumlah:0}, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
@@ -5135,7 +5535,7 @@
                 qris_image:core.qris_image||null,
                 ai_pakai:core.ai_pakai||null,
                 proaktif:core.proaktif||null,
-                inputs:core.inputs||{}, answers:core.answers||{}, pack:core.pack, cons:core.cons, legal:core.legal, chan:core.chan, sopSteps:core.sopSteps,
+                inputs:core.inputs||{}, answers:core.answers||{}, pack:core.pack, cons:core.cons, legal:core.legal, chan:core.chan, sopSteps:core.sopSteps, sops:core.sops,
                 txs:(res[1].data||[]).map(function(r){ return {cid:r.id, tgl:r.tanggal||"", ket:r.keterangan||"", jenis:r.jenis, kat:r.kategori||"Lainnya", jumlah:+r.jumlah||0}; }),
                 stocks:(res[2].data||[]).map(function(r){ return {cid:r.id, nama:r.nama||"", qty:+r.qty||0, beli:+r.harga_beli||0, jual:+r.harga_jual||0}; }),
                 pis:(res[3].data||[]).map(function(r){ return {cid:r.id, nama:r.keterangan||"", jumlah:+r.jumlah||0, tempo:r.jatuh_tempo||"—"}; }),
@@ -6061,9 +6461,19 @@
         function sopTerisiDiskusi(){
           var out=[];
           try{
-            document.querySelectorAll(".sop-step").forEach(function(ta){
-              var v=String(ta.value||"").trim(); if(v) out.push(v);
-            });
+            /* Sejak daftar banyak SOP: hitung langkah dari SEMUA SOP.
+               Ketikan terakhir di formulir untuk SOP yang dipilih ikut
+               tersinkron dulu supaya tidak tertinggal autosave. Bila daftar
+               masih kosong (SOP baru belum disimpan), baca formulir — sama
+               seperti perilaku lama untuk satu SOP. */
+            if(typeof sopDaftarTersimpan==="function"){ try{ sopDaftarTersimpan(); }catch(e){} }
+            if(Array.isArray(sopsList) && sopsList.length){
+              sopsList.forEach(function(s){ (s.steps||[]).forEach(function(v){ var t=String(v||"").trim(); if(t) out.push(t); }); });
+            } else {
+              document.querySelectorAll(".sop-step").forEach(function(ta){
+                var v=String(ta.value||"").trim(); if(v) out.push(v);
+              });
+            }
           }catch(e){}
           return out;
         }
@@ -7338,6 +7748,7 @@
         window.__proDiketahui=proDiketahui;
         window.__refreshProStatus=refreshProStatus;
         window.__kuotaAiHabis=kuotaAiHabis;
+        window.__popupKuotaHabis=popupKuotaHabis;
         /* Kait uji: paksa status Pro di harness (langganan dormant — di
            produksi _proCache hanya berubah lewat langgananAktif). */
         window.__setProCache=function(v){ _proCache=!!v; _proDiketahui=true; };
@@ -8349,7 +8760,7 @@
     </script>
 
     <script>
-      /* ================= LAYAR HARI INI (operasional keseharian) =================
+      /* ================= LAYAR MODE OPERASIONAL (operasional keseharian) =================
          Halaman awal aplikasi: tiga angka hari ini, catat cepat penjualan /
          pengeluaran, daftar catatan hari ini, dan satu kartu "langkah
          berikutnya". Semua angka memakai data yang sama dengan Modul Keuangan
