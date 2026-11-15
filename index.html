@@ -2364,9 +2364,11 @@
           ["Memakai aplikasi kasir / pembukuan","Bukan hanya buku tulis atau ingatan."]]}
       ];
       const answers = {}; // "fin-0" -> 0|1|2
-      DIMS.forEach(d => d.qs.forEach((_,i)=> answers[d.key+"-"+i]=1));
-      // sensible defaults for the demo business
-      Object.assign(answers, {"fin-0":1,"fin-1":1,"fin-2":0,"ops-0":1,"ops-1":0,"ops-2":1,"mkt-0":0,"mkt-1":1,"mkt-2":2,"tech-0":2,"tech-1":1,"tech-2":0});
+      /* Jawaban bawaan SEMUA "Belum" (0): pengguna baru yang belum menjawab
+         apa pun tidak boleh langsung mendapat skor dari jawaban yang bukan
+         miliknya. Tidak ada lagi jawaban contoh bawaan — jawaban tersimpan
+         pengguna lama tetap dimuat apa adanya lewat applySnapshot. */
+      DIMS.forEach(d => d.qs.forEach((_,i)=> answers[d.key+"-"+i]=0));
 
       /* Tiap dimensi dirender di layar sub-introspeksi sendiri
          (#quiz-fin / #quiz-ops / #quiz-mkt / #quiz-tech); bila wadah
@@ -2413,7 +2415,44 @@
 
       let S = {}; // computed state
 
+      /* ---------- gerbang dasbor: ada data usaha inti atau belum ----------
+         Pengguna baru yang belum mengisi apa pun TIDAK BOLEH melihat angka
+         analisa kesehatan — angka itu berasal dari jawaban bawaan dan angka
+         awal rumus, bukan dari usaha mereka. "Data inti" = salah satu isian
+         Data Usaha terisi (nama, omzet, HPP, opex, gaji, aset, utang, lama
+         usaha, tumbuh, pembukuan, legalitas, jenis/kota), ATAU satu jawaban
+         Cek Diri sudah dijawab (bukan "Belum"), ATAU ada transaksi/stok/
+         piutang/utang, ATAU lokasi GPS tersimpan. Pasangan contoh
+         ("Dapur Bu Sari" + omzet Rp45.000.000) BUKAN data nyata — sama
+         seperti aturan sudahMengisiNyata. Slider ketergantungan (bawaan 0)
+         dan saklar kalibrasi bukan isian. Hanya membaca keadaan saat ini
+         (in-memory); rumus skor/valuasi TIDAK diubah — recalc tetap
+         menghitung nilai internal seperti biasa, gerbang hanya menahan
+         tampilannya di dasbor. */
+      const PESAN_ISI_DATA = "Isi data usaha dulu untuk melihat skor ini.";
+      const PESAN_BELUM_ADA_DATA = "Data usaha belum diisi, jadi skor ini belum bisa dihitung. Isi data usaha dulu.";
+      function adaDataInti(){
+        try{
+          var terisi=function(id){ var el=$(id); return !!(el && String(el.value||"").trim()!==""); };
+          var nama=($("inNama")&&$("inNama").value||"").trim();
+          var omzetRaw=($("inOmzet")&&$("inOmzet").value||"").trim();
+          var benih=nama.toLowerCase()==="dapur bu sari" && omzetRaw==="45000000";
+          if(!benih && nama) return true;
+          if(!benih && omzetRaw!=="") return true;
+          if(terisi("inHpp")||terisi("inOpex")||terisi("inGaji")||terisi("inAset")||terisi("inUtang")||terisi("inLama")||terisi("inTumbuh")||terisi("inBuku")||terisi("inLegal")||terisi("inSektor")||terisi("inProvinsi")||terisi("inKota")||terisi("gpsProvinsi")||terisi("gpsKota")) return true;
+          if(typeof answers!=="undefined"){ var ks=Object.keys(answers); for(var i=0;i<ks.length;i++){ if(answers[ks[i]]!==0) return true; } }
+          if(typeof txs!=="undefined" && txs.length>0) return true;
+          if(typeof stocks!=="undefined" && stocks.length>0) return true;
+          if(typeof pis!=="undefined" && pis.length>0) return true;
+          if(typeof utangs!=="undefined" && utangs.length>0) return true;
+          if(window.__lokasiUsaha && window.__lokasiUsaha.lat!=null) return true;
+        }catch(e){}
+        return false;
+      }
+      window.__adaDataInti=adaDataInti;
+
       function recalc(){
+        const adaData=adaDataInti();
         const omzetBln=num("inOmzet"), hppPct=num("inHpp")/100, opex=num("inOpex"), gaji=num("inGaji");
         const aset=num("inAset"), utang=num("inUtang"), lama=num("inLama"), tumbuh=Math.max(-20,Math.min(60,num("inTumbuh")))/100;
         const terg=num("inTergantung"), buku=num("inBuku"), legal=num("inLegal"), sektor=$("inSektor").value||"lainnya";
@@ -2430,12 +2469,19 @@
         else if (omzetThn<=15e9){skala="kecil";skalaDesc="Usaha Kecil — omzet tahunan Rp2–15 miliar. Fokus utama: sistem dan tim, agar usaha tidak berhenti saat pemilik absen.";}
         else if (omzetThn<=50e9){skala="menengah";skalaDesc="Usaha Menengah — omzet tahunan Rp15–50 miliar. Fokus utama: tata kelola, laporan auditan sederhana, dan ekspansi kanal.";}
         else {skala="besar";skalaDesc="Di atas kriteria UMKM menurut omzet. Valuasi sebaiknya dilanjutkan dengan penilai profesional (KJPP).";}
-        document.querySelectorAll("#scaleLadder div").forEach(d=>d.classList.toggle("on", d.dataset.s===skala));
-        $("lvlPill").textContent="Usaha "+skala.charAt(0).toUpperCase()+skala.slice(1);
-        $("lvlPill").className="pill good"; $("lvlPill").style.fontSize=".95rem"; $("lvlPill").style.padding="6px 14px";
-        $("lvlDesc").textContent=skalaDesc+" Omzet tahunan Anda: "+fmtShort(omzetThn)+".";
-        $("stLevel").textContent=skala.charAt(0).toUpperCase()+skala.slice(1);
-        $("stLevelSub").textContent="omzet "+fmtShort(omzetThn)+" / tahun";
+        document.querySelectorAll("#scaleLadder div").forEach(d=>d.classList.toggle("on", adaData && d.dataset.s===skala));
+        if(!adaData){
+          $("lvlPill").textContent="—"; $("lvlPill").className="pill"; $("lvlPill").style.fontSize=".95rem"; $("lvlPill").style.padding="6px 14px";
+          $("lvlDesc").textContent=PESAN_ISI_DATA;
+          $("stLevel").textContent="—";
+          $("stLevelSub").textContent=PESAN_ISI_DATA;
+        } else {
+          $("lvlPill").textContent="Usaha "+skala.charAt(0).toUpperCase()+skala.slice(1);
+          $("lvlPill").className="pill good"; $("lvlPill").style.fontSize=".95rem"; $("lvlPill").style.padding="6px 14px";
+          $("lvlDesc").textContent=skalaDesc+" Omzet tahunan Anda: "+fmtShort(omzetThn)+".";
+          $("stLevel").textContent=skala.charAt(0).toUpperCase()+skala.slice(1);
+          $("stLevelSub").textContent="omzet "+fmtShort(omzetThn)+" / tahun";
+        }
 
         /* dimensi introspeksi */
         const dimScore={};
@@ -2460,21 +2506,27 @@
         const matNames=["Level 0 — Bertahan","Level 1 — Tercatat","Level 2 — Terukur","Level 3 — Tumbuh","Level 4 — Siap Ekspansi"];
         const matDescs=["Usaha hidup dari hari ke hari. Prioritas: pisahkan uang usaha dan catat semua transaksi.","Sudah tercatat, belum terukur. Prioritas: hitung HPP dan laba per produk secara pasti.","Angka utama sudah terukur. Prioritas: kurangi ketergantungan pada pemilik dan rapikan pencatatan keuangan.","Bertumbuh dengan sistem. Prioritas: SOP, tim yang bisa menggantikan pemilik, dan akses kerjasama investasi.","Siap ekspansi / mitra / investor. Prioritas: tata kelola, laporan konsisten, dan valuasi berkala."];
         if (matLevel===2 && answers["mkt-2"]<2) matDescs[2]="Angka utama sudah terukur. Prioritas: kurangi ketergantungan pada pemilik dan buka kanal online.";
-        document.querySelectorAll("#matLadder div").forEach(d=>d.classList.toggle("on", +d.dataset.m===matLevel));
-        $("matPill").textContent=matNames[matLevel]; $("matPill").className="pill "+(matLevel>=3?"good":matLevel>=1?"mid":"low");
-        $("matPill").style.fontSize=".95rem"; $("matPill").style.padding="6px 14px";
-        $("matDesc").textContent=matDescs[matLevel];
+        document.querySelectorAll("#matLadder div").forEach(d=>d.classList.toggle("on", adaData && +d.dataset.m===matLevel));
+        if(!adaData){
+          $("matPill").textContent="—"; $("matPill").className="pill"; $("matPill").style.fontSize=".95rem"; $("matPill").style.padding="6px 14px";
+          $("matDesc").textContent=PESAN_ISI_DATA;
+        } else {
+          $("matPill").textContent=matNames[matLevel]; $("matPill").className="pill "+(matLevel>=3?"good":matLevel>=1?"mid":"low");
+          $("matPill").style.fontSize=".95rem"; $("matPill").style.padding="6px 14px";
+          $("matDesc").textContent=matDescs[matLevel];
+        }
 
         function setScore(numId,barId,noteId,val,note){
+          if(!adaData){ $(numId).textContent="—"; const bar0=$(barId); bar0.style.width="0%"; bar0.className=""; $(noteId).textContent=PESAN_ISI_DATA; return; }
           $(numId).textContent=val; const bar=$(barId); bar.style.width=val+"%";
           bar.className=val>=66?"":val>=40?"mid":"low"; $(noteId).textContent=note;
         }
         setScore("scFin","scFinBar","scFinNote",scFin, "Margin laba bersih "+(margin*100).toLocaleString("id-ID",{maximumFractionDigits:1})+"% · utang "+Math.round(debtRatio*100)+"% dari aset · pencatatan keuangan "+dimScore.fin+"/100.");
         setScore("scDig","scDigBar","scDigNote",scDig, "Teknologi & legalitas "+dimScore.tech+"/100 · pasar & kemasan "+dimScore.mkt+"/100 · pembukuan level "+buku+" dari 3.");
         setScore("scInv","scInvBar","scInvNote",scInv, scInv>=70?"Profil ini umumnya siap ditawarkan — lengkapi dokumen dan uji Rasio Kemampuan Bagi Hasil di bawah.":scInv>=45?"Hampir siap — rapikan pembukuan dan legalitas dulu sebelum menawarkan.":"Belum siap ditawarkan — calon investor akan meminta laporan yang belum ada. Mulai dari rencana 30 hari di bawah.");
-        $("stHealth").textContent=health+"/100";
-        $("stInvest").textContent=scInv+"/100";
-        $("stInvestSub").textContent=scInv>=70?"umumnya siap ditawarkan ke calon investor":scInv>=45?"hampir siap — rapikan dokumen":"belum siap — lihat rencana perbaikan";
+        $("stHealth").textContent=adaData?health+"/100":"—";
+        $("stInvest").textContent=adaData?scInv+"/100":"—";
+        $("stInvestSub").textContent=!adaData?PESAN_ISI_DATA:scInv>=70?"umumnya siap ditawarkan ke calon investor":scInv>=45?"hampir siap — rapikan dokumen":"belum siap — lihat rencana perbaikan";
 
         /* ---------- valuasi ---------- */
         const asetBersih=aset-utang;
@@ -2499,12 +2551,12 @@
         let weighted, valLow, valHigh;
         if (sdeThn>0){ weighted=valSde*0.5+valDcf*0.3+Math.max(0,asetBersih)*0.2; valLow=weighted*0.8; valHigh=weighted*1.25; }
         else { weighted=Math.max(0,asetBersih); valLow=weighted*0.85; valHigh=weighted*1.1; }
-        $("valMid").textContent=fmtShort(weighted);
-        $("valLow").textContent=fmtShort(valLow); $("valHigh").textContent=fmtShort(valHigh);
+        $("valMid").textContent=adaData?fmtShort(weighted):"—";
+        $("valLow").textContent=adaData?fmtShort(valLow):"—"; $("valHigh").textContent=adaData?fmtShort(valHigh):"—";
         $("valSde").textContent=fmtShort(sdeThn)+" / tahun";
-        $("stVal").textContent=fmtShort(weighted);
-        $("stValRange").textContent="rentang "+fmtShort(valLow)+" – "+fmtShort(valHigh);
-        const mv=$("mobileVal"); if(mv) mv.textContent=fmtShort(weighted);
+        $("stVal").textContent=adaData?fmtShort(weighted):"—";
+        $("stValRange").textContent=!adaData?PESAN_ISI_DATA:"rentang "+fmtShort(valLow)+" – "+fmtShort(valHigh);
+        const mv=$("mobileVal"); if(mv) mv.textContent=adaData?fmtShort(weighted):"—";
         $("mAset").textContent=fmtShort(asetBersih);
         $("mAsetF").textContent=fmtFull(aset)+" − "+fmtFull(utang);
         $("mSde").textContent=fmtShort(valSde);
@@ -2553,8 +2605,8 @@
           else if (skala==="menengah") rujLevelTxt="Rujukan: Menengah — omzet Rp15–50 M per tahun; "+fmtShort(50e9-omzetThn)+" lagi ke Besar.";
           else rujLevelTxt="Rujukan: di atas Rp50 M per tahun — di luar skala UMKM (PP 7/2021).";
           isiRuj("rujLevelHero", rujLevelTxt); isiRuj("rujLevel", rujLevelTxt);
-          isiRuj("rujHealth", "Rujukan untuk Level "+matLevel+": "+bandMat[matLevel]+" — dalam rujukan.");
-          isiRuj("rujMat", matLevel>=4 ? "Rujukan: Level 4 (80 ke atas) — level tertinggi." : "Rujukan: Level "+matLevel+" ("+bandMat[matLevel]+") — "+(ambangMat[matLevel]-health)+" poin lagi ke Level "+(matLevel+1)+".");
+          isiRuj("rujHealth", adaData?"Rujukan untuk Level "+matLevel+": "+bandMat[matLevel]+" — dalam rujukan.":PESAN_ISI_DATA);
+          isiRuj("rujMat", !adaData?PESAN_ISI_DATA:(matLevel>=4 ? "Rujukan: Level 4 (80 ke atas) — level tertinggi." : "Rujukan: Level "+matLevel+" ("+bandMat[matLevel]+") — "+(ambangMat[matLevel]-health)+" poin lagi ke Level "+(matLevel+1)+"."));
           if (omzetBln<=0) isiRuj("rujFin", "Isi omzet dan HPP dulu untuk melihat rujukan keuangan.");
           else isiRuj("rujFin", "Rujukan: HPP sehat di bawah 70% dan utang di bawah 30% dari aset — HPP Anda "+Math.round(hppPct*100)+"%, utang "+Math.round(debtRatio*100)+"% dari aset — "+((hppPct<=0.7 && debtRatio<0.3)?"dalam rujukan":"di atas rujukan")+".");
           var krgTech=(100-dimScore.tech)*0.55, krgMkt=(100-dimScore.mkt)*0.25, krgBuku=(3-buku)*8;
@@ -2564,7 +2616,7 @@
           else if (krgMkt>=krgBuku) rujDigTxt="Rujukan: skor penuh bila teknologi, pasar, dan pembukuan lengkap — yang paling tertinggal: pasar & kemasan "+dimScore.mkt+"/100 (kurang "+krgMkt.toLocaleString("id-ID",{maximumFractionDigits:1})+" poin).";
           else rujDigTxt="Rujukan: skor penuh bila teknologi, pasar, dan pembukuan lengkap — yang paling tertinggal: pembukuan level "+buku+" dari 3 (kurang "+krgBuku.toLocaleString("id-ID",{maximumFractionDigits:1})+" poin).";
           isiRuj("rujDig", rujDigTxt);
-          var rujInvTxt="Rujukan: siap ditawarkan bila 70 ke atas — Anda "+scInv+" — "+(scInv>=70?"dalam rujukan":"di bawah rujukan")+".";
+          var rujInvTxt=!adaData?PESAN_ISI_DATA:"Rujukan: siap ditawarkan bila 70 ke atas — Anda "+scInv+" — "+(scInv>=70?"dalam rujukan":"di bawah rujukan")+".";
           isiRuj("rujInvestHero", rujInvTxt); isiRuj("rujInv", rujInvTxt);
           if (omzetBln<=0) isiRuj("rujVal", "Isi omzet dan HPP dulu untuk melihat rujukan valuasi.");
           else if (sdeThn<=0) isiRuj("rujVal", "Rujukan: pengali lazim 3–4x — laba Anda belum positif, jadi valuasi memakai aset bersih.");
@@ -7988,6 +8040,16 @@
            tidak pernah menebak angka. */
         function templatePenjelasan(kunci, k){
           k=k||{};
+          /* Gerbang "Jelaskan ini": bila belum ada data usaha inti, skor di
+             dasbor tampil "—" — penjelasannya harus berkata jujur bahwa skor
+             belum bisa dihitung, bukan menjelaskan angka nol seolah-olah itu
+             hasil usaha. Berlaku untuk kunci skor saja (level, kesehatan,
+             kematangan, digital, keuangan, investasi, valuasi); kunci lain
+             (konsistensi, BEP, Naik Level, chip hari ini) sudah punya jawaban
+             jujur sendiri bila datanya kosong. */
+          if(["level","kesehatan","kematangan","digital","keuangan","investasi","valuasi"].indexOf(kunci)>=0){
+            try{ if(typeof adaDataInti==="function" && !adaDataInti()) return PESAN_BELUM_ADA_DATA; }catch(e){}
+          }
           function namaDim(key){ return NAMA_DIMENSI_PENJELASAN[key]||key; }
           if(kunci==="level"){
             if(k.omzet_belum_diisi) return "Level UMKM Anda saat ini Mikro, tetapi omzet tahunan belum diisi — jadi level ini masih berdasarkan angka kosong. Isi omzet bulanan dulu di Data Usaha: bila omzet tahunan sampai Rp2 miliar, levelnya Mikro; Rp2–15 miliar Kecil; Rp15–50 miliar Menengah; di atas itu di luar UMKM menurut PP No. 7 Tahun 2021. Satu langkah konkret: isi omzet bulan ini dulu, lalu lihat level Anda berubah.";
@@ -8785,6 +8847,16 @@
                "Sedang berpikir…" yang basi — tampilkan pop-up kuota
                saja, sama seperti askAI di dalam. */
             if(kuotaAiHabis()){ popupKuotaHabis(); return; }
+            /* Skor "—" tidak boleh dijelaskan seolah-olah ada angkanya:
+               bila belum ada data usaha inti, overlay langsung berkata
+               jujur bahwa skor belum bisa dihitung — tanpa memanggil AI. */
+            if(["level","kesehatan","kematangan","digital","keuangan","investasi","valuasi"].indexOf(key)>=0){
+              try{ if(typeof adaDataInti==="function" && !adaDataInti()){
+                var targetKosong=bukaOverlayPenjelasan(key, b);
+                if(targetKosong) targetKosong.textContent=PESAN_BELUM_ADA_DATA;
+                return;
+              } }catch(e){}
+            }
             var target=bukaOverlayPenjelasan(key, b);
             if(!target) return;
             var ctxTambahan=null;
