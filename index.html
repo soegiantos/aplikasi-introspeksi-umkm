@@ -296,7 +296,7 @@
       /* ---------- modul lengkap ---------- */
       .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
       @media(max-width:760px){.module-grid{grid-template-columns:repeat(3,1fr);gap:7px}.module-grid a{padding:9px 8px}.module-grid a b{font-size:.78rem;line-height:1.25}.module-grid a span{display:none}}
-      .module-grid a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:13px 14px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+      .module-grid a{display:flex;flex-direction:column;justify-content:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:13px 14px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
       .module-grid a b{display:block;font-size:.95rem}
       .module-grid a span{font-size:.8rem;color:var(--ink-soft)}
       .module-grid a:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.4),0 14px 28px -12px rgba(0,0,0,.65)}
@@ -862,7 +862,6 @@
           <button class="btn ghost small" id="btnUbahUsahaTop" type="button">Ubah usaha</button>
           <button class="btn ghost small" id="btnSaveCloud" type="button">Register</button>
           <button class="btn ghost small" id="btnAdminMarketing" type="button" style="display:none">Admin marketing</button>
-          <button class="btn ghost small" id="btnLogout" type="button">Keluar</button>
         </div>
       </div>
     </div>
@@ -4914,7 +4913,7 @@
              angka anonim dikirim ke tabel kalibrasi. Fungsi ini tidak pernah
              melempar error dan tidak pernah menghambat penyimpanan utama. */
           try{ if(window.__kalibrasiOnSave) window.__kalibrasiOnSave(snap); }catch(e){}
-          if(isGuest || !currentUser){ persistLocal(snap); lastJson=json; setSync(isGuest?"Mode coba — tersimpan hanya di HP ini":"Tersimpan di HP ini (mode tanpa akun)","warn"); return; }
+          if(isGuest || !currentUser){ persistLocal(snap); lastJson=json; setSync(isGuest?"Mode coba":"Tersimpan di HP ini (mode tanpa akun)","warn"); return; }
           if(tablesMissing){ persistLocal(snap); lastJson=json; setSync("Tersimpan di HP ini — tabel cloud belum dibuat","warn"); popupGagalSimpan("tabel"); return; }
           if(!navigator.onLine){ persistLocal(snap); lastJson=json; setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn"); popupGagalSimpan("gagal"); return; }
           setSync("Menyimpan...","");
@@ -5070,7 +5069,6 @@
           if(window.__tampilkanLayarAwal){ try{ window.__tampilkanLayarAwal(); }catch(e){} }
           else if(window.__keHariIni){ try{ window.__keHariIni(); }catch(e){} }
           var gb=gid("guestBanner"); if(gb) gb.classList.remove("show");
-          gid("btnLogout").textContent="Keluar";
           gid("accountBar").classList.add("show");
           gid("userEmail").textContent=user.email||"";
           /* Strip status akun memakai keadaan sesi yang sama. */
@@ -5107,12 +5105,11 @@
           gid("userEmail").textContent="Mode coba — tanpa daftar";
           if(typeof perbaruiStatusAkun==="function"){ try{ perbaruiStatusAkun(); }catch(e){} }
           var gb=gid("guestBanner"); if(gb) gb.classList.add("show");
-          gid("btnLogout").textContent="Keluar mode coba";
           var loc=null; try{ var s=localStorage.getItem("umkm-introspeksi-cache:lokal"); loc=s?JSON.parse(s):null; }catch(e){}
           if(loc) applySnapshot(loc);
           window.__proaktifDataReadyFlag=true; // data tamu berasal dari snapshot lokal yang sudah terpasang sinkron di atas
           lastJson=JSON.stringify(collectSnapshot());
-          setSync("Mode coba — hanya di HP ini","warn");
+          setSync("Mode coba","warn");
           audit("Masuk sebagai tamu (mode coba tanpa daftar).");
           toast("Mode coba aktif — semua modul bisa dicoba, data hanya di HP ini.");
           // Tamu yang kembali dengan data usaha NYATA tersimpan di perangkat ini
@@ -5485,10 +5482,6 @@
         document.querySelectorAll("#data input, #data select, #data textarea").forEach(function(el){
           el.addEventListener("input",function(){ if(!loading) tandaiSudahMengisi(); });
           el.addEventListener("change",function(){ if(!loading) tandaiSudahMengisi(); });
-        });
-        gid("btnLogout").addEventListener("click", async function(){
-          try{ if(sb && currentUser) await sb.auth.signOut(); }catch(e){}
-          location.reload();
         });
         /* Tombol ini berganti peran menurut status akun (labelnya diatur
            di perbaruiStatusAkun): tamu -> "Register" (membuka gerbang
