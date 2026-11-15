@@ -2425,7 +2425,9 @@
          piutang/utang, ATAU lokasi GPS tersimpan. Pasangan contoh
          ("Dapur Bu Sari" + omzet Rp45.000.000) BUKAN data nyata — sama
          seperti aturan sudahMengisiNyata. Slider ketergantungan (bawaan 0)
-         dan saklar kalibrasi bukan isian. Hanya membaca keadaan saat ini
+         dan saklar kalibrasi bukan isian. Kolom angka yang bernilai 0 juga
+         BUKAN isian — sama dengan kosong, sebab kolom yang dikosongkan bisa
+         kembali tampil sebagai "0" saat formulir dibuka lagi. Hanya membaca keadaan saat ini
          (in-memory); rumus skor/valuasi TIDAK diubah — recalc tetap
          menghitung nilai internal seperti biasa, gerbang hanya menahan
          tampilannya di dasbor. */
@@ -2434,12 +2436,19 @@
       function adaDataInti(){
         try{
           var terisi=function(id){ var el=$(id); return !!(el && String(el.value||"").trim()!==""); };
+          /* Kolom angka: nilai "0" sama dengan kosong. Kolom yang
+             dikosongkan bisa kembali tampil sebagai "0" saat formulir
+             dibuka lagi, dan nol di kolom-kolom ini bukan data usaha
+             (omzet nol, HPP nol, dan seterusnya sama dengan belum diisi).
+             Nilai negatif tetap dihitung terisi — mis. pertumbuhan omzet
+             negatif berarti usaha sedang menurun, itu data nyata. */
+          var terisiAngka=function(id){ var el=$(id); if(!el) return false; var v=String(el.value||"").trim(); if(v==="") return false; var n=parseFloat(v); return !isNaN(n) && n!==0; };
           var nama=($("inNama")&&$("inNama").value||"").trim();
           var omzetRaw=($("inOmzet")&&$("inOmzet").value||"").trim();
           var benih=nama.toLowerCase()==="dapur bu sari" && omzetRaw==="45000000";
           if(!benih && nama) return true;
-          if(!benih && omzetRaw!=="") return true;
-          if(terisi("inHpp")||terisi("inOpex")||terisi("inGaji")||terisi("inAset")||terisi("inUtang")||terisi("inLama")||terisi("inTumbuh")||terisi("inBuku")||terisi("inLegal")||terisi("inSektor")||terisi("inProvinsi")||terisi("inKota")||terisi("gpsProvinsi")||terisi("gpsKota")) return true;
+          if(!benih && omzetRaw!=="" && parseFloat(omzetRaw)>0) return true;
+          if(terisiAngka("inHpp")||terisiAngka("inOpex")||terisiAngka("inGaji")||terisiAngka("inAset")||terisiAngka("inUtang")||terisiAngka("inLama")||terisiAngka("inTumbuh")||terisiAngka("inBuku")||terisiAngka("inLegal")||terisi("inSektor")||terisi("inProvinsi")||terisi("inKota")||terisi("gpsProvinsi")||terisi("gpsKota")) return true;
           if(typeof answers!=="undefined"){ var ks=Object.keys(answers); for(var i=0;i<ks.length;i++){ if(answers[ks[i]]!==0) return true; } }
           if(typeof txs!=="undefined" && txs.length>0) return true;
           if(typeof stocks!=="undefined" && stocks.length>0) return true;
