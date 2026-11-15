@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="format-detection" content="telephone=no" />
     <link rel="icon" href="data:," />
-    <title>Aplikasi Introspeksi UMKM</title>
+    <title>UMKM Tumbuh</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Newsreader:opsz,wght@6..72,600;6..72,700&display=swap" rel="stylesheet" />
@@ -791,7 +791,7 @@
     <!-- ============ GERBANG MASUK / DAFTAR (hanya tampil saat pengguna ingin menyimpan data) ============ -->
     <div class="auth-gate" id="authGate" style="display:none">
       <div class="auth-card">
-        <div class="brand"><span class="brand-mark">U</span> Introspeksi UMKM</div>
+        <div class="brand"><span class="brand-mark">U</span> UMKM Tumbuh</div>
         <h2 id="authTitle" style="margin-top:20px">Masuk ke akun usaha Anda</h2>
         <p class="note" style="margin-top:6px">Setiap akun hanya melihat data usahanya sendiri. Data tersimpan aman di cloud dan termuat kembali setiap kali Anda masuk — di HP atau perangkat mana pun.</p>
         <div class="gate-note" id="guestGateMsg" role="alert"><b>Daftar dulu supaya data Anda tersimpan dan bisa dibuka di HP lain.</b><br />Anda sedang memakai mode coba — data coba Anda di HP ini akan dipindahkan ke akun baru Anda setelah pendaftaran dan masuk berhasil.</div>
@@ -931,7 +931,7 @@
 
     <div class="topbar">
       <div class="topbar-in">
-        <div class="brand"><span class="brand-mark">U</span> Introspeksi UMKM</div>
+        <div class="brand"><span class="brand-mark">U</span> UMKM Tumbuh</div>
         <nav class="main" aria-label="Navigasi utama">
           <a href="#" id="navWizardTop">Mulai</a>
           <a href="#data">Data Usaha</a>
@@ -1924,7 +1924,7 @@
 
         <div class="wiz-step" data-wiz="sapaan">
           <h2><span id="greetTime">Selamat pagi</span></h2>
-          <p style="margin-top:10px;font-size:1.08rem;font-weight:700">Selamat datang di Aplikasi Introspeksi UMKM.</p>
+          <p style="margin-top:10px;font-size:1.08rem;font-weight:700">Selamat datang di UMKM Tumbuh.</p>
           <p class="hint" style="margin-top:8px">Aplikasi ini membantu pemilik usaha mengetahui nilai dan kesehatan usahanya serta apa yang perlu diperbaiki, langkah demi langkah, hanya dalam beberapa menit.</p>
           <p style="margin-top:18px;font-weight:600">Apakah Anda berkenan mengisi data usaha Anda?</p>
           <div class="wiz-actions">
@@ -2641,7 +2641,7 @@
       window.__lokasiText=lokasiText;
       function summaryText(){
         const L=[];
-        L.push("RINGKASAN INTROSPEKSI UMKM");
+        L.push("RINGKASAN UMKM TUMBUH");
         L.push("Usaha: "+($("inNama").value||"(belum diisi)")+" — "+($("inSektor").value?$("inSektor").selectedOptions[0].textContent:"(jenis usaha belum dipilih)")+", "+($("inKota").value||"(kota belum diisi)"));
         L.push(lokasiText());
         L.push("Level skala: "+S.skala+" (omzet "+fmtShort(S.omzetThn)+"/tahun) · Level kematangan: "+S.matLevel+" dari 4");
@@ -3740,7 +3740,7 @@
       $("btnReportPdf").addEventListener("click",function(){
         if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh bundle siap investor"); return; }
         if(!(window.jspdf && window.jspdf.jsPDF)){ popupRamah("Unduhan PDF belum bisa dibuat","Pustaka PDF belum termuat di peramban ini.","Pakai tombol unduh .txt atau .html — isinya sama lengkapnya."); return; }
-        const doc=new window.jspdf.jsPDF(); const lines=doc.splitTextToSize(fullReport(),180); doc.setFontSize(11); let y=15; lines.forEach(function(ln){ if(y>280){ doc.addPage(); y=15; } doc.text(ln,15,y); y+=6; }); doc.save("laporan-introspeksi-umkm.pdf"); audit("Laporan PDF diunduh."); toast("Laporan PDF diunduh");
+        const doc=new window.jspdf.jsPDF(); const lines=doc.splitTextToSize(fullReport(),180); doc.setFontSize(11); let y=15; lines.forEach(function(ln){ if(y>280){ doc.addPage(); y=15; } doc.text(ln,15,y); y+=6; }); doc.save("laporan-umkm-tumbuh.pdf"); audit("Laporan PDF diunduh."); toast("Laporan PDF diunduh");
       });
       $("notaPhoto").addEventListener("change",function(e){
         const f=e.target.files && e.target.files[0]; if(!f) return;
@@ -3761,8 +3761,8 @@
       function fullReport(){
         return summaryText()+"\n"+lokasiText()+"\n\nSKOR TAMBAHAN\nKonsistensi Data: "+consScoreVal+"/100 · Legalitas: "+legalScoreVal+"/100 · Kemasan: "+($("packScore").textContent||"—")+"\n\nPEMBUKUAN SESI INI\nTotal masuk: "+$("txIn").textContent+" · Total keluar: "+$("txOut").textContent+" · Saldo: "+$("txSaldo").textContent+"\nNilai stok: "+$("stockTotal").textContent+" · Piutang: "+$("piTotal").textContent+" · Total utang (daftar): "+(($("utTotal")||{}).textContent||"Rp 0")+"\nLaporan SAK EMKM (Laba Rugi, Posisi Keuangan, Arus Kas) tersusun dari Data Usaha + transaksi di atas — lihat Modul Keuangan di aplikasi untuk rinciannya."+"\n\nTransaksi:\n"+(txs.length?txs.map(function(t){return "- "+t.tgl+" | "+t.ket+" | "+t.kat+" | "+(t.jenis==="keluar"?"-":"")+fmtFull(t.jumlah)}).join("\n"):"(belum ada transaksi tercatat)");
       }
-      $("btnReport").addEventListener("click",function(){ if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh bundle siap investor"); return; } const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([fullReport()],{type:"text/plain;charset=utf-8"})); a.download="laporan-lengkap-introspeksi-umkm.txt"; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000); audit("Laporan lengkap diunduh."); toast("Laporan lengkap diunduh"); });
-      $("btnReportHtml").addEventListener("click",function(){ if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh bundle siap investor"); return; } const html="<!doctype html><html lang='id'><head><meta charset='utf-8'><title>Laporan Introspeksi UMKM</title><style>body{font-family:Arial,sans-serif;max-width:800px;margin:24px auto;line-height:1.6;padding:0 16px}pre{white-space:pre-wrap}</style></head><body><h1>Laporan Introspeksi UMKM</h1><pre>"+fullReport().replace(/&/g,"&amp;").replace(/</g,"&lt;")+"</pre><p>Estimasi untuk introspeksi — bukan appraisal resmi KJPP. Cetak dari menu peramban (Bagikan / Print) bila butuh PDF.</p></body></html>"; const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"})); a.download="laporan-introspeksi-umkm.html"; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000); audit("Laporan cetak (.html) diunduh."); });
+      $("btnReport").addEventListener("click",function(){ if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh bundle siap investor"); return; } const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([fullReport()],{type:"text/plain;charset=utf-8"})); a.download="laporan-lengkap-umkm-tumbuh.txt"; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000); audit("Laporan lengkap diunduh."); toast("Laporan lengkap diunduh"); });
+      $("btnReportHtml").addEventListener("click",function(){ if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh bundle siap investor"); return; } const html="<!doctype html><html lang='id'><head><meta charset='utf-8'><title>Laporan UMKM Tumbuh</title><style>body{font-family:Arial,sans-serif;max-width:800px;margin:24px auto;line-height:1.6;padding:0 16px}pre{white-space:pre-wrap}</style></head><body><h1>Laporan UMKM Tumbuh</h1><pre>"+fullReport().replace(/&/g,"&amp;").replace(/</g,"&lt;")+"</pre><p>Estimasi untuk introspeksi — bukan appraisal resmi KJPP. Cetak dari menu peramban (Bagikan / Print) bila butuh PDF.</p></body></html>"; const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"})); a.download="laporan-umkm-tumbuh.html"; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000); audit("Laporan cetak (.html) diunduh."); });
 
       /* --- BEP, arus kas, portal investor --- */
       function extraUpdate(){
@@ -4321,7 +4321,7 @@
         var SUPABASE_URL = "https://bdnqsxwypbrdiwaxydoh.supabase.co";
         var SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkbnFzeHd5cGJyZGl3YXh5ZG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1OTQ3NDUsImV4cCI6MjExMDE3MDc0NX0.MsdIzw-CAqJiBp3McXZ-6XLzLakmo0S5w7RhHHXMCQc";
         var SQL_TEXT = [
-          "-- Tabel Aplikasi Introspeksi UMKM (jalankan sekali di SQL Editor cloud)",
+          "-- Tabel UMKM Tumbuh (jalankan sekali di SQL Editor cloud)",
           "create table if not exists public.profiles (",
           "  id uuid primary key references auth.users(id) on delete cascade,",
           "  nama_usaha text, no_hp text, kode_marketing text, created_at timestamptz not null default now()",
@@ -8729,7 +8729,7 @@
            hanya tampil di balik tombol "?" footer — teksnya string statis
            aplikasi sendiri, bukan masukan pengguna. */
         var FOOTER_HELP_HTML="<p><b>Tentang angka di halaman ini.</b> Valuasi adalah <b>estimasi nilai wajar</b> untuk introspeksi dan bahan diskusi awal dengan calon investor atau calon mitra kerjasama investasi — <b>bukan appraisal resmi</b> dan tidak menggantikan penilaian KJPP (Kantor Jasa Penilai Publik). Pengali, tingkat diskonto, dan komisi kanal adalah asumsi umum pasar UMKM yang ditampilkan terbuka agar bisa Anda periksa dan perdebatkan.</p>"
-          +"<p>Aplikasi Introspeksi UMKM versi multi-user: akun dan data tiap pengguna tersimpan aman di cloud — setiap pengguna hanya dapat mengakses data miliknya sendiri. Perubahan tersimpan otomatis ke cloud saat Anda terhubung internet; saat tidak ada internet, data tersimpan sementara di perangkat dan disinkronkan begitu internet kembali.</p>";
+          +"<p>UMKM Tumbuh versi multi-user: akun dan data tiap pengguna tersimpan aman di cloud — setiap pengguna hanya dapat mengakses data miliknya sendiri. Perubahan tersimpan otomatis ke cloud saat Anda terhubung internet; saat tidak ada internet, data tersimpan sementara di perangkat dan disinkronkan begitu internet kembali.</p>";
         function bukaBantuanFooter(btn){ openHelp({title:"Tentang angka di halaman ini", html:FOOTER_HELP_HTML}, btn||gid("btnFooterHelp")); }
         window.__bukaBantuanFooter=bukaBantuanFooter;
         var btnFooterHelp=gid("btnFooterHelp");
