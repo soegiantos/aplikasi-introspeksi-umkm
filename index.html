@@ -45,7 +45,15 @@
       .topbar{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--line)}
       .topbar-in{max-width:1180px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
       .brand{font-weight:800;font-size:1rem;display:flex;align-items:center;gap:9px}
-      .brand-mark{width:32px;height:32px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:"Newsreader",serif;font-weight:700;font-size:1.05rem;flex:none}
+      .brand-mark{width:32px;height:32px;border-radius:9px;flex:none;object-fit:contain;display:block}
+      /* ---------- Header bisa dilipat (tombol #btnLipatHeader) ----------
+         Terlipat = strip ramping: baris navigasi + bilah akun
+         disembunyikan, merek + tombol buka tetap terlihat.
+         Tombol lipat/buka selalu terlihat dan ikut karakter
+         tombol standar: pill (dari .btn) + min-height 48px. */
+      #btnLipatHeader{min-height:48px;flex:none}
+      .topbar.terlipat .topbar-in{padding-top:6px;padding-bottom:6px}
+      .topbar.terlipat nav.main,.topbar.terlipat .account-bar{display:none!important}
       nav.main{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
       nav.main a{color:var(--ink-soft);text-decoration:none;font-weight:600;font-size:.92rem;padding:10px 12px;border-radius:999px;min-height:44px;display:inline-flex;align-items:center;transition:background .18s ease,color .18s ease,transform .18s ease}
       nav.main a:hover{background:var(--surface-2);color:var(--ink)}
@@ -371,6 +379,7 @@
       .account-bar{display:none;align-items:center;gap:10px;flex-wrap:wrap;margin-left:auto}
       .account-bar.show{display:flex}
       .account-bar .who{font-size:.85rem;color:var(--ink-soft);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .account-bar .tautan-admin{background:transparent;border:0;color:#8fd3dc;font:inherit;font-size:.85rem;font-weight:600;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
       .sync-pill{font-size:.78rem;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--teal-soft);color:#8fd3dc}
       .sync-pill.warn{background:var(--warn-soft);color:var(--warn)}
       .sync-pill.err{background:var(--warn-soft);color:var(--warn)}
@@ -596,6 +605,7 @@
       .help-example{margin-top:12px;background:var(--surface-2);border-radius:10px;padding:12px 14px;font-size:.94rem}
       .help-example b{color:var(--gold)}
       .help-how{margin-top:10px;font-size:.94rem;color:var(--ink-soft)}
+      .help-status{margin-top:12px;background:var(--gold-soft);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;font-size:.95rem}
       .help-ask{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}
       .help-ask p{font-weight:700;font-size:.97rem}
       .help-ask .sub{font-weight:400;color:var(--ink-soft);font-size:.88rem;margin-top:3px}
@@ -809,7 +819,7 @@
     <!-- ============ GERBANG MASUK / DAFTAR (hanya tampil saat pengguna ingin menyimpan data) ============ -->
     <div class="auth-gate" id="authGate" style="display:none">
       <div class="auth-card">
-        <div class="brand"><span class="brand-mark">U</span> UMKM Tumbuh</div>
+        <div class="brand"><img class="brand-mark" src="data:image/png;base64,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" alt="Logo Tumbuh" /> UMKM Tumbuh</div>
         <h2 id="authTitle" style="margin-top:20px">Masuk ke akun usaha Anda</h2>
         <p class="note" style="margin-top:6px">Setiap akun hanya melihat data usahanya sendiri. Data tersimpan aman di cloud dan termuat kembali setiap kali Anda masuk — di HP atau perangkat mana pun.</p>
         <div class="gate-note" id="guestGateMsg" role="alert"><b>Daftar dulu supaya data Anda tersimpan dan bisa dibuka di HP lain.</b><br />Anda sedang memakai mode coba — data coba Anda di HP ini akan dipindahkan ke akun baru Anda setelah pendaftaran dan masuk berhasil.</div>
@@ -949,8 +959,8 @@
 
     <div class="topbar">
       <div class="topbar-in">
-        <div class="brand"><span class="brand-mark">U</span> UMKM Tumbuh</div>
-        <nav class="main" aria-label="Navigasi utama">
+        <div class="brand"><img class="brand-mark" src="data:image/png;base64,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" alt="Logo Tumbuh" /> UMKM Tumbuh</div>
+        <nav class="main" id="navUtama" aria-label="Navigasi utama">
           <a href="#" id="navWizardTop">Mulai</a>
           <a href="#data">Data Usaha</a>
           <a href="#dashboard">Dasbor</a>
@@ -961,12 +971,13 @@
         </nav>
         <div class="account-bar" id="accountBar">
           <span class="who" id="userEmail"></span>
+          <a class="tautan-admin" id="btnAdminMarketing" style="display:none" tabindex="0">Admin marketing</a>
           <span class="sync-pill" id="syncStatus">Memuat…</span>
           <button class="btn ghost small" id="btnUbahUsahaTop" type="button" style="display:none">Ubah usaha</button>
           <button class="btn ghost small" id="btnSaveCloud" type="button">Register</button>
           <button class="btn ghost small" id="btnModeTampilan" type="button" title="Pindah tampilan: HP atau PC">Mode PC</button>
-          <button class="btn ghost small" id="btnAdminMarketing" type="button" style="display:none">Admin marketing</button>
         </div>
+        <button class="btn ghost" id="btnLipatHeader" type="button" aria-expanded="true" aria-controls="navUtama accountBar">Lipat header</button>
       </div>
     </div>
 
@@ -1097,7 +1108,7 @@
       <!-- ============ 1. DATA USAHA ============ -->
       <section id="data">
         <div class="sec-head"><span class="sec-num">01</span><h2>Data usaha</h2></div>
-        <p class="sec-sub">Sepuluh isian inti. Semua hitungan di halaman ini berubah langsung mengikuti angka yang Anda masukkan. Untuk pengguna terdaftar, perubahan tersimpan otomatis ke akun cloud Anda — hanya Anda yang bisa mengaksesnya. Untuk mode coba, data hanya tersimpan di HP ini dan hilang saat halaman ditutup. Status penyimpanan tampil di bagian atas halaman.</p>
+        <p class="sec-sub" id="dataIntro">Sepuluh isian inti. Semua hitungan di halaman ini berubah langsung mengikuti angka yang Anda masukkan. Untuk pengguna terdaftar, perubahan tersimpan otomatis ke akun cloud Anda — hanya Anda yang bisa mengaksesnya. Untuk mode coba, data hanya tersimpan di HP ini dan hilang saat halaman ditutup. Status penyimpanan tampil di bagian atas halaman.</p>
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
             <span class="demo-tag" style="margin:0">Formulir kosong — kolom berwarna keemasan siap diisi dengan data usaha Anda</span>
@@ -2174,6 +2185,7 @@
           <button class="btn ghost small" id="btnFieldHelpCloseTop" type="button">Tutup</button>
         </div>
         <h3 id="fieldHelpTitle">—</h3>
+        <p class="help-status" id="fieldHelpStatus" style="display:none"></p>
         <div class="help-simple" id="fieldHelpSimple"></div>
         <div class="help-example" id="fieldHelpExample" style="display:none"></div>
         <p class="help-how" id="fieldHelpHow" style="display:none"></p>
@@ -2414,6 +2426,7 @@
       ];
 
       let S = {}; // computed state
+      let __gerbangDataTerakhir=null; // keadaan gerbang saat skor tambahan (konsistensi, kemasan, legalitas) terakhir diperbarui
 
       /* ---------- gerbang dasbor: ada data usaha inti atau belum ----------
          Pengguna baru yang belum mengisi apa pun TIDAK BOLEH melihat angka
@@ -2460,8 +2473,72 @@
       }
       window.__adaDataInti=adaDataInti;
 
+      /* ---------- ITEM F: kalimat intro Data Usaha yang menyesuaikan ----------
+         Intro menyebut isian inti apa saja yang belum diisi (dengan nama yang
+         sama seperti label kolom), supaya pengguna langsung tahu apa yang
+         kurang. Urutan daftar mendahulukan omzet dan HPP — dua angka yang
+         paling menentukan hitungan — lalu sisanya mengikuti urutan formulir.
+         Bila semua sudah terisi, intro menyatakan data sudah lengkap.
+         "Terisi" memakai aturan yang sama dengan adaDataInti: kolom angka
+         bernilai 0 dihitung belum terisi, dan pasangan contoh ("Dapur Bu
+         Sari" + omzet 45000000) juga dihitung belum terisi, sama seperti
+         gerbang skor. inBuku/inLegal memakai aturan angka (nilai 0 = belum)
+         supaya konsisten dengan adaDataInti. Kalimat penyimpanan
+         dipertahankan apa adanya. */
+      var ISIAN_INTI=[
+        ["inOmzet","omzet","angka"],
+        ["inHpp","HPP","angka"],
+        ["inNama","nama usaha","teks"],
+        ["inSektor","jenis usaha","pilih"],
+        ["inProvinsi","provinsi","pilih"],
+        ["inKota","kota/kabupaten","pilih"],
+        ["inLama","lama usaha","angka"],
+        ["inTumbuh","pertumbuhan omzet","angka"],
+        ["inOpex","biaya operasional","angka"],
+        ["inGaji","gaji pemilik","angka"],
+        ["inAset","aset","angka"],
+        ["inUtang","utang","angka"],
+        ["inBuku","pencatatan","angka"],
+        ["inLegal","legalitas","angka"]
+      ];
+      function isianIntiTerisi(id, jenis){
+        var el=$(id); if(!el) return false;
+        var v=String(el.value||"").trim();
+        if(v==="") return false;
+        if(jenis==="angka"){ var n=parseFloat(v); return !isNaN(n) && n!==0; }
+        return true;
+      }
+      function daftarIsianBelumDiisi(){
+        var nama=($("inNama")&&$("inNama").value||"").trim();
+        var omzetRaw=($("inOmzet")&&$("inOmzet").value||"").trim();
+        var benih=nama.toLowerCase()==="dapur bu sari" && omzetRaw==="45000000";
+        var kurang=[];
+        for(var i=0;i<ISIAN_INTI.length;i++){
+          var id=ISIAN_INTI[i][0], label=ISIAN_INTI[i][1], jenis=ISIAN_INTI[i][2];
+          if(benih && (id==="inNama"||id==="inOmzet")){ kurang.push(label); continue; }
+          if(!isianIntiTerisi(id, jenis)) kurang.push(label);
+        }
+        return kurang;
+      }
+      var INTRO_SIMPAN="Untuk pengguna terdaftar, perubahan tersimpan otomatis ke akun cloud Anda — hanya Anda yang bisa mengaksesnya. Untuk mode coba, data hanya tersimpan di HP ini dan hilang saat halaman ditutup. Status penyimpanan tampil di bagian atas halaman.";
+      function perbaruiIntroData(){
+        var el=$("dataIntro"); if(!el) return;
+        var kurang=daftarIsianBelumDiisi();
+        var awal;
+        if(kurang.length===0){
+          awal="Semua isian inti sudah lengkap — semua hitungan di halaman ini berubah langsung mengikuti angka yang Anda masukkan.";
+        } else {
+          var sebut;
+          if(kurang.length<=4){ sebut=kurang.join(", "); }
+          else { sebut=kurang.slice(0,4).join(", ")+" dan "+(kurang.length-4)+" lainnya"; }
+          awal="Yang belum diisi: "+sebut+". Lengkapi isian di bawah ini supaya semua hitungan dan skor mengikuti data usaha Anda sendiri.";
+        }
+        el.textContent=awal+" "+INTRO_SIMPAN;
+      }
+
       function recalc(){
         const adaData=adaDataInti();
+        perbaruiIntroData();
         const omzetBln=num("inOmzet"), hppPct=num("inHpp")/100, opex=num("inOpex"), gaji=num("inGaji");
         const aset=num("inAset"), utang=num("inUtang"), lama=num("inLama"), tumbuh=Math.max(-20,Math.min(60,num("inTumbuh")))/100;
         const terg=num("inTergantung"), buku=num("inBuku"), legal=num("inLegal"), sektor=$("inSektor").value||"lainnya";
@@ -2495,10 +2572,13 @@
         /* dimensi introspeksi */
         const dimScore={};
         DIMS.forEach(d=>{ let s=0; d.qs.forEach((_,i)=> s+=answers[d.key+"-"+i]); dimScore[d.key]=Math.round(s/6*100);
-          const pill=$("dim-"+d.key); pill.textContent=dimScore[d.key]+"/100";
-          pill.className="pill "+(dimScore[d.key]>=66?"good":dimScore[d.key]>=34?"mid":"low");
+          /* Gerbang: pil dimensi berasal dari jawaban Cek Diri — bila
+             belum ada data usaha inti, pil menampilkan "—" (bukan 0/100
+             dari jawaban bawaan "Belum"). Nilai internal tetap dihitung. */
+          const pill=$("dim-"+d.key); pill.textContent=adaData?dimScore[d.key]+"/100":"—";
+          pill.className=adaData?("pill "+(dimScore[d.key]>=66?"good":dimScore[d.key]>=34?"mid":"low")):"pill";
           /* Cermin skor ke kartu menu di layar induk introspeksi. */
-          const mp=$("menu-dim-"+d.key); if(mp){ mp.textContent=dimScore[d.key]+"/100"; mp.className=pill.className; } });
+          const mp=$("menu-dim-"+d.key); if(mp){ mp.textContent=adaData?dimScore[d.key]+"/100":"—"; mp.className=pill.className; } });
 
         /* skor-skor */
         const margin = omzetBln>0 ? labaBersihBln/omzetBln : 0;
@@ -2562,20 +2642,35 @@
         else { weighted=Math.max(0,asetBersih); valLow=weighted*0.85; valHigh=weighted*1.1; }
         $("valMid").textContent=adaData?fmtShort(weighted):"—";
         $("valLow").textContent=adaData?fmtShort(valLow):"—"; $("valHigh").textContent=adaData?fmtShort(valHigh):"—";
-        $("valSde").textContent=fmtShort(sdeThn)+" / tahun";
         $("stVal").textContent=adaData?fmtShort(weighted):"—";
         $("stValRange").textContent=!adaData?PESAN_ISI_DATA:"rentang "+fmtShort(valLow)+" – "+fmtShort(valHigh);
         const mv=$("mobileVal"); if(mv) mv.textContent=adaData?fmtShort(weighted):"—";
-        $("mAset").textContent=fmtShort(asetBersih);
-        $("mAsetF").textContent=fmtFull(aset)+" − "+fmtFull(utang);
-        $("mSde").textContent=fmtShort(valSde);
-        $("mSdeF").textContent="SDE "+fmtShort(sdeThn)+" × "+mult.toLocaleString("id-ID",{maximumFractionDigits:2});
-        $("mDcf").textContent=fmtShort(valDcf);
-        $("mDcfF").textContent="Tumbuh "+Math.round(tumbuh*100)+"%/thn · diskonto 18% · 3 tahun";
+        if(!adaData){
+          /* Gerbang: kartu metode valuasi menampilkan "—" bila belum ada
+             data usaha inti; baris rumus kembali ke teks rumus statis
+             seperti di HTML awal (bukan angka hitungan dari angka kosong). */
+          $("valSde").textContent="—";
+          $("mAset").textContent="—"; $("mAsetF").textContent="Aset − Utang";
+          $("mSde").textContent="—"; $("mSdeF").textContent="SDE × pengali";
+          $("mDcf").textContent="—"; $("mDcfF").textContent="Nilai sekarang laba tahun 1–3";
+        } else {
+          $("valSde").textContent=fmtShort(sdeThn)+" / tahun";
+          $("mAset").textContent=fmtShort(asetBersih);
+          $("mAsetF").textContent=fmtFull(aset)+" − "+fmtFull(utang);
+          $("mSde").textContent=fmtShort(valSde);
+          $("mSdeF").textContent="SDE "+fmtShort(sdeThn)+" × "+mult.toLocaleString("id-ID",{maximumFractionDigits:2});
+          $("mDcf").textContent=fmtShort(valDcf);
+          $("mDcfF").textContent="Tumbuh "+Math.round(tumbuh*100)+"%/thn · diskonto 18% · 3 tahun";
+        }
 
         /* penjelasan AI (aturan transparan, angka dari rumus di atas) */
         const sektorName=$("inSektor").value ? $("inSektor").selectedOptions[0].textContent.split(" /")[0] : "UMKM";
-        if (sdeThn>0){
+        if(!adaData){
+          /* Gerbang: penjelasan valuasi tidak merinci angka dari data
+             kosong (SDE Rp0, aset bersih Rp0) — minta isi data dulu. */
+          $("aiExplain").textContent=PESAN_ISI_DATA;
+          $("aiExplain2").textContent=PESAN_ISI_DATA;
+        } else if (sdeThn>0){
           $("aiExplain").textContent="Usaha "+($("inNama").value||"Anda")+" ("+sektorName+", "+($("inKota").value||"kota Anda")+") menghasilkan laba pemilik (SDE) "+fmtShort(sdeThn)+" per tahun setelah gaji wajar pemilik diperhitungkan kembali. Dengan pengali "+mult.toLocaleString("id-ID",{maximumFractionDigits:2})+"× — pengali dasar sektor "+SECTOR[sektor].mult+"× disesuaikan oleh "+(adj.length?adj.join(", "):"kondisi usaha Anda yang standar")+" — metode SDE memberi nilai "+fmtShort(valSde)+"."+(kalNote?" "+kalNote:"");
           $("aiExplain2").textContent=(terg>70?"Catatan terpenting: usaha masih sangat tergantung pada Anda ("+terg+"/100). Pembeli atau calon investor akan menilai nilai usaha lebih rendah karena usaha berisiko berhenti saat Anda absen — mendokumentasikan SOP dan melatih satu pengganti adalah cara tercepat menaikkan pengali. ":dimScore.fin<50?"Catatan terpenting: pencatatan keuangan ("+dimScore.fin+"/100) masih lemah. Angka laba yang tidak bisa dibuktikan biasanya ditawar jauh di bawah nilai wajar — rapikan pembukuan 3 bulan berturut-turut sebelum bernegosiasi. ":"Profil Anda relatif seimbang. Kenaikan nilai berikutnya paling cepat datang dari pertumbuhan omzet yang tercatat dan kanal penjualan baru.")+" Nilai aset bersih "+fmtShort(asetBersih)+" menjadi lantai negosiasi Anda: jangan menerima tawaran di bawah itu tanpa alasan kuat.";
         } else {
@@ -2624,7 +2719,10 @@
           else if (krgTech>=krgMkt && krgTech>=krgBuku) rujDigTxt="Rujukan: skor penuh bila teknologi, pasar, dan pembukuan lengkap — yang paling tertinggal: teknologi "+dimScore.tech+"/100 (kurang "+krgTech.toLocaleString("id-ID",{maximumFractionDigits:1})+" poin).";
           else if (krgMkt>=krgBuku) rujDigTxt="Rujukan: skor penuh bila teknologi, pasar, dan pembukuan lengkap — yang paling tertinggal: pasar & kemasan "+dimScore.mkt+"/100 (kurang "+krgMkt.toLocaleString("id-ID",{maximumFractionDigits:1})+" poin).";
           else rujDigTxt="Rujukan: skor penuh bila teknologi, pasar, dan pembukuan lengkap — yang paling tertinggal: pembukuan level "+buku+" dari 3 (kurang "+krgBuku.toLocaleString("id-ID",{maximumFractionDigits:1})+" poin).";
-          isiRuj("rujDig", rujDigTxt);
+          /* Gerbang rujukan digital: baris ini menyebut skor dimensi
+             (mis. teknologi 0/100) — bila belum ada data usaha inti,
+             baris minta isi data dulu, bukan band dari jawaban bawaan. */
+          isiRuj("rujDig", !adaData?PESAN_ISI_DATA:rujDigTxt);
           var rujInvTxt=!adaData?PESAN_ISI_DATA:"Rujukan: siap ditawarkan bila 70 ke atas — Anda "+scInv+" — "+(scInv>=70?"dalam rujukan":"di bawah rujukan")+".";
           isiRuj("rujInvestHero", rujInvTxt); isiRuj("rujInv", rujInvTxt);
           if (omzetBln<=0) isiRuj("rujVal", "Isi omzet dan HPP dulu untuk melihat rujukan valuasi.");
@@ -2635,6 +2733,17 @@
         recalcFinance(sdeBln, labaBersihBln);
         buildAdvice({sektor,skala,matLevel,dimScore,scInv,buku,legal,terg,mult,sdeThn,margin});
         S={omzetThn,sdeThn,labaBersihBln,weighted,valLow,valHigh,mult,health,scInv,skala,matLevel,dimScore,asetBersih,omzetBln,hppPct,opex,gaji,aset,utang,tumbuh};
+        /* Skor tambahan (konsistensi, kemasan, legalitas) ditulis oleh
+           updateCons/updatePack/updateLegal, bukan recalc — jadi recalc
+           memanggil ketiganya hanya saat keadaan gerbang berubah, supaya
+           tampilannya ikut terbuka/tertutup tanpa mengulang pekerjaan
+           tiap ketikan. */
+        if(__gerbangDataTerakhir!==adaData){
+          __gerbangDataTerakhir=adaData;
+          if(typeof updateCons==="function"){ try{ updateCons(); }catch(e){} }
+          if(typeof updatePack==="function"){ try{ updatePack(); }catch(e){} }
+          if(typeof updateLegal==="function"){ try{ updateLegal(); }catch(e){} }
+        }
         if (typeof extraUpdate==="function") extraUpdate();
         if (typeof window.__renderProaktif==="function"){ try{ window.__renderProaktif(); }catch(e){} }
         try{ renderNaikLevel(true); }catch(e){}
@@ -2748,7 +2857,10 @@
         const bagiBln=(danaInv>0 && jangka>0) ? danaInv*i/(1-Math.pow(1+i,-jangka)) : 0;
         const rasio=bagiBln>0 ? sdeBln/bagiBln : 0;
         $("invBagi").textContent=fmtFull(Math.round(bagiBln));
-        $("invRasio").textContent="Rasio Kemampuan Bagi Hasil Anda: "+rasio.toLocaleString("id-ID",{maximumFractionDigits:2})+"× — laba operasional "+fmtFull(Math.round(sdeBln))+"/bulan dibanding bagi hasil "+fmtFull(Math.round(bagiBln))+"/bulan.";
+        /* Gerbang rasio: bila belum ada besaran dana untuk simulasi,
+           rasio menampilkan "—" (teks putusan di bawahnya sudah meminta
+           isi besaran dana) — bukan 0× dari laba dan bagi hasil Rp0. */
+        $("invRasio").textContent=bagiBln===0?"—":"Rasio Kemampuan Bagi Hasil Anda: "+rasio.toLocaleString("id-ID",{maximumFractionDigits:2})+"× — laba operasional "+fmtFull(Math.round(sdeBln))+"/bulan dibanding bagi hasil "+fmtFull(Math.round(bagiBln))+"/bulan.";
         const v=$("invVerdict");
         if (bagiBln===0){ v.textContent="Isi besaran dana untuk simulasi"; v.className="pill mid"; $("invNote").textContent=""; }
         else if (rasio>=1.5){ v.textContent="Nyaman untuk ditawarkan"; v.className="pill good"; $("invNote").textContent="Bagi hasil masih menyisakan ruang napas yang sehat dari laba. Tetap siapkan dana darurat setara 1× bagi hasil bulanan."; }
@@ -2759,6 +2871,12 @@
 
       function buildAdvice(c){
         $("advPack").innerHTML="<ul>"+SECTOR[c.sektor].pack.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+        /* Gerbang saran: butir keuangan & teknologi menyebut angka analisa
+           (margin, Skor Siap Investasi, skor teknologi) — bila belum ada
+           data usaha inti, keduanya diganti satu butir jujur minta isi
+           data. Saran kemasan (umum per sektor) dan rencana 30/60/90 hari
+           (langkah tanpa angka) tetap tampil sebagai ajakan mengisi. */
+        var adaDataAdv=true; try{ adaDataAdv=(typeof adaDataInti==="function")?adaDataInti():true; }catch(e){ adaDataAdv=true; }
         const fin=[];
         if (c.buku===0) fin.push("Buka rekening / e-wallet khusus usaha minggu ini juga — pemisahan uang adalah syarat pertama semua penilaian.");
         if (c.buku===1) fin.push("Naikkan catatan manual ke spreadsheet atau aplikasi kasir agar laba rugi bulanan tersusun otomatis (SAK EMKM).");
@@ -2768,14 +2886,14 @@
         else fin.push("Margin laba bersih "+(c.margin*100).toLocaleString("id-ID",{maximumFractionDigits:1})+"% — sisihkan minimal 10% laba sebagai dana darurat usaha sebelum ekspansi.");
         if (c.scInv<70) fin.push("Skor siap investasi Anda "+c.scInv+"/100. Lengkapi "+(c.legal===0?"NIB lewat OSS (gratis, online)":"dokumen laporan 3–6 bulan")+" sebelum menawarkan kerjasama investasi agar penawaran Anda meyakinkan.");
         else fin.push("Skor siap investasi Anda "+c.scInv+"/100 — profil ini layak ditawarkan. Bawa ringkasan introspeksi ini sebagai bahan diskusi awal dengan calon investor.");
-        $("advFin").innerHTML="<ul>"+fin.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+        $("advFin").innerHTML=adaDataAdv?"<ul>"+fin.map(x=>"<li>"+x+"</li>").join("")+"</ul>":"<ul><li>"+PESAN_ISI_DATA+"</li></ul>";
 
         let ladder=TECH_LADDER.slice();
         if (answers["mkt-2"]===2) ladder[2]="Optimasi kanal online yang sudah berjalan: samakan katalog di semua kanal, pasang harga khusus per kanal (lihat kalkulator HPP), dan balas chat dengan balasan cepat.";
         const start=Math.min(c.matLevel, ladder.length-1);
         const tech=ladder.slice(start, start+3).map((x,i)=> (i===0?"<b>Langkah Anda berikutnya:</b> ":"")+x);
         if (c.dimScore.tech<40) tech.unshift("Skor teknologi Anda baru "+c.dimScore.tech+"/100 — jangan loncat ke alat canggih; kuasai satu anak tangga dalam satu waktu.");
-        $("advTech").innerHTML="<ul>"+tech.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+        $("advTech").innerHTML=adaDataAdv?"<ul>"+tech.map(x=>"<li>"+x+"</li>").join("")+"</ul>":"<ul><li>"+PESAN_ISI_DATA+"</li></ul>";
 
         const p30=[],p60=[],p90=[];
         if (answers["fin-0"]<2) p30.push("Pisahkan rekening usaha dan pribadi; semua omzet masuk satu pintu.");
@@ -2876,8 +2994,18 @@
       let packHasPhoto=false;
       function updatePack(){
         let base=packState.reduce(function(a,b){return a+b},0)/6*85; if(typeof angleCount!=="undefined" && angleCount>0) base+=Math.min(15,angleCount*5); else if(packHasPhoto) base+=10;
-        const v=Math.round(base); setBar("packScore","packBar",v);
-        $("pacinvNote").textContent= v>=80?"Kemasan siap untuk kanal online dan ritel modern. Pertahankan konsistensi cetak label.": v>=50?"Kemasan cukup untuk jualan lokal. Lengkapi label yang masih 'Belum' sebelum masuk marketplace.":"Kemasan masih berisiko ditolak marketplace/ritel. Mulai dari label lengkap: nama, komposisi, berat, izin, kedaluwarsa, kontak.";
+        const v=Math.round(base);
+        if(typeof adaDataInti==="function" && !adaDataInti()){
+          /* Gerbang: skor kemasan menampilkan "—" bila belum ada data
+             usaha inti (bukan 0/100 dari periksa yang belum dijawab).
+             Nilai internal tetap dihitung seperti biasa. */
+          const ps=$("packScore"); if(ps) ps.textContent="—";
+          const pb=$("packBar"); if(pb){ pb.style.width="0%"; pb.className=""; }
+          const pn=$("pacinvNote"); if(pn) pn.textContent=PESAN_ISI_DATA;
+        } else {
+          setBar("packScore","packBar",v);
+          $("pacinvNote").textContent= v>=80?"Kemasan siap untuk kanal online dan ritel modern. Pertahankan konsistensi cetak label.": v>=50?"Kemasan cukup untuk jualan lokal. Lengkapi label yang masih 'Belum' sebelum masuk marketplace.":"Kemasan masih berisiko ditolak marketplace/ritel. Mulai dari label lengkap: nama, komposisi, berat, izin, kedaluwarsa, kontak.";
+        }
         if(typeof extraUpdate==="function") extraUpdate();
       }
       $("packPhoto").addEventListener("change",function(e){ const f=e.target.files[0]; if(!f) return; const url=URL.createObjectURL(f); const img=$("packPreview"); img.src=url; img.style.display="block"; packHasPhoto=true; $("packPhotoNote").textContent="Foto terunggah: "+f.name+" — bandingkan dengan 6 periksa di samping."; audit("Foto kemasan diunggah untuk penilaian."); updatePack(); });
@@ -3836,15 +3964,27 @@
         ["NPWP & data pajak","Nama & alamat di NPWP sama dengan NIB?",["Belum dicek","Beda","Sesuai"]],
         ["Ulasan pelanggan online","Rating & keluhan terakhir mencerminkan kondisi usaha saat ini?",["Belum dicek","Beda","Sesuai"]]
       ],consState,updateCons);
-      function updateCons(){ let tot=0; for(let ci=0;ci<9;ci++){ const v=consState[ci]||0; tot+= v===2?100: v===1?40:0; } consScoreVal=Math.round(tot/9); setBar("consScore","consBar",consScoreVal); const sc=$("scCons"); if(sc){ sc.textContent=consScoreVal; const b=$("scConsBar"); b.style.width=consScoreVal+"%"; b.className=consScoreVal>=66?"":consScoreVal>=40?"mid":"low"; $("scConsNote").textContent= consScoreVal>=80?"Sangat konsisten — data Anda mudah diverifikasi calon investor/mitra.": consScoreVal>=50?"Sebagian sesuai. Perbaiki sumber yang 'Beda' — ketidakcocokan nama/alamat adalah penyebab verifikasi gagal yang paling umum.":"Masih banyak yang belum dicek / beda. Cek satu sumber per hari, mulai dari NIB dan Google Maps."; }
-        /* nilai rujukan konsistensi: 100 bila ke-9 sumber cocok */
-        const rujConsEl=$("rujCons");
-        if (rujConsEl){
-          let nSesuai=0, nBeda=0, nBelum=0;
-          for (let cj=0; cj<9; cj++){ if (consState[cj]===2) nSesuai++; else if (consState[cj]===1) nBeda++; else nBelum++; }
-          rujConsEl.textContent = (nSesuai===0 && nBeda===0)
-            ? "Rujukan: 100 bila ke-9 sumber cocok — belum ada sumber yang dicek — di bawah rujukan."
-            : "Rujukan: 100 bila ke-9 sumber cocok — Anda "+consScoreVal+" ("+nSesuai+" cocok, "+nBeda+" berbeda, "+nBelum+" belum dicek) — "+(consScoreVal>=100?"dalam rujukan":"di bawah rujukan")+".";
+      function updateCons(){ let tot=0; for(let ci=0;ci<9;ci++){ const v=consState[ci]||0; tot+= v===2?100: v===1?40:0; } consScoreVal=Math.round(tot/9);
+        /* Gerbang: skor konsistensi menampilkan "—" bila belum ada data
+           usaha inti (bukan 0/100 dari sumber yang belum dicek). Nilai
+           internal (consScoreVal) tetap dihitung seperti biasa. */
+        if(typeof adaDataInti==="function" && !adaDataInti()){
+          const cs0=$("consScore"); if(cs0) cs0.textContent="—";
+          const cb0=$("consBar"); if(cb0){ cb0.style.width="0%"; cb0.className=""; }
+          const cn0=$("consNote"); if(cn0) cn0.textContent=PESAN_ISI_DATA;
+          const sc0=$("scCons"); if(sc0){ sc0.textContent="—"; const b0=$("scConsBar"); if(b0){ b0.style.width="0%"; b0.className=""; } const sn0=$("scConsNote"); if(sn0) sn0.textContent=PESAN_ISI_DATA; }
+          const rj0=$("rujCons"); if(rj0) rj0.textContent=PESAN_ISI_DATA;
+        } else {
+          setBar("consScore","consBar",consScoreVal); const sc=$("scCons"); if(sc){ sc.textContent=consScoreVal; const b=$("scConsBar"); b.style.width=consScoreVal+"%"; b.className=consScoreVal>=66?"":consScoreVal>=40?"mid":"low"; $("scConsNote").textContent= consScoreVal>=80?"Sangat konsisten — data Anda mudah diverifikasi calon investor/mitra.": consScoreVal>=50?"Sebagian sesuai. Perbaiki sumber yang 'Beda' — ketidakcocokan nama/alamat adalah penyebab verifikasi gagal yang paling umum.":"Masih banyak yang belum dicek / beda. Cek satu sumber per hari, mulai dari NIB dan Google Maps."; }
+          /* nilai rujukan konsistensi: 100 bila ke-9 sumber cocok */
+          const rujConsEl=$("rujCons");
+          if (rujConsEl){
+            let nSesuai=0, nBeda=0, nBelum=0;
+            for (let cj=0; cj<9; cj++){ if (consState[cj]===2) nSesuai++; else if (consState[cj]===1) nBeda++; else nBelum++; }
+            rujConsEl.textContent = (nSesuai===0 && nBeda===0)
+              ? "Rujukan: 100 bila ke-9 sumber cocok — belum ada sumber yang dicek — di bawah rujukan."
+              : "Rujukan: 100 bila ke-9 sumber cocok — Anda "+consScoreVal+" ("+nSesuai+" cocok, "+nBeda+" berbeda, "+nBelum+" belum dicek) — "+(consScoreVal>=100?"dalam rujukan":"di bawah rujukan")+".";
+          }
         }
         if(typeof extraUpdate==="function") extraUpdate(); }
 
@@ -3859,7 +3999,15 @@
         ["Merek terdaftar (opsional, menaikkan nilai)","DJKI Kemenkumham — melindungi nama usaha saat dijual/dimitrakan.",["Belum","Proses","Sudah"]]
       ],legalState,updateLegal);
       let legalScoreVal=0;
-      function updateLegal(){ let tot=0; legalState.forEach(function(v){ tot+= v===2?100: v===1?50:0; }); legalScoreVal=Math.round(tot/6); setBar("legalScore","legalBar",legalScoreVal); if(typeof extraUpdate==="function") extraUpdate(); }
+      function updateLegal(){ let tot=0; legalState.forEach(function(v){ tot+= v===2?100: v===1?50:0; }); legalScoreVal=Math.round(tot/6);
+        /* Gerbang: skor legalitas menampilkan "—" bila belum ada data
+           usaha inti (bukan 0/100 dari periksa yang belum dijawab).
+           Nilai internal (legalScoreVal) tetap dihitung seperti biasa. */
+        if(typeof adaDataInti==="function" && !adaDataInti()){
+          const ls=$("legalScore"); if(ls) ls.textContent="—";
+          const lb=$("legalBar"); if(lb){ lb.style.width="0%"; lb.className=""; }
+        } else { setBar("legalScore","legalBar",legalScoreVal); }
+        if(typeof extraUpdate==="function") extraUpdate(); }
 
       /* --- Pemasaran --- */
       const chanState=[0,0,0,0,0,0];
@@ -4853,9 +5001,14 @@
         if (rujBepEl) rujBepEl.textContent = S.omzetBln>0
           ? "Rujukan: omzet harus ≥ BEP "+fmtShort(bep)+"/bulan agar tidak rugi — omzet Anda "+fmtShort(omzetEff)+"/bulan — "+(omzetEff>=bep?"di atas rujukan":"di bawah rujukan")+"."
           : "Isi omzet dan HPP dulu untuk melihat rujukan BEP.";
-        const cf=$("cfChart"); if(cf){ let saldo=0; let rows=""; const laba=(S.labaBersihBln||0)+aggF.net; let max=Math.max(1,Math.abs(laba)*3); for(let m=1;m<=3;m++){ const proj=laba*Math.pow(1+(S.tumbuh||0)/12,m); saldo+=proj; if(Math.abs(saldo)>max)max=Math.abs(saldo); } saldo=0; for(let m=1;m<=3;m++){ const proj=laba*Math.pow(1+(S.tumbuh||0)/12,m); saldo+=proj; const pct=Math.max(4,Math.round(Math.abs(saldo)/max*100)); rows+="<div class='cf-row'><span class='lbl'>Bulan +"+m+"</span><span class='track'><i style='width:"+pct+"%'></i></span><span class='amt'>"+fmtShort(saldo)+"</span></div>"; } cf.innerHTML=rows; }
+        const cf=$("cfChart"); if(cf){ if((S.omzetBln||0)<=0){ cf.innerHTML=""; } else { let saldo=0; let rows=""; const laba=(S.labaBersihBln||0)+aggF.net; let max=Math.max(1,Math.abs(laba)*3); for(let m=1;m<=3;m++){ const proj=laba*Math.pow(1+(S.tumbuh||0)/12,m); saldo+=proj; if(Math.abs(saldo)>max)max=Math.abs(saldo); } saldo=0; for(let m=1;m<=3;m++){ const proj=laba*Math.pow(1+(S.tumbuh||0)/12,m); saldo+=proj; const pct=Math.max(4,Math.round(Math.abs(saldo)/max*100)); rows+="<div class='cf-row'><span class='lbl'>Bulan +"+m+"</span><span class='track'><i style='width:"+pct+"%'></i></span><span class='amt'>"+fmtShort(saldo)+"</span></div>"; } cf.innerHTML=rows; } }
         renderReports();
-        const bn=$("invNama"); if(bn){ bn.textContent=($("inNama").value||"(nama usaha belum diisi)")+" — "+($("inKota").value||"")+" · "+(typeof lokasiText==="function"?lokasiText():""); $("invSkor").textContent="Level "+(S.skala||"—")+" · Kematangan Lvl "+(S.matLevel??"—")+" · Kesehatan usaha keseluruhan "+(S.health??"—")+"/100 · Siap Investasi "+(S.scInv??"—")+"/100"; $("invVal").textContent=fmtShort(S.weighted||0)+" ("+fmtShort(S.valLow||0)+" – "+fmtShort(S.valHigh||0)+")"; $("invSkor2").textContent=consScoreVal+"/100 · "+legalScoreVal+"/100 · "+($("packScore").textContent||"0/100"); const raw=(($("inNama").value||"")+"|"+Math.round(S.weighted||0)+"|"+Math.round(S.sdeThn||0)+"|"+consScoreVal+"|"+legalScoreVal); let h=0; for(let i=0;i<raw.length;i++){ h=((h<<5)-h+raw.charCodeAt(i))|0; } $("invCode").textContent="UMKM-"+Math.abs(h).toString(36).toUpperCase()+"-"+Math.round(S.weighted||0).toString(36).toUpperCase(); if(typeof drawQr==="function") drawQr($("invCode").textContent+" | "+($("inNama").value||"UMKM")+" | Val "+fmtShort(S.weighted||0)+" | Konsistensi "+consScoreVal); }
+        /* Gerbang pratinjau investor: bila belum ada data usaha inti,
+           angka ringkasan (level, skor, valuasi, skor tambahan, kode)
+           menampilkan "—" — bukan angka dari rumus atas data kosong.
+           Nama usaha tetap tampil jujur (atau "(nama usaha belum diisi)"),
+           dan QR dikosongkan supaya tidak mengodekan angka kosong. */
+        const bn=$("invNama"); if(bn){ bn.textContent=($("inNama").value||"(nama usaha belum diisi)")+" — "+($("inKota").value||"")+" · "+(typeof lokasiText==="function"?lokasiText():""); if(typeof adaDataInti==="function" && !adaDataInti()){ $("invSkor").textContent="—"; $("invVal").textContent="—"; $("invSkor2").textContent="—"; $("invCode").textContent="—"; const qr0=$("invQr"); if(qr0) qr0.innerHTML=""; } else { $("invSkor").textContent="Level "+(S.skala||"—")+" · Kematangan Lvl "+(S.matLevel??"—")+" · Kesehatan usaha keseluruhan "+(S.health??"—")+"/100 · Siap Investasi "+(S.scInv??"—")+"/100"; $("invVal").textContent=fmtShort(S.weighted||0)+" ("+fmtShort(S.valLow||0)+" – "+fmtShort(S.valHigh||0)+")"; $("invSkor2").textContent=consScoreVal+"/100 · "+legalScoreVal+"/100 · "+($("packScore").textContent||"0/100"); const raw=(($("inNama").value||"")+"|"+Math.round(S.weighted||0)+"|"+Math.round(S.sdeThn||0)+"|"+consScoreVal+"|"+legalScoreVal); let h=0; for(let i=0;i<raw.length;i++){ h=((h<<5)-h+raw.charCodeAt(i))|0; } $("invCode").textContent="UMKM-"+Math.abs(h).toString(36).toUpperCase()+"-"+Math.round(S.weighted||0).toString(36).toUpperCase(); if(typeof drawQr==="function") drawQr($("invCode").textContent+" | "+($("inNama").value||"UMKM")+" | Val "+fmtShort(S.weighted||0)+" | Konsistensi "+consScoreVal); } }
         if (typeof window.__renderProaktif==="function"){ try{ window.__renderProaktif(); }catch(e){} }
       }
       $("inSektor").addEventListener("change",buildContentCal);
@@ -5248,7 +5401,7 @@
              pernah ditandai emas. btnQrisCloseFull sengaja TIDAK masuk:
              tombol Tutup di dalam overlay QRIS putih menjaga desain
              hitam-putih overlay itu sendiri. */
-          var ID_NAVIGASI=["btnUbahUsahaTop","btnDataSelesai","btnTutupTopik","btnCloseSql","btnForgotCancel","btnWizardClose","btnFieldHelpCloseTop","btnFieldHelpClose","btnQrisFull","btnGreetStart","btnWizFinish","btnWizDetail","btnBatalBayar","btnSapaIsi","btnHiMasuk","btnHiKeluar","btnHiLangkah","btnUbahUsahaData","btnUbahData","btnVoiceKoreksi","btnShowSql","btnAdminMarketing"];
+          var ID_NAVIGASI=["btnUbahUsahaTop","btnDataSelesai","btnTutupTopik","btnCloseSql","btnForgotCancel","btnWizardClose","btnFieldHelpCloseTop","btnFieldHelpClose","btnQrisFull","btnGreetStart","btnWizFinish","btnWizDetail","btnBatalBayar","btnSapaIsi","btnHiMasuk","btnHiKeluar","btnHiLangkah","btnUbahUsahaData","btnUbahData","btnVoiceKoreksi","btnShowSql","btnLipatHeader"];
           function bacaSet(){ try{ var s=localStorage.getItem(KUNCI_TOMBOL); if(!s) return {}; var o=JSON.parse(s); return (o&&typeof o==="object")?o:{}; }catch(e){ return {}; } }
           function simpanSet(o){ try{ localStorage.setItem(KUNCI_TOMBOL, JSON.stringify(o)); }catch(e){} }
           function bolehDitandai(el){
@@ -5342,12 +5495,25 @@
            sempit secara alami).
            Tombol ini sengaja TIDAK ikut sistem emas .sudah-diklik
            (bukan navigasi; keadaannya sudah terlihat dari label, yang
-           menunjukkan mode TUJUAN: "Mode PC" saat tampil HP). */
+           menunjukkan mode TUJUAN: "Mode PC" saat tampil HP).
+           Tombol hanya tampil di PC (ada tetikus/trackpad —
+           pointer:fine); di HP layar sentuh tombol disembunyikan
+           karena pengguna HP tetap memakai tampilan HP. */
         (function(){
           var KUNCI_MODE="umkm-introspeksi-mode-tampilan";
           function bacaMode(){
             try{ var m=localStorage.getItem(KUNCI_MODE); return (m==="pc")?"pc":"hp"; }
             catch(e){ return "hp"; }
+          }
+          /* PC = ada penunjuk halus (tetikus/trackpad). Tanpa itu
+             (layar sentuh) tombol mode tidak ditampilkan. */
+          function apakahPc(){
+            try{ return !!(window.matchMedia && window.matchMedia("(pointer:fine)").matches); }
+            catch(e){ return false; }
+          }
+          function perbaruiTombolMode(){
+            var b=gid("btnModeTampilan");
+            if(b) b.style.display=apakahPc()?"":"none";
           }
           function terapkanMode(){
             var mode=bacaMode();
@@ -5355,6 +5521,7 @@
             if(akar) akar.classList.toggle("mode-hp", mode==="hp");
             var b=gid("btnModeTampilan");
             if(b) b.textContent=(mode==="hp")?"Mode PC":"Mode HP";
+            perbaruiTombolMode();
             return mode;
           }
           function gantiMode(){
@@ -5365,8 +5532,43 @@
           }
           var tombolMode=gid("btnModeTampilan");
           if(tombolMode) tombolMode.addEventListener("click", function(){ gantiMode(); });
+          try{ window.addEventListener("resize", perbaruiTombolMode); }catch(e){}
           terapkanMode();
-          window.__modeTampilan={baca:bacaMode, terapkan:terapkanMode, ganti:gantiMode, kunci:KUNCI_MODE};
+          window.__modeTampilan={baca:bacaMode, terapkan:terapkanMode, ganti:gantiMode, kunci:KUNCI_MODE, apakahPc:apakahPc, perbaruiTombol:perbaruiTombolMode};
+        })();
+        /* ---------- HEADER BISA DILIPAT ----------
+           Tombol #btnLipatHeader melipat header jadi strip ramping:
+           baris navigasi + bilah akun disembunyikan (CSS .topbar.terlipat),
+           merek + tombol buka tetap terlihat di strip. Status lipat
+           tersimpan di localStorage "umkm-introspeksi-header-terlipat"
+           ("1"|"0") dan diterapkan saat muat, jadi tetap terlipat
+           sesudah muat ulang. Tombol ini tombol navigasi: id-nya masuk
+           ID_NAVIGASI di atas, jadi boleh tetap emas sesudah diklik
+           (mekanisme .sudah-diklik yang ada). */
+        (function(){
+          var KUNCI_LIPAT="umkm-introspeksi-header-terlipat";
+          function bacaLipat(){
+            try{ return localStorage.getItem(KUNCI_LIPAT)==="1"; }
+            catch(e){ return false; }
+          }
+          function terapkanLipat(){
+            var lipat=bacaLipat();
+            var bar=document.querySelector(".topbar");
+            if(bar) bar.classList.toggle("terlipat", lipat);
+            var b=gid("btnLipatHeader");
+            if(b){ b.textContent=lipat?"Buka header":"Lipat header"; b.setAttribute("aria-expanded", lipat?"false":"true"); }
+            return lipat;
+          }
+          function gantiLipat(){
+            var lipat=!bacaLipat();
+            try{ localStorage.setItem(KUNCI_LIPAT, lipat?"1":"0"); }catch(e){}
+            terapkanLipat();
+            return lipat;
+          }
+          var tombol=gid("btnLipatHeader");
+          if(tombol) tombol.addEventListener("click", function(){ gantiLipat(); });
+          terapkanLipat();
+          window.__lipatHeader={baca:bacaLipat, terapkan:terapkanLipat, ganti:gantiLipat, kunci:KUNCI_LIPAT};
         })();
       })();
     </script>
@@ -8053,10 +8255,10 @@
              dasbor tampil "—" — penjelasannya harus berkata jujur bahwa skor
              belum bisa dihitung, bukan menjelaskan angka nol seolah-olah itu
              hasil usaha. Berlaku untuk kunci skor saja (level, kesehatan,
-             kematangan, digital, keuangan, investasi, valuasi); kunci lain
-             (konsistensi, BEP, Naik Level, chip hari ini) sudah punya jawaban
+             kematangan, digital, keuangan, investasi, valuasi, konsistensi);
+             kunci lain (BEP, Naik Level, chip hari ini) sudah punya jawaban
              jujur sendiri bila datanya kosong. */
-          if(["level","kesehatan","kematangan","digital","keuangan","investasi","valuasi"].indexOf(kunci)>=0){
+          if(["level","kesehatan","kematangan","digital","keuangan","investasi","valuasi","konsistensi"].indexOf(kunci)>=0){
             try{ if(typeof adaDataInti==="function" && !adaDataInti()) return PESAN_BELUM_ADA_DATA; }catch(e){}
           }
           function namaDim(key){ return NAMA_DIMENSI_PENJELASAN[key]||key; }
@@ -8859,7 +9061,7 @@
             /* Skor "—" tidak boleh dijelaskan seolah-olah ada angkanya:
                bila belum ada data usaha inti, overlay langsung berkata
                jujur bahwa skor belum bisa dihitung — tanpa memanggil AI. */
-            if(["level","kesehatan","kematangan","digital","keuangan","investasi","valuasi"].indexOf(key)>=0){
+            if(["level","kesehatan","kematangan","digital","keuangan","investasi","valuasi","konsistensi"].indexOf(key)>=0){
               try{ if(typeof adaDataInti==="function" && !adaDataInti()){
                 var targetKosong=bukaOverlayPenjelasan(key, b);
                 if(targetKosong) targetKosong.textContent=PESAN_BELUM_ADA_DATA;
@@ -9550,6 +9752,10 @@
             if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("adminmarketing"); }catch(e){} }
             muatDaftarMarketing();
           });
+          /* Tautan (bukan tombol): tetap bisa dipakai lewat papan ketik. */
+          if(b) b.addEventListener("keydown", function(ev){
+            if(ev.key==="Enter"||ev.key===" "){ try{ ev.preventDefault(); }catch(e){} b.click(); }
+          });
           var t=gid("btnMkTambah"); if(t) t.addEventListener("click", tambahMarketing);
           var s=gid("btnMkSalinSql");
           if(s) s.addEventListener("click", function(){ salinKode(MARKETING_SQL_LINES.join("\n"), "SQL tersalin — tempel di SQL Editor cloud lalu klik Run"); });
@@ -9916,12 +10122,20 @@
         };
 
         var overlay=gid("fieldHelpOverlay"), titleEl=gid("fieldHelpTitle"), simpleEl=gid("fieldHelpSimple"),
-            exEl=gid("fieldHelpExample"), howEl=gid("fieldHelpHow"), qEl=gid("fieldHelpQ"), ansEl=gid("fieldHelpAnswer");
+            exEl=gid("fieldHelpExample"), howEl=gid("fieldHelpHow"), qEl=gid("fieldHelpQ"), ansEl=gid("fieldHelpAnswer"),
+            statusEl=gid("fieldHelpStatus");
         var current=null, lastBtn=null;
 
         function openHelp(info, btn){
           current=info; lastBtn=btn||null;
           titleEl.textContent=info.title||"Penjelasan kolom";
+          /* ITEM G: bagian adaptif — nilai kolom saat ini (bila sudah terisi)
+             atau ajakan mengisi (bila masih kosong). Penjelasan dasar di
+             bawahnya tidak berubah. Tanpa status, baris ini tersembunyi. */
+          if(statusEl){
+            if(info.status){ statusEl.style.display="block"; statusEl.textContent=info.status; }
+            else { statusEl.style.display="none"; statusEl.textContent=""; }
+          }
           if(info.html){
             /* Topik dengan isi HTML statis aplikasi sendiri (bukan masukan
                pengguna): tampilkan apa adanya supaya penebalan (<b>) tetap
@@ -9992,6 +10206,65 @@
           b.textContent="?"; b.setAttribute("aria-label","Penjelasan tentang "+title); b.title="Penjelasan: "+title;
           return b;
         }
+        /* ITEM G: bagian adaptif di atas penjelasan kolom — menyebut nilai
+           kolom saat ini bila sudah terisi (dengan maknanya), atau mengajak
+           mengisi bila masih kosong. Kolom angka bernilai 0 dihitung belum
+           terisi, sama seperti gerbang skor; kolom pilihan/teks terisi bila
+           ada nilai yang dipilih/diketik. Penjelasan dasar (s/e/h) tidak
+           diubah — bagian ini hanya tambahan di atasnya. */
+        var KOLOM_RUPIAH=["inOmzet","inOpex","inGaji","inAset","inUtang","wizOmzet","wizBahan","wizOpex","wizGaji","wizJualHari","hBahan","hKemasan","hEnergi","hTenaga","hAir","hSusut","hSewa","hLain","invDana","txJumlah","stBeli","stJual","piJumlah","utJumlah","qrisTagihan","qrisJumlah"];
+        var KOLOM_PERSEN=["inHpp","inTumbuh","hMargin","inTergantung"];
+        function formatNilaiKolom(control){
+          var id=control.id||"";
+          if(control.tagName==="SELECT"){
+            var opt=control.options[control.selectedIndex];
+            return opt?String(opt.textContent||"").replace(/\s+/g," ").trim():"";
+          }
+          var v=String(control.value||"").trim();
+          if(control.type==="number"||control.type==="range"){
+            var n=parseFloat(v); if(isNaN(n)) return v;
+            if(KOLOM_RUPIAH.indexOf(id)>=0){ try{ return fmtFull(n); }catch(e){ return "Rp "+Math.round(n).toLocaleString("id-ID"); } }
+            if(KOLOM_PERSEN.indexOf(id)>=0) return String(n).replace(".",",")+"%";
+            if(id==="inLama") return String(n).replace(".",",")+" tahun";
+            return n.toLocaleString("id-ID");
+          }
+          return v;
+        }
+        function kolomTerisi(control){
+          if(!control) return false;
+          var v=String(control.value||"").trim();
+          if(v==="") return false;
+          /* Pilihan "0" di pencatatan/legalitas artinya belum ada
+             (Belum dicatat / Belum punya NIB) — dihitung belum terisi,
+             sama seperti gerbang skor dan intro Data Usaha. */
+          if((control.id==="inBuku"||control.id==="inLegal") && v==="0") return false;
+          if(control.type==="number"||control.type==="range"){ var n=parseFloat(v); return !isNaN(n) && n!==0; }
+          return true;
+        }
+        function maknaKolom(id, n){
+          if(id==="inHpp") return " Artinya "+String(n).replace(".",",")+"% omzet dipakai untuk biaya bahan; sisanya "+(100-n)+"% untuk biaya lain dan keuntungan.";
+          if(id==="inOmzet") return " Itu total uang penjualan sebulan, sebelum dikurangi biaya apa pun.";
+          if(id==="inOpex") return " Itu biaya rutin sebulan di luar bahan dan di luar gaji pemilik.";
+          if(id==="inGaji") return " Itu upah wajar pekerjaan Anda sebagai pemilik, sebulan.";
+          if(id==="inAset") return " Itu nilai wajar semua milik usaha saat ini.";
+          if(id==="inUtang") return " Itu total sisa kewajiban usaha yang belum lunas.";
+          if(id==="inLama") return " Itu sudah "+String(n).replace(".",",")+" tahun usaha berjalan.";
+          if(id==="inTumbuh") return n>0 ? " Omzet tumbuh sekitar "+String(n).replace(".",",")+"% setahun." : " Omzet turun sekitar "+String(Math.abs(n)).replace(".",",")+"% setahun.";
+          return "";
+        }
+        function statusKolom(control){
+          if(!control) return "";
+          /* Pilihan "0" di pencatatan/legalitas sudah dijawab, tapi
+             jawabannya "belum ada" — akui pilihannya dan arahkan mengisi. */
+          if(control.id==="inBuku" && String(control.value||"").trim()==="0") return "Saat ini: Belum dicatat / tercampur pribadi. Artinya usaha belum punya catatan keuangan yang terpisah — mulai mencatat supaya skor keuangan bisa dihitung dari data nyata.";
+          if(control.id==="inLegal" && String(control.value||"").trim()==="0") return "Saat ini: Belum punya NIB. Artinya legalitas usaha belum dilengkapi — lengkapi NIB supaya kesiapan investasi bisa dihitung.";
+          if(!kolomTerisi(control)) return "Kolom ini masih kosong — isi dengan keadaan usaha Anda yang sebenarnya. Penjelasan di bawah ini membantu Anda mengisinya.";
+          var nilai=formatNilaiKolom(control);
+          var n=parseFloat(String(control.value||"").trim());
+          var makna=maknaKolom(control.id||"", isNaN(n)?0:n);
+          if(makna) return "Saat ini: "+nilai+"."+makna+" Ubah isinya bila keadaan usaha berubah; semua hitungan akan mengikuti angka terbaru.";
+          return "Saat ini: "+nilai+". Kolom ini sudah terisi — ubah isinya bila keadaan usaha berubah, dan semua hitungan akan mengikuti angka terbaru.";
+        }
         function resolveLabelInfo(label, spanText){
           var control=label.querySelector("input,select,textarea");
           var info=null;
@@ -10004,7 +10277,7 @@
           if(!info){
             info={s:"Kolom ini diisi dengan "+spanText.toLowerCase()+"."+(smallText?" "+smallText:""), e:exFromPh||"", h:"Isi dengan keadaan usaha Anda yang sebenarnya. Bila ragu, ketuk tombol Tanya AI di penjelasan ini dan tanyakan dengan bahasa Anda sendiri."};
           }
-          return { title:spanText, simple:info.s, example:info.e||exFromPh||"", how:info.h||"" };
+          return { title:spanText, simple:info.s, example:info.e||exFromPh||"", how:info.h||"", status:statusKolom(control) };
         }
         function attachToLabel(label){
           if(label.getAttribute("data-help-done")) return;
