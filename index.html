@@ -207,6 +207,7 @@
       body[data-layar]:not([data-layar="buku-stok"]) #buku-stok{display:none!important}
       body[data-layar]:not([data-layar="buku-hutang"]) #buku-hutang{display:none!important}
       body[data-layar]:not([data-layar="buku-laporan"]) #buku-laporan{display:none!important}
+      body[data-layar]:not([data-layar="bayar"]) #bayar{display:none!important}
       .btn-kembali-layar{margin:0 0 10px}
 
       /* ---------- indikator lokasi + transisi geser antar-layar ----------
@@ -1975,6 +1976,7 @@
         <div class="card" style="margin-top:14px">
           <h3>3. Berlangganan Pro</h3>
           <p>Pilih paket sesuai kebutuhan Anda. Transaksi, stok, piutang, dan utang tanpa batas data di semua paket. Ketuk salah satu kartu di bawah untuk memilih paket Anda.</p>
+          <p class="note" id="paketLanggananAktif" role="status" style="display:none"></p>
           <div class="card paket-tier" data-tier="mikro" style="margin:12px 0 0">
             <h3>Mikro — Rp35.000 per bulan</h3>
             <p>AI Coach menjawab 300 pertanyaan per bulan. Transaksi, stok, piutang, dan utang tanpa batas data. Anda bisa membagikan tautan Portal investor ke calon mitra.</p>
@@ -2006,7 +2008,55 @@
             <p class="note paket-tier-label" style="display:none"><b>Dipilih</b></p>
           </div>
           <p class="note" id="paketProBelum">Pendaftaran langganan belum dibuka.</p>
-          <div class="actions"><button class="btn" id="btnPaketLangganan" type="button" style="display:none">Berlangganan Pro</button></div>
+          <p class="note" id="paketStatusBayar" role="status" style="display:none"></p>
+          <div class="actions"><button class="btn" id="btnPaketLangganan" type="button" style="display:none">Bayar langganan</button></div>
+        </div>
+      </section>
+
+      <!-- ============ 15a. BAYAR LANGGANAN (sub-layar Paket & Layanan) ============ -->
+      <section id="bayar">
+        <div class="sec-head"><span class="sec-num">15</span><h2>Bayar Langganan</h2></div>
+        <p class="sec-sub">Bayar langganan lewat transfer, lalu unggah bukti transfernya. Pemilik memeriksa bukti Anda, lalu langganan diaktifkan.</p>
+        <div class="card" id="bayarStatusCard" style="display:none">
+          <h3>Status pembayaran Anda</h3>
+          <p class="note" id="bayarStatusTeks" role="status"></p>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Rekening tujuan transfer</h3>
+          <p><b>BSI</b></p>
+          <p>a.n. Soegianto Soelistiono</p>
+          <p>Nomor rekening: <b id="bayarNoRekening">—</b></p>
+          <p class="note">Transfer ke nomor rekening di atas sejumlah total tagihan di bawah ini.</p>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Pilih paket</h3>
+          <div class="seg" id="bayarPilihPaket" role="group" aria-label="Pilih paket">
+            <button type="button" data-bayar-tier="mikro" aria-pressed="false">Mikro — Rp35.000</button>
+            <button type="button" data-bayar-tier="kecil" aria-pressed="false">Kecil — Rp75.000</button>
+            <button type="button" data-bayar-tier="menengah" aria-pressed="false">Menengah — Rp150.000</button>
+          </div>
+          <label class="f" style="margin-top:14px"><span>Jumlah pegawai tambahan</span><input type="number" id="bayarPegawaiTambahan" min="0" step="1" value="0" inputmode="numeric" /></label>
+          <p class="note" id="bayarPegawaiKet">Di luar yang sudah termasuk di paket Anda.</p>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Rincian tagihan</h3>
+          <p>Harga paket: <b id="bayarRincianPaket">—</b></p>
+          <p>Biaya tambahan pegawai: <b id="bayarRincianPegawai">—</b></p>
+          <p id="bayarRincianDiskonBaris" style="display:none">Diskon kode marketing (10%): <b id="bayarRincianDiskon">—</b></p>
+          <p>Total yang harus dibayar: <b id="bayarRincianTotal">—</b></p>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Unggah bukti transfer</h3>
+          <p class="note">Transfer lewat aplikasi BSI di HP Anda ke rekening di atas sejumlah total, lalu unggah tangkapan layar bukti transfer di bawah ini.</p>
+          <label class="f"><span>Tangkapan layar bukti transfer (foto)</span><input type="file" id="bayarBukti" accept="image/*" /></label>
+          <p class="note" id="bayarOcrStatus" role="status"></p>
+          <div class="form-grid" style="margin-top:10px">
+            <label class="f"><span>Nominal yang dibayar (Rp)</span><input type="number" id="bayarNominal" min="0" step="100" placeholder="contoh: 35000" inputmode="numeric" /></label>
+            <label class="f"><span>Tanggal bayar</span><input type="date" id="bayarTanggal" /></label>
+            <label class="f"><span>Nama pengirim</span><input type="text" id="bayarNamaPengirim" placeholder="contoh: Budi Santoso" autocomplete="off" /></label>
+            <label class="f"><span>Nomor referensi</span><input type="text" id="bayarNoReferensi" placeholder="contoh: 1234567890" autocomplete="off" /></label>
+          </div>
+          <div class="actions"><button class="btn" id="btnBayarKirim" type="button">Kirim bukti pembayaran</button></div>
         </div>
       </section>
 
@@ -5168,11 +5218,11 @@
            sengaja TIDAK masuk daftar (fitur langganan mati — saklar
            LANGGANAN_AKTIF false; bila suatu hari dinyalakan, daftarkan
            sebagai layar di sini). */
-        var LAYAR_DAFTAR=["hariini","langkah","perhatian","data","dashboard","valuasi","introspeksi","introspeksi-fin","introspeksi-ops","introspeksi-mkt","introspeksi-tech","keuangan","investasi","saran","saran-rencana","kemasan","kemasan-sudut","kemasan-label","buku","buku-transaksi","buku-qris","buku-stok","buku-hutang","buku-laporan","cekdata","legalitas","pemasaran","sop","portal","paket","adminmarketing"];
+        var LAYAR_DAFTAR=["hariini","langkah","perhatian","data","dashboard","valuasi","introspeksi","introspeksi-fin","introspeksi-ops","introspeksi-mkt","introspeksi-tech","keuangan","investasi","saran","saran-rencana","kemasan","kemasan-sudut","kemasan-label","buku","buku-transaksi","buku-qris","buku-stok","buku-hutang","buku-laporan","cekdata","legalitas","pemasaran","sop","portal","paket","bayar","adminmarketing"];
         /* Induk tiap sub-layar (untuk tombol "← Kembali" dan sorotan
            nav bawah). Layar tanpa induk kembali ke Mode Operasional. */
-        var LAYAR_INDUK={langkah:"hariini",perhatian:"hariini","introspeksi-fin":"introspeksi","introspeksi-ops":"introspeksi","introspeksi-mkt":"introspeksi","introspeksi-tech":"introspeksi",investasi:"keuangan","saran-rencana":"saran","kemasan-sudut":"kemasan","kemasan-label":"kemasan","buku-transaksi":"buku","buku-qris":"buku","buku-stok":"buku","buku-hutang":"buku","buku-laporan":"buku"};
-        var LAYAR_JUDUL={hariini:"Mode Operasional",langkah:"Langkah Berikutnya",perhatian:"Perlu Perhatian",data:"Data Usaha",dashboard:"Dasbor Level UMKM",valuasi:"Valuasi",introspeksi:"Introspeksi","introspeksi-fin":"Keuangan","introspeksi-ops":"Operasional","introspeksi-mkt":"Pasar & Kemasan","introspeksi-tech":"Teknologi & Legalitas",keuangan:"Keuangan",investasi:"Simulasi Dana Investasi",saran:"Saran","saran-rencana":"Rencana Perbaikan",kemasan:"Produk & Pemaketan","kemasan-sudut":"Foto 3 Sudut","kemasan-label":"Contoh Label",buku:"Pembukuan","buku-transaksi":"Tambah Transaksi","buku-qris":"Pembayaran QRIS","buku-stok":"Stok Barang","buku-hutang":"Piutang & Utang","buku-laporan":"Laporan",cekdata:"Cek Data",legalitas:"Legalitas",pemasaran:"Pemasaran",sop:"Orang & SOP",portal:"Portal Investor",paket:"Paket & Layanan",adminmarketing:"Admin Marketing"};
+        var LAYAR_INDUK={langkah:"hariini",perhatian:"hariini","introspeksi-fin":"introspeksi","introspeksi-ops":"introspeksi","introspeksi-mkt":"introspeksi","introspeksi-tech":"introspeksi",investasi:"keuangan","saran-rencana":"saran","kemasan-sudut":"kemasan","kemasan-label":"kemasan","buku-transaksi":"buku","buku-qris":"buku","buku-stok":"buku","buku-hutang":"buku","buku-laporan":"buku",bayar:"paket"};
+        var LAYAR_JUDUL={hariini:"Mode Operasional",langkah:"Langkah Berikutnya",perhatian:"Perlu Perhatian",data:"Data Usaha",dashboard:"Dasbor Level UMKM",valuasi:"Valuasi",introspeksi:"Introspeksi","introspeksi-fin":"Keuangan","introspeksi-ops":"Operasional","introspeksi-mkt":"Pasar & Kemasan","introspeksi-tech":"Teknologi & Legalitas",keuangan:"Keuangan",investasi:"Simulasi Dana Investasi",saran:"Saran","saran-rencana":"Rencana Perbaikan",kemasan:"Produk & Pemaketan","kemasan-sudut":"Foto 3 Sudut","kemasan-label":"Contoh Label",buku:"Pembukuan","buku-transaksi":"Tambah Transaksi","buku-qris":"Pembayaran QRIS","buku-stok":"Stok Barang","buku-hutang":"Piutang & Utang","buku-laporan":"Laporan",cekdata:"Cek Data",legalitas:"Legalitas",pemasaran:"Pemasaran",sop:"Orang & SOP",portal:"Portal Investor",paket:"Paket & Layanan",bayar:"Bayar Langganan",adminmarketing:"Admin Marketing"};
         /* Judul dipakai indikator "Anda di sini" dan label tombol Kembali;
            sub-layar memakai judul pendeknya sendiri supaya jalurnya
            tetap satu baris (mis. "Keuangan › Tambah Transaksi"). */
@@ -5382,6 +5432,9 @@
           /* Masuk layar Saran: gerbang riset data usaha (hanya bila
              pemilik masuk; tamu hanya melihat ajakan daftar). */
           if(nama==="saran"){ try{ risetBukaLayar(); }catch(e){} }
+          /* Masuk layar Paket & Layanan atau Bayar Langganan: muat ulang
+             rincian tagihan, kode marketing, dan status pembayaran. */
+          if(nama==="paket"||nama==="bayar"){ try{ if(window.__bayarBukaLayar) window.__bayarBukaLayar(); }catch(e){} }
           return true;
         }
         /* Layar yang memuat elemen tertentu (dipakai fokusKeKolom dan
@@ -6667,6 +6720,9 @@
               var loc=readLocal(); if(loc) applySnapshot(loc);
             } else {
               var core=(res[0].data&&res[0].data.data)||{};
+              /* Langganan dari data usaha (umkm_data.data -> 'langganan'):
+                 tampilkan paket aktif / sudah berakhir di #paket. */
+              try{ if(window.__bayarLanggananDariData) window.__bayarLanggananDariData(core.langganan||null); }catch(e){}
               var snap={
                 lokasi:core.lokasi||null,
                 paket_tier:core.paket_tier||null,
@@ -8648,6 +8704,29 @@
            Rp75.000/bln (AI 600/bln), Menengah Rp150.000/bln (AI 1.000/bln). */
         var HARGA_PRO={mikro:35000,kecil:75000,menengah:150000};
         var KUOTA_AI_PRO={mikro:300,kecil:600,menengah:1000};
+        /* ---------- Pembayaran langganan via transfer BSI ----------
+           Nomor rekening tujuan transfer (a.n. Soegianto Soelistiono).
+           Ditampilkan di layar Bayar Langganan apa adanya. */
+        var NO_REKENING_BSI="7245297658";
+        var HARGA_PEGAWAI_TAMBAHAN={mikro:5000,kecil:10000,menengah:15000};
+        var PEGAWAI_TERMAKSUK={gratis:0,mikro:1,kecil:3,menengah:5};
+        /* Hitung total bayar — fungsi murni (tidak membaca DOM/cloud):
+           harga paket + biaya pegawai tambahan, dikurangi diskon 10%
+           bila pengguna punya kode marketing. */
+        function hitungTotalBayar(tier, jmlPegawaiTambahan, punyaKodeMarketing){
+          var t=(tier==="kecil"||tier==="menengah")?tier:"mikro";
+          var jml=Math.max(0, Math.floor(Number(jmlPegawaiTambahan)||0));
+          var hargaPaket=HARGA_PRO[t]||HARGA_PRO.mikro;
+          var biayaPegawai=jml*(HARGA_PEGAWAI_TAMBAHAN[t]||0);
+          var subtotal=hargaPaket+biayaPegawai;
+          var diskon=punyaKodeMarketing?Math.round(subtotal*0.10):0;
+          return {hargaPaket:hargaPaket, biayaPegawai:biayaPegawai, diskon:diskon, total:subtotal-diskon};
+        }
+        window.__hitungTotalBayar=hitungTotalBayar;
+        window.__noRekeningBsi=function(){ return NO_REKENING_BSI; };
+        window.__hargaPegawaiTambahan=HARGA_PEGAWAI_TAMBAHAN;
+        window.__pegawaiTermasuk=PEGAWAI_TERMAKSUK;
+        window.__tierTersimpan=function(){ try{ return localStorage.getItem(_TIER_KUNCI); }catch(e){ return null; } };
         var _TIER_KUNCI="umkm-introspeksi-tier-dipilih";
         function tierDipilih(){
           try{ var t=localStorage.getItem(_TIER_KUNCI); if(t==="mikro"||t==="kecil"||t==="menengah") return t; }catch(e){}
@@ -9815,13 +9894,15 @@
         if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("paket"); return; }catch(e){} }
         try{ document.body.setAttribute("data-layar","paket"); }catch(e){}
       }
-      /* Bagian Pro di halaman Paket & Layanan: bila saklar mati, tombol
-         berlangganan disembunyikan dan tertulis "Pendaftaran langganan belum
-         dibuka"; bila saklar menyala, tombol berlangganan tampil. */
+      /* Bagian Pro di halaman Paket & Layanan: pembayaran langganan lewat
+         transfer BSI sudah dibuka (layar "bayar"), jadi tombol Bayar
+         langganan selalu tampil dan catatan "belum dibuka" disembunyikan.
+         Modul langganan QRIS lama tetap memakai saklar LANGGANAN_AKTIF
+         dan tidak dipakai di sini. */
       function aturPaketPro(){
         var b=gid("btnPaketLangganan"), n=gid("paketProBelum");
-        if(b) b.style.display=LANGGANAN_AKTIF?"":"none";
-        if(n) n.style.display=LANGGANAN_AKTIF?"none":"";
+        if(b) b.style.display="";
+        if(n) n.style.display="none";
         /* Tandai kartu tier yang DIPILIH pengguna (pilihan sendiri, bukan
            dari data usaha); bila belum pernah memilih, default Mikro. */
         var tier="mikro";
@@ -9842,14 +9923,8 @@
         strip.addEventListener("keydown", function(ev){ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); bukaHalamanPaket(); } });
         var bl=gid("btnPaketLangganan");
         if(bl) bl.addEventListener("click", function(){
-          /* Alur berlangganan modul langganan yang sudah ada (paket Bulanan,
-             Rp35.000 — paket Mikro; Kecil Rp75.000, Menengah Rp150.000).
-             Modul langganan tidak terdaftar sebagai layar; bila
-             saklar menyala, bagiannya sudah dibuka initLangganan — cukup
-             jalankan bukaBayar, yang menampilkan panel bayar dan menggulir
-             ke sana. */
-          if(window.__bukaBayar){ try{ window.__bukaBayar("bulanan"); return; }catch(e){} }
-          var el=gid("langganan"); if(el){ try{ el.scrollIntoView(); }catch(e){} }
+          /* Bayar langganan lewat transfer BSI: buka layar "bayar". */
+          if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("bayar"); return; }catch(e){} }
         });
         try{ aturPaketPro(); }catch(e){}
         /* Ketuk kartu tier memilih paket (preferensi pengguna, tersimpan). */
@@ -9860,6 +9935,368 @@
           }
         }catch(e){}
         try{ perbaruiStatusAkun(); }catch(e){}
+      })();
+    </script>
+
+    <script>
+      /* ================= PEMBAYARAN LANGGANAN VIA TRANSFER BSI =================
+         Pengguna membayar langganan lewat transfer ke rekening BSI di atas,
+         lalu mengunggah tangkapan layar bukti transfer. Bukti dibaca di
+         peramban (Tesseract.js, pola yang sama dengan foto nota) dan
+         isian diisi otomatis — pengguna tetap bisa mengoreksi semuanya.
+         AI/OCR TIDAK membuat angka: semua angka dihitung rumus
+         hitungTotalBayar atau dibaca dari bukti lalu dikoreksi pengguna.
+         Pembayaran dicatat sebagai "menunggu verifikasi" lewat RPC
+         ajukan_pembayaran; pemilik yang memverifikasi di aplikasi Admin,
+         barulah langganan aktif. Fitur ini TIDAK memakai saklar
+         LANGGANAN_AKTIF — berjalan walau modul langganan QRIS mati. */
+      (function(){
+        "use strict";
+        function gid(id){ return document.getElementById(id); }
+        function sbBayar(){ try{ return (window.__sbAuth && window.__sbAuth())||null; }catch(e){ return null; } }
+        function penggunaBayar(){ try{ return (window.__penggunaAktif && window.__penggunaAktif())||null; }catch(e){ return null; } }
+        function popupBayar(judul, apa, lakukan){
+          try{ if(typeof popupRamah==="function"){ popupRamah(judul, apa, lakukan||""); return; } }catch(e){}
+          try{ if(window.tampilPopupRamah) window.tampilPopupRamah(judul, apa, lakukan||""); }catch(e2){}
+        }
+        function dua(n){ n=String(n); return n.length<2?"0"+n:n; }
+        function hariIniStr(){ var d=new Date(); return d.getFullYear()+"-"+dua(d.getMonth()+1)+"-"+dua(d.getDate()); }
+        function fmtBayar(n){ try{ if(typeof fmtFull==="function") return fmtFull(n); }catch(e){} return "Rp "+Math.round(Number(n)||0).toLocaleString("id-ID"); }
+        function fmtTglBayar(iso){ try{ var d=new Date(iso); if(isNaN(d.getTime())) return String(iso||"—"); return d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }catch(e){ return String(iso||"—"); } }
+        function namaTierBayar(tier){ return tier==="kecil"?"Kecil":tier==="menengah"?"Menengah":"Mikro"; }
+        function tabelHilangBayar(err){ if(!err) return false; var m=((err.message||"")+" "+(err.code||"")); return /42P01|42883|PGRST205|Could not find the table|does not exist/i.test(m); }
+        function buatUuidBayar(){ try{ if(window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID(); }catch(e){} return Date.now().toString(36)+"-"+Math.floor(Math.random()*1e9).toString(36); }
+
+        /* ---------- Urai bukti transfer (fungsi murni, parsing deterministik) ----------
+           jumlah: angka terbesar (pemisah ribu dihilangkan; ",00" di ujung
+           dibuang; abaikan angka < 1000; abaikan deret angka ≥ 10 digit —
+           itu nomor rekening/nomor HP, bukan nominal). tanggal: DD/MM/YYYY,
+           DD-MM-YYYY, atau DD MMM YYYY (nama bulan Indonesia). namaPengirim:
+           teks setelah kata "dari"/"pengirim". noReferensi: setelah
+           "ref"/"referensi"/"No. Ref". adaBsi: teks menyebut BSI/Soegianto. */
+        var BULAN_BSI={januari:1,jan:1,februari:2,feb:2,maret:3,mar:3,april:4,apr:4,mei:5,juni:6,jun:6,juli:7,jul:7,agustus:8,agu:8,ags:8,september:9,sep:9,oktober:10,okt:10,november:11,nov:11,desember:12,des:12};
+        function uraiBuktiBsi(teks){
+          var t=String(teks||"");
+          var hasil={jumlah:null, tanggal:"", namaPengirim:"", noReferensi:"", adaBsi:false};
+          hasil.adaBsi=/bsi|soegianto/i.test(t);
+          /* Jumlah: angka terbesar — tetapi angka sesudah kata "ref"/"referensi"
+             (nomor referensi transfer) BUKAN jumlah, jadi dibuang dulu supaya
+             nomor referensi 6 digit tidak mengalahkan nominal Rp yang lebih kecil. */
+          var tJumlah=t.replace(/(?:no\.?\s*ref(?:erensi)?|ref(?:erensi)?)\s*:?\s*[A-Za-z0-9][A-Za-z0-9\-]{3,40}/gi," ");
+          var angka=(tJumlah.match(/\d[\d.,]*/g)||[]).map(function(x){
+            var s=String(x).replace(/,\d{2}$/,"").replace(/[.,]/g,"");
+            return parseInt(s,10);
+          }).filter(function(n){ return isFinite(n)&&n>=1000&&String(n).length<10; });
+          if(angka.length) hasil.jumlah=Math.max.apply(null,angka);
+          var m=t.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+          if(m){ hasil.tanggal=m[3]+"-"+dua(m[2])+"-"+dua(m[1]); }
+          else {
+            var m2=t.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+            if(m2){ var bl=BULAN_BSI[String(m2[2]).toLowerCase()]; if(bl) hasil.tanggal=m2[3]+"-"+dua(bl)+"-"+dua(m2[1]); }
+          }
+          var mp=t.match(/(?:dari|pengirim)\s*:?\s*([^\n\r]{1,60})/i);
+          if(mp){ var nm=String(mp[1]).trim().replace(/\s{2,}/g," ").replace(/[.,;]+$/,""); if(nm && !/^\d[\d.,\s]*$/.test(nm)) hasil.namaPengirim=nm; }
+          var mr=t.match(/(?:no\.?\s*ref(?:erensi)?|ref(?:erensi)?)\s*:?\s*([A-Za-z0-9][A-Za-z0-9\-]{3,40})/i);
+          if(mr) hasil.noReferensi=String(mr[1]).trim();
+          return hasil;
+        }
+        window.__uraiBuktiBsi=uraiBuktiBsi;
+
+        /* ---------- Keadaan layar ---------- */
+        var bayarTier="mikro";
+        var bayarPunyaKode=false, bayarKodeMarketing="";
+        var bayarFile=null, bayarOcrTeks="", bayarOcrSelesai=false;
+        var bayarPeringatanNominal=false, bayarPeringatanBsi=false;
+        var bayarLangganan=null; /* {paket, berakhir, aktif} dari umkm_data.data.langganan */
+        var bayarMengirim=false;
+
+        function bayarJmlPegawai(){
+          var el=gid("bayarPegawaiTambahan");
+          if(!el) return 0;
+          var v=Math.floor(Number(el.value)||0);
+          return v<0?0:v;
+        }
+        function hitungBayar(){
+          try{ if(typeof window.__hitungTotalBayar==="function") return window.__hitungTotalBayar(bayarTier, bayarJmlPegawai(), bayarPunyaKode); }catch(e){}
+          return {hargaPaket:0, biayaPegawai:0, diskon:0, total:0};
+        }
+        function perbaruiRincianBayar(){
+          var h=hitungBayar();
+          var el=gid("bayarRincianPaket"); if(el) el.textContent=fmtBayar(h.hargaPaket);
+          var ep=gid("bayarRincianPegawai"); if(ep) ep.textContent=fmtBayar(h.biayaPegawai);
+          var baris=gid("bayarRincianDiskonBaris"); if(baris) baris.style.display=(h.diskon>0)?"":"none";
+          var ed=gid("bayarRincianDiskon"); if(ed) ed.textContent="− "+fmtBayar(h.diskon);
+          var et=gid("bayarRincianTotal"); if(et) et.textContent=fmtBayar(h.total);
+          var ket=gid("bayarPegawaiKet");
+          if(ket){
+            var inc=0;
+            try{ if(window.__pegawaiTermasuk) inc=window.__pegawaiTermasuk[bayarTier]||0; }catch(e){}
+            ket.textContent="Di luar yang sudah termasuk di paket Anda — paket "+namaTierBayar(bayarTier)+" sudah termasuk "+inc+" pegawai.";
+          }
+        }
+        function tandaiTierBayar(tier){
+          if(tier!=="mikro"&&tier!=="kecil"&&tier!=="menengah") tier="mikro";
+          bayarTier=tier;
+          var btns=document.querySelectorAll("#bayarPilihPaket [data-bayar-tier]");
+          for(var i=0;i<btns.length;i++){ btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-bayar-tier")===tier?"true":"false"); }
+        }
+        function pilihTierBayar(tier){
+          tandaiTierBayar(tier);
+          /* Selaraskan pilihan dengan kartu paket di #paket (satu preferensi). */
+          try{ if(typeof window.__pilihTier==="function") window.__pilihTier(bayarTier); }catch(e){}
+          bayarPeringatanNominal=false;
+          perbaruiRincianBayar();
+        }
+
+        /* ---------- Kode marketing (diskon 10%) ---------- */
+        async function muatKodeMarketingBayar(){
+          var kode="";
+          try{
+            var u=penggunaBayar();
+            if(u && u.user_metadata && u.user_metadata.kode_marketing) kode=String(u.user_metadata.kode_marketing).trim();
+            if(!kode){
+              var sb=sbBayar();
+              if(sb && u){
+                var r=await sb.from("profiles").select("kode_marketing").eq("id",u.id).maybeSingle();
+                if(!r.error && r.data && r.data.kode_marketing) kode=String(r.data.kode_marketing).trim();
+              }
+            }
+          }catch(e){}
+          var berubah=(kode!==bayarKodeMarketing);
+          bayarKodeMarketing=kode;
+          bayarPunyaKode=!!kode;
+          if(berubah) perbaruiRincianBayar();
+        }
+
+        /* ---------- Status pembayaran ---------- */
+        function statusBayarTeks(s){
+          s=String(s||"").toLowerCase();
+          if(s==="menunggu") return "Menunggu verifikasi";
+          if(s==="terverifikasi"||s==="disetujui"||s==="aktif") return "Terverifikasi";
+          if(s==="ditolak") return "Ditolak";
+          return s?s.charAt(0).toUpperCase()+s.slice(1):"—";
+        }
+        async function muatStatusBayar(){
+          var kartu=gid("bayarStatusCard"), ringkas=gid("paketStatusBayar");
+          var u=penggunaBayar(), sb=sbBayar();
+          if(!u||!sb){ if(kartu) kartu.style.display="none"; if(ringkas) ringkas.style.display="none"; return; }
+          try{
+            var r=await sb.from("pembayaran").select("id,jenis,paket,jumlah,status,catatan,dibuat_pada").eq("user_id",u.id).order("dibuat_pada",{ascending:false}).limit(1);
+            /* Tabel belum ada (pengaturan cloud belum dijalankan): sembunyikan
+               area status — bukan kesalahan. */
+            if(r.error || !r.data || !r.data.length){
+              if(kartu) kartu.style.display="none";
+              if(ringkas) ringkas.style.display="none";
+              return;
+            }
+            var row=r.data[0];
+            var statusTxt=statusBayarTeks(row.status);
+            var jenisTxt=(row.jenis==="tambahan_pegawai")?"Tambahan pegawai":"Langganan";
+            var detail=jenisTxt+" — Paket "+namaTierBayar(row.paket)+", "+fmtBayar(Number(row.jumlah)||0);
+            if(row.dibuat_pada) detail+=", dikirim "+fmtTglBayar(row.dibuat_pada);
+            var catatan=row.catatan?(" Catatan: "+row.catatan):"";
+            var teks=gid("bayarStatusTeks");
+            if(kartu){ kartu.style.display=""; if(teks) teks.textContent=statusTxt+" — "+detail+"."+catatan; }
+            if(ringkas){ ringkas.style.display=""; ringkas.textContent="Pembayaran terakhir: "+statusTxt+" — "+detail+"."; }
+          }catch(e){
+            if(kartu) kartu.style.display="none";
+            if(ringkas) ringkas.style.display="none";
+          }
+        }
+
+        /* ---------- Langganan dari data usaha (umkm_data.data.langganan) ---------- */
+        function normalisasiLangganan(l){
+          if(!l||typeof l!=="object") return null;
+          var paket=String(l.paket||l.tier||l.tingkat||"").toLowerCase();
+          if(paket!=="mikro"&&paket!=="kecil"&&paket!=="menengah") paket="mikro";
+          var berakhir=String(l.berakhir||l.berakhir_pada||l.sampai||"").slice(0,10);
+          if(!/^\d{4}-\d{2}-\d{2}$/.test(berakhir)) berakhir="";
+          return {paket:paket, berakhir:berakhir, aktif:!!(berakhir && berakhir>hariIniStr())};
+        }
+        function perbaruiLanggananDariData(langganan){
+          bayarLangganan=normalisasiLangganan(langganan);
+          var el=gid("paketLanggananAktif");
+          if(!el) return;
+          if(bayarLangganan && bayarLangganan.berakhir){
+            if(bayarLangganan.aktif){
+              el.style.display="";
+              el.textContent="Paket aktif Anda: "+namaTierBayar(bayarLangganan.paket)+" — aktif sampai "+fmtTglBayar(bayarLangganan.berakhir)+".";
+              /* Jadikan tier langganan sebagai pilihan bila pengguna belum
+                 pernah memilih sendiri. */
+              try{
+                if(typeof window.__pilihTier==="function" && typeof window.__tierTersimpan==="function"){
+                  if(!window.__tierTersimpan()) window.__pilihTier(bayarLangganan.paket);
+                }
+              }catch(e){}
+            } else {
+              el.style.display="";
+              el.textContent="Paket Anda sudah berakhir pada "+fmtTglBayar(bayarLangganan.berakhir)+" — bayar lagi untuk melanjutkan.";
+            }
+          } else { el.style.display="none"; el.textContent=""; }
+        }
+        window.__bayarLanggananDariData=perbaruiLanggananDariData;
+
+        /* ---------- Buka layar ---------- */
+        function bayarBukaLayar(){
+          var nr=gid("bayarNoRekening");
+          if(nr){ try{ if(typeof window.__noRekeningBsi==="function") nr.textContent=window.__noRekeningBsi(); }catch(e){} }
+          var tgl=gid("bayarTanggal");
+          if(tgl && !tgl.value) tgl.value=hariIniStr();
+          var tier="mikro";
+          try{ if(typeof window.__tierDipilih==="function") tier=window.__tierDipilih(); }catch(e){}
+          tandaiTierBayar(tier);
+          perbaruiRincianBayar();
+          try{ muatKodeMarketingBayar(); }catch(e){}
+          try{ muatStatusBayar(); }catch(e){}
+        }
+        window.__bayarBukaLayar=bayarBukaLayar;
+        window.__bayarStatusMuat=muatStatusBayar;
+
+        /* ---------- Kompresi gambar (pola yang sama dengan foto nota) ---------- */
+        function dataUrlKeBlob(dataUrl){
+          try{
+            var parts=String(dataUrl).split(",");
+            var bin=atob(parts[1]||"");
+            var arr=new Uint8Array(bin.length);
+            for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+            return new Blob([arr],{type:"image/jpeg"});
+          }catch(e){ return null; }
+        }
+        function kompresGambarBayar(file){
+          return new Promise(function(resolve){
+            try{
+              var reader=new FileReader();
+              reader.onload=function(){
+                var raw=reader.result;
+                var img=new Image();
+                img.onload=function(){
+                  try{
+                    var max=1200, w=img.naturalWidth||1200, h=img.naturalHeight||1200;
+                    var sc=Math.min(1, max/Math.max(w,h));
+                    var cv=document.createElement("canvas");
+                    cv.width=Math.max(1,Math.round(w*sc)); cv.height=Math.max(1,Math.round(h*sc));
+                    var cx=cv.getContext("2d");
+                    cx.fillStyle="#ffffff"; cx.fillRect(0,0,cv.width,cv.height);
+                    cx.drawImage(img,0,0,cv.width,cv.height);
+                    var blob=dataUrlKeBlob(cv.toDataURL("image/jpeg",0.7));
+                    resolve(blob||file);
+                  }catch(err){ resolve(file); }
+                };
+                img.onerror=function(){ resolve(file); };
+                img.src=raw;
+              };
+              reader.onerror=function(){ resolve(file); };
+              reader.readAsDataURL(file);
+            }catch(e){ resolve(file); }
+          });
+        }
+
+        /* ---------- Wiring ---------- */
+        (function(){
+          var segBtns=document.querySelectorAll("#bayarPilihPaket [data-bayar-tier]");
+          for(var i=0;i<segBtns.length;i++){
+            (function(b){ b.addEventListener("click", function(){ pilihTierBayar(b.getAttribute("data-bayar-tier")); }); })(segBtns[i]);
+          }
+          var inpPeg=gid("bayarPegawaiTambahan");
+          if(inpPeg) inpPeg.addEventListener("input", function(){ bayarPeringatanNominal=false; perbaruiRincianBayar(); });
+          var inpNom=gid("bayarNominal");
+          if(inpNom) inpNom.addEventListener("input", function(){ bayarPeringatanNominal=false; });
+          var inpBukti=gid("bayarBukti");
+          if(inpBukti) inpBukti.addEventListener("change", function(e){
+            var f=e.target.files && e.target.files[0];
+            var st=gid("bayarOcrStatus");
+            if(!f){ bayarFile=null; return; }
+            bayarFile=f; bayarOcrTeks=""; bayarOcrSelesai=false;
+            bayarPeringatanNominal=false; bayarPeringatanBsi=false;
+            if(typeof Tesseract==="undefined"){
+              if(st) st.textContent="Pembaca bukti belum termuat di peramban ini — isi kolom di bawah secara manual.";
+              popupBayar("Bukti belum bisa dibaca otomatis","Pustaka pembaca bukti belum termuat di peramban ini.","Baca angka di bukti transfer, lalu isi kolom di bawah secara manual.");
+              return;
+            }
+            if(st) st.textContent="Membaca bukti…";
+            Tesseract.recognize(f,"ind+eng").then(function(res){
+              var teks=String((res&&res.data&&res.data.text)||"").trim();
+              bayarOcrTeks=teks; bayarOcrSelesai=true;
+              var h=uraiBuktiBsi(teks);
+              var nom=gid("bayarNominal"); if(nom && h.jumlah!=null) nom.value=h.jumlah;
+              var tgl=gid("bayarTanggal"); if(tgl && h.tanggal) tgl.value=h.tanggal;
+              var nm=gid("bayarNamaPengirim"); if(nm && h.namaPengirim) nm.value=h.namaPengirim;
+              var rf=gid("bayarNoReferensi"); if(rf && h.noReferensi) rf.value=h.noReferensi;
+              if(st) st.textContent=(h.jumlah!=null)?"Selesai dibaca — periksa kembali isian di bawah.":"Tidak bisa dibaca — isi manual.";
+            }).catch(function(){
+              bayarOcrSelesai=false;
+              if(st) st.textContent="Tidak bisa dibaca — isi manual.";
+              popupBayar("Bukti belum bisa dibaca","Bukti ini belum bisa dibaca otomatis — mungkin terlalu gelap, miring, atau buram.","Coba foto yang lebih terang dan rata, atau isi kolom di bawah secara manual.");
+            });
+          });
+          var btnKirim=gid("btnBayarKirim");
+          if(btnKirim) btnKirim.addEventListener("click", function(){ kirimBuktiBayar(); });
+        })();
+
+        /* ---------- Kirim bukti pembayaran ---------- */
+        async function kirimBuktiBayar(){
+          if(bayarMengirim) return;
+          var u=penggunaBayar();
+          var tamu=false;
+          try{ tamu=(window.__isGuestMode && window.__isGuestMode())||!u; }catch(e){ tamu=!u; }
+          if(tamu){ if(window.__showRegisterGate) window.__showRegisterGate("Mengirim bukti pembayaran"); return; }
+          if(!bayarFile){ popupBayar("Unggah bukti dulu","Unggah tangkapan layar bukti transfer dulu.","Pilih foto bukti transfer, lalu tekan Kirim bukti pembayaran."); return; }
+          var sb=sbBayar();
+          if(!sb){ popupBayar("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return; }
+          var tier=bayarTier;
+          var jmlTambahan=bayarJmlPegawai();
+          var h=hitungBayar();
+          var total=h.total;
+          var nominalEl=gid("bayarNominal");
+          var nominal=nominalEl?Math.round(Number(nominalEl.value)||0):0;
+          if(!(nominal>0)){ popupBayar("Isi nominalnya dulu","Isi nominal yang dibayar — jumlah yang tertera di bukti transfer.","Periksa bukti transfer Anda, lalu isi nominalnya."); return; }
+          var tanggal=(gid("bayarTanggal")||{}).value||hariIniStr();
+          var nama=((gid("bayarNamaPengirim")||{}).value||"").trim();
+          var ref=((gid("bayarNoReferensi")||{}).value||"").trim();
+          /* Pemeriksaan ramah, bukan blokir keras: popupRamah tidak punya
+             panggilan-balik saat ditutup, jadi peringatan tampil sekali dan
+             pengiriman tetap diizinkan pada penekanan berikutnya — pemilik
+             yang memverifikasi kebenarannya. */
+          if(nominal!==total && !bayarPeringatanNominal){
+            bayarPeringatanNominal=true;
+            popupBayar("Nominal berbeda dengan tagihan","Nominal yang diisi "+fmtBayar(nominal)+" berbeda dengan total tagihan "+fmtBayar(total)+".","Periksa kembali nominalnya — bila sudah benar, tekan Kirim bukti pembayaran sekali lagi.");
+            return;
+          }
+          if(bayarOcrSelesai && !/bsi|soegianto/i.test(bayarOcrTeks) && !bayarPeringatanBsi){
+            bayarPeringatanBsi=true;
+            popupBayar("Bukti tidak menyebut BSI","Bukti yang dibaca tidak menyebut BSI atau nama penerima.","Periksa lagi fotonya — bila sudah benar, tekan Kirim bukti pembayaran sekali lagi.");
+            return;
+          }
+          bayarMengirim=true;
+          var btn=gid("btnBayarKirim"); if(btn) btn.disabled=true;
+          try{
+            var blob=await kompresGambarBayar(bayarFile);
+            if(!blob||!(blob instanceof Blob)) blob=bayarFile;
+            var path=u.id+"/"+buatUuidBayar()+".jpg";
+            var up=await sb.storage.from("bukti-bayar").upload(path, blob, {contentType:"image/jpeg", upsert:false});
+            if(up.error) throw up.error;
+            /* Sudah punya langganan aktif dan hanya menambah pegawai (tanpa
+               ganti paket): jenisnya tambahan_pegawai; selain itu langganan. */
+            var paketSama=!!(bayarLangganan && bayarLangganan.aktif && bayarLangganan.paket===tier);
+            var jenis=(jmlTambahan>0 && paketSama)?"tambahan_pegawai":"langganan";
+            var r=await sb.rpc("ajukan_pembayaran",{p_jenis:jenis, p_paket:tier, p_jumlah:total, p_tanggal_bayar:tanggal, p_nama_pengirim:nama, p_no_referensi:ref, p_bukti_path:path, p_pegawai_tambahan:jmlTambahan});
+            if(r.error){
+              if(tabelHilangBayar(r.error)){ popupBayar("Fitur ini belum aktif","Pengaturan cloud belum dijalankan.","Coba lagi nanti setelah pengaturan dijalankan."); }
+              else { popupBayar("Belum bisa mengirim","Bukti belum terkirim — periksa koneksi internet Anda, lalu coba lagi."); }
+              return;
+            }
+            popupBayar("Bukti pembayaran sudah kami terima dan menunggu verifikasi pemilik.","Bukti Anda sudah tersimpan — pemilik akan memeriksa dan mengaktifkan langganan Anda.");
+            bayarFile=null;
+            var inpBukti=gid("bayarBukti"); if(inpBukti) inpBukti.value="";
+            bayarPeringatanNominal=false; bayarPeringatanBsi=false;
+            try{ await muatStatusBayar(); }catch(e){}
+          }catch(e){
+            popupBayar("Belum bisa mengirim","Bukti belum terkirim — periksa koneksi internet Anda, lalu coba lagi.");
+          }finally{
+            bayarMengirim=false;
+            if(btn) btn.disabled=false;
+          }
+        }
       })();
     </script>
 
