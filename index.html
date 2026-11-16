@@ -22,7 +22,7 @@
     <style>
       :root{
         color-scheme:dark;
-        --bg:#0d1411; --surface:#17211c; --surface-2:#1f2c25; --ink:#e9f1ec; --ink-soft:#a9bcb1;
+        --bg:#0d1411; --surface:#17211c; --surface-2:#1f2c25; --ink:#e9f1ec; --ink-soft:#c3d2c7;
         --line:#2e4036; --accent:#2fae74; --accent-ink:#08130d; --accent-soft:#1d3a2a;
         --warn:#e8a04c; --warn-soft:#3a2a14; --bad:#ef8a7d; --bad-soft:#3d1f1a;
         --gold:#e3b959; --gold-soft:#38300f; --teal:#57b7c2; --teal-soft:#17393e;
@@ -99,8 +99,8 @@
       input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold);background:var(--field-bg-focus)}
       input[type="range"]{width:100%;accent-color:var(--accent);min-height:36px}
       .range-row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--ink-soft)}
-      .note{font-size:.85rem;color:var(--ink-soft)}
-      .rujukan{font-size:.85rem;color:var(--ink-soft);margin-top:6px}
+      .note{font-size:.92rem;color:var(--ink-soft)}
+      .rujukan{font-size:.9rem;color:var(--ink-soft);margin-top:6px}
       .voice-result{display:none;background:var(--accent-soft);border:1px solid var(--accent);color:var(--ink);border-radius:10px;padding:11px 14px;font-size:.95rem;font-weight:600;margin-top:12px}
       /* Panel rekaman suara (dipakai tombol suara Modul Keuangan + Mode Operasional):
          ikon mikrofon menunjukkan kapan pengguna bicara (emas + denyut) dan
@@ -361,8 +361,18 @@
       button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
       footer{margin-top:52px;border-top:1px solid var(--line);padding-top:18px;color:var(--ink-soft);font-size:.88rem}
       footer p{margin:6px 0;max-width:85ch}
-      .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:10px;font-weight:600;font-size:.92rem;transition:transform .3s ease;z-index:60;max-width:92vw;text-align:center}
-      .toast.show{transform:translateX(-50%) translateY(0)}
+      .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:10px;font-weight:600;font-size:.92rem;transition:transform .3s ease,opacity .2s ease;z-index:60;max-width:92vw;text-align:center;visibility:hidden;opacity:0;pointer-events:none}
+      .toast.show{transform:translateX(-50%) translateY(0);visibility:visible;opacity:1;pointer-events:auto}
+      /* Bilah valuasi mini tidak tampil di layar bayar — fokus ke pembayaran. */
+      body[data-layar="bayar"] .mobile-valbar{display:none!important}
+      /* Putaran kecil untuk pembacaan bukti. */
+      .ocr-putar{display:inline-block;width:14px;height:14px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:6px;animation:ocrPutar .8s linear infinite}
+      @keyframes ocrPutar{to{transform:rotate(360deg)}}
+      .ocr-isi{display:none;font-size:.78rem;color:var(--gold);font-weight:700;margin-top:4px}
+      /* Petunjuk HP di hero hanya tampil di tampilan HP. */
+      html:not(.mode-hp) #heroHpHint{display:none}
+      .module-grid a{min-width:0}
+      .module-grid a b,.module-grid a span{overflow-wrap:anywhere}
 
       /* ---------- akun, gerbang masuk & sinkronisasi ---------- */
       input[type="email"],input[type="password"],input[type="tel"],input[type="date"]{width:100%;padding:10px 12px;border:1.5px solid var(--field-border);border-radius:10px;background:var(--field-bg);color:var(--ink);font:inherit;font-size:.98rem}
@@ -429,6 +439,7 @@
       .guided-cta .txt{flex:1 1 260px}
       .guided-cta h3{font-size:1.15rem}
       .guided-cta p{color:var(--ink-soft);font-size:.93rem;margin-top:4px}
+      @media(max-width:760px){.guided-cta{flex-direction:column;align-items:stretch}.guided-cta .btn{width:100%}}
       .btn.big{min-height:56px;font-size:1.05rem;padding:14px 24px;border-radius:999px}
       .wizard-overlay{position:fixed;inset:0;z-index:140;background:var(--bg);overflow-y:auto;padding:22px 14px 48px;display:none}
       .wizard-overlay.show{display:block}
@@ -507,7 +518,7 @@
       .explain-body:empty{display:none}
       .explain-chat .chat-log:empty{display:none}
       /* ---------- Tombol mode tampilan HP / PC (bilah akun) ----------
-         Tombol khusus berpindah mode; labelnya mode TUJUAN ("Mode PC"
+         Tombol khusus berpindah mode; labelnya mode AKTIF ("Mode: HP"
          saat tampil HP). Garis teal supaya mudah dikenali sebagai
          pengatur tampilan, bukan emas "sudah diketuk" (tombol ini
          sengaja TIDAK ikut sistem .sudah-diklik: keadaannya sudah
@@ -571,6 +582,8 @@
       .tabel-tim{width:100%;border-collapse:collapse;font-size:.92rem}
       .tabel-tim th,.tabel-tim td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
       .tabel-tim th{color:var(--muted)}
+      .tabel-geser{overflow-x:auto;max-width:100%}
+      .tabel-geser .tabel-tim{min-width:620px}
       .foto-mini{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid var(--line);flex:0 0 44px}
       .foto-inisial{width:44px;height:44px;border-radius:50%;background:var(--surface-2);border:1px solid var(--gold);color:var(--gold);font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;font-size:1.05rem}
       .foto-sel{display:inline-flex;align-items:center;gap:8px}
@@ -640,7 +653,11 @@
          (.active, guard :not(.active)), dan garis tepi emas akordeon
          yang sedang terbuka tetap tampil (outline, properti lain
          sehingga tidak tertimpa isi emas). Emas di sini tidak pernah
-         berarti nonaktif atau galat: tanpa abu-abu, tanpa merah. */
+         berarti nonaktif atau galat: tanpa abu-abu, tanpa merah.
+         PENGECUALIAN (FASE 4): penanda emas NAV BAWAH hanya untuk
+         layar TERAKHIR dikunjungi — ketukan nav baru menghapus emas
+         nav sebelumnya, jadi emas nav berarti "layar aktif/terakhir",
+         bukan "pernah dikunjungi". Tombol lain tetap emas menetap. */
       .btn.sudah-diklik:not([aria-pressed="true"]){background:var(--gold);border-color:var(--gold);color:#171106}
       .btn-explain.sudah-diklik{background:var(--gold);border-color:var(--gold);color:#171106}
       .wiz-skip.sudah-diklik{background:var(--gold);border-color:var(--gold);color:#171106}
@@ -930,6 +947,10 @@
          Indonesia sederhana — judul + apa yang terjadi + apa yang harus dilakukan.
          Tidak ada teks kesalahan merah dan tidak ada teks mentah dari server. */
       window.tampilPopupRamah = function(judul, apa, lakukan, aksi){
+        /* Tombol OK selalu kembali ke "Mengerti" — popup konfirmasi yang
+           mengubahnya (mis. "Periksa lagi") tidak boleh membocorkan
+           label itu ke popup berikutnya. */
+        var okAwal = document.getElementById("btnFriendlyPopupOk"); if(okAwal) okAwal.textContent = "Mengerti";
         apa = String(apa == null ? "" : apa); lakukan = String(lakukan == null ? "" : lakukan);
         if(!lakukan && apa.indexOf(" — ") > 0){ var pot = apa.split(" — "); apa = pot.shift(); lakukan = pot.join(" — "); }
         var ov = document.getElementById("friendlyPopupOverlay"); if(!ov) return;
@@ -937,7 +958,7 @@
         var w = document.getElementById("friendlyPopupWhat"); if(w) w.textContent = apa;
         var d = document.getElementById("friendlyPopupDo"); if(d){ d.textContent = lakukan; d.style.display = lakukan ? "" : "none"; }
         /* Tombol aksi opsional (argumen ke-4): {label, href} — dipakai mis. oleh
-           popup kuota AI agar pengguna bisa langsung membuka modul Langganan.
+           popup kuota AI agar pengguna bisa langsung membuka layar Paket & Layanan.
            Tanpa argumen ini perilakunya persis seperti sebelumnya. */
         var ab = document.getElementById("btnFriendlyPopupAction");
         if(ab){
@@ -974,7 +995,7 @@
       <div class="topbar-in">
         <div class="brand"><img class="brand-mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAS6klEQVR42sWbe7BdVX3HP2vtx3ndc9+5CSCSgghKxCRDICqvPnQABykytuMo46NOte0fHafVqUVmosiItdXOdOxUW2xHq52p1lYHLGqhqISgCQgEhQQSkpDkJrnPnPd+rLX6xz6PvffZ59xzwZmemZPk7OzX+q3f7/v7/r6/tYQxxtD+KKWwLAuAH/zgf/jud+9n//5fcebMIr7v0Tsz9RGAGfJ7xMvWdXLit2kfiP4SCFzXZcOGGS6/fAs333wDN974tr4xAoiOAZTSWJbk5z/fx2c+83n27n2CMFS4roPjOggRPcBos843///5GGMIwxDfD7AsyY4d27njjj9n584ru2PtGqBjlXvv/Rp33PFpwlAxPl7u3qhjXAyY6I9fgxFGvUHs4et9ghDdiatWawgBd931ST784Q92PcGOD/6jH/0E0zNTWNJCKRUzZ5aJ135414CvbC47N4R13ssY033++HgZrTUf+9idWJbFhz70PpRSkQc88cST3HDjbZSKRYQArc26LY1oh0fnmBQYYxBCJI6/bGcZYPRBhs46LqXEGEO93uD++7/Fjh3bkUor7rrrr9BKI6UcbfAiPUeRpYUUfS/bfQHxCp0gDYCif5b7Lko9U5vOGDV33/15lFLIHz/8CI89tpfx8XLS7UeMreh9RL/lMdFx8zJCWEQe1Gdw0X52/L4D3Z9+zzNRFhgfL/Ozn+3jxz95BKtcntm1f/+vyOfc0ePV9FkkaZDOSwoQQg6efDFK6LfvbdYZLkM+UgqaTQ9LSizXHdtVrVaRsdyYnum+waWPCxLnrD/Jj44t3QgQAikFUsr2373vqBPZarWwFxYWsW07+yKRMetiwGyJ/mOJe4rIIh3PMMYk72kyni16gCoAKQTaRJwlDEPCUBGGOpYcBNISlIruml5nWzaLS8vYnuf3z15nDCnSk4jLlJvGeULP/UX3HtEp7dnRKa8RGfzCRNdIS6KUoVZv4fshjiOZHC9w7sZpZmfHmZ4cY6xkY0lFqDTVSoNH971EqAxZwxJCdAHbb3nYI8e7oD/ddJBeGIQR3UEYTDJuTRLEOrNvYtMu6F0PYFmSIFBUVxpMTOR40xUX8KYrL2bHttdy4eaNbJiJBo7wwT9LUKvgiDpf/PIeHtytyLlWLw3H3jkeTgZGMEA6xk0sNjsPiKfBDO8wGSmpwxM6s90xhmg/a+Vsk02zRf7g3Vdz2y1XsmXLhVDIgRbRt9WiWV3G91to4zNmw3/e/wx3/+N+xsolEKZn1CEfez2o3xmkEAIZBWWUATrxLnvkQyuTKE4SNHoIOofK0Gi0eM8tW/izj1zN5teeD8oiaDYRnkbYDs3qMl6jilsokC8WwbhUl07yhX9+CjuXx5IG3Qkn3Q5d0+Ms8Xewu7OxBgGKu1HTC7vgo7WGNhkRwiCFwHFs8nkH27ZQSifIStx74jFvWRLPV1hS83efuoF337KVVsujcnoZu1AkX5wk8JqsnjyIUxxjfO5cbMBr1cgXbL7x/af55ZEG05MllNZJDIuFsDAiEc72WiSl68KmF0OXvLrMuZvG2TBVYHKyhFMoAg5N37CwWOPQkdO8eOQ0S4sVCsUchYKLMrqP1naMIQSEyuBYhi9/5q381s4LOHXyDPliESfvYjs2SycO0aytsmHz6yiMzRCGHmHgY1kWrcoK3/7vA7g5F9N5Tgq0B02wPahg6YBHvBoUAjxfs/OSHH/6nguwcuMUxyfIladwxqegMAG4+C3D4WMr/PDBp/m3f/8pBw7NMzE5hgS0Mb2XET2QabU8/vYvdnLd1lmOvvgS5elphDAYpTjy9GPkSiXOvXg7luUSNisgQGlNvmCxd/cBnn5+lYJbQCndl62Gebc1OTm3q4/UdDi9SZMhgW1LHt1/Fkc32Pq6DVRbhmYrpLpaJWi0sIRFznWYnS1w1TWX8vu37KCYt3l0z0GUBtsSiaLOtiWrVY/b376ZP7z1Ik6dOou0IF8sEnotjj73DOXpWTZtfi2h76OVj0FjdIjWCsdRfPVfHuSRJ5cpFpxeBqIXZhGPEEMM0B5wB6zSJ8dTiZRRjD9+oMLOy8pceMEclpOnUCqhjKK6dAYVhLj5McJ6A1s3uebai9i25VU88KP9+KHBcSyMNkgp8EPDxukcn/7IZSgVEPg+rptDhSHHD7/AzDnnMrPpVQTNOgIN7cEb5WNJqC2c5nN/v5vVhsC2uoQjszJMZyEByC4gMbjCMrqXrrQy2BJaoc0//deLqKCFMgoDlEolpuY2UDt7hiP79xC2VhGW5MRzB/nNnRu59wvvQgoTuakAaQkazYBbrj+fqSLUGj4Yhe+1OHnsGNNzc5RKJerLCyi/Seg1CBo1/EYVr17DNj679zzDc8caFPJWBFNx8hljnekw7/y2JifmdiUIypDCoudakHMkR+ebXHFpiQsvmMEPNEYpMIby1CS2bXP0+QNYBORzNvNHjrH1so0Ye4wfPnyAUsElVJpCweWP33Uhrq5iECi/TqVSZ2y8TLk8hvK9KHmpEB14GO2jlUIpjW6u8jdf2cOB4yGFnIXR7VTdHni8ehwUBtbU9MZdXdZmkjmzy8czih3LEtRbBknIb1+xgZYXgvbRKiBotbBtSXl8guNHT+E3auBX8Bst3nDpJh5+fIHFpQpKwyW/Mc2tO8do1ptt7zBI26WQz1GvVvE8nyAM8YMAoxUmDAl9n7xj2L37Gb70nePkOpWsiIWvSM32gFJHZtXgQoou4ekCYKoi1dpQKtj86OfLPHtoGRk0aFbO4lVW8aor1JcW8FZPs2k2T8uDWiOkUavgBovceM2r8QJFqGHzRgf8Cl6rheeFBKFB+S0qZ6sEWoC0I3aoQ0Lfo9VsosKQhZeO8aVvPY+nbKTMkMJ07xvPYgnDiLgBBpCeVNmf5NGWoFIP+YfvHscp5KhVqjTqdWrVCrVajZXVKounTmPrKs3ApeoJzi4v8IbzDYW8i1KGyVyIDnyC0EcbgVEhbr4QKdE6RHkN/EYDv9nEa7bwgxDTXObe7zzL3udDSvmIbA3VA0xsAGYQFU5VYolCpXOhSAKMNobJ8QL3PXSY7a+f472/M8vRY4vYroUlJVKCkBKDIm+1aAYTGK/OpNNgZjJH9WSdvBPJ19LKEQQ+FobK0nJ0D9vBsmykJUEaLMumRItvPnCIrz9UpVxyIyY6gMNkVrcDawHRM0I83k2cuMT/vx1XSmsmygU+95XH0d7F3LTNpdE0eEp0qbHWGikFKqjjj29CByvk7Yive16ItArkc2Xqq0uERDWG0iG2FSKkREiLYsEmbDW496F5vva/DVzHaaN7RpkeG0NCqE0bxoBtdEYVJ7LV1Q4WpONBSEHOtfnsVw/wix1jvPv6Sc6Zcgi1pBVqwkCjlWor2xJ34hy81hGktFhcbVGYuojV+WWM0WgTGddoQGvyOUneMrxwpMo3Hlzm0ec8inkXaUVzkJis9mA7QN6tQlMlfdw4dgLds+RnEavoRLYSZNriRbmY44F9TfYebHHtZXl2XJzn/I0FSgUL13Uw2lBbPk35vDLTc7O8cOI4S94khfFx8vMvYRcswODYNsJ2qfmSA/NNfvLUMg8/WaPWgrGCixExNinWLt4yhZz2uOxhspHRPWEjLS6IuKIVFfFobSgXbeotw3cebXL/3gYz4zbTEy6FnESHIUdPNbjpqoAP3rqNh3Yf5qorXsNzB09z34OLzE4XCTQ0VJ755TqHTzY4eaaFHxpKeYdyMcKd9TRo4t7b8ZC4+jRUD+haTsSAMA4HKcsKGWl2tgWTZQetDSs1zcJqE20iGm1Eju/vWeTWGxVXbD2fqy7N8a//8SzffMhnqqxRyqBNBSkEri3I52yKBYHSEYPs4yQZXpulBMXHExdi7L4mhzGZ3DkLQbv4EZPBOtpfqDQCgeNIHFt2jwsBC6vw7MGT/MnvvQZaSzx7tMmmmTyu08ZWY3r9EG3otivEAAF2jdbjoEJICNHPA+KglyATo0pmqeORaBIhfqcUlrbLTx+f56Y3b6Je8zm1EiJlpAkobdAalI4QHpGitVJk85WUbNcTY1PHTHKMcvCYRN+gusxQ9r5rNUezxFXHlhw66VE/u8pSVdPwdJLNZaXiAZpFxxONNj3uEm+dtfXKeOsurkfIkWQwkfpmaGuDe3Qk0qcBbFuwVNMszJ+mUvVQWqzp1Z0zhvYvTLKT1JlEIcTAjpMdb2IMmtFM99YkxIdR21XGgCWh6UHVAy9MnzC4Ch1Y2wsxGB/imJJqxvRCQAxgU3GXMRld2nT9HZfRzGApKtIAoRXQ7kr1QGst5XjdfcEB3a3OO64pi6e7vV0eIEWq0hJJCX2NUYTa4CtJqejE4boPsRNGHAS2WUuFRFLWi4dPl9tg+ouhRBo0vbZVvN01kGHFVORM5hifFANKS4rFfPf3mrNq1kiFIiOMxPAiyY7r513kN8n+/jBEz0yJWf8Rb5m1K0ktJMViLlJ/R/DCkVvgYjCnSXuD7Aog8bSDWXN9zzDUz+wqkUWkIoEV2sXPWoMX2XpFF6NGAe9RWmOZVDOLZa1VkHSqswxOAQYN2LaDaN8sHX7xzJQgNiaVgUTGbJtkGh9kDHvdqDogvgZ2lYzJPE9KgS0FCQZk+pfDZOFN998xfSLtYXGwThgkFaL2ejNNR3UdxgLXpsgGSwpsqfBbzeQymlG5/pDVY1kyf7xVH2eMct1rgkRKJcpijxlrCJIcIOL7rm0IgxZBGIXDqMtbEs+OcYc+5prBXbpUvh1KcqQH0l9Wpmc22f1NAqppFzZCQBAaygWHqYkcaEXLD9m0oUgpbxGEeqCel4VBCSCOL6lBZK5c665Eidlk7Vqg02hIuVJaaxeIfjQ2CY6DNmCh+cvbz+P2ax3qi6cIFl/ifVcbPvVH29HtVnqiyOlUpcbElv+JPg1TCBG1vtMZoy2LdSX/Dplr38/OBIfE2uDYP0RSJOlyhdiDEmgcq8mlgGpT87tvmWTHpRNsnB3DeA22v/HNeKbI5g0eN+85xrcfPM5k2UWly9mUN8aNkKDPJgWKCa1CdOuYLhjHmx/GmN7NTH86jK/viSNrZ9BpLSGOwsoYymMu12wpo2Se62++iXNeNYcygtdf+y7swjhv3TFLPhcpSd2BtO/fJ9PH/TgLBFOe2PWmVHjJrHo/TnQSoBHPz6S4v07J5zEXFgKCwDA3aTNb1IR+iLd6mtPHTxJ6ZzF6hSDQzI6FzEzk8APVg5GUVN81ijZ975z1ey32aHfBK9ZJTcTSAEksvvBpKHC1wU9pQ9ExzEwXOH7oOGNFC7c4xsR4EbH6HPXVM2AM4yWHxdXe+p4+9mcyNL74yq9hmkQ8k7WvkVlC4SBS0bdaDJHUBodkUUsKqjWf8uQEKvA4+sJJJst5vJUTVI7s48Tzv2J+fpWmFySU6ISbG9akxcNSZ9dzYuFtp9PK0D6hiYKmIzGP/HADrmtxfKHJUlNy0SXn8uTeF3BskEGJgyeOc+TwSU7XSiysejh2bNV6ihnGXT9TnxhxtVsPA0yyUTBqlbVm0ZE6JIXB1xZf/94LzM3kQGgOHJhn377D7Nt7GGMEjz3v02wFyHSnypAQWOKZ6JV+7KzYSg8qgRMDpOe+61OLFLWB8TGX7z2yyJRc5brXuYSeTyHncP6mCR56VvPwU6uU8lEWEFK2q0QzsGnz6/iIiy/eZjzPG6q1xdf0ZW2eSpyXJWDGGqragO8HXH6eYttmh6npIk++GPLwM01cx0EKkWy6mIw2l3nlW3EMhnwuhz03N8uLLx6N1thpM9I6gYGzLoa/nDFR3s3nXJ46ofjFcY1WVYS0GMu7yZCOKVTDmh4va9aFIAxCZs+bQW7bdjl+EDBkW0MfB8hacNTV5lOkaJDtinnJWN5mfCxHuWgn+4z0y9wdLjJouct68EBKgef5bN/+RuRtt70Dx7ExYrgeH6+gRipTRYqYpFKY1hEuaG0S+5TiEnZfWZuu+tILOEY0hjFg2xbvfOc7kNdeezVv3nkllUo1saNyZH1uAEAlBpJibfHKMSF0ZGl/YrjslT3Y/vWCnXtblkWlUmXnzh1cd91bkFJKPnnnx7GtaK+glGKoew8Dn6wGRqIwEsnCpdO2ymKXw7AmLcD2e0T/ekljooWZWissS3LnnR9HSguplGLr1su5555drCyvRJ2bETxhLaGi24tPdWVErNnZR2SyOMkwhWgIeUsDumVZGANLSyvcc88utm/filIK22rP/Pvf/16UUnziE5/GGE25XO5uonzluz9JSO1djjAIzVOGWnfON/2FUaVSQUrJF7/4WT7wgdu7W2f7Nk8/9the7r77r9m79wmUijZPW5aFlPJl5pxsN30lmt8oH601Sqn25mmLK6/czh13fIyrrrqif/N056L41vIHHvgR9933A/bv/yULC0s0m632WvyXuVf+ZY98/c8TQlIo5JiZmWHr1i28/aa3ccOA7fP/BwHlM+qqBh8QAAAAAElFTkSuQmCC" alt="Logo Tumbuh" /> UMKM Tumbuh</div>
         <nav class="main" id="navUtama" aria-label="Navigasi utama">
-          <a href="#" id="navWizardTop">Mulai</a>
+          <a href="#" id="navWizardTop">Panduan</a>
           <a href="#data">Data Usaha</a>
           <a href="#dashboard">Dasbor</a>
           <a href="#valuasi">Valuasi</a>
@@ -987,9 +1008,9 @@
           <a class="tautan-admin" id="btnAdminMarketing" style="display:none" tabindex="0">Admin marketing</a>
           <span class="sync-pill" id="syncStatus">Memuat…</span>
           <a class="tautan-admin" id="btnSaveCloud" tabindex="0">Register</a>
-          <button class="btn ghost small" id="btnModeTampilan" type="button" title="Pindah tampilan: HP atau PC">Mode PC</button>
+          <button class="btn ghost small" id="btnModeTampilan" type="button" title="Mode tampilan saat ini: HP — ketuk untuk pindah ke PC">Mode: HP</button>
         </div>
-        <button class="btn ghost" id="btnLipatHeader" type="button" aria-expanded="true" aria-controls="navUtama accountBar">Lipat header</button>
+        <button class="btn ghost" id="btnLipatHeader" type="button" aria-expanded="true" aria-controls="navUtama accountBar">Sembunyikan menu</button>
       </div>
     </div>
 
@@ -1002,15 +1023,15 @@
 
     <div class="guest-banner" id="guestBanner" role="status">
       <div class="guest-banner-in">
-        <span>Mode coba — data hanya di HP ini dan hilang saat halaman ditutup. Ketuk Register untuk menyimpan ke cloud.</span>
+        <span>Mode coba — data hanya tersimpan di HP ini. Daftar untuk menyimpan ke cloud dan membukanya di HP lain.</span>
       </div>
     </div>
 
     <div class="wrap">
       <header class="hero">
         <h1>Kenali kekuatan usaha Anda, lalu naikkan nilainya.</h1>
-        <p class="lede">Isi data usaha sekali, lalu lihat level UMKM Anda, skor kesehatan usaha keseluruhan, estimasi valuasi dari tiga metode, hasil introspeksi, hitungan HPP dan simulasi dana investasi, serta rencana perbaikan 30–60–90 hari yang disusun dari angka Anda sendiri.</p>
-        <p class="note" style="margin-top:10px">Di HP: gunakan menu di bagian bawah layar untuk berpindah bagian — Mode Operasional, Data, Level, Valuasi, Cek Diri, Uang, Saran, dan Mulai. Bilah hijau di atas menu menampilkan valuasi terbaru Anda setiap saat.</p>
+        <p class="lede">Isi data usaha sekali — lihat level UMKM, skor kesehatan, estimasi valuasi, hasil introspeksi, dan rencana perbaikan 30–60–90 hari dari angka Anda sendiri.</p>
+        <p class="note" id="heroHpHint" style="margin-top:10px">Di HP: gunakan menu di bagian bawah layar untuk berpindah bagian — Mode Operasional, Data, Level, Valuasi, Introspeksi, Keuangan, Saran, dan Panduan. Bilah hijau di atas menu menampilkan valuasi terbaru Anda setiap saat.</p>
         <div class="guided-cta">
           <div class="txt">
             <h3>Cara paling mudah memulai</h3>
@@ -1019,16 +1040,16 @@
           <button class="btn big" id="btnWizardHero" type="button">Mulai langkah demi langkah</button>
         </div>
         <div class="sql-banner" id="sqlBanner" role="alert">
-          <b>Tabel cloud belum dibuat.</b> Aplikasi tetap bisa dipakai dan data tersimpan lokal sementara di perangkat ini. Agar data tersimpan di cloud per akun, jalankan SQL pembuatan tabel sekali di SQL Editor cloud.
-          <div class="actions" style="margin-top:10px"><button class="btn small" id="btnShowSql" type="button">Lihat &amp; salin SQL tabel</button></div>
+          <b id="sqlBannerJudul">Fitur ini sedang disiapkan.</b> <span id="sqlBannerTeks">Data Anda tetap tersimpan di HP ini. Silakan hubungi pemilik aplikasi bila Anda membutuhkan penyimpanan di cloud.</span>
+          <div class="actions" id="sqlBannerActions" style="margin-top:10px;display:none"><button class="btn small" id="btnShowSql" type="button">Lihat &amp; salin SQL tabel</button></div>
         </div>
         <div class="module-grid" aria-label="Daftar 9 modul aplikasi">
           <a href="#data"><b>Introspeksi &amp; Valuasi</b><span>Data, level, 3 metode valuasi</span></a>
           <a href="#kemasan"><b>Produk &amp; Pemaketan</b><span>Penilaian foto &amp; label kemasan</span></a>
-          <a href="#buku"><b>Keuangan</b><span>Pembukuan, stok, piutang, SAK EMKM</span></a>
+          <a href="#buku"><b>Pembukuan</b><span>Pembukuan, stok, piutang, SAK EMKM</span></a>
           <a href="#keuangan"><b>Ekonomi &amp; Investasi</b><span>HPP, BEP, dana investasi &amp; rasio bagi hasil</span></a>
           <a href="#pemasaran"><b>Pemasaran &amp; Kanal</b><span>Kanal jual &amp; kalender konten</span></a>
-          <a href="#saran"><b>Teknologi</b><span>Tangga teknologi tepat guna</span></a>
+          <a href="#saran"><b>Saran &amp; Teknologi</b><span>Tangga teknologi tepat guna</span></a>
           <a href="#legalitas"><b>Legalitas</b><span>NIB, PIRT, halal, NPWP, izin edar</span></a>
           <a href="#sop"><b>Orang &amp; SOP</b><span>Pembuat SOP &amp; pembagian peran</span></a>
           <a href="#saran"><b>AI Coach</b><span>Rencana 30–60–90 hari</span></a>
@@ -1082,12 +1103,13 @@
         <a class="menu-row" href="#langkah"><span><b>Langkah berikutnya</b><span class="sub">Satu langkah saja setiap kali — lihat yang harus diisi dulu.</span></span><span class="arr">›</span></a>
         <a class="menu-row" href="#perhatian"><span><b>Perlu Perhatian</b><span class="sub">Saran proaktif dari data usaha Anda sendiri.</span></span><span class="arr">›</span></a>
       </div>
+      <div class="actions" style="margin-top:14px"><button class="btn" id="btnHiBayar" type="button">Bayar / Perpanjang langganan</button></div>
       </section>
 
 
       <!-- ============ LANGKAH BERIKUTNYA (dari layar Mode Operasional) ============ -->
       <section id="langkah">
-        <div class="sec-head"><span class="sec-num">☀</span><h2>Langkah berikutnya</h2></div>
+        <div class="sec-head"><span class="sec-num">→</span><h2>Langkah berikutnya</h2></div>
         <p class="sec-sub">Langkah paling penting berikutnya untuk usaha Anda.</p>
         <div class="card" style="margin-top:14px" id="hiLangkahCard">
           <h3>Langkah berikutnya</h3>
@@ -1120,7 +1142,7 @@
       <!-- ============ 1. DATA USAHA ============ -->
       <section id="data">
         <div class="sec-head"><span class="sec-num">01</span><h2>Data usaha</h2></div>
-        <p class="sec-sub" id="dataIntro">Sepuluh isian inti. Semua hitungan di halaman ini berubah langsung mengikuti angka yang Anda masukkan. Untuk pengguna terdaftar, perubahan tersimpan otomatis ke akun cloud Anda — hanya Anda yang bisa mengaksesnya. Untuk mode coba, data hanya tersimpan di HP ini dan hilang saat halaman ditutup. Status penyimpanan tampil di bagian atas halaman.</p>
+        <p class="sec-sub" id="dataIntro">Sepuluh isian inti. Semua hitungan di halaman ini berubah langsung mengikuti angka yang Anda masukkan. Untuk mode coba, data hanya tersimpan di HP ini — daftar untuk menyimpan ke cloud dan membukanya di HP lain.</p>
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
             <span class="demo-tag" style="margin:0">Formulir kosong — kolom berwarna keemasan siap diisi dengan data usaha Anda</span>
@@ -1131,6 +1153,7 @@
             <p>Kota: <b id="ringkasKota">—</b></p>
             <p>Omzet per bulan: <b id="ringkasOmzet">—</b></p>
             <div class="actions" style="margin-top:12px"><button class="btn" id="btnUbahData" type="button">Ubah data usaha</button></div>
+            <p class="note" style="margin-top:10px">Lanjutkan: <a href="#dashboard">Lihat Level</a> · <a href="#valuasi">Lihat Valuasi</a> · <a href="#introspeksi">Isi Introspeksi</a></p>
           </div>
           <div id="dataFormWrap">
           <p class="help-hint"><span class="field-help-btn" aria-hidden="true">?</span><span><b>Belum paham maksud suatu kolom?</b> Ketuk ikon <b>?</b> di samping nama kolom — akan muncul penjelasan sederhana dan contohnya. Di dalam penjelasan itu ada tombol <b>Tanya AI</b>, silakan bertanya dengan bahasa Anda sendiri bila masih belum paham.</span></p>
@@ -1191,7 +1214,7 @@
             </label>
             <label class="f" style="grid-column:span 2"><span>Ketergantungan usaha pada pemilik</span>
               <input type="range" id="inTergantung" min="0" max="100" value="0" />
-              <div class="range-row"><span>0 — jalan sendiri tanpa pemilik</span><span id="tergantungVal">0</span><span>100 — berhenti total tanpa pemilik</span></div>
+              <div class="range-row"><span>0 = usaha jalan sendiri</span><span id="tergantungVal">0</span><span>100 = sangat tergantung pemilik</span></div>
             </label>
           </div>
           <div class="gps-box" id="gpsBox">
@@ -1224,7 +1247,7 @@
 
       <!-- ============ 2. DASHBOARD ============ -->
       <section id="dashboard">
-        <div class="sec-head"><span class="sec-num">02</span><h2>Dasbor level UMKM</h2></div>
+        <div class="sec-head"><span class="sec-num">02</span><h2>Level</h2></div>
         <div class="card" id="naikLevelWrap" style="display:none;margin-bottom:14px">
           <h3>Naik Level</h3>
           <p class="note" style="margin-top:6px" id="naikLevelTarget">—</p>
@@ -1263,7 +1286,7 @@
           </div>
         </div>
         <div class="grid-3" style="margin-top:14px">
-          <div class="card score-card"><div class="top"><h3>Kesehatan Keuangan (saja)</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><p class="rujukan" id="rujFin">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><p class="note">Hanya aspek keuangan: margin, utang, dan pencatatan.</p></div>
+          <div class="card score-card"><div class="top"><h3>Kesehatan Keuangan saja</h3><span class="score-num" id="scFin">—</span></div><div class="bar"><i id="scFinBar"></i></div><p class="note" id="scFinNote">—</p><p class="rujukan" id="rujFin">—</p><button class="btn-explain" type="button" data-explain="keuangan">Jelaskan ini</button><p class="note">Hanya aspek keuangan — margin, utang, dan pencatatan — tanpa skor lain.</p></div>
           <div class="card score-card"><div class="top"><h3>Kematangan digital</h3><span class="score-num" id="scDig">—</span></div><div class="bar"><i id="scDigBar"></i></div><p class="note" id="scDigNote">—</p><p class="rujukan" id="rujDig">—</p><button class="btn-explain" type="button" data-explain="digital">Jelaskan ini</button></div>
           <div class="card score-card"><div class="top"><h3>Kesiapan investasi</h3><span class="score-num" id="scInv">—</span></div><div class="bar"><i id="scInvBar"></i></div><p class="note" id="scInvNote">—</p><p class="rujukan" id="rujInv">—</p><button class="btn-explain" type="button" data-explain="investasi">Jelaskan ini</button></div>
         </div>
@@ -1281,6 +1304,7 @@
           <div class="k" style="font-size:.82rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)">Rentang nilai wajar usaha Anda</div>
           <div class="val-big" id="valMid">—</div>
           <div class="range-line"><span>Rendah<br /><b id="valLow">—</b></span><span style="text-align:center">Laba pemilik (SDE) per tahun<br /><b id="valSde">—</b></span><span style="text-align:right">Tinggi<br /><b id="valHigh">—</b></span></div>
+          <p class="note" style="margin-top:8px">SDE = laba pemilik setahun. Pengali = berapa kali lipat laba itu yang menjadi nilai usaha. DCF = perkiraan laba 3 tahun ke depan yang dihitung ke nilai hari ini.</p>
         </div>
         <div class="grid-3" style="margin-top:14px">
           <div class="card method"><h3>1 · Aset bersih</h3><div class="amt" id="mAset">—</div><p>Cocok untuk usaha padat aset. Nilai lantai: berapa yang tersisa bila semua aset dijual dan utang dilunasi hari ini.</p><div class="formula" id="mAsetF">Aset − Utang</div></div>
@@ -1289,7 +1313,7 @@
         </div>
         <div class="ai-box">
           <h3><span aria-hidden="true">✦</span> Penjelasan otomatis atas angka Anda</h3>
-          <p class="note" style="margin-top:2px">Versi awal: penjelasan ini dihasilkan rumus &amp; aturan transparan langsung di halaman ini — setiap angka bisa Anda telusur ke hitungannya. Lapisan AI penjelas adalah tahap berikutnya di versi server.</p>
+          <p class="note" style="margin-top:2px">Penjelasan ini dihasilkan rumus &amp; aturan transparan langsung di halaman ini — setiap angka bisa Anda telusur ke hitungannya.</p>
           <p id="aiExplain">—</p>
           <p id="aiExplain2" style="margin-top:6px">—</p>
         </div>
@@ -1313,28 +1337,28 @@
 
       <!-- ============ 4fin. INTROSPEKSI — Keuangan ============ -->
       <section id="introspeksi-fin">
-        <div class="sec-head"><span class="sec-num">04</span><h2>Introspeksi — Keuangan</h2></div>
+        <div class="sec-head"><span class="sec-num">04a</span><h2>Introspeksi — Keuangan</h2></div>
         <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dasbor, pengali valuasi, dan isi rencana perbaikan.</p>
         <div class="card" id="quiz-fin"></div>
       </section>
 
       <!-- ============ 4ops. INTROSPEKSI — Operasional ============ -->
       <section id="introspeksi-ops">
-        <div class="sec-head"><span class="sec-num">04</span><h2>Introspeksi — Operasional</h2></div>
+        <div class="sec-head"><span class="sec-num">04b</span><h2>Introspeksi — Operasional</h2></div>
         <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dasbor, pengali valuasi, dan isi rencana perbaikan.</p>
         <div class="card" id="quiz-ops"></div>
       </section>
 
       <!-- ============ 4mkt. INTROSPEKSI — Pasar & kemasan ============ -->
       <section id="introspeksi-mkt">
-        <div class="sec-head"><span class="sec-num">04</span><h2>Introspeksi — Pasar & kemasan</h2></div>
+        <div class="sec-head"><span class="sec-num">04c</span><h2>Introspeksi — Pasar & kemasan</h2></div>
         <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dasbor, pengali valuasi, dan isi rencana perbaikan.</p>
         <div class="card" id="quiz-mkt"></div>
       </section>
 
       <!-- ============ 4tech. INTROSPEKSI — Teknologi & legalitas ============ -->
       <section id="introspeksi-tech">
-        <div class="sec-head"><span class="sec-num">04</span><h2>Introspeksi — Teknologi & legalitas</h2></div>
+        <div class="sec-head"><span class="sec-num">04d</span><h2>Introspeksi — Teknologi & legalitas</h2></div>
         <p class="sec-sub">Jawab apa adanya: <b>Belum</b>, <b>Sebagian</b>, atau <b>Sudah</b>. Jawaban Anda mengubah skor dasbor, pengali valuasi, dan isi rencana perbaikan.</p>
         <div class="card" id="quiz-tech"></div>
       </section>
@@ -1374,7 +1398,7 @@
 
       <!-- ============ 5b. SIMULASI DANA INVESTASI (dari Keuangan) ============ -->
       <section id="investasi">
-        <div class="sec-head"><span class="sec-num">05</span><h2>Simulasi dana investasi</h2></div>
+        <div class="sec-head"><span class="sec-num">05a</span><h2>Simulasi dana investasi</h2></div>
         <p class="sec-sub">Uji kemampuan bagi hasil sebelum menawarkan kerjasama investasi.</p>
         <div class="grid-2">
           <div class="card">
@@ -1470,7 +1494,7 @@
 
       <!-- ============ 6b. RENCANA PERBAIKAN (dari Saran) ============ -->
       <section id="saran-rencana">
-        <div class="sec-head"><span class="sec-num">06</span><h2>Rencana perbaikan 30–60–90 hari</h2></div>
+        <div class="sec-head"><span class="sec-num">06a</span><h2>Rencana perbaikan 30–60–90 hari</h2></div>
         <p class="sec-sub">Saran penguatan dan rencana perbaikan yang disusun dari sektor, level, dan jawaban introspeksi Anda.</p>
         <div class="grid-3">
           <div class="card advice"><h3><span class="ic" style="background:var(--gold-soft);color:var(--gold)">▣</span> Pemaketan barang</h3><div id="advPack"></div></div>
@@ -1514,7 +1538,7 @@
 
       <!-- ============ 7b. FOTO 3 SUDUT (dari Kemasan) ============ -->
       <section id="kemasan-sudut">
-        <div class="sec-head"><span class="sec-num">07</span><h2>Foto 3 sudut &amp; penilaian terbantu</h2></div>
+        <div class="sec-head"><span class="sec-num">07a</span><h2>Foto 3 sudut &amp; penilaian terbantu</h2></div>
         <p class="sec-sub">Penilaian kemasan yang utuh memakai 3 sudut: tampak atas, kemasan tertutup, dan isi/label dari dekat.</p>
         <div class="card" style="margin-top:14px">
           <h3>Foto 3 sudut (untuk penilaian kemasan lengkap)</h3>
@@ -1540,7 +1564,7 @@
 
       <!-- ============ 7c. LABEL & PEMASOK (dari Kemasan) ============ -->
       <section id="kemasan-label">
-        <div class="sec-head"><span class="sec-num">07</span><h2>Contoh label &amp; pemasok kemasan</h2></div>
+        <div class="sec-head"><span class="sec-num">07b</span><h2>Contoh label &amp; pemasok kemasan</h2></div>
         <p class="sec-sub">Contoh label produk siap cetak dan direktori jenis pemasok kemasan.</p>
         <div class="grid-2" style="margin-top:14px">
           <div class="card">
@@ -1585,7 +1609,7 @@
 
       <!-- ============ 8b. TAMBAH TRANSAKSI (dari Pembukuan) ============ -->
       <section id="buku-transaksi">
-        <div class="sec-head"><span class="sec-num">08</span><h2>Tambah transaksi</h2></div>
+        <div class="sec-head"><span class="sec-num">08a</span><h2>Tambah transaksi</h2></div>
         <div class="card">
           <div class="tx-mode-row" role="group" aria-label="Cara mengisi transaksi">
             <button class="btn tx-mode-btn" id="btnTxModeFoto" type="button" aria-expanded="false" aria-controls="txMenuFoto">Foto</button>
@@ -1630,7 +1654,7 @@
 
       <!-- ============ 8c. QRIS (dari Pembukuan) ============ -->
       <section id="buku-qris">
-        <div class="sec-head"><span class="sec-num">08</span><h2>Terima Pembayaran QRIS</h2></div>
+        <div class="sec-head"><span class="sec-num">08b</span><h2>Terima Pembayaran QRIS</h2></div>
         <p class="sec-sub">Tunjukkan kode QRIS usaha Anda ke pembeli, lalu tandai pembayarannya.</p>
         <div class="card" style="margin-top:14px" id="qrisCard">
           <h3>Terima Pembayaran QRIS</h3>
@@ -1678,7 +1702,7 @@
 
       <!-- ============ 8d. STOK (dari Pembukuan) ============ -->
       <section id="buku-stok">
-        <div class="sec-head"><span class="sec-num">08</span><h2>Stok barang</h2></div>
+        <div class="sec-head"><span class="sec-num">08c</span><h2>Stok barang</h2></div>
         <p class="sec-sub">Stok yang tercatat ikut menghitung biaya pokok tersirat di Kalkulator HPP.</p>
         <div class="grid-2">
           <div class="card">
@@ -1699,7 +1723,7 @@
 
       <!-- ============ 8e. PIUTANG & UTANG (dari Pembukuan) ============ -->
       <section id="buku-hutang">
-        <div class="sec-head"><span class="sec-num">08</span><h2>Piutang &amp; utang usaha</h2></div>
+        <div class="sec-head"><span class="sec-num">08d</span><h2>Piutang &amp; utang usaha</h2></div>
         <p class="sec-sub">Tagihan pelanggan yang belum dibayar dan daftar utang usaha.</p>
         <div class="grid-2">
           <div class="card">
@@ -1732,7 +1756,7 @@
 
       <!-- ============ 8f. LAPORAN SAK EMKM (dari Pembukuan) ============ -->
       <section id="buku-laporan">
-        <div class="sec-head"><span class="sec-num">08</span><h2>Laporan sederhana format SAK EMKM</h2></div>
+        <div class="sec-head"><span class="sec-num">08e</span><h2>Laporan sederhana format SAK EMKM</h2></div>
         <p class="sec-sub">Disusun otomatis dari Data Usaha + catatan transaksi.</p>
         <div class="card" style="margin-top:14px">
           <h3>Laporan sederhana format SAK EMKM</h3>
@@ -1743,7 +1767,7 @@
           </div>
           <div style="margin-top:16px"><h3 style="font-size:.98rem">Arus Kas (Data Usaha per bulan + catatan transaksi)</h3><table class="mini-table"><tbody id="akBody"></tbody></table></div>
           <div class="actions"><button class="btn" id="btnReportPdf" type="button">Unduh laporan lengkap (PDF)</button><button class="btn ghost" id="btnReport" type="button">Unduh laporan lengkap (.txt)</button><button class="btn ghost" id="btnReportHtml" type="button">Unduh laporan untuk dicetak (.html)</button></div>
-          <p class="note" id="ocrNote" style="margin-top:10px">Baca nota: unggah foto nota di atas — teks nota dibaca otomatis di peramban Anda (Tesseract.js) dan jumlah terbesar yang terbaca diisikan sebagai jumlah transaksi untuk Anda periksa.</p>
+          <p class="note" id="ocrNote" style="margin-top:10px">Baca nota: unggah foto nota di atas — teks nota dibaca otomatis di HP Anda dan jumlah terbesar yang terbaca diisikan sebagai jumlah transaksi untuk Anda periksa.</p>
         </div>
       </section>
 
@@ -1777,6 +1801,7 @@
       <section id="sop">
         <div class="sec-head"><span class="sec-num">12</span><h2>Orang &amp; Pembuat SOP</h2></div>
         <p class="sec-sub">SOP tertulis adalah cara tercepat menurunkan ketergantungan pada pemilik — dan menaikkan pengali valuasi. Susun langkahnya di sini, lalu unduh sebagai dokumen SOP.</p>
+        <div class="actions" style="margin-bottom:12px"><button class="btn ghost small" id="btnMuatSemuaTim" type="button">Muat ulang semua</button></div>
         <div class="card">
           <h3 style="margin-bottom:4px">SOP tersimpan</h3>
           <div id="sopList"></div>
@@ -1835,7 +1860,8 @@
           <p class="note" id="timLogTamu" style="display:none">Daftar dulu untuk melihat siapa menjalankan SOP.</p>
           <div id="timLogIsi">
             <div class="actions"><button class="btn ghost small" id="btnMuatTimLog" type="button">Muat ulang</button></div>
-            <div id="timLogTabel" style="margin-top:10px"></div>
+            <p class="note">Geser ke samping untuk melihat semua kolom.</p>
+            <div id="timLogTabel" class="tabel-geser" style="margin-top:10px"></div>
             <p class="note" id="timLogKosong" style="display:none">Belum ada pegawai yang mencatat SOP hari ini.</p>
             <div id="timLogSetup" style="display:none"><p class="note"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b></p><p class="note" style="margin-top:6px">Salinan pengaturannya ada di <a href="https://dashboard-pegawai-umkm.vercel.app" target="_blank" rel="noopener">Aplikasi Pegawai</a> — buka dan salin SQL-nya dari sana, lalu jalankan di SQL Editor cloud.</p></div>
           </div>
@@ -1845,7 +1871,8 @@
           <p class="note" id="presTamu" style="display:none">Daftar dulu untuk melihat presensi pegawai.</p>
           <div id="presIsi">
             <div class="actions"><button class="btn ghost small" id="btnMuatPres" type="button">Muat ulang</button></div>
-            <div id="presTabel" style="margin-top:10px"></div>
+            <p class="note">Geser ke samping untuk melihat semua kolom.</p>
+            <div id="presTabel" class="tabel-geser" style="margin-top:10px"></div>
             <p class="note" id="presKosong" style="display:none">Belum ada pegawai yang masuk hari ini.</p>
             <p class="note" id="presBelumMasuk" style="display:none"></p>
             <div id="presSetup" style="display:none"><p class="note"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b></p><p class="note" style="margin-top:6px">Salinan pengaturannya ada di <a href="https://dashboard-pegawai-umkm.vercel.app" target="_blank" rel="noopener">Aplikasi Pegawai</a> — buka dan salin SQL-nya dari sana, lalu jalankan di SQL Editor cloud.</p></div>
@@ -1856,7 +1883,8 @@
           <p class="note" id="lapTamu" style="display:none">Daftar dulu untuk melihat laporan pegawai.</p>
           <div id="lapIsi">
             <div class="actions"><button class="btn ghost small" id="btnMuatLap" type="button">Muat ulang</button></div>
-            <div id="lapTabel" style="margin-top:10px"></div>
+            <p class="note">Geser ke samping untuk melihat semua kolom.</p>
+            <div id="lapTabel" class="tabel-geser" style="margin-top:10px"></div>
             <p class="note" id="lapKosong" style="display:none">Belum ada laporan pegawai.</p>
             <p class="note" id="lapRetensi" style="display:none">Ada foto/laporan lebih dari 12 bulan. Foto lama tetap tersimpan; arsipkan bila penyimpanan mulai penuh.</p>
             <div id="lapSetup" style="display:none"><p class="note"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b></p><p class="note" style="margin-top:6px">Salinan pengaturannya ada di <a href="https://dashboard-pegawai-umkm.vercel.app" target="_blank" rel="noopener">Aplikasi Pegawai</a> — buka dan salin SQL-nya dari sana, lalu jalankan di SQL Editor cloud.</p></div>
@@ -1868,7 +1896,8 @@
           <div id="aiPakaiIsi">
             <div class="actions"><button class="btn ghost small" id="btnMuatAiPakai" type="button">Muat ulang</button></div>
             <p class="note" id="aiPakaiRingkasan" style="margin-top:10px">Memuat pemakaian…</p>
-            <div id="aiPakaiTabel" style="margin-top:10px"></div>
+            <p class="note">Geser ke samping untuk melihat semua kolom.</p>
+            <div id="aiPakaiTabel" class="tabel-geser" style="margin-top:10px"></div>
             <p class="note" id="aiPakaiKosong" style="display:none">Belum ada pemakaian AI tim bulan ini.</p>
             <p class="note" style="margin-top:8px">Setiap pegawai bisa memakai bantuan AI sampai 20 kali per bulan. Tingkat paket di sini adalah tingkat paket di aplikasi ini — pemakaian pegawai mengikuti tingkat yang tersimpan di cloud.</p>
             <div id="aiPakaiSetup" style="display:none"><p class="note"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b></p><p class="note" style="margin-top:6px">Salinan pengaturannya ada di <a href="https://dashboard-pegawai-umkm.vercel.app" target="_blank" rel="noopener">Aplikasi Pegawai</a> — buka dan salin SQL-nya dari sana, lalu jalankan di SQL Editor cloud.</p></div>
@@ -1902,9 +1931,31 @@
           </div>
           <p class="note" id="shareNote" role="status" style="margin-top:10px"></p>
         </div>
+        <div class="card" style="margin-top:14px" id="listingCard">
+          <h3>Tampilkan usaha saya ke investor</h3>
+          <p class="note" style="margin-top:6px">Usaha Anda tampil di Portal Investor tanpa nama, telepon, email, atau lokasi persis.</p>
+          <div class="switch-wrap" style="margin-top:10px">
+            <span class="switch"><input type="checkbox" id="optinInvestor" /><span class="track" aria-hidden="true"></span></span>
+            <div>
+              <label for="optinInvestor" style="display:block"><b>Tampilkan usaha saya ke investor</b></label>
+              <p class="note" style="margin-top:6px">Yang tampil hanya level usaha, skor-skor, HPP, skor kemasan, legalitas, kanal penjualan, dan 2 kekurangan utama — tanpa nama, telepon, email, lokasi persis, transaksi, atau foto. Matikan saklar kapan saja bila tidak ingin ditampilkan lagi.</p>
+              <p class="note" id="listingStatus" role="status" style="margin-top:6px"></p>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px" id="minatCard">
+          <h3>Minat masuk</h3>
+          <p class="note" id="minatTamu" style="display:none">Daftar dulu untuk melihat minat investor.</p>
+          <div id="minatIsi">
+            <p class="note">Investor yang tertarik dengan usaha Anda akan muncul di sini — Anda yang memutuskan menerima atau menolaknya.</p>
+            <div class="actions" style="margin-top:10px"><button class="btn ghost small" id="btnMuatMinat" type="button">Muat ulang</button></div>
+            <div id="minatList" style="margin-top:10px"></div>
+            <p class="note" id="minatKosong" style="display:none">Belum ada minat masuk.</p>
+          </div>
+        </div>
         <div class="ai-box">
           <h3><span aria-hidden="true">✦</span> 7 lapisan kecerdasan di aplikasi ini</h3>
-          <p><b>1 Ekstraksi data</b> — foto nota dibaca otomatis di peramban (Tesseract.js) dan input suara membantu mengubah bukti transaksi menjadi catatan. <b>2 Prediksi pengali lokal</b> — pengali dasar per sektor disesuaikan usia usaha, pertumbuhan, pembukuan, dan ketergantungan pemilik; bila data kalibrasi anonim usaha sejenis di kota Anda sudah terkumpul minimal 5 (dan Anda mengizinkan berbagi data anonim), median pengali lokal ikut digabungkan dan jumlah sampelnya ditulis terbuka di penjelasan valuasi. <b>3 Deteksi anomali</b> — margin negatif, Rasio Kemampuan Bagi Hasil di bawah 1, dan utang di atas aset ditandai otomatis sebagai peringatan. <b>4 Penjelasan angka</b> — setiap valuasi disertai penjelasan yang bisa ditelusur ke rumusnya. <b>5 Penilaian kemasan</b> — penilaian terbantu: pengukuran foto di peramban (terang, kontras, ketajaman) + 6 periksa label, digabung menjadi skor 5 aspek. <b>6 Verifikasi konsistensi</b> — Skor Konsistensi dari 9 sumber lokal. <b>7 AI Coach</b> — rencana 30–60–90 hari yang berubah mengikuti jawaban dan angka Anda. Pada versi statis ini ketujuh lapisan berjalan sebagai mesin aturan transparan langsung di halaman; lapisan model AI generatif penuh adalah tahap server berikutnya.</p>
+          <p><b>1 Membaca foto nota</b> — teks nota dibaca otomatis dari foto dan input suara membantu mengubah bukti transaksi menjadi catatan. <b>2 Pengali lokal</b> — pengali dasar per sektor disesuaikan usia usaha, pertumbuhan, pembukuan, dan ketergantungan pemilik; bila data kalibrasi anonim usaha sejenis di kota Anda sudah terkumpul minimal 5 (dan Anda mengizinkan berbagi data anonim), median pengali lokal ikut digabungkan dan jumlah sampelnya ditulis terbuka di penjelasan valuasi. <b>3 Peringatan dini</b> — margin negatif, Rasio Kemampuan Bagi Hasil di bawah 1, dan utang di atas aset ditandai otomatis sebagai peringatan. <b>4 Penjelasan angka</b> — setiap valuasi disertai penjelasan yang bisa ditelusur ke rumusnya. <b>5 Penilaian kemasan</b> — penilaian terbantu: pengukuran foto (terang, kontras, ketajaman) + 6 periksa label, digabung menjadi skor 5 aspek. <b>6 Pemeriksaan konsistensi</b> — Skor Konsistensi dari 9 sumber lokal. <b>7 AI Coach</b> — rencana 30–60–90 hari yang berubah mengikuti jawaban dan angka Anda. Ketujuh lapisan ini berjalan sebagai mesin aturan transparan langsung di halaman ini.</p>
         </div>
       </section>
 
@@ -1975,8 +2026,9 @@
         </div>
         <div class="card" style="margin-top:14px">
           <h3>3. Berlangganan Pro</h3>
-          <p>Pilih paket sesuai kebutuhan Anda. Transaksi, stok, piutang, dan utang tanpa batas data di semua paket. Ketuk salah satu kartu di bawah untuk memilih paket Anda.</p>
+          <p>Pilih paket sesuai kebutuhan Anda. Transaksi, stok, piutang, dan utang tanpa batas data di semua paket. Ketuk salah satu kartu di bawah untuk memilih paket Anda, lalu tekan tombol Bayar langganan di bawah.</p>
           <p class="note" id="paketLanggananAktif" role="status" style="display:none"></p>
+          <p class="note" id="paketSinkronTgl" style="display:none"></p>
           <div class="card paket-tier" data-tier="mikro" style="margin:12px 0 0">
             <h3>Mikro — Rp35.000 per bulan</h3>
             <p>AI Coach menjawab 300 pertanyaan per bulan. Transaksi, stok, piutang, dan utang tanpa batas data. Anda bisa membagikan tautan Portal investor ke calon mitra.</p>
@@ -2009,23 +2061,30 @@
           </div>
           <p class="note" id="paketProBelum">Pendaftaran langganan belum dibuka.</p>
           <p class="note" id="paketStatusBayar" role="status" style="display:none"></p>
+          <div class="actions" id="paketAjukanUlangWrap" style="display:none"><button class="btn ghost small" id="btnPaketAjukanUlang" type="button">Ajukan ulang</button></div>
           <div class="actions"><button class="btn" id="btnPaketLangganan" type="button" style="display:none">Bayar langganan</button></div>
         </div>
       </section>
 
       <!-- ============ 15a. BAYAR LANGGANAN (sub-layar Paket & Layanan) ============ -->
       <section id="bayar">
-        <div class="sec-head"><span class="sec-num">15</span><h2>Bayar Langganan</h2></div>
+        <div class="sec-head"><span class="sec-num">15a</span><h2>Bayar Langganan</h2></div>
         <p class="sec-sub">Bayar langganan lewat transfer, lalu unggah bukti transfernya. Pemilik memeriksa bukti Anda, lalu langganan diaktifkan.</p>
+        <p class="note" id="bayarCatatanDataUsaha" style="display:none">Isi data usaha dulu supaya langganan bisa langsung aktif setelah verifikasi.</p>
         <div class="card" id="bayarStatusCard" style="display:none">
           <h3>Status pembayaran Anda</h3>
           <p class="note" id="bayarStatusTeks" role="status"></p>
+          <p class="note" id="bayarVerifikasiKet">Setelah bukti dikirim, pemilik memeriksa dan mengaktifkan langganan Anda — paling lambat 1×24 jam. Buka lagi layar ini untuk memeriksa statusnya.</p>
+          <p class="note" id="bayarAlasanTolak" style="display:none"></p>
+          <div class="actions" id="bayarAjukanUlangWrap" style="display:none"><button class="btn ghost small" id="btnBayarAjukanUlang" type="button">Ajukan ulang</button></div>
+          <div id="bayarRiwayat" style="margin-top:10px"></div>
         </div>
         <div class="card" style="margin-top:14px">
           <h3>Rekening tujuan transfer</h3>
           <p><b>BSI</b></p>
           <p>a.n. Soegianto Soelistiono</p>
-          <p>Nomor rekening: <b id="bayarNoRekening">—</b></p>
+          <p>Nomor rekening: <b id="bayarNoRekening">7245 2976 58</b> <button class="btn ghost small" id="btnSalinRekening" type="button">Salin nomor rekening</button></p>
+          <p class="note" id="bayarSalinStatus" role="status"></p>
           <p class="note">Transfer ke nomor rekening di atas sejumlah total tagihan di bawah ini.</p>
         </div>
         <div class="card" style="margin-top:14px">
@@ -2044,17 +2103,26 @@
           <p>Biaya tambahan pegawai: <b id="bayarRincianPegawai">—</b></p>
           <p id="bayarRincianDiskonBaris" style="display:none">Diskon kode marketing (10%): <b id="bayarRincianDiskon">—</b></p>
           <p>Total yang harus dibayar: <b id="bayarRincianTotal">—</b></p>
+          <p class="note">Tagihan per bulan. Setelah bukti diverifikasi pemilik (paling lambat 1×24 jam), langganan aktif selama 1 bulan.</p>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Kode marketing (bila ada)</h3>
+          <label class="f"><span>Kode marketing</span><input type="text" id="bayarKodeMarketing" placeholder="contoh: UMKM30" autocomplete="off" /></label>
+          <div class="actions"><button class="btn" id="btnBayarPakaiKode" type="button">Pakai kode</button></div>
+          <p class="note" id="bayarKodeStatus" role="status"></p>
         </div>
         <div class="card" style="margin-top:14px">
           <h3>Unggah bukti transfer</h3>
           <p class="note">Transfer lewat aplikasi BSI di HP Anda ke rekening di atas sejumlah total, lalu unggah tangkapan layar bukti transfer di bawah ini.</p>
           <label class="f"><span>Tangkapan layar bukti transfer (foto)</span><input type="file" id="bayarBukti" accept="image/*" /></label>
+          <p class="note" id="bayarOcrSpinner" style="display:none"><span class="ocr-putar" aria-hidden="true"></span>Sedang membaca bukti, mohon tunggu…</p>
           <p class="note" id="bayarOcrStatus" role="status"></p>
+          <p class="note" id="bayarOcrIsianNote" style="display:none">Kolom yang ditandai di bawah diisi otomatis dari foto — periksa kembali sebelum mengirim.</p>
           <div class="form-grid" style="margin-top:10px">
-            <label class="f"><span>Nominal yang dibayar (Rp)</span><input type="number" id="bayarNominal" min="0" step="100" placeholder="contoh: 35000" inputmode="numeric" /></label>
-            <label class="f"><span>Tanggal bayar</span><input type="date" id="bayarTanggal" /></label>
-            <label class="f"><span>Nama pengirim</span><input type="text" id="bayarNamaPengirim" placeholder="contoh: Budi Santoso" autocomplete="off" /></label>
-            <label class="f"><span>Nomor referensi</span><input type="text" id="bayarNoReferensi" placeholder="contoh: 1234567890" autocomplete="off" /></label>
+            <label class="f"><span>Nominal yang dibayar (Rp)</span><input type="number" id="bayarNominal" min="0" step="100" placeholder="contoh: 35000" inputmode="numeric" /><span class="ocr-isi" id="ocrCatNominal">diisi dari foto — periksa kembali</span></label>
+            <label class="f"><span>Tanggal bayar</span><input type="date" id="bayarTanggal" /><span class="ocr-isi" id="ocrCatTanggal">diisi dari foto — periksa kembali</span></label>
+            <label class="f"><span>Nama pengirim</span><input type="text" id="bayarNamaPengirim" placeholder="contoh: Budi Santoso" autocomplete="off" /><span class="ocr-isi" id="ocrCatNama">diisi dari foto — periksa kembali</span></label>
+            <label class="f"><span>Nomor referensi</span><input type="text" id="bayarNoReferensi" placeholder="contoh: 1234567890" autocomplete="off" /><span class="ocr-isi" id="ocrCatReferensi">diisi dari foto — periksa kembali</span></label>
           </div>
           <div class="actions"><button class="btn" id="btnBayarKirim" type="button">Kirim bukti pembayaran</button></div>
         </div>
@@ -2104,17 +2172,17 @@
       <a href="#data" data-nav="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Data</a>
       <a href="#dashboard" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Level</a>
       <a href="#valuasi" data-nav="valuasi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v20M17 6.5c-.7-1-2.7-1.5-5-1.5-2.8 0-5 1.1-5 3 0 4.5 10 2.5 10 7 0 1.9-2.2 3-5 3-2.3 0-4.3-.5-5-1.5"/></svg>Valuasi</a>
-      <a href="#introspeksi" data-nav="introspeksi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8 11h6M11 8v6"/></svg>Cek Diri</a>
-      <a href="#keuangan" data-nav="keuangan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>Uang</a>
+      <a href="#introspeksi" data-nav="introspeksi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8 11h6M11 8v6"/></svg>Introspeksi</a>
+      <a href="#keuangan" data-nav="keuangan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>Keuangan</a>
       <a href="#saran" data-nav="saran"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a7 7 0 0 1 4 12.7c-.6.5-1 1.4-1 2.3H9c0-.9-.4-1.8-1-2.3A7 7 0 0 1 12 2z"/><path d="M9 21h6"/></svg>Saran</a>
-      <a href="#" id="navWizardBottom" data-nav="wizard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>Mulai</a>
+      <a href="#" id="navWizardBottom" data-nav="wizard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.4L12 15l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>Panduan</a>
     </nav>
 
     <!-- ============ WIZARD LANGKAH DEMI LANGKAH ============ -->
-    <div class="wizard-overlay" id="wizardOverlay" role="dialog" aria-label="Wizard langkah demi langkah">
+    <div class="wizard-overlay" id="wizardOverlay" role="dialog" aria-label="Panduan langkah demi langkah">
       <div class="wizard-card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <span class="wizard-progress" id="wizProgress">Langkah 1 dari 4</span>
+          <span class="wizard-progress" id="wizProgress">Langkah 1 dari 6</span>
           <button class="btn ghost small" id="btnWizardClose" type="button">Tutup</button>
         </div>
 
@@ -2153,7 +2221,7 @@
               <option value="lainnya">Lainnya</option>
             </select>
           </label>
-          <label class="f" style="margin-top:12px"><span>Panggilan</span>
+          <label class="f" style="margin-top:12px"><span>Panggilan</span><span class="note" style="display:block;font-weight:400">Supaya sapaan dan laporan memakai panggilan yang sopan untuk Anda.</span>
             <select id="wizPanggilan">
               <option value="" selected disabled>Pilih panggilan…</option>
               <option value="Mas">Mas</option>
@@ -2205,6 +2273,7 @@
         <div class="wiz-step" data-wiz="4">
           <h2>Apa yang paling ingin diperbaiki?</h2>
           <p class="hint">Pilih satu yang paling terasa saat ini. Pilihan ini menentukan urutan prioritas saran untuk Anda.</p>
+          <p class="note" style="margin-top:10px">Boleh dilewati — bila tidak dipilih, kami beri saran umum dulu.</p>
           <div class="fokus-grid" style="margin-top:14px" role="group" aria-label="Pilih fokus perbaikan">
             <button class="fokus-card" type="button" data-fokus="untung" aria-pressed="false"><b>Untung lebih besar</b><span>Harga, biaya bahan, dan margin supaya laba naik.</span></button>
             <button class="fokus-card" type="button" data-fokus="kemasan" aria-pressed="false"><b>Kemasan lebih menarik</b><span>Label lengkap dan tampilan produk yang layak jual online.</span></button>
@@ -2441,7 +2510,7 @@
         if (a >= 1e3) return "Rp " + Math.round(n/1e3).toLocaleString("id-ID") + " rb";
         return fmtFull(n);
       }
-      function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2600); }
+      function toast(msg){ if(!msg) return; const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2600); }
       function popupRamah(judul, apa, lakukan){ if(window.tampilPopupRamah){ window.tampilPopupRamah(judul, apa, lakukan); } else { toast(apa||judul); } }
 
       /* ---------- introspection questions ---------- */
@@ -2608,7 +2677,10 @@
         }
         return kurang;
       }
-      var INTRO_SIMPAN="Untuk pengguna terdaftar, perubahan tersimpan otomatis ke akun cloud Anda — hanya Anda yang bisa mengaksesnya. Untuk mode coba, data hanya tersimpan di HP ini dan hilang saat halaman ditutup. Status penyimpanan tampil di bagian atas halaman.";
+      /* Intro halaman Data mengikuti status akun (Live #17): tamu hanya
+         membaca teks mode coba, pengguna terdaftar hanya teks cloud. */
+      var INTRO_SIMPAN_TAMU="Untuk mode coba, data hanya tersimpan di HP ini — daftar untuk menyimpan ke cloud dan membukanya di HP lain.";
+      var INTRO_SIMPAN_TERDAFTAR="Perubahan tersimpan otomatis ke akun cloud Anda — hanya Anda yang bisa mengaksesnya.";
       function perbaruiIntroData(){
         var el=$("dataIntro"); if(!el) return;
         var kurang=daftarIsianBelumDiisi();
@@ -2621,8 +2693,11 @@
           else { sebut=kurang.slice(0,4).join(", ")+" dan "+(kurang.length-4)+" lainnya"; }
           awal="Yang belum diisi: "+sebut+". Lengkapi isian di bawah ini supaya semua hitungan dan skor mengikuti data usaha Anda sendiri.";
         }
-        el.textContent=awal+" "+INTRO_SIMPAN;
+        var terdaftar=false;
+        try{ terdaftar=!!(window.__penggunaAktif && window.__penggunaAktif()); }catch(e){}
+        el.textContent=awal+" "+(terdaftar?INTRO_SIMPAN_TERDAFTAR:INTRO_SIMPAN_TAMU);
       }
+      window.__perbaruiIntroData=perbaruiIntroData;
 
       function recalc(){
         const adaData=adaDataInti();
@@ -2932,14 +3007,21 @@
 
       function recalcFinance(sdeBln, labaBln){
         const hpp=num("hBahan")+num("hKemasan")+num("hEnergi")+num("hAir")+num("hTenaga")+num("hSusut")+num("hSewa")+num("hLain");
-        const margin=Math.min(0.8,Math.max(0.05,num("hMargin")/100));
-        const base=hpp/(1-margin);
-        const channels=[["Jual langsung di tempat",0],["GoFood",0.20],["GrabFood",0.20],["ShopeeFood",0.20],["Marketplace (Shopee/Tokopedia)",0.065]];
-        $("priceRows").innerHTML=channels.map(c=>{
-          const price=Math.ceil(base/(1-c[1])/100)*100;
-          return '<tr'+(c[1]===0?' class="hl"':'')+'><td>'+c[0]+'</td><td>'+(c[1]*100).toLocaleString("id-ID")+'%</td><td>'+fmtFull(price)+'</td></tr>';
-        }).join("");
-        $("hppTotal").textContent=fmtFull(hpp);
+        /* Bila HPP belum diisi sama sekali, jangan tampilkan tabel hasil
+           semua Rp0 seolah perhitungan selesai (Live #20). */
+        if(hpp<=0){
+          $("priceRows").innerHTML='<tr><td colspan="3">Isi HPP dulu untuk melihat perhitungan.</td></tr>';
+          $("hppTotal").textContent="—";
+        } else {
+          const margin=Math.min(0.8,Math.max(0.05,num("hMargin")/100));
+          const base=hpp/(1-margin);
+          const channels=[["Jual langsung di tempat",0],["GoFood",0.20],["GrabFood",0.20],["ShopeeFood",0.20],["Marketplace (Shopee/Tokopedia)",0.065]];
+          $("priceRows").innerHTML=channels.map(c=>{
+            const price=Math.ceil(base/(1-c[1])/100)*100;
+            return '<tr'+(c[1]===0?' class="hl"':'')+'><td>'+c[0]+'</td><td>'+(c[1]*100).toLocaleString("id-ID")+'%</td><td>'+fmtFull(price)+'</td></tr>';
+          }).join("");
+          $("hppTotal").textContent=fmtFull(hpp);
+        }
 
         const danaInv=num("invDana"), jangka=num("invJangka"), i=0.06/12;
         const bagiBln=(danaInv>0 && jangka>0) ? danaInv*i/(1-Math.pow(1+i,-jangka)) : 0;
@@ -4503,7 +4585,7 @@
       };
 
       window.__tim={muat:timMuat, tambah:tambahTim, toggle:toggleTim, hapus:hapusTim, hapusJalankan:hapusTimJalankan, logMuat:timLogMuat, buka:timBukaLayar, daftar:function(){ return timDaftar.slice(); }, peranLabel:timPeranLabel, verifikasi:timVerifikasi, statusJalankan:timStatusJalankan};
-      window.__lap={muat:lapMuat, catat:lapCatat, buka:lapBukaLayar, daftar:function(){ return lapDaftar.slice(); }};
+      window.__lap={muat:lapMuat, catat:lapCatat, buka:lapBukaLayar, daftar:function(){ return lapDaftar.slice(); }, dicatatLokal:function(){ return Object.keys(lapDicatatLokal); }};
       window.__pres={muat:presMuat, buka:presBukaLayar, hariIni:function(){ return presHariIni.slice(); }};
       window.__aiTim={muat:aiPakaiMuat, buka:aiPakaiBukaLayar, daftar:function(){ return aiPakaiDaftar.slice(); }, tier:aiPakaiTierLabel, batas:aiPakaiKuotaBatas};
 
@@ -4531,7 +4613,7 @@
          bawaan — bendahara dan kas tetap berbeda: bendahara dari
          struktur pemilik, kas dari peta bawaan. */
       function timPeranLabel(p){ var daftar=null; try{ daftar=strukturEfektif(); }catch(e){ daftar=null; } if(daftar){ for(var i=0;i<daftar.length;i++){ if(daftar[i].id===p) return daftar[i].nama||p; } } return p==="kas"?"Kas":p==="produksi"?"Produksi & layanan":p==="stok"?"Stok":p; }
-      function timBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("timTamu"), isi=$("timIsi"), logTamu=$("timLogTamu"), logIsi=$("timLogIsi"), lapTamu=$("lapTamu"), lapIsi=$("lapIsi"), presTamu=$("presTamu"), presIsi=$("presIsi"), aiTamu=$("aiPakaiTamu"), aiIsi=$("aiPakaiIsi"), strTamu=$("strukturTamu"), strIsi=$("strukturIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; if(logTamu) logTamu.style.display=""; if(logIsi) logIsi.style.display="none"; if(lapTamu) lapTamu.style.display=""; if(lapIsi) lapIsi.style.display="none"; if(presTamu) presTamu.style.display=""; if(presIsi) presIsi.style.display="none"; if(aiTamu) aiTamu.style.display=""; if(aiIsi) aiIsi.style.display="none"; if(strTamu) strTamu.style.display=""; if(strIsi) strIsi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; if(logTamu) logTamu.style.display="none"; if(logIsi) logIsi.style.display=""; if(lapTamu) lapTamu.style.display="none"; if(lapIsi) lapIsi.style.display=""; if(presTamu) presTamu.style.display="none"; if(presIsi) presIsi.style.display=""; if(aiTamu) aiTamu.style.display="none"; if(aiIsi) aiIsi.style.display=""; if(strTamu) strTamu.style.display="none"; if(strIsi) strIsi.style.display=""; renderStruktur(); renderTimPeran(); timMuat(); timLogMuat(); lapMuat(); presMuat(); aiPakaiMuat(); }
+      function timBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("timTamu"), isi=$("timIsi"), logTamu=$("timLogTamu"), logIsi=$("timLogIsi"), lapTamu=$("lapTamu"), lapIsi=$("lapIsi"), presTamu=$("presTamu"), presIsi=$("presIsi"), aiTamu=$("aiPakaiTamu"), aiIsi=$("aiPakaiIsi"), strTamu=$("strukturTamu"), strIsi=$("strukturIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; if(logTamu) logTamu.style.display=""; if(logIsi) logIsi.style.display="none"; if(lapTamu) lapTamu.style.display=""; if(lapIsi) lapIsi.style.display="none"; if(presTamu) presTamu.style.display=""; if(presIsi) presIsi.style.display="none"; if(aiTamu) aiTamu.style.display=""; if(aiIsi) aiIsi.style.display="none"; if(strTamu) strTamu.style.display=""; if(strIsi) strIsi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; if(logTamu) logTamu.style.display="none"; if(logIsi) logIsi.style.display=""; if(lapTamu) lapTamu.style.display="none"; if(lapIsi) lapIsi.style.display=""; if(presTamu) presTamu.style.display="none"; if(presIsi) presIsi.style.display=""; if(aiTamu) aiTamu.style.display="none"; if(aiIsi) aiIsi.style.display=""; if(strTamu) strTamu.style.display="none"; if(strIsi) strIsi.style.display=""; renderStruktur(); renderTimPeran(); timMuat().then(function(){ presMuat(); }, function(){}); timLogMuat(); lapMuat(); aiPakaiMuat(); }
       /* Riset data usaha lewat WhatsApp (layar Saran): pemilik yang masuk
          memilih topik dan menulis hal yang ingin diteliti, lalu membuka
          WhatsApp ke nomor admin. Pesan hanya berisi identitas usaha dan
@@ -4758,13 +4840,46 @@
         audit("Peran diperbarui di struktur usaha: "+nama);
         return true;
       }
+      /* Pindahkan semua pemegang peran ke peran pengganti (bawaan dulu),
+         lalu hapus perannya — dipakai saat menghapus peran yang masih
+         dipegang pegawai, supaya tidak ada pegawai yang menyimpan peran
+         yang sudah dihapus (S-B3). */
+      async function strukturPindahkanPeranDanHapus(id, penggantiId){
+        var u=timPemilikMasuk(); if(!u){ popupRamah("Daftar dulu","Daftar dulu untuk menyusun struktur usaha."); return false; }
+        var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return false; }
+        var pemegang=(timDaftar||[]).filter(function(p){ return Array.isArray(p.peran) && p.peran.indexOf(id)>=0; });
+        for(var i=0;i<pemegang.length;i++){
+          var p=pemegang[i];
+          var peranBaru=(p.peran||[]).filter(function(r){ return r!==id; });
+          if(peranBaru.indexOf(penggantiId)<0) peranBaru.push(penggantiId);
+          var r=await sb.from("akses_pegawai").update({peran:peranBaru}).eq("email",p.email).eq("pemilik_id",u.id);
+          if(r.error){ popupRamah("Belum bisa memindahkan","Peran pegawai belum terpindahkan — periksa koneksi internet Anda, lalu coba lagi."); return false; }
+        }
+        try{ await timMuat(); }catch(e){}
+        strukturHapusJalankan(id);
+        toast("Peran dihapus — "+pemegang.length+" pegawai dipindahkan ke peran "+(timPeranLabel(penggantiId)||penggantiId));
+        return true;
+      }
       function strukturHapus(id){
         var daftar=strukturEfektif();
         if(daftar.length<=1){ popupRamah("Minimal satu peran","Struktur usaha harus punya minimal satu peran — ubah namanya bila perlu, atau tambah peran lain dulu."); return false; }
         var nama=""; daftar.forEach(function(r){ if(r.id===id) nama=r.nama; });
         var peg=strukturPemegang(id);
+        if(peg.length){
+          /* Peran masih dipegang: tawarkan pemindahan massal ke peran
+             bawaan (Kas dulu, lalu Produksi, Stok) — bukan membiarkan
+             pegawai menyimpan peran yang sudah dihapus. */
+          var pengganti=null;
+          ["kas","produksi","stok"].forEach(function(k){ if(!pengganti && k!==id && daftar.some(function(r){ return r.id===k; })) pengganti=k; });
+          if(!pengganti){ daftar.forEach(function(r){ if(!pengganti && r.id!==id) pengganti=r.id; }); }
+          var namaPengganti=timPeranLabel(pengganti)||pengganti;
+          if(window.tampilPopupRamah){
+            window.tampilPopupRamah("Peran ini masih dipakai "+peg.length+" pegawai",'"'+(nama||id)+'" dipegang oleh '+peg.join(", ")+'. Pindahkan mereka ke peran '+namaPengganti+' (peran bawaan), lalu hapus peran ini?',"Ketuk Pindahkan & hapus bila sudah yakin — ketuk Mengerti untuk batal.",{label:"Pindahkan ke "+namaPengganti+", lalu hapus", fn:function(){ strukturPindahkanPeranDanHapus(id, pengganti); }});
+          } else { strukturPindahkanPeranDanHapus(id, pengganti); }
+          return true;
+        }
         if(window.tampilPopupRamah){
-          window.tampilPopupRamah("Hapus peran ini?","\""+(nama||id)+"\" akan dihapus dari struktur usaha Anda."+(peg.length?" Pegawai yang memegang peran ini ("+peg.join(", ")+") tetap terdaftar, tetapi perannya tidak lagi muncul di struktur.":""),"Ketuk Hapus peran bila sudah yakin — ketuk Mengerti untuk batal.",{label:"Hapus peran", fn:function(){ strukturHapusJalankan(id); }});
+          window.tampilPopupRamah("Hapus peran ini?",'"'+(nama||id)+'" akan dihapus dari struktur usaha Anda.',"Ketuk Hapus peran bila sudah yakin — ketuk Mengerti untuk batal.",{label:"Hapus peran", fn:function(){ strukturHapusJalankan(id); }});
         } else { strukturHapusJalankan(id); }
         return true;
       }
@@ -4922,7 +5037,7 @@
           return lokal;
         });
       }
-      window.__struktur={daftar:function(){ return strukturBersihDaftar(strukturList); }, efektif:function(){ return strukturEfektif(); }, tambah:strukturTambah, ubah:strukturSimpanUbah, mulaiUbah:strukturMulaiUbah, batalUbah:strukturBatalUbah, hapus:strukturHapus, hapusJalankan:strukturHapusJalankan, render:renderStruktur, renderPeran:renderTimPeran, label:timPeranLabel, pemegang:strukturPemegang, bawaan:function(){ return STRUKTUR_BAWAAN.map(function(r){ return {id:r.id, nama:r.nama, deskripsi:r.deskripsi, bawaan:true}; }); }, saranLokal:strukturSaranLokal, saranAI:strukturSaranAI, mintaSaran:strukturMintaSaran, tampilkanSaran:strukturTampilkanSaran, tambahSaran:strukturTambahSaran, tambahSemuaSaran:strukturTambahSemuaSaran, saran:function(){ return strukturSaranDaftar.slice(); }, uraikanJson:strukturUraikanJsonAI, dataUsaha:strukturDataUsaha, saranPrompt:function(){ return STRUKTUR_PROMPT_SARAN; }};
+      window.__struktur={daftar:function(){ return strukturBersihDaftar(strukturList); }, efektif:function(){ return strukturEfektif(); }, tambah:strukturTambah, ubah:strukturSimpanUbah, mulaiUbah:strukturMulaiUbah, batalUbah:strukturBatalUbah, hapus:strukturHapus, hapusJalankan:strukturHapusJalankan, pindahkanPeran:strukturPindahkanPeranDanHapus, render:renderStruktur, renderPeran:renderTimPeran, label:timPeranLabel, pemegang:strukturPemegang, bawaan:function(){ return STRUKTUR_BAWAAN.map(function(r){ return {id:r.id, nama:r.nama, deskripsi:r.deskripsi, bawaan:true}; }); }, saranLokal:strukturSaranLokal, saranAI:strukturSaranAI, mintaSaran:strukturMintaSaran, tampilkanSaran:strukturTampilkanSaran, tambahSaran:strukturTambahSaran, tambahSemuaSaran:strukturTambahSemuaSaran, saran:function(){ return strukturSaranDaftar.slice(); }, uraikanJson:strukturUraikanJsonAI, dataUsaha:strukturDataUsaha, saranPrompt:function(){ return STRUKTUR_PROMPT_SARAN; }};
       renderStruktur(); renderTimPeran();
 
       /* --- Laporan pegawai + pas foto tim ---
@@ -4937,6 +5052,12 @@
          laporan sudah dicatat — penjaga dicatat menolak pencatatan
          ganda walau tombol diketuk dua kali. */
       var lapDaftar=[];
+      /* Kunci idempotensi sisi klien (Fase 2, S-B5): id laporan yang
+         sedang/sudah diproses pencatatannya. Tombol "Catat sebagai
+         transaksi" disembunyikan untuk id di sini — walau penanda di
+         cloud belum tersimpan — supaya ketukan kedua tidak pernah
+         membuat transaksi kedua. Bertahan selama sesi ini. */
+      var lapDicatatLokal={};
       function inisialNama(nama){ var s=String(nama||"").trim(); return s ? s.charAt(0).toUpperCase() : "?"; }
       function selFotoHtml(url, nama){
         if(url) return '<img src="'+timEsc(url)+'" alt="Pas foto '+timEsc(nama||"pegawai")+'" class="foto-mini">';
@@ -4973,21 +5094,41 @@
         });
       }
       function lapBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("lapTamu"), isi=$("lapIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; lapMuat(); }
-      async function lapMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var tabel=$("lapTabel"), kosong=$("lapKosong"), setup=$("lapSetup"), retensi=$("lapRetensi"); if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none"; if(retensi) retensi.style.display="none"; if(!sb){ if(tabel) tabel.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>"; return; } var r=await sb.rpc("laporan_tim_untuk_pemilik",{}); if(r.error){ if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(tabel) tabel.innerHTML=""; return; } popupRamah("Laporan pegawai belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return; } var rows=r.data||[]; lapDaftar=rows; if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; return; } var petaFoto=await petaFotoUrl(rows); var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Jenis</th><th>Keterangan</th><th>Jumlah</th><th>Foto</th><th>SOP</th><th>Tanggal</th><th>Status</th><th></th></tr></thead><tbody>"+rows.map(function(x){ var jenis=x.jenis==="kwitansi"?"Kwitansi":"Foto"; var jumlah=(x.jenis==="kwitansi"&&x.jumlah!=null)?fmtFull(x.jumlah):"—"; var foto=x.file_path&&petaFoto[x.file_path]?'<a href="'+timEsc(petaFoto[x.file_path])+'" target="_blank" rel="noopener"><img src="'+timEsc(petaFoto[x.file_path])+'" alt="Foto laporan" class="lap-foto"></a>':"—"; var aksi=(x.jenis==="kwitansi"&&!x.dicatat)?'<button type="button" class="btn ghost small" data-catat-lap="'+timEsc(x.id)+'">Catat sebagai transaksi</button>':""; return "<tr><td><span class=\"foto-sel\">"+selFotoHtml(petaFoto[x.foto_path], x.pegawai_nama)+"<span>"+timEsc(x.pegawai_nama||"—")+"</span></span></td><td>"+jenis+"</td><td>"+timEsc(x.keterangan||"—")+"</td><td>"+timEsc(jumlah)+"</td><td>"+foto+"</td><td>"+timEsc(x.sop_nama||"—")+"</td><td>"+timEsc(timFmtTgl(x.tanggal))+"</td><td>"+(x.dicatat?"Sudah dicatat":"Tercatat")+"</td><td>"+aksi+"</td></tr>"; }).join("")+"</tbody></table>"; if(tabel) tabel.innerHTML=html; var batas=new Date(); batas.setMonth(batas.getMonth()-12); var lama=rows.some(function(x){ try{ var d=new Date(x.tanggal); return !isNaN(d.getTime()) && d<batas; }catch(e){ return false; } }); if(lama && retensi) retensi.style.display=""; }
+      async function lapMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var tabel=$("lapTabel"), kosong=$("lapKosong"), setup=$("lapSetup"), retensi=$("lapRetensi"); if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none"; if(retensi) retensi.style.display="none"; if(!sb){ if(tabel) tabel.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>"; return; } var r=await sb.rpc("laporan_tim_untuk_pemilik",{}); if(r.error){ if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(tabel) tabel.innerHTML=""; return; } popupRamah("Laporan pegawai belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return; } var rows=r.data||[]; lapDaftar=rows; if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; return; } var petaFoto=await petaFotoUrl(rows); var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Jenis</th><th>Keterangan</th><th>Jumlah</th><th>Foto</th><th>SOP</th><th>Tanggal</th><th>Status</th><th></th></tr></thead><tbody>"+rows.map(function(x){ var jenis=x.jenis==="kwitansi"?"Kwitansi":"Foto"; var jumlah=(x.jenis==="kwitansi"&&x.jumlah!=null)?fmtFull(x.jumlah):"—"; var foto=x.file_path&&petaFoto[x.file_path]?'<a href="'+timEsc(petaFoto[x.file_path])+'" target="_blank" rel="noopener"><img src="'+timEsc(petaFoto[x.file_path])+'" alt="Foto laporan" class="lap-foto"></a>':"—"; var aksi=(x.jenis==="kwitansi"&&!x.dicatat&&!lapDicatatLokal[String(x.id)])?'<button type="button" class="btn ghost small" data-catat-lap="'+timEsc(x.id)+'">Catat sebagai transaksi</button>':""; return "<tr><td><span class=\"foto-sel\">"+selFotoHtml(petaFoto[x.foto_path], x.pegawai_nama)+"<span>"+timEsc(x.pegawai_nama||"—")+"</span></span></td><td>"+jenis+"</td><td>"+timEsc(x.keterangan||"—")+"</td><td>"+timEsc(jumlah)+"</td><td>"+foto+"</td><td>"+timEsc(x.sop_nama||"—")+"</td><td>"+timEsc(timFmtTgl(x.tanggal))+"</td><td>"+(x.dicatat?"Sudah dicatat":"Tercatat")+"</td><td>"+aksi+"</td></tr>"; }).join("")+"</tbody></table>"; if(tabel) tabel.innerHTML=html; var batas=new Date(); batas.setMonth(batas.getMonth()-12); var lama=rows.some(function(x){ try{ var d=new Date(x.tanggal); return !isNaN(d.getTime()) && d<batas; }catch(e){ return false; } }); if(lama && retensi) retensi.style.display=""; }
       async function lapCatat(id){
         var u=timPemilikMasuk(); if(!u) return false;
+        /* Idempotensi sisi klien (Fase 2, S-B5): laporan yang sedang
+           atau sudah diproses tidak pernah dicatat dua kali — ketukan
+           kedua (atau pemanggilan kedua) ditolak di sini, sebelum
+           transaksi apa pun dibuat. */
+        if(lapDicatatLokal[String(id)]){ popupRamah("Sudah dicatat","Kwitansi ini sudah dicatat — tidak dicatat dua kali."); return false; }
         var baris=null; lapDaftar.forEach(function(x){ if(String(x.id)===String(id)) baris=x; });
         if(!baris){ popupRamah("Laporan tidak ditemukan","Muat ulang daftar laporan, lalu coba lagi."); return false; }
         if(baris.dicatat){ popupRamah("Sudah dicatat","Kwitansi ini sudah dicatat — tidak dicatat dua kali."); return false; }
         if(baris.jenis!=="kwitansi" || !(Number(baris.jumlah)>0)){ popupRamah("Bukan kwitansi","Hanya kwitansi yang bisa dicatat."); return false; }
+        /* Tandai sedang diproses SEBELUM transaksi dibuat — ketukan
+           kedua yang datang selagi transaksi pertama berjalan ikut
+           tertolak penjaga di atas. */
+        lapDicatatLokal[String(id)]=true;
         var ket="Kwitansi pegawai: "+(baris.pegawai_nama||"pegawai")+" — "+(baris.keterangan||"");
         var ok=false;
         try{ ok=await tambahTransaksi(ket, Number(baris.jumlah), "keluar", "Lainnya", baris.tanggal||"hari ini"); }catch(e){ ok=false; }
-        if(!ok) return false;
+        /* Transaksi gagal dibuat: tidak ada yang tercatat — kunci
+           dilepas supaya pengguna boleh mencoba lagi. */
+        if(!ok){ delete lapDicatatLokal[String(id)]; return false; }
         var sb=timSb();
-        if(!sb){ popupRamah("Belum bisa menandai","Kwitansi sudah dicatat — penanda belum tersimpan. Muat ulang daftar laporan."); return false; }
+        if(!sb){ popupRamah("Transaksi sudah dibuat","Tekan Muat ulang; jangan tekan lagi."); await lapMuat(); return false; }
         var r=await sb.rpc("tandai_laporan_dicatat",{p_laporan_id:id});
-        if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); } else { popupRamah("Belum bisa menandai","Kwitansi sudah dicatat — penanda belum tersimpan. Muat ulang daftar laporan."); } return false; }
+        if(r.error){
+          /* Transaksi SUDAH dibuat tetapi penanda belum tersimpan:
+             kunci lokal TETAP dipasang dan daftar dimuat ulang supaya
+             tombolnya hilang — pengguna tidak bisa membuat transaksi
+             kedua dari laporan yang sama. */
+          if(timBelumAktif(r.error)){ popupRamah("Transaksi sudah dibuat","Tekan Muat ulang; jangan tekan lagi. Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); }
+          else { popupRamah("Transaksi sudah dibuat","Tekan Muat ulang; jangan tekan lagi."); }
+          await lapMuat();
+          return false;
+        }
         baris.dicatat=true;
         audit("Kwitansi pegawai dicatat: "+(baris.pegawai_nama||"")+" "+fmtFull(Number(baris.jumlah)));
         toast("Kwitansi dicatat");
@@ -5015,6 +5156,9 @@
       }
       async function presMuat(){
         var u=timPemilikMasuk(); if(!u) return;
+        /* S-B10: daftar tim harus tiba dulu — "Belum masuk hari ini"
+           dihitung dari timDaftar, jadi muat tim dulu bila kosong. */
+        if(!timDaftar.length){ try{ await timMuat(); }catch(e){} }
         var sb=timSb();
         var tabel=$("presTabel"), kosong=$("presKosong"), setup=$("presSetup");
         if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none";
@@ -5080,6 +5224,11 @@
         if(bL) bL.addEventListener("click", function(){ timLogMuat(); });
         var bTim=$("btnMuatTim");
         if(bTim) bTim.addEventListener("click", function(){ timMuat(); });
+        /* Muat ulang semua (Fase 2, S-B1): satu tombol yang memuat ulang
+           kelima kartu — Tim usaha, Siapa menjalankan SOP, Presensi hari
+           ini, Laporan pegawai, dan Pemakaian AI tim. */
+        var bSemua=$("btnMuatSemuaTim");
+        if(bSemua) bSemua.addEventListener("click", function(){ timBukaLayar(); });
         var bStr=$("btnTambahStruktur");
         if(bStr) bStr.addEventListener("click", function(){
           var nama=$("strukturNama")?$("strukturNama").value:"";
@@ -5222,7 +5371,7 @@
         /* Induk tiap sub-layar (untuk tombol "← Kembali" dan sorotan
            nav bawah). Layar tanpa induk kembali ke Mode Operasional. */
         var LAYAR_INDUK={langkah:"hariini",perhatian:"hariini","introspeksi-fin":"introspeksi","introspeksi-ops":"introspeksi","introspeksi-mkt":"introspeksi","introspeksi-tech":"introspeksi",investasi:"keuangan","saran-rencana":"saran","kemasan-sudut":"kemasan","kemasan-label":"kemasan","buku-transaksi":"buku","buku-qris":"buku","buku-stok":"buku","buku-hutang":"buku","buku-laporan":"buku",bayar:"paket"};
-        var LAYAR_JUDUL={hariini:"Mode Operasional",langkah:"Langkah Berikutnya",perhatian:"Perlu Perhatian",data:"Data Usaha",dashboard:"Dasbor Level UMKM",valuasi:"Valuasi",introspeksi:"Introspeksi","introspeksi-fin":"Keuangan","introspeksi-ops":"Operasional","introspeksi-mkt":"Pasar & Kemasan","introspeksi-tech":"Teknologi & Legalitas",keuangan:"Keuangan",investasi:"Simulasi Dana Investasi",saran:"Saran","saran-rencana":"Rencana Perbaikan",kemasan:"Produk & Pemaketan","kemasan-sudut":"Foto 3 Sudut","kemasan-label":"Contoh Label",buku:"Pembukuan","buku-transaksi":"Tambah Transaksi","buku-qris":"Pembayaran QRIS","buku-stok":"Stok Barang","buku-hutang":"Piutang & Utang","buku-laporan":"Laporan",cekdata:"Cek Data",legalitas:"Legalitas",pemasaran:"Pemasaran",sop:"Orang & SOP",portal:"Portal Investor",paket:"Paket & Layanan",bayar:"Bayar Langganan",adminmarketing:"Admin Marketing"};
+        var LAYAR_JUDUL={hariini:"Mode Operasional",langkah:"Langkah Berikutnya",perhatian:"Perlu Perhatian",data:"Data Usaha",dashboard:"Level",valuasi:"Valuasi",introspeksi:"Introspeksi","introspeksi-fin":"Introspeksi — Keuangan","introspeksi-ops":"Operasional","introspeksi-mkt":"Pasar & Kemasan","introspeksi-tech":"Teknologi & Legalitas",keuangan:"Keuangan & Ekonomi",investasi:"Simulasi Dana Investasi",saran:"Saran","saran-rencana":"Rencana Perbaikan",kemasan:"Produk & Pemaketan","kemasan-sudut":"Foto 3 Sudut","kemasan-label":"Contoh Label",buku:"Pembukuan","buku-transaksi":"Tambah Transaksi","buku-qris":"Pembayaran QRIS","buku-stok":"Stok Barang","buku-hutang":"Piutang & Utang","buku-laporan":"Laporan",cekdata:"Cek Data",legalitas:"Legalitas",pemasaran:"Pemasaran",sop:"Orang & SOP",portal:"Portal Investor",paket:"Paket & Layanan",bayar:"Bayar Langganan",adminmarketing:"Admin Marketing"};
         /* Judul dipakai indikator "Anda di sini" dan label tombol Kembali;
            sub-layar memakai judul pendeknya sendiri supaya jalurnya
            tetap satu baris (mis. "Keuangan › Tambah Transaksi"). */
@@ -5355,6 +5504,14 @@
         function tampilkanLayar(nama, opsi){
           opsi=opsi||{};
           if(modePortalBerbagi()) return false;
+          /* Penjaga bayar: tamu tidak boleh masuk layar bayar (isinya bisa
+             diisi + bukti diunggah, baru ditolak di tombol Kirim, dan foto
+             bukti hilang sesudah daftar). Tamu langsung diarahkan ke
+             gerbang daftar dengan alasan yang jelas. */
+          if(nama==="bayar" && window.__isGuestMode && window.__isGuestMode()){
+            if(window.__showRegisterGate) window.__showRegisterGate("Daftar dulu untuk membayar langganan — langganan tersimpan di akun Anda.");
+            return false;
+          }
           if(LAYAR_DAFTAR.indexOf(nama)<0) return false;
           /* Penjaga navigasi: bila ada perubahan belum disimpan dan
              tujuannya layar lain, tahan pindah dan tanyakan dulu.
@@ -5407,7 +5564,7 @@
           }
           try{
             /* Sub-layar menyorot item nav induknya (mis. sub-layar
-               introspeksi menyorot "Cek Diri"); induk tanpa item nav
+               introspeksi menyorot "Introspeksi"); induk tanpa item nav
                (Pembukuan, Kemasan) tidak menyorot apa pun. */
             var navUntuk=LAYAR_INDUK[nama]||nama;
             document.querySelectorAll(".bottom-nav a").forEach(function(a){
@@ -5429,6 +5586,9 @@
           /* Masuk layar Orang & SOP: muat daftar tim + catatan jalankan SOP
              (hanya bila pemilik masuk; tamu hanya melihat ajakan daftar). */
           if(nama==="sop"){ try{ timBukaLayar(); }catch(e){} }
+          /* Masuk layar Portal Investor: segarkan saklar tampil ke
+             investor + daftar minat masuk (Fase 2, S-K2). */
+          if(nama==="portal"){ try{ if(window.__listingBukaLayar) window.__listingBukaLayar(); }catch(e){} }
           /* Masuk layar Saran: gerbang riset data usaha (hanya bila
              pemilik masuk; tamu hanya melihat ajakan daftar). */
           if(nama==="saran"){ try{ risetBukaLayar(); }catch(e){} }
@@ -5456,11 +5616,13 @@
           return null;
         }
         /* Jalur lokasi layar ("Anda di sini"): "induk › sub-layar" untuk
-           sub-layar, judul sendiri untuk layar tingkat atas. */
+           sub-layar, judul sendiri untuk layar tingkat atas. Bila judul
+           sub-layar sudah diawali judul induknya (mis. "Introspeksi —
+           Keuangan"), induk tidak diulang lagi di depan. */
         function jalurLokasi(nama){
           var judul=LAYAR_JUDUL[nama]||nama;
           var induk=LAYAR_INDUK[nama];
-          if(induk) return (LAYAR_JUDUL[induk]||induk)+" › "+judul;
+          if(induk){ var jInduk=LAYAR_JUDUL[induk]||induk; if(judul.indexOf(jInduk)===0) return judul; return jInduk+" › "+judul; }
           return judul;
         }
         function perbaruiIndikatorLokasi(nama){
@@ -5529,6 +5691,10 @@
           tampilkanLayar(layarTujuan);
         });
         window.addEventListener("hashchange", function(){
+          /* Bila wizard masih terbuka dan hash sudah bukan #wizard
+             (mis. pengguna menekan kembali di peramban), tutup wizard
+             supaya layar di bawahnya terlihat lagi. */
+          try{ if(location.hash!=="#wizard" && window.__tutupWizardOverlay) window.__tutupWizardOverlay(); }catch(e){}
           var h=layarDariHash();
           /* Tampilkan kembali layar yang sama pun bila hash menunjuk
              ke layar yang sudah aktif: tampilkanLayar("sop") memuat
@@ -5540,12 +5706,23 @@
         /* Kembali ke tab aplikasi (mis. setelah menyetujui pegawai
            lewat SQL di tab lain): bila layar Orang & SOP sedang
            aktif, muat ulang daftar tim + log + laporan — baris yang
-           baru disetujui muncul tanpa navigasi apa pun. Hanya layar
-           sop (dashboard monitoring); layar lain tidak ikut dimuat
-           ulang di sini. */
+           baru disetujui muncul tanpa navigasi apa pun. Bila layar
+           Paket & Layanan atau Bayar Langganan sedang aktif, muat
+           ulang status pembayaran + langganan (Fase 2, S-B11) supaya
+           status tidak basi. */
         document.addEventListener("visibilitychange", function(){
           try{
             if(!document.hidden && layarAktif==="sop") timBukaLayar();
+            if(!document.hidden && (layarAktif==="paket"||layarAktif==="bayar") && window.__bayarBukaLayar) window.__bayarBukaLayar();
+          }catch(e){}
+        });
+        /* Kembali fokus ke jendela aplikasi (mis. sesudah memeriksa
+           sesuatu di aplikasi lain, tanpa pindah tab): bila layar
+           Orang & SOP sedang aktif, muat ulang kelima kartu tim —
+           sama seperti kembali ke tab (Fase 2, S-B1). */
+        window.addEventListener("focus", function(){
+          try{
+            if(layarAktif==="sop") timBukaLayar();
           }catch(e){}
         });
         /* Audit ketinggian layar (tanpa tata letak sungguhan di jsdom):
@@ -5699,7 +5876,19 @@
             var simpan=bacaSet();
             var daftar=Object.keys(simpan);
             if(!daftar.length) return;
-            var ada={}; daftar.forEach(function(k){ ada[k]=1; });
+            /* FASE 4: penanda emas nav bawah hanya untuk layar TERAKHIR
+               dikunjungi — dari simpanan lama yang mungkin masih menyimpan
+               beberapa kunci nav, hanya kunci nav yang terakhir disimpan
+               yang diterapkan; kunci nav lain dibersihkan dari simpanan.
+               Tombol lain tidak disentuh. */
+            var kunciNav={};
+            document.querySelectorAll(".bottom-nav a").forEach(function(a){ var k=kunciTombol(a); if(k) kunciNav[k]=1; });
+            var terakhirNav=null;
+            daftar.forEach(function(k){ if(kunciNav[k]) terakhirNav=k; });
+            var berubah=false;
+            daftar.forEach(function(k){ if(kunciNav[k]&&k!==terakhirNav){ delete simpan[k]; berubah=true; } });
+            if(berubah) simpanSet(simpan);
+            var ada={}; Object.keys(simpan).forEach(function(k){ ada[k]=1; });
             document.querySelectorAll("button, a").forEach(function(el){
               if(!bolehDitandai(el)) return;
               var k=kunciTombol(el);
@@ -5710,6 +5899,16 @@
             var t=ev.target&&ev.target.closest?ev.target.closest("button, a"):null;
             if(!t||!document.contains(t)) return;
             if(!bolehDitandai(t)) return;
+            /* FASE 4: penanda emas nav bawah hanya untuk layar TERAKHIR
+               dikunjungi — ketukan nav baru menghapus emas nav sebelumnya
+               (di layar + di simpanan). Tombol lain tidak disentuh. */
+            if(t.matches(".bottom-nav a")){
+              var simpanNav=bacaSet();
+              document.querySelectorAll(".bottom-nav a").forEach(function(a){
+                if(a!==t){ a.classList.remove("sudah-diklik"); var k0=kunciTombol(a); if(k0) delete simpanNav[k0]; }
+              });
+              simpanSet(simpanNav);
+            }
             t.classList.add("sudah-diklik");
             var k=kunciTombol(t);
             if(!k) return; /* tanpa kunci stabil: hanya sesi ini saja */
@@ -5747,7 +5946,7 @@
            sempit secara alami).
            Tombol ini sengaja TIDAK ikut sistem emas .sudah-diklik
            (bukan navigasi; keadaannya sudah terlihat dari label, yang
-           menunjukkan mode TUJUAN: "Mode PC" saat tampil HP).
+           menunjukkan mode AKTIF: "Mode: HP" saat tampil HP).
            Tombol hanya tampil di PC (ada tetikus/trackpad —
            pointer:fine); di HP layar sentuh tombol disembunyikan
            karena pengguna HP tetap memakai tampilan HP. */
@@ -5772,7 +5971,7 @@
             var akar=document.documentElement;
             if(akar) akar.classList.toggle("mode-hp", mode==="hp");
             var b=gid("btnModeTampilan");
-            if(b) b.textContent=(mode==="hp")?"Mode PC":"Mode HP";
+            if(b){ b.textContent=(mode==="hp")?"Mode: HP":"Mode: PC"; b.title=(mode==="hp")?"Mode tampilan saat ini: HP — ketuk untuk pindah ke PC":"Mode tampilan saat ini: PC — ketuk untuk pindah ke HP"; }
             perbaruiTombolMode();
             return mode;
           }
@@ -5808,7 +6007,7 @@
             var bar=document.querySelector(".topbar");
             if(bar) bar.classList.toggle("terlipat", lipat);
             var b=gid("btnLipatHeader");
-            if(b){ b.textContent=lipat?"Buka header":"Lipat header"; b.setAttribute("aria-expanded", lipat?"false":"true"); }
+            if(b){ b.textContent=lipat?"Tampilkan menu":"Sembunyikan menu"; b.setAttribute("aria-expanded", lipat?"false":"true"); }
             return lipat;
           }
           function gantiLipat(){
@@ -5827,12 +6026,13 @@
 
     <script>
       /* ================= MULTI-USER: MASUK AKUN + SINKRONISASI CLOUD ================= */
-      /* ---------- LANGGANAN (Pro) — SAKLAR UTAMA. false = fitur MATI total:
-         tidak ada modul/tombol langganan, tidak ada kuota AI, tidak ada
-         gerbang Pro, dan aplikasi TIDAK PERNAH menyentuh tabel langganan /
-         pengaturan_app. Nyalakan hanya bila pemilik siap mengaktifkan
-         langganan manual QRIS (dan tabelnya sudah dibuat di SQL Editor). */
-      var LANGGANAN_AKTIF = false;
+      /* ---------- LANGGANAN (Pro) — SAKLAR UTAMA. true = fitur NYALA:
+         penegakan batas Gratis + kuota AI berjalan, dan status Pro dibaca
+         dari data usaha (umkm_data.data -> 'langganan') — satu-satunya
+         sumber kebenaran, ditulis RPC pembayaran sesudah verifikasi
+         pemilik. Modul langganan QRIS lama (tabel 'langganan') tidak
+         lagi menentukan Pro; hanya dipakai tampilan status lama. */
+      var LANGGANAN_AKTIF = true;
       function bulanSekarang(){ var d=new Date(); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2); }
 
       /* ---------- Batas volume data gratis (fitur langganan, pemicu bayar utama) ----------
@@ -5859,7 +6059,7 @@
         var batas=BATAS_GRATIS[jenis]||0, label=LABEL_BATAS[jenis]||"data";
         if((jumlahSekarang||0)<batas) return true;
         try{
-          if(window.tampilPopupRamah) window.tampilPopupRamah("Batas gratis sudah sampai","Batas gratis sudah sampai — "+batas+" "+label+". Data Anda tetap aman dan bisa dilihat.","Naik ke Pro untuk mencatat tanpa batas.", {label:"Lihat langganan", href:"langganan"});
+          if(window.tampilPopupRamah) window.tampilPopupRamah("Batas gratis sudah sampai","Batas gratis sudah sampai — "+batas+" "+label+". Data Anda tetap aman dan bisa dilihat.","Naik ke Pro untuk mencatat tanpa batas.", {label:"Lihat paket", href:"paket"});
         }catch(e2){ try{ toast("Batas gratis sudah sampai — "+batas+" "+label+"."); }catch(e3){} }
         return false;
       }
@@ -6498,6 +6698,14 @@
           document.querySelectorAll(".wrap input[id], .wrap select[id], .wrap textarea[id]").forEach(function(el){ if(el.type==="file") return; inputs[el.id]=el.value; });
           return {
             paket_tier: tierEfektifUntukKuota(),
+            /* Kohort anonim (Fase 2, S-K1): ikut di snapshot supaya
+               saveData menuliskannya ke umkm_data.data -> 'kohort_id'. */
+            kohort_id: kohortIdPastikan(),
+            /* Langganan + pegawai tambahan dari cloud dipertahankan di
+               snapshot supaya saveData menuliskannya kembali (bukan
+               menimpanya dengan null) — lihat __langgananCloud. */
+            langganan: __langgananCloud||null,
+            pegawai_tambahan: (__pegawaiTambahanCloud!=null?__pegawaiTambahanCloud:null),
             lokasi: window.__lokasiUsaha ? {lat:window.__lokasiUsaha.lat, lng:window.__lokasiUsaha.lng, akurasi_m:window.__lokasiUsaha.akurasi_m, diambil_pada:window.__lokasiUsaha.diambil_pada} : null,
             inputs:inputs,
             answers:Object.assign({},answers),
@@ -6581,6 +6789,13 @@
           return {
             lokasi: c.lokasi||t.lokasi||null,
             paket_tier: c.paket_tier||t.paket_tier||null,
+            /* Kohort anonim: cloud menang; bila cloud tidak punya,
+               pakai milik data coba — id yang sama bertahan. */
+            kohort_id: c.kohort_id||t.kohort_id||null,
+            /* Migrasi tamu -> terdaftar tidak boleh menghapus langganan:
+               cloud menang; bila cloud tidak punya, pakai milik data coba. */
+            langganan: c.langganan||t.langganan||null,
+            pegawai_tambahan: (c.pegawai_tambahan!=null?c.pegawai_tambahan:(t.pegawai_tambahan!=null?t.pegawai_tambahan:null)),
             qris_image: c.qris_image||t.qris_image||null,
             ai_pakai: c.ai_pakai||t.ai_pakai||null,
             proaktif: c.proaktif||t.proaktif||null,
@@ -6607,6 +6822,17 @@
           if(snap.paket_tier && ["mikro","kecil","menengah"].indexOf(String(snap.paket_tier))>=0){
             try{ if(!localStorage.getItem("umkm-introspeksi-tier-dipilih")) localStorage.setItem("umkm-introspeksi-tier-dipilih", snap.paket_tier); }catch(e){}
           }
+          /* Langganan + pegawai tambahan dari snapshot (cloud/lokal) ikut
+             dipulihkan ke variabel modul supaya penyimpanan berikutnya
+             menuliskannya kembali. Hanya bila kuncinya memang ada di
+             snapshot — snapshot sebagian (tanpa kunci itu) tidak boleh
+             menghapus nilai cloud yang sudah dimuat. */
+          if(Object.prototype.hasOwnProperty.call(snap,"langganan")){ __langgananCloud=snap.langganan||null; }
+          if(Object.prototype.hasOwnProperty.call(snap,"pegawai_tambahan")){ __pegawaiTambahanCloud=(snap.pegawai_tambahan!=null?snap.pegawai_tambahan:null); }
+          /* Kohort anonim dari snapshot (cloud/lokal) dipulihkan ke
+             variabel modul supaya penyimpanan berikutnya memakai id
+             yang sama — jangan pernah dibuat baru bila sudah ada. */
+          if(snap.kohort_id){ __kohortId=String(snap.kohort_id); }
           if(snap.lokasi){ window.__lokasiUsaha=snap.lokasi; } else if(snap.inputs && snap.inputs.gpsDiambilPada){ /* lokasi lama tanpa objek: abaikan */ }
           renderLokasi();
           if(snap.inputs){ Object.keys(snap.inputs).forEach(function(id){ var el=gid(id); if(el && el.type!=="file"){ try{ var val=snap.inputs[id]; if((id==="inPanggilan"||id==="wizPanggilan")&&val==="Ayah") val="Bapak"; /* nilai lama dibaca sebagai Bapak */ el.value=val; }catch(e){} } }); }
@@ -6650,11 +6876,50 @@
           loading=false;
         }
 
+        /* Langganan + pegawai tambahan dari cloud (umkm_data.data):
+           dipertahankan di setiap penyimpanan — saveData tidak pernah
+           menimpanya dengan null bila cloud sudah memilikinya. Diisi
+           loadData() dari kolom data, dipulihkan applySnapshot() dari
+           snapshot, dan ditulis kembali saveData() ke kolom data. */
+        var __langgananCloud=null, __pegawaiTambahanCloud=null;
+        window.__langgananCloudDariData=function(){ return __langgananCloud; };
+        window.__pegawaiTambahanCloudDariData=function(){ return __pegawaiTambahanCloud; };
+
+        /* Kohort anonim untuk agregat Pemda (Fase 2, S-K1): id acak yang
+           stabil per pengguna — BUKAN user_id dan BUKAN email. Dibuat
+           sekali, disimpan di snapshot (umkm_data.data -> 'kohort_id')
+           supaya bertahan di cloud dan dipakai lagi di penyimpanan
+           berikutnya. */
+        var __kohortId=null;
+        function kohortIdPastikan(snap){
+          if(snap && snap.kohort_id){ __kohortId=String(snap.kohort_id); return __kohortId; }
+          if(__kohortId) return __kohortId;
+          var id=null;
+          try{ if(window.crypto && crypto.randomUUID) id=crypto.randomUUID(); }catch(e){}
+          if(!id) id="k-"+Date.now().toString(36)+"-"+Math.floor(Math.random()*1000000000).toString(36);
+          __kohortId=id;
+          if(snap) snap.kohort_id=id;
+          return id;
+        }
+        window.__kohortIdPastikan=kohortIdPastikan;
+
         /* ---------- simpan / muat cloud ---------- */
         async function syncTable(table, rows){
-          var del=await sb.from(table).delete().eq("user_id", currentUser.id);
-          if(del.error) throw del.error;
-          if(rows.length){ var ins=await sb.from(table).insert(rows); if(ins.error) throw ins.error; }
+          /* Upsert per id (bukan hapus-semua + sisip ulang) supaya
+             created_at baris lama dipertahankan; baris yang sudah tidak
+             ada di daftar saat ini baru dihapus. Daftar kosong = hapus
+             semua baris pengguna itu (perilaku lama). */
+          rows=rows||[];
+          if(rows.length){
+            var up=await sb.from(table).upsert(rows, {onConflict:"id"});
+            if(up.error) throw up.error;
+            var daftar="(\""+rows.map(function(r){ return String(r.id).replace(/"/g,""); }).join("\",\"")+"\")";
+            var del=await sb.from(table).delete().eq("user_id", currentUser.id).not("id","in",daftar);
+            if(del.error) throw del.error;
+          } else {
+            var del0=await sb.from(table).delete().eq("user_id", currentUser.id);
+            if(del0.error) throw del0.error;
+          }
         }
         /* Penjaga navigasi: catat hasil simpan — simpan berhasil berarti
            tidak ada lagi perubahan yang belum disimpan, dan snapshot
@@ -6667,17 +6932,37 @@
           try{ if(window.__bersihkanPerubahan) window.__bersihkanPerubahan(); }catch(e){}
         }
         async function saveData(snap, json){
+          /* Kohort anonim (Fase 2, S-K1): pastikan ada sebelum
+             pemanggilan agregat, supaya baris agregat + inti data
+             memakai id yang sama. */
+          var kohortId=kohortIdPastikan(snap);
           /* Kalibrasi anonim (Fase 2): bila saklar persetujuan AKTIF, satu baris
              angka anonim dikirim ke tabel kalibrasi. Fungsi ini tidak pernah
              melempar error dan tidak pernah menghambat penyimpanan utama. */
           try{ if(window.__kalibrasiOnSave) window.__kalibrasiOnSave(snap); }catch(e){}
+          /* Agregat anonim Pemda (Fase 2, S-K1): gerbang persetujuan
+             yang sama dengan kalibrasi; diam bila RPC belum ada di
+             cloud — penyimpanan utama tidak pernah gagal karenanya. */
+          try{ if(window.__agregatOnSave) window.__agregatOnSave(snap); }catch(e){}
+          /* Listing investor (Fase 2, S-K2): bila opt-in aktif, segarkan
+             baris listing dengan angka terbaru. Diam bila gagal. */
+          try{ if(window.__listingOnSave) window.__listingOnSave(); }catch(e){}
           if(isGuest || !currentUser){ persistLocal(snap); lastJson=json; setSync(isGuest?"Mode coba":"Tersimpan di HP ini (mode tanpa akun)","warn"); penjagaCatatSimpan(snap); return; }
           if(tablesMissing){ persistLocal(snap); lastJson=json; setSync("Tersimpan di HP ini — tabel cloud belum dibuat","warn"); popupGagalSimpan("tabel"); penjagaCatatSimpan(snap); return; }
           if(!navigator.onLine){ persistLocal(snap); lastJson=json; setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn"); popupGagalSimpan("gagal"); penjagaCatatSimpan(snap); return; }
           setSync("Menyimpan...","");
           try{
             var uid=currentUser.id;
-            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, sops:snap.sops, struktur:snap.struktur, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, ai_pakai: snap.ai_pakai || {bulan:bulanSekarang(), jumlah:0}, paket_tier: snap.paket_tier||null, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null}};
+            var core={inputs:snap.inputs, answers:snap.answers, pack:snap.pack, cons:snap.cons, legal:snap.legal, chan:snap.chan, sopSteps:snap.sopSteps, sops:snap.sops, struktur:snap.struktur, lokasi:snap.lokasi||window.__lokasiUsaha||null, qris_image: snap.qris_image||null, ai_pakai: snap.ai_pakai || {bulan:bulanSekarang(), jumlah:0}, paket_tier: snap.paket_tier||null, proaktif: snap.proaktif || {last_seen:proaktifState.last_seen||null, lastConsCheck:proaktifState.lastConsCheck||null},
+              /* Langganan + pegawai tambahan: tulis kembali dari snapshot
+                 bila ada, kalau tidak dari nilai cloud yang sudah dimuat —
+                 jangan pernah menimpanya dengan null bila cloud sudah
+                 memilikinya (aktivasi langganan bisa terhapus). */
+              langganan: (snap.langganan!=null?snap.langganan:__langgananCloud)||null,
+              pegawai_tambahan: (snap.pegawai_tambahan!=null?snap.pegawai_tambahan:__pegawaiTambahanCloud),
+              /* Kohort anonim (Fase 2, S-K1): tersimpan di
+                 umkm_data.data -> 'kohort_id'. */
+              kohort_id: kohortId};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
@@ -6692,10 +6977,223 @@
           }catch(e){
             persistLocal(snap); lastJson=json;
             penjagaCatatSimpan(snap);
-            if(isMissingTable(e)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan di HP ini — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
+            if(isMissingTable(e)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); try{ aturSqlBanner(); }catch(e2){} setSync("Tersimpan di HP ini — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
             else { setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn"); popupGagalSimpan("gagal"); }
           }
         }
+        /* ---------- Listing investor + minat masuk (Fase 2, S-K2) ----------
+           Saklar "Tampilkan usaha saya ke investor" di #portal menulis
+           satu baris anonim ke listing_investor (pemilik_id = pengguna
+           yang masuk). Isi HANYA: level, skor-skor, HPP, kemasan,
+           legalitas, kanal penjualan, dan 2 kekurangan utama — TANPA
+           nama, telepon, email, lokasi persis, transaksi, atau foto.
+           Minat masuk dibaca dari minat_investor lewat listing milik
+           pengguna ini; pemilik menjawab Terima / Tolak. */
+        var __listingAktif=false, __listingId=null;
+        function listingSb(){ try{ return (window.__sbAuth && window.__sbAuth())||null; }catch(e){ return null; } }
+        function listingPengguna(){ try{ return (window.__penggunaAktif && window.__penggunaAktif())||null; }catch(e){ return null; } }
+        function listingDataUsaha(){
+          var sek=(gid("inSektor")||{}).value||"", prov=(gid("inProvinsi")||{}).value||"", kota=(gid("inKota")||{}).value||"";
+          var skorKemasan=null;
+          try{ var ps=gid("packScore"); if(ps){ var v=parseInt(String(ps.textContent||"").trim(),10); if(!isNaN(v)) skorKemasan=v; } }catch(e){}
+          var kanal=[];
+          try{
+            var namaKanal=["Toko fisik / lapak / warung","WhatsApp Business + katalog","Marketplace","Pesan-antar makanan / layanan","Media sosial aktif","Google Maps / Profil Bisnis"];
+            if(typeof chanState!=="undefined"){ chanState.forEach(function(cv,i){ if(cv===1 && namaKanal[i]) kanal.push(namaKanal[i]); }); }
+          }catch(e){}
+          var kurang=[];
+          try{
+            if(typeof S!=="undefined" && S.dimScore){
+              var namaDim={fin:"Keuangan",ops:"Operasional",mkt:"Pasar & kemasan",tech:"Teknologi & legalitas"};
+              kurang=Object.keys(S.dimScore).map(function(k){ return {k:k, nama:namaDim[k]||k, skor:+S.dimScore[k]||0}; }).sort(function(a,b){ return a.skor-b.skor; }).slice(0,2).map(function(x){ return x.nama+" ("+x.skor+"/100)"; });
+            }
+          }catch(e){}
+          return {sektor:sek, provinsi:prov, kota:kota,
+            level:(typeof S!=="undefined" && S.skala)||null,
+            skor_kesehatan:Math.round((typeof S!=="undefined" && S.health)||0),
+            skor_siap_investasi:Math.round((typeof S!=="undefined" && S.scInv)||0),
+            skor_konsistensi:(typeof consScoreVal!=="undefined"?consScoreVal:null),
+            valuasi_min:Math.round((typeof S!=="undefined" && S.valLow)||0),
+            valuasi_max:Math.round((typeof S!=="undefined" && S.valHigh)||0),
+            ringkasan:{level:(typeof S!=="undefined" && S.skala)||null,
+              hpp:(typeof S!=="undefined" && typeof S.hppPct==="number")?Math.round(S.hppPct*100):null,
+              skor_kemasan:skorKemasan,
+              legalitas:(typeof legalScoreVal!=="undefined"?legalScoreVal:null),
+              kanal_penjualan:kanal,
+              kekurangan_utama:kurang}};
+        }
+        async function listingSimpan(aktif, diam){
+          var u=listingPengguna(), sb=listingSb();
+          if(!u||!sb) return false;
+          try{
+            var ada=await sb.from("listing_investor").select("id").eq("pemilik_id", u.id).maybeSingle();
+            var adaId=(ada && !ada.error && ada.data && ada.data.id)||null;
+            if(!aktif && !adaId){ __listingAktif=false; return true; }
+            if(aktif){
+              var d=listingDataUsaha();
+              if(!d.sektor || !d.provinsi || !d.kota){
+                if(!diam){
+                  popupRamah("Isi data usaha dulu","Pilih jenis usaha, provinsi, dan kota di Data Usaha dulu supaya usaha Anda bisa tampil ke investor.","Buka Data Usaha, isi ketiganya, lalu nyalakan lagi saklarnya.");
+                  var cb0=gid("optinInvestor"); if(cb0) cb0.checked=false;
+                }
+                return false;
+              }
+              var baris={pemilik_id:u.id, sektor:d.sektor, kota:d.kota, provinsi:d.provinsi, level:d.level, skor_kesehatan:d.skor_kesehatan, skor_siap_investasi:d.skor_siap_investasi, skor_konsistensi:d.skor_konsistensi, valuasi_min:d.valuasi_min, valuasi_max:d.valuasi_max, ringkasan:d.ringkasan, aktif:true, diperbarui_pada:new Date().toISOString()};
+              if(adaId){ baris.id=adaId; __listingId=adaId; }
+              var r=await sb.from("listing_investor").upsert(baris, {onConflict:"id"});
+              if(r.error) throw r.error;
+              if(r.data && r.data[0] && r.data[0].id) __listingId=r.data[0].id;
+              __listingAktif=true;
+              return true;
+            }
+            var rOff=await sb.from("listing_investor").upsert({id:adaId, pemilik_id:u.id, aktif:false, diperbarui_pada:new Date().toISOString()}, {onConflict:"id"});
+            if(rOff.error) throw rOff.error;
+            __listingAktif=false;
+            return true;
+          }catch(e){
+            if(!diam){
+              var cb2=gid("optinInvestor"); if(cb2) cb2.checked=__listingAktif;
+              popupRamah("Belum bisa disimpan","Pengaturan tampil ke investor belum aktif di cloud — coba lagi nanti.","Minta pemilik aplikasi menjalankan pengaturan FASE 2 di cloud.");
+            }
+            return false;
+          }
+        }
+        function listingStatusTeks(){
+          var el=gid("listingStatus"); if(!el) return;
+          el.textContent=__listingAktif?"Usaha Anda tampil di Portal Investor. Matikan saklar bila tidak ingin ditampilkan lagi.":"Usaha Anda belum tampil di Portal Investor.";
+        }
+        async function minatMuat(){
+          var daftar=gid("minatList"), kosong=gid("minatKosong");
+          if(!daftar) return;
+          if(kosong) kosong.style.display="none";
+          var u=listingPengguna(), sb=listingSb();
+          if(!u||!sb){ daftar.innerHTML=""; if(kosong) kosong.style.display=""; return; }
+          try{
+            var rList=await sb.from("listing_investor").select("id").eq("pemilik_id", u.id).maybeSingle();
+            var listingId=(rList && !rList.error && rList.data && rList.data.id)||__listingId||null;
+            if(!listingId){ daftar.innerHTML=""; if(kosong) kosong.style.display=""; return; }
+            var r=await sb.from("minat_investor").select("id,investor_id,investor_nama,pesan,dana_diminati,status,dibuat_pada").eq("listing_id", listingId).order("dibuat_pada",{ascending:false});
+            if(r.error) throw r.error;
+            var rows=r.data||[];
+            if(!rows.length){ daftar.innerHTML=""; if(kosong) kosong.style.display=""; return; }
+            /* Lembaga investor: dicoba baca dari profil investor bila
+               diizinkan cloud — kebijakan saat ini hanya mengizinkan
+               investor membaca profilnya sendiri, jadi kolom ini
+               umumnya kosong di sini; nama + pesan + dana tetap tampil. */
+            var lembaga={};
+            try{
+              var ids=[]; rows.forEach(function(x){ if(x.investor_id && ids.indexOf(x.investor_id)<0) ids.push(x.investor_id); });
+              if(ids.length){
+                var rp=await sb.from("investor_profil").select("id,lembaga").in("id", ids);
+                if(!rp.error && rp.data) rp.data.forEach(function(p){ if(p && p.id) lembaga[p.id]=p.lembaga||""; });
+              }
+            }catch(e){}
+            daftar.innerHTML=rows.map(function(x){
+              var st=String(x.status||"baru").toLowerCase();
+              var label=st==="diterima"?"Diterima":st==="ditolak"?"Ditolak":"Baru";
+              var dana=(x.dana_diminati!=null)?fmtFull(Number(x.dana_diminati)||0):"—";
+              var tgl=""; try{ tgl=x.dibuat_pada?new Date(x.dibuat_pada).toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}):""; }catch(e){}
+              var aksi=st==="baru"?'<div class="actions" style="margin-top:8px"><button type="button" class="btn small" data-minat-terima="'+esc(x.id)+'">Terima</button><button type="button" class="btn ghost small" data-minat-tolak="'+esc(x.id)+'">Tolak</button></div>':"";
+              return '<div class="card" style="margin:0 0 10px"><p><b>'+esc(x.investor_nama||"Investor")+'</b>'+(lembaga[x.investor_id]?" — "+esc(lembaga[x.investor_id]):"")+'</p>'
+                +'<p class="note" style="margin-top:4px">'+(x.pesan?esc(x.pesan):"Tanpa pesan.")+'</p>'
+                +'<p style="margin-top:6px">Dana yang diminati: <b>'+esc(dana)+'</b>'+(tgl?" · "+esc(tgl):"")+'</p>'
+                +'<p class="note" style="margin-top:4px">Status: <b>'+label+'</b></p>'+aksi+'</div>';
+            }).join("");
+          }catch(e){
+            daftar.innerHTML='<p class="note">Minat masuk belum bisa dimuat — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>';
+          }
+        }
+        async function minatJawab(id, status){
+          var sb=listingSb(); if(!sb) return false;
+          try{
+            var r=await sb.from("minat_investor").update({status:status}).eq("id", id);
+            if(r.error) throw r.error;
+            toast(status==="diterima"?"Minat diterima.":"Minat ditolak.");
+            await minatMuat();
+            return true;
+          }catch(e){
+            popupRamah("Belum bisa dijawab","Jawaban Anda belum tersimpan — periksa koneksi internet Anda, lalu tekan Muat ulang.","Coba jawab lagi sesudah daftar dimuat ulang.");
+            return false;
+          }
+        }
+        async function listingBukaLayar(){
+          var tamu=gid("minatTamu"), isi=gid("minatIsi");
+          var u=listingPengguna();
+          if(!u){
+            if(tamu) tamu.style.display=""; if(isi) isi.style.display="none";
+            var cb0=gid("optinInvestor"); if(cb0) cb0.checked=false;
+            __listingAktif=false; __listingId=null;
+            listingStatusTeks();
+            return;
+          }
+          if(tamu) tamu.style.display="none"; if(isi) isi.style.display="";
+          try{
+            var sb=listingSb();
+            if(sb){
+              var r=await sb.from("listing_investor").select("id,aktif").eq("pemilik_id", u.id).maybeSingle();
+              if(!r.error && r.data){ __listingId=r.data.id||null; __listingAktif=!!r.data.aktif; }
+              else { __listingId=null; __listingAktif=false; }
+            }
+          }catch(e){ __listingId=null; __listingAktif=false; }
+          var cb=gid("optinInvestor"); if(cb) cb.checked=__listingAktif;
+          listingStatusTeks();
+          await minatMuat();
+        }
+        window.__listingBukaLayar=listingBukaLayar;
+        window.__listingSimpan=listingSimpan;
+        window.__listingKeadaan=function(){ return {aktif:__listingAktif, id:__listingId}; };
+        window.__minatMuat=minatMuat;
+        window.__minatJawab=minatJawab;
+        /* Dipanggil saveData saat menyimpan: bila opt-in aktif, segarkan
+           baris listing dengan angka terbaru (termasuk diperbarui_pada).
+           Diam bila gagal — penyimpanan utama tidak pernah gagal
+           karenanya. */
+        window.__listingOnSave=function(){
+          if(!__listingAktif) return;
+          try{ var p=listingSimpan(true, true); if(p && p.catch) p.catch(function(){}); }catch(e){}
+        };
+        (function(){
+          var cb=gid("optinInvestor");
+          if(cb) cb.addEventListener("change", async function(){
+            if(window.__isGuestMode && window.__isGuestMode()){ cb.checked=false; if(window.__showRegisterGate) window.__showRegisterGate("Menampilkan usaha ke investor"); return; }
+            var mau=!!cb.checked;
+            var ok=await listingSimpan(mau, false);
+            if(ok){
+              listingStatusTeks();
+              toast(mau?"Usaha Anda kini tampil di Portal Investor.":"Usaha Anda tidak lagi tampil di Portal Investor.");
+              if(mau) await minatMuat();
+            }
+          });
+          var btnMuat=gid("btnMuatMinat");
+          if(btnMuat) btnMuat.addEventListener("click", function(){ minatMuat(); });
+          var wadahMinat=gid("minatList");
+          if(wadahMinat) wadahMinat.addEventListener("click", function(ev){
+            var t=ev.target && ev.target.closest ? ev.target.closest("[data-minat-terima],[data-minat-tolak]") : null;
+            if(!t) return;
+            var terima=!!t.getAttribute("data-minat-terima");
+            var id=t.getAttribute("data-minat-terima")||t.getAttribute("data-minat-tolak");
+            minatJawab(id, terima?"diterima":"ditolak");
+          });
+        })();
+
+        /* Banner pengaturan cloud (U-B13): bahasa pengguna untuk non-pemilik
+           (tanpa instruksi SQL); instruksi SQL hanya untuk akun pemilik. */
+        function aturSqlBanner(){
+          var j=gid("sqlBannerJudul"), t=gid("sqlBannerTeks"), a=gid("sqlBannerActions");
+          if(!j || !t) return;
+          var pemilik=false;
+          try{ pemilik=!!(currentUser && currentUser.email && String(currentUser.email).toLowerCase()==="soegianto@fst.unair.ac.id"); }catch(e){}
+          if(pemilik){
+            j.textContent="Tabel cloud belum dibuat.";
+            t.textContent="Aplikasi tetap bisa dipakai dan data tersimpan lokal sementara di perangkat ini. Agar data tersimpan di cloud per akun, jalankan SQL pembuatan tabel sekali di SQL Editor cloud.";
+            if(a) a.style.display="";
+          } else {
+            j.textContent="Fitur ini sedang disiapkan.";
+            t.textContent="Data Anda tetap tersimpan di HP ini. Silakan hubungi pemilik aplikasi bila Anda membutuhkan penyimpanan di cloud.";
+            if(a) a.style.display="none";
+          }
+        }
+        window.__aturSqlBanner=aturSqlBanner;
         async function loadData(){
           loading=true; setSync("Memuat data Anda...","");
           // cloudChecked hanya true bila data cloud BERHASIL dimuat (bukan cabang
@@ -6715,17 +7213,41 @@
             ]);
             var bad=res.filter(function(r){ return r.error; })[0];
             if(bad){
-              if(isMissingTable(bad.error)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); setSync("Tersimpan di HP ini — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
+              if(isMissingTable(bad.error)){ tablesMissing=true; gid("sqlBanner").classList.add("show"); try{ aturSqlBanner(); }catch(e2){} setSync("Tersimpan di HP ini — tabel cloud belum dibuat","err"); popupGagalSimpan("tabel"); }
               else { setSync("Tersimpan di HP ini (tidak ada internet) — akan disinkronkan saat ada internet","warn"); popupGagalSimpan("gagal"); }
               var loc=readLocal(); if(loc) applySnapshot(loc);
             } else {
               var core=(res[0].data&&res[0].data.data)||{};
               /* Langganan dari data usaha (umkm_data.data -> 'langganan'):
-                 tampilkan paket aktif / sudah berakhir di #paket. */
+                 tampilkan paket aktif / sudah berakhir di #paket, DAN
+                 simpan ke variabel modul + snapshot supaya penyimpanan
+                 berikutnya tidak menghapusnya. */
+              __langgananCloud=core.langganan||null;
+              /* S-B7: tier langganan aktif menentukan paket_tier — bukan
+                 tier lama yang tersimpan sebelum sinkron — supaya kuota AI
+                 pegawai mengikuti tier yang benar. */
+              var tierLanggananAktif=null;
+              try{
+                var lg=core.langganan||null;
+                if(lg){
+                  var tp=String(lg.paket||lg.tier||lg.tingkat||"").toLowerCase();
+                  var ak=String(lg.berakhir||lg.berakhir_pada||lg.sampai||"").slice(0,10);
+                  var d0=new Date(); var hariIni=d0.getFullYear()+"-"+((d0.getMonth()+1)<10?"0":"")+(d0.getMonth()+1)+"-"+(d0.getDate()<10?"0":"")+d0.getDate();
+                  if((tp==="mikro"||tp==="kecil"||tp==="menengah") && ak && ak>=hariIni) tierLanggananAktif=tp;
+                }
+              }catch(e){}
+              __pegawaiTambahanCloud=(core.pegawai_tambahan!=null?core.pegawai_tambahan:null);
               try{ if(window.__bayarLanggananDariData) window.__bayarLanggananDariData(core.langganan||null); }catch(e){}
+              /* Status pembayaran ikut dimuat ulang setiap kali aplikasi
+                 dibuka (Fase 2, S-B11) — bukan hanya saat layar bayar
+                 dibuka. */
+              try{ if(window.__bayarStatusMuat) window.__bayarStatusMuat(); }catch(e){}
               var snap={
                 lokasi:core.lokasi||null,
-                paket_tier:core.paket_tier||null,
+                paket_tier:tierLanggananAktif||core.paket_tier||null,
+                langganan:core.langganan||null,
+                kohort_id:core.kohort_id||null,
+                pegawai_tambahan:(core.pegawai_tambahan!=null?core.pegawai_tambahan:null),
                 qris_image:core.qris_image||null,
                 ai_pakai:core.ai_pakai||null,
                 proaktif:core.proaktif||null,
@@ -6739,7 +7261,7 @@
               cloudChecked=true; cloudHasData=!!hasCloud;
               cloudSnapForMig=snap; cloudCoreData=cloudAdaDataUsaha(snap);
               if(hasCloud) applySnapshot(snap);
-              else { var loc2=readLocal(); if(loc2) applySnapshot(loc2); }
+              else { var loc2=readLocal(); if(loc2) applySnapshot(loc2); /* Cloud menang untuk langganan: bila cloud sudah punya langganan (walau tanpa data usaha lain), snapshot lokal tidak boleh menghapusnya. */ if(core.langganan!=null) __langgananCloud=core.langganan; if(core.pegawai_tambahan!=null) __pegawaiTambahanCloud=core.pegawai_tambahan; }
               if(hasCloud && snapshotNyata(snap)) tandaiSudahMengisi();
               var prof=res[5].data;
               if(prof && prof.nama_usaha && !gid("inNama").value){ gid("inNama").value=prof.nama_usaha; recalc(); }
@@ -8553,7 +9075,7 @@
           }
           if(kunci==="kesehatan"){
             var d=k.dimensi||{};
-            return "Artinya: Skor Kesehatan Usaha Anda "+(k.skor_kesehatan_usaha||0)+"/100 adalah gabungan empat dimensi usaha dan skor keuangan. Skor per dimensi: Keuangan "+(d.keuangan||0)+"/100, Operasional "+(d.operasional||0)+"/100, Pasar & kemasan "+(d.pasar_dan_kemasan||0)+"/100, Teknologi & legalitas "+(d.teknologi_dan_legalitas||0)+"/100; skor kesehatan keuangan (saja) "+(k.skor_kesehatan_keuangan||0)+"/100. Yang paling menahan skor ini: "+namaDim(k.dimensi_terlemah)+" ("+(k.skor_dimensi_terlemah||0)+"/100). Langkah konkret berikutnya: perbaiki satu jawaban terlemah di dimensi itu sampai berstatus Sudah — tiap jawaban yang naik mengangkat skor keseluruhan.";
+            return "Artinya: Skor Kesehatan Usaha Anda "+(k.skor_kesehatan_usaha||0)+"/100 adalah gabungan empat dimensi usaha dan skor keuangan. Skor per dimensi: Keuangan "+(d.keuangan||0)+"/100, Operasional "+(d.operasional||0)+"/100, Pasar & kemasan "+(d.pasar_dan_kemasan||0)+"/100, Teknologi & legalitas "+(d.teknologi_dan_legalitas||0)+"/100; skor kesehatan keuangan saja "+(k.skor_kesehatan_keuangan||0)+"/100. Yang paling menahan skor ini: "+namaDim(k.dimensi_terlemah)+" ("+(k.skor_dimensi_terlemah||0)+"/100). Langkah konkret berikutnya: perbaiki satu jawaban terlemah di dimensi itu sampai berstatus Sudah — tiap jawaban yang naik mengangkat skor keseluruhan.";
           }
           if(kunci==="kematangan"){
             var dd=k.dimensi||{};
@@ -8712,7 +9234,10 @@
         var PEGAWAI_TERMAKSUK={gratis:0,mikro:1,kecil:3,menengah:5};
         /* Hitung total bayar — fungsi murni (tidak membaca DOM/cloud):
            harga paket + biaya pegawai tambahan, dikurangi diskon 10%
-           bila pengguna punya kode marketing. */
+           HANYA bila kode marketing sudah TERVERIFIKASI aktif. Parameter
+           ketiga berarti "kode terverifikasi" — pemanggil (layar bayar)
+           hanya boleh meneruskan true sesudah cek_kode_marketing
+           menyatakan kode itu aktif; sekadar punya kode tidak cukup. */
         function hitungTotalBayar(tier, jmlPegawaiTambahan, punyaKodeMarketing){
           var t=(tier==="kecil"||tier==="menengah")?tier:"mikro";
           var jml=Math.max(0, Math.floor(Number(jmlPegawaiTambahan)||0));
@@ -8729,6 +9254,9 @@
         window.__tierTersimpan=function(){ try{ return localStorage.getItem(_TIER_KUNCI); }catch(e){ return null; } };
         var _TIER_KUNCI="umkm-introspeksi-tier-dipilih";
         function tierDipilih(){
+          /* Langganan aktif menentukan tier (kuota + batas ikut tier
+             langganan, bukan pilihan tersimpan yang bisa berbeda). */
+          try{ if(_langgananSnap && _langgananSnap.aktif) return _langgananSnap.paket; }catch(e){}
           try{ var t=localStorage.getItem(_TIER_KUNCI); if(t==="mikro"||t==="kecil"||t==="menengah") return t; }catch(e){}
           return "mikro";
         }
@@ -8815,7 +9343,7 @@
           if(isPro()){
             window.tampilPopupRamah("Kuota pertanyaan AI Pro bulan ini sudah habis ("+kuotaAiBatas()+").","Bulan ini Anda sudah memakai "+kuotaAiBatas()+" pertanyaan AI.","Kuota kembali awal bulan depan — tidak ada biaya tambahan. "+panduan);
           } else {
-            window.tampilPopupRamah("Kuota pertanyaan AI gratis bulan ini sudah habis (20).","Bulan ini Anda sudah memakai 20 pertanyaan AI gratis.","Naik ke Pro untuk lanjut bertanya — ketuk tombol Lihat langganan di bawah ini. "+panduan, {label:"Lihat langganan", href:"langganan"});
+            window.tampilPopupRamah("Kuota pertanyaan AI gratis bulan ini sudah habis (20).","Bulan ini Anda sudah memakai 20 pertanyaan AI gratis.","Naik ke Pro untuk lanjut bertanya — ketuk tombol Lihat paket di bawah ini. "+panduan, {label:"Lihat paket", href:"paket"});
           }
         }
 
@@ -8972,6 +9500,34 @@
         var _pengaturan=null, _pengaturanDimuat=false;
         var _langgananDipilih=null, _langgananBuktiB64=null, _adminQrisB64=null;
         var _proCache=false, _proDiketahui=false;
+        /* Sumber kebenaran Pro: langganan di data usaha
+           (umkm_data.data -> 'langganan'), dipasang loadData() lewat
+           setProDariLangganan. Aktif bila tanggal berakhir masih hari
+           ini atau di masa depan (tanggal lokal YYYY-MM-DD). Sebelum
+           data usaha dimuat, Pro TIDAK diketahui (gagal-dianggap-bebas);
+           sesudah dimuat tanpa langganan, pengguna diketahui Gratis. */
+        var _langgananSnap=null, _langgananSnapDimuat=false;
+        function tanggalHariIniLokal(){ var d=new Date(); function dua(n){ n=String(n); return n.length<2?"0"+n:n; } return d.getFullYear()+"-"+dua(d.getMonth()+1)+"-"+dua(d.getDate()); }
+        function normalisasiLanggananSnap(l){
+          if(!l||typeof l!=="object") return null;
+          var paket=String(l.paket||l.tier||l.tingkat||"").toLowerCase();
+          if(paket!=="mikro"&&paket!=="kecil"&&paket!=="menengah") paket="mikro";
+          var berakhir=String(l.berakhir||l.berakhir_pada||l.sampai||"").slice(0,10);
+          if(!/^\d{4}-\d{2}-\d{2}$/.test(berakhir)) berakhir="";
+          return {paket:paket, berakhir:berakhir, aktif:!!(berakhir && berakhir>=tanggalHariIniLokal())};
+        }
+        function setProDariLangganan(l){
+          _langgananSnap=normalisasiLanggananSnap(l);
+          _langgananSnapDimuat=true;
+          _proCache=!!(_langgananSnap && _langgananSnap.aktif);
+          _proDiketahui=true;
+          try{ if(window.__statusAkunResetCache) window.__statusAkunResetCache(); }catch(e){}
+          try{ if(window.__perbaruiStatusAkun) window.__perbaruiStatusAkun(); }catch(e){}
+          try{ if(window.__perbaruiStatusKuotaAi) window.__perbaruiStatusKuotaAi(); }catch(e){}
+        }
+        window.__setProDariLangganan=setProDariLangganan;
+        window.__langgananSnap=function(){ return _langgananSnap; };
+        window.__langgananTierAktif=function(){ return (_langgananSnap && _langgananSnap.aktif)?_langgananSnap.paket:null; };
 
         /* Tambah n bulan ke tanggal; bila tanggal tujuan tidak punya hari itu
            (mis. 31 Januari + 1 bulan), pakai hari terakhir bulan tujuan
@@ -9026,24 +9582,19 @@
         function sbLangganan(){ try{ return (window.__sbAuth && window.__sbAuth())||null; }catch(e){ return null; } }
         function penggunaLangganan(){ try{ return (window.__penggunaAktif && window.__penggunaAktif())||null; }catch(e){ return null; } }
 
-        /* Pro = ada baris langganan berstatus 'aktif' yang berakhirnya masih
-           di masa depan. Hanya membaca (tidak pernah menandai kedaluwarsa).
-           Bila kueri gagal / tabel belum ada / belum masuk: Pro TIDAK
-           diketahui (false + _proDiketahui=false) — pemanggil memutuskan
-           sendiri apakah gagal-dianggap-bebas atau diblokir. */
+        /* Pro = langganan di data usaha masih aktif (lihat
+           setProDariLangganan). Bila data usaha belum dimuat, kembalikan
+           cache apa adanya tanpa menimpanya — seam uji __setProCache
+           tetap berlaku, dan pemanggil yang belum tahu Pro
+           gagal-dianggap-bebas lewat _proDiketahui=false. */
         async function langgananAktif(){
-          _proCache=false; _proDiketahui=false;
           try{
             if(!LANGGANAN_AKTIF) return false;
-            var sb=sbLangganan();
-            var u=penggunaLangganan();
-            if(!sb || !u) return false;
-            var r=await sb.from("langganan").select("status,berakhir").eq("user_id",u.id).eq("status","aktif");
-            if(r.error || !r.data) return false;
-            var now=new Date(), ok=false;
-            r.data.forEach(function(row){ if(row.berakhir && new Date(row.berakhir)>now) ok=true; });
-            _proCache=ok; _proDiketahui=true;
-            return ok;
+            if(_langgananSnapDimuat){
+              _proCache=!!(_langgananSnap && _langgananSnap.aktif);
+              _proDiketahui=true;
+            }
+            return !!_proCache;
           }catch(e){ return false; }
         }
         function isPro(){ return !!_proCache; }
@@ -9123,7 +9674,8 @@
           }catch(e){}
           var pakai=aiPakaiBulanIni(), batas=kuotaAiBatas();
           if(pro){
-            st.textContent="Paket Anda: Pro — aktif sampai "+fmtTglPanjang(baris && baris.berakhir);
+            var akhirPro=(_langgananSnap && _langgananSnap.berakhir)||(baris && baris.berakhir);
+            st.textContent="Paket Anda: Pro — aktif sampai "+fmtTglPanjang(akhirPro);
           } else if(baris && baris.status==="menunggu"){
             st.textContent="Pembayaran Anda sedang dicek — Pro aktif setelah dikonfirmasi pemilik aplikasi.";
           } else if(baris && baris.status==="ditolak"){
@@ -9285,9 +9837,12 @@
 
         (function initLangganan(){
           if(!LANGGANAN_AKTIF) return; // fitur mati: modul & section tetap tersembunyi (display:none di HTML), tidak ada kueri apa pun
-          var link=gid("modLanggananLink"); if(link) link.style.display="";
-          var sec=gid("langganan"); if(sec) sec.style.display="";
-          var grid=document.querySelector(".module-grid"); if(grid) grid.setAttribute("aria-label","Daftar 10 modul aplikasi");
+          /* Modul QRIS lama (#langganan + tautan modulnya) TETAP
+             tersembunyi: langganan kini lewat transfer BSI + layar #bayar,
+             dan Pro dibaca dari data usaha. Tombol di dalamnya tetap
+             terpasang dan kartu status tetap dirender (tersembunyi) —
+             tanpa mengubah grid modul (tetap 9 modul) dan tanpa
+             menampilkan harga lama modul itu. */
           var bB=gid("btnLanggananBulanan"); if(bB) bB.addEventListener("click", function(){ bukaBayar("bulanan"); });
           var bT=gid("btnLanggananTahunan"); if(bT) bT.addEventListener("click", function(){ bukaBayar("tahunan"); });
           var bK=gid("btnKirimBukti"); if(bK) bK.addEventListener("click", kirimBuktiBayar);
@@ -9495,12 +10050,16 @@
            menampilkan sapaan + langkah 1, lalu selesai — pengisian sisanya
            bertahap lewat kartu "langkah berikutnya" dan sapaan proaktif. */
         var wizSingkat=false;
+        /* Hash sebelum wizard dibuka — dikembalikan saat wizard ditutup
+           (Live nav), supaya pengguna tidak kehilangan tempat. null =
+           wizard belum pernah dibuka (beda dengan "" = layar hari ini). */
+        var wizHashSebelumnya=null;
         /* wizMasukAwal: wizard dibuka sebagai sapaan masuk pertama
            (openGreeting), bukan dari dalam aplikasi lewat openWizard
-           ("Ubah usaha"/"Mulai"). Dipakai tombol "Tutup": hanya di sapaan
-           masuk pertama untuk tamu baru "Tutup" menutup aplikasi. */
+           ("Ubah usaha"/"Mulai"). Dicatat sebagai keadaan saja — tombol
+           "Tutup" tidak pernah menutup aplikasi (lihat tutupWizard). */
         var wizMasukAwal=false;
-        var PROGRESS={"sapaan":"Selamat datang","1":"Langkah 1 dari 4","2":"Langkah 2 dari 4","3a":"Langkah 3 dari 4 — biaya (1 dari 3)","3b":"Langkah 3 dari 4 — biaya (2 dari 3)","3c":"Langkah 3 dari 4 — biaya (3 dari 3)","4":"Langkah 4 dari 4","hasil":"Hasil ringkas Anda"};
+        var PROGRESS={"sapaan":"Selamat datang","1":"Langkah 1 dari 6","2":"Langkah 2 dari 6","3a":"Langkah 3 dari 6 — Biaya (1 dari 3)","3b":"Langkah 4 dari 6 — Biaya (2 dari 3)","3c":"Langkah 5 dari 6 — Biaya (3 dari 3)","4":"Langkah 6 dari 6","hasil":"Hasil ringkas Anda"};
         function showWiz(step){
           /* Jalur pertama: langkah 2, 3a/3b/3c, 4, dan hasil tidak pernah
              tampil sekalipun ada yang memanggilnya. */
@@ -9513,6 +10072,10 @@
         }
         function openWizard(){
           wizMasukAwal=false; /* dibuka dari dalam aplikasi: "Tutup" hanya menutup overlay */
+          /* Wizard dibuka dengan hash yang jelas (#wizard): tombol kembali
+             peramban kembali ke layar sebelumnya (lihat penangan
+             hashchange — overlay ikut tertutup). */
+          try{ wizHashSebelumnya=location.hash||""; history.pushState(null,"","#wizard"); }catch(e){}
           /* Pengguna tanpa data usaha nyata mendapat jalur pertama yang
              dipersingkat; pengguna yang sudah punya data mendapat wizard
              lengkap seperti biasa (terisi dari formulir utama). */
@@ -9531,23 +10094,18 @@
           gid("wizardOverlay").classList.add("show");
           showWiz("1");
         }
-        function closeWizard(){ gid("wizardOverlay").classList.remove("show"); if(wizSingkat && window.__keHariIni){ try{ window.__keHariIni(); }catch(e){} } }
-        /* ---------- "Tutup" menutup APLIKASI (bukan sekadar overlay) ----------
-           Aturan: hanya bila wizard adalah sapaan masuk pertama (wizMasukAwal)
-           DAN pengguna belum terdaftar DAN belum punya data usaha nyata.
-           Berlaku di sapaan maupun langkah 1 jalur pertama — tamu di situ belum
-           pernah masuk ke halaman dalam dan belum menyimpan apa pun.
-           Ketikan di wizard yang belum selesai TIDAK dihitung sebagai data
-           nyata: collectSnapshot hanya membaca isian di .wrap, jadi
-           sudahMengisiNyata() tetap false sampai wizard selesai (applyWizard).
-           Di luar aturan itu (pengguna terdaftar, sudah punya data, atau wizard
-           dibuka dari dalam aplikasi lewat "Ubah usaha"/"Mulai"), "Tutup" hanya
-           menutup overlay seperti biasa.
-           Layar tertutup HANYA sesi ini (in-memory; kelas body + atribut
-           hidden): muat ulang menampilkan sapaan lagi. Bila layar tertutup
-           dibiarkan tanpa interaksi selama 10 detik, hitung mundur mencoba
-           menutup tab lewat window.close() — upaya terbaik saja: tab biasa
-           yang dibuka pengguna umumnya TIDAK bisa ditutup skrip, jadi layar
+        function closeWizard(){ gid("wizardOverlay").classList.remove("show"); if(wizHashSebelumnya!==null && wizHashSebelumnya!==undefined){ try{ history.replaceState(null,"",location.pathname+location.search+(wizHashSebelumnya||"")); }catch(e){} } wizHashSebelumnya=null; if(wizSingkat && window.__keHariIni){ try{ window.__keHariIni(); }catch(e){} } }
+        function tutupWizardOverlay(){ var ov=gid("wizardOverlay"); if(ov) ov.classList.remove("show"); }
+        window.__tutupWizardOverlay=tutupWizardOverlay;
+        /* ---------- Layar tertutup (tutupAplikasi) — BUKAN jalur "Tutup" wizard ----------
+           Fungsi ini menampilkan layar tertutup dan TIDAK dipanggil dari
+           tombol "Tutup" wizard mana pun (lihat tutupWizard di bawah:
+           "Tutup" hanya menutup overlay wizard). Layar tertutup HANYA sesi
+           ini (in-memory; kelas body + atribut hidden): muat ulang
+           menampilkan sapaan lagi. Bila layar tertutup dibiarkan tanpa
+           interaksi selama 10 detik, hitung mundur mencoba menutup tab
+           lewat window.close() — upaya terbaik saja: tab biasa yang
+           dibuka pengguna umumnya TIDAK bisa ditutup skrip, jadi layar
            tertutup tetap tampil bila panggilan itu diabaikan peramban.
            "Buka kembali aplikasi" menampilkan sapaan lagi (bukan langsung
            Mode Operasional sebagai tamu), sesuai tempat pengguna menutup. */
@@ -9628,11 +10186,11 @@
           mulaiHitungTutup();
         }
         window.__tutupTimerAktif=function(){ return timerTutup!==null; };
+        /* "Tutup" wizard HANYA menutup wizard (kembali ke halaman dalam)
+           — tidak pernah memanggil tutupAplikasi(), untuk pengguna baru
+           sekali pun. Pengguna baru yang menutup sapaan langsung masuk
+           ke halaman dalam sebagai tamu (lewat closeWizard). */
         function tutupWizard(){
-          var terdaftar=false, adaData=false;
-          try{ terdaftar=!!(window.__penggunaAktif && window.__penggunaAktif()); }catch(e){}
-          try{ adaData=!!(window.__sudahMengisiNyata && window.__sudahMengisiNyata()); }catch(e){}
-          if(wizMasukAwal && !terdaftar && !adaData){ tutupAplikasi(); return; }
           closeWizard();
         }
         window.__tutupAplikasi=tutupAplikasi;
@@ -9649,7 +10207,7 @@
         window.__greetingByHour=greetingByHour;
         function openGreeting(){
           wizSingkat=true; /* sapaan = jalur pertama: sapaan + langkah 1 saja */
-          wizMasukAwal=true; /* sapaan masuk pertama: "Tutup" menutup aplikasi bila tamu baru tanpa data */
+          wizMasukAwal=true; /* sapaan masuk pertama (keadaan saja; "Tutup" hanya menutup wizard) */
           var gt=gid("greetTime"); if(gt) gt.textContent=greetingByHour();
           gid("wizardOverlay").classList.add("show");
           showWiz("sapaan");
@@ -9679,6 +10237,10 @@
         document.querySelectorAll("[data-wiz-next]").forEach(function(b){ b.addEventListener("click", function(){
           var target=b.getAttribute("data-wiz-next");
           if(target==="2"){
+            /* U-B11: nama usaha wajib di langkah 1 — tanpa nama, saran di
+               hasil hanya bersifat umum. */
+            var wn=gid("wizNama");
+            if(!wn || !String(wn.value||"").trim()){ try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Isi nama usaha dulu","Nama usaha belum diisi — saran di hasil nanti memakai nama usaha Anda.","Isi nama usaha Anda, lalu lanjutkan langkah ini."); else toast("Isi nama usaha dulu."); }catch(e){} if(wn) wn.focus(); return; }
             var wp=gid("wizProvinsi"), wk=gid("wizKota");
             if(!wp || !wp.value){ try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Isian belum lengkap","Pilih provinsi dulu — provinsi tempat usaha Anda berjalan.","Pilih provinsinya, lalu lanjutkan langkah ini."); else toast("Pilih provinsi dulu — provinsi tempat usaha Anda berjalan."); }catch(e){} if(wp) wp.focus(); return; }
             if(!wk || !wk.value){ try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Isian belum lengkap","Pilih kota/kabupaten dulu — kota/kabupaten tempat usaha Anda berjalan.","Pilih kota/kabupatennya, lalu lanjutkan langkah ini."); else toast("Pilih kota/kabupaten dulu — kota/kabupaten tempat usaha Anda berjalan."); }catch(e){} if(wk) wk.focus(); return; }
@@ -9803,22 +10365,27 @@
          skrip mendefinisikan gid lokalnya (tidak ada gid global). */
       function gid(id){ return document.getElementById(id); }
       var _statusAkunBerakhirCache={ts:0, data:null};
-      /* Baris langganan terbaru pengguna (hanya bila saklar menyala; bila
-         mati, tidak ada kueri apa pun ke tabel langganan). */
+      /* Status langganan terbaru pengguna (hanya bila saklar menyala).
+         Pro + tanggal berakhir dibaca dari langganan di data usaha
+         (satu-satunya sumber kebenaran); status "menunggu" masih dibaca
+         dari tabel lama bila ada barisnya (hanya tampilan). */
       async function statusLanggananTerbaru(){
         if(!LANGGANAN_AKTIF) return null;
         var now=Date.now();
         if(_statusAkunBerakhirCache.data && (now-_statusAkunBerakhirCache.ts)<60000) return _statusAkunBerakhirCache.data;
         var hasil={pro:false, berakhir:null, menunggu:false};
         try{
+          var snap=(window.__langgananSnap && window.__langgananSnap())||null;
+          if(snap && snap.aktif){ hasil.pro=true; hasil.berakhir=snap.berakhir; }
+        }catch(e){}
+        try{
           var sb=(window.__sbAuth && window.__sbAuth())||null;
           var u=(window.__penggunaAktif && window.__penggunaAktif())||null;
-          if(sb && u){
+          if(sb && u && !hasil.pro){
             var r=await sb.from("langganan").select("status,berakhir").eq("user_id",u.id).order("created_at",{ascending:false}).limit(1);
             if(!r.error && r.data && r.data.length){
               var row=r.data[0];
               hasil.menunggu=(row.status==="menunggu");
-              if(row.status==="aktif" && row.berakhir && new Date(row.berakhir)>new Date()){ hasil.pro=true; hasil.berakhir=row.berakhir; }
             }
           }
         }catch(e){}
@@ -9885,6 +10452,10 @@
         /* Gerbang riset data usaha (layar Saran) ikut diperbarui di sini —
            fungsi itu ada bila blok tim sudah dimuat; bila belum, lewati. */
         try{ if(window.__risetBukaLayar) window.__risetBukaLayar(); }catch(e){}
+        /* Intro halaman Data ikut status akun (Live #17) + banner
+           pengaturan cloud ikut status akun (U-B13). */
+        try{ if(window.__perbaruiIntroData) window.__perbaruiIntroData(); }catch(e){}
+        try{ if(window.__aturSqlBanner) window.__aturSqlBanner(); }catch(e){}
       }
       window.__perbaruiStatusAkun=perbaruiStatusAkun;
       window.__statusLanggananTerbaru=statusLanggananTerbaru;
@@ -9921,11 +10492,23 @@
         var strip=gid("statusAkunStrip"); if(!strip) return;
         strip.addEventListener("click", function(){ bukaHalamanPaket(); });
         strip.addEventListener("keydown", function(ev){ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); bukaHalamanPaket(); } });
-        var bl=gid("btnPaketLangganan");
-        if(bl) bl.addEventListener("click", function(){
+        /* Jalan masuk ke layar bayar (U-B4): dipakai tombol di layar
+           Paket & Layanan dan tombol di layar hari ini. */
+        function bukaBayar(){
+          /* Tamu tidak boleh masuk layar bayar (isinya bisa diisi +
+             bukti diunggah, baru ditolak di tombol Kirim, dan foto bukti
+             hilang sesudah daftar) — langsung buka gerbang daftar. */
+          if(window.__isGuestMode && window.__isGuestMode()){
+            if(window.__showRegisterGate) window.__showRegisterGate("Daftar dulu untuk membayar langganan — langganan tersimpan di akun Anda.");
+            return;
+          }
           /* Bayar langganan lewat transfer BSI: buka layar "bayar". */
           if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("bayar"); return; }catch(e){} }
-        });
+        }
+        var bl=gid("btnPaketLangganan");
+        if(bl) bl.addEventListener("click", bukaBayar);
+        var bh=gid("btnHiBayar");
+        if(bh) bh.addEventListener("click", bukaBayar);
         try{ aturPaketPro(); }catch(e){}
         /* Ketuk kartu tier memilih paket (preferensi pengguna, tersimpan). */
         try{
@@ -10005,6 +10588,7 @@
         /* ---------- Keadaan layar ---------- */
         var bayarTier="mikro";
         var bayarPunyaKode=false, bayarKodeMarketing="";
+        var bayarKodeTerverifikasi=""; /* hanya kode yang sudah dicek AKTIF yang memberi diskon 10% */
         var bayarFile=null, bayarOcrTeks="", bayarOcrSelesai=false;
         var bayarPeringatanNominal=false, bayarPeringatanBsi=false;
         var bayarLangganan=null; /* {paket, berakhir, aktif} dari umkm_data.data.langganan */
@@ -10017,7 +10601,9 @@
           return v<0?0:v;
         }
         function hitungBayar(){
-          try{ if(typeof window.__hitungTotalBayar==="function") return window.__hitungTotalBayar(bayarTier, bayarJmlPegawai(), bayarPunyaKode); }catch(e){}
+          /* Teruskan status TERVERIFIKASI (bukan sekadar "punya kode") —
+             diskon 10% hanya bila kode sudah dicek aktif. */
+          try{ if(typeof window.__hitungTotalBayar==="function") return window.__hitungTotalBayar(bayarTier, bayarJmlPegawai(), bayarKodeTerverifikasi!==""); }catch(e){}
           return {hargaPaket:0, biayaPegawai:0, diskon:0, total:0};
         }
         function perbaruiRincianBayar(){
@@ -10029,10 +10615,15 @@
           var et=gid("bayarRincianTotal"); if(et) et.textContent=fmtBayar(h.total);
           var ket=gid("bayarPegawaiKet");
           if(ket){
-            var inc=0;
+            var inc=0, harga=0;
             try{ if(window.__pegawaiTermasuk) inc=window.__pegawaiTermasuk[bayarTier]||0; }catch(e){}
-            ket.textContent="Di luar yang sudah termasuk di paket Anda — paket "+namaTierBayar(bayarTier)+" sudah termasuk "+inc+" pegawai.";
+            try{ if(window.__hargaPegawaiTambahan) harga=window.__hargaPegawaiTambahan[bayarTier]||0; }catch(e){}
+            /* U-B2: harga per pegawai tambahan + penjelasan singkat. */
+            ket.textContent=fmtBayar(harga)+" per pegawai tambahan untuk paket "+namaTierBayar(bayarTier)+". Pegawai tambahan adalah pegawai di luar yang sudah termasuk di paket Anda — paket "+namaTierBayar(bayarTier)+" sudah termasuk "+inc+" pegawai.";
           }
+          /* Live #9: placeholder nominal mengikuti total tagihan. */
+          var nomEl=gid("bayarNominal");
+          if(nomEl) nomEl.placeholder="contoh: "+h.total;
         }
         function tandaiTierBayar(tier){
           if(tier!=="mikro"&&tier!=="kecil"&&tier!=="menengah") tier="mikro";
@@ -10048,7 +10639,36 @@
           perbaruiRincianBayar();
         }
 
-        /* ---------- Kode marketing (diskon 10%) ---------- */
+        /* ---------- Kode marketing (diskon 10% — hanya bila TERVERIFIKASI aktif) ----------
+           Kode dicek lewat cek_kode_marketing yang sudah ada. Kode tidak
+           dikenal / tidak aktif / belum bisa diperiksa = tanpa diskon
+           (pengguna membayar harga penuh); server menghitung ulang
+           totalnya saat pengajuan, jadi diskon di sini hanya tampilan. */
+        async function verifikasiKodeBayar(kode, diam){
+          var bersih="";
+          try{ if(typeof window.__kodeMarketingBersih==="function") bersih=window.__kodeMarketingBersih(kode); else bersih=String(kode||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6); }catch(e){ bersih=String(kode||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6); }
+          var st=gid("bayarKodeStatus");
+          if(!bersih){
+            bayarKodeTerverifikasi=""; bayarPunyaKode=false;
+            if(st && !diam) st.textContent="Tulis dulu kodenya — atau lanjut tanpa kode.";
+            perbaruiRincianBayar();
+            return false;
+          }
+          var hasil=null;
+          try{ if(typeof window.__cekKodeMarketing==="function") hasil=await window.__cekKodeMarketing(bersih); }catch(e){}
+          if(hasil && hasil.ada && !hasil.takPasti){
+            bayarKodeTerverifikasi=bersih; bayarKodeMarketing=bersih; bayarPunyaKode=true;
+            if(st && !diam) st.textContent="Kode dipakai — diskon 10%.";
+            perbaruiRincianBayar();
+            return true;
+          }
+          bayarKodeTerverifikasi=""; bayarPunyaKode=false;
+          if(st && !diam) st.textContent=(hasil && hasil.takPasti)?"Kode belum bisa diperiksa — Anda membayar harga penuh untuk saat ini.":"Kode tidak dikenal atau sudah tidak aktif — Anda membayar harga penuh.";
+          perbaruiRincianBayar();
+          return false;
+        }
+        window.__bayarVerifikasiKode=verifikasiKodeBayar;
+        window.__bayarKodeTerverifikasi=function(){ return bayarKodeTerverifikasi; };
         async function muatKodeMarketingBayar(){
           var kode="";
           try{
@@ -10062,10 +10682,12 @@
               }
             }
           }catch(e){}
-          var berubah=(kode!==bayarKodeMarketing);
           bayarKodeMarketing=kode;
-          bayarPunyaKode=!!kode;
-          if(berubah) perbaruiRincianBayar();
+          var inp=gid("bayarKodeMarketing"); if(inp && !inp.value) inp.value=kode;
+          /* Kode simpanan pun tetap diverifikasi dulu sebelum memberi
+             diskon — diam (tanpa pesan) bila kodenya ternyata tidak aktif. */
+          if(kode){ try{ await verifikasiKodeBayar(kode, true); }catch(e){} }
+          else { bayarKodeTerverifikasi=""; bayarPunyaKode=false; perbaruiRincianBayar(); }
         }
 
         /* ---------- Status pembayaran ---------- */
@@ -10081,7 +10703,9 @@
           var u=penggunaBayar(), sb=sbBayar();
           if(!u||!sb){ if(kartu) kartu.style.display="none"; if(ringkas) ringkas.style.display="none"; return; }
           try{
-            var r=await sb.from("pembayaran").select("id,jenis,paket,jumlah,status,catatan,dibuat_pada").eq("user_id",u.id).order("dibuat_pada",{ascending:false}).limit(1);
+            /* Ambil 5 terbaru (bukan hanya 1): riwayat pembayaran
+               ditampilkan bila ada lebih dari satu (Fase 2, S-B11). */
+            var r=await sb.from("pembayaran").select("id,jenis,paket,jumlah,status,catatan,dibuat_pada").eq("user_id",u.id).order("dibuat_pada",{ascending:false}).limit(5);
             /* Tabel belum ada (pengaturan cloud belum dijalankan): sembunyikan
                area status — bukan kesalahan. */
             if(r.error || !r.data || !r.data.length){
@@ -10089,19 +10713,65 @@
               if(ringkas) ringkas.style.display="none";
               return;
             }
-            var row=r.data[0];
+            var rows=r.data;
+            var row=rows[0];
             var statusTxt=statusBayarTeks(row.status);
             var jenisTxt=(row.jenis==="tambahan_pegawai")?"Tambahan pegawai":"Langganan";
             var detail=jenisTxt+" — Paket "+namaTierBayar(row.paket)+", "+fmtBayar(Number(row.jumlah)||0);
             if(row.dibuat_pada) detail+=", dikirim "+fmtTglBayar(row.dibuat_pada);
-            var catatan=row.catatan?(" Catatan: "+row.catatan):"";
+            /* Tanggal berakhir langganan (dari data usaha) menyertai
+               status terbaru supaya tidak basi (Fase 2, S-B11). */
+            var berakhirTxt="";
+            try{ if(bayarLangganan && bayarLangganan.berakhir) berakhirTxt=" Langganan aktif sampai "+fmtTglBayar(bayarLangganan.berakhir)+"."; }catch(e){}
+            var tolak=String(row.status||"").toLowerCase()==="ditolak";
+            var catatan=(!tolak && row.catatan)?(" Catatan: "+row.catatan):"";
             var teks=gid("bayarStatusTeks");
-            if(kartu){ kartu.style.display=""; if(teks) teks.textContent=statusTxt+" — "+detail+"."+catatan; }
-            if(ringkas){ ringkas.style.display=""; ringkas.textContent="Pembayaran terakhir: "+statusTxt+" — "+detail+"."; }
+            if(kartu){ kartu.style.display=""; if(teks) teks.textContent=statusTxt+" — "+detail+"."+berakhirTxt+catatan; }
+            if(ringkas){ ringkas.style.display=""; ringkas.textContent="Pembayaran terakhir: "+statusTxt+" — "+detail+"."+berakhirTxt; }
+            /* Alasan penolakan + ajukan ulang (Fase 2, S-B12): alasan
+               hanya tampil bila pembayaran terbaru ditolak dan ada
+               catatan dari pemilik aplikasi. */
+            var alasanEl=gid("bayarAlasanTolak");
+            if(alasanEl){
+              if(tolak && row.catatan){ alasanEl.style.display=""; alasanEl.textContent="Alasan penolakan: "+row.catatan; }
+              else { alasanEl.style.display="none"; alasanEl.textContent=""; }
+            }
+            var wrapBayar=gid("bayarAjukanUlangWrap");
+            if(wrapBayar) wrapBayar.style.display=tolak?"":"none";
+            var wrapPaket=gid("paketAjukanUlangWrap");
+            if(wrapPaket) wrapPaket.style.display=tolak?"":"none";
+            /* Riwayat pembayaran (Fase 2, S-B11): daftar singkat tiap
+               baris dengan statusnya, bila ada lebih dari satu. */
+            var riw=gid("bayarRiwayat");
+            if(riw){
+              if(rows.length>1){
+                riw.innerHTML="<h3 style=\"margin-top:14px\">Riwayat pembayaran</h3><ul class=\"tick\">"+rows.map(function(x){
+                  var s2=statusBayarTeks(x.status);
+                  var d2=(x.jenis==="tambahan_pegawai"?"Tambahan pegawai":"Langganan")+" — Paket "+namaTierBayar(x.paket)+", "+fmtBayar(Number(x.jumlah)||0)+(x.dibuat_pada?", dikirim "+fmtTglBayar(x.dibuat_pada):"");
+                  return "<li>"+s2+" — "+d2+"</li>";
+                }).join("")+"</ul>";
+              } else { riw.innerHTML=""; }
+            }
           }catch(e){
             if(kartu) kartu.style.display="none";
             if(ringkas) ringkas.style.display="none";
           }
+        }
+
+        /* Baca ulang langganan dari cloud (Fase 2, S-B11): tanggal
+           berakhir di kartu status tidak boleh basi — dipanggil setiap
+           kali layar Paket & Layanan atau Bayar Langganan dibuka. */
+        async function muatLanggananSegar(){
+          var u=penggunaBayar(), sb=sbBayar();
+          if(!u||!sb) return;
+          try{
+            var r=await sb.from("umkm_data").select("data").eq("user_id",u.id).maybeSingle();
+            if(r.error || !r.data || !r.data.data) return;
+            perbaruiLanggananDariData(r.data.data.langganan||null);
+            /* Langganan segar tiba — gambar ulang status supaya tanggal
+               berakhirnya ikut segar. */
+            try{ muatStatusBayar(); }catch(e){}
+          }catch(e){}
         }
 
         /* ---------- Langganan dari data usaha (umkm_data.data.langganan) ---------- */
@@ -10111,10 +10781,13 @@
           if(paket!=="mikro"&&paket!=="kecil"&&paket!=="menengah") paket="mikro";
           var berakhir=String(l.berakhir||l.berakhir_pada||l.sampai||"").slice(0,10);
           if(!/^\d{4}-\d{2}-\d{2}$/.test(berakhir)) berakhir="";
-          return {paket:paket, berakhir:berakhir, aktif:!!(berakhir && berakhir>hariIniStr())};
+          /* Aktif bila berakhir hari ini atau sesudahnya (tanggal lokal). */
+          return {paket:paket, berakhir:berakhir, aktif:!!(berakhir && berakhir>=hariIniStr())};
         }
         function perbaruiLanggananDariData(langganan){
           bayarLangganan=normalisasiLangganan(langganan);
+          /* Teruskan ke sumber kebenaran Pro (status Pro + tier + kuota). */
+          try{ if(typeof window.__setProDariLangganan==="function") window.__setProDariLangganan(langganan); }catch(e){}
           var el=gid("paketLanggananAktif");
           if(!el) return;
           if(bayarLangganan && bayarLangganan.berakhir){
@@ -10133,13 +10806,44 @@
               el.textContent="Paket Anda sudah berakhir pada "+fmtTglBayar(bayarLangganan.berakhir)+" — bayar lagi untuk melanjutkan.";
             }
           } else { el.style.display="none"; el.textContent=""; }
+          /* S-B7: tanggal sinkron paket di layar #paket. */
+          try{
+            var st2=gid("paketSinkronTgl");
+            if(st2){
+              if(bayarLangganan && bayarLangganan.berakhir){
+                try{ localStorage.setItem("umkm-introspeksi-paket-disinkronkan", hariIniStr()); }catch(e){}
+                st2.style.display=""; st2.textContent="Paket disinkronkan pada "+fmtTglBayar(hariIniStr())+".";
+              } else { st2.style.display="none"; st2.textContent=""; }
+            }
+          }catch(e3){}
         }
         window.__bayarLanggananDariData=perbaruiLanggananDariData;
+
+        /* ---------- Pembantu layar bayar (Fase 3) ---------- */
+        function formatNoRekeningBayar(n){ return String(n||"").replace(/\s+/g,"").replace(/(\d{4})(?=\d)/g,"$1 "); }
+        function tandaiOcr(id){ var el=gid(id); if(el) el.style.display=""; }
+        function sembunyikanOcr(){ ["ocrCatNominal","ocrCatTanggal","ocrCatNama","ocrCatReferensi"].forEach(function(id){ var el=gid(id); if(el) el.style.display="none"; }); var n=gid("bayarOcrIsianNote"); if(n) n.style.display="none"; }
+        /* Konfirmasi sungguhan dengan dua tombol (U-B8): "Periksa lagi"
+           menutup dan membiarkan pengguna mengoreksi; "Tetap kirim"
+           melanjutkan pengiriman. */
+        function popupKonfirmasiBayar(judul, apa, lakukan, labelAksi, fnAksi){
+          if(window.tampilPopupRamah){
+            window.tampilPopupRamah(judul, apa, lakukan, {label:labelAksi, fn:fnAksi});
+            var ok=document.getElementById("btnFriendlyPopupOk"); if(ok) ok.textContent="Periksa lagi";
+          } else {
+            popupBayar(judul, apa, lakukan);
+          }
+        }
 
         /* ---------- Buka layar ---------- */
         function bayarBukaLayar(){
           var nr=gid("bayarNoRekening");
-          if(nr){ try{ if(typeof window.__noRekeningBsi==="function") nr.textContent=window.__noRekeningBsi(); }catch(e){} }
+          if(nr){ try{ if(typeof window.__noRekeningBsi==="function") nr.textContent=formatNoRekeningBayar(window.__noRekeningBsi()); }catch(e){} }
+          /* Bila pengguna belum pernah menyimpan data usaha, tampilkan
+             catatan yang jelas (bukan blokir): langganan baru bisa
+             langsung aktif setelah verifikasi bila data usaha sudah ada. */
+          var cat=gid("bayarCatatanDataUsaha");
+          if(cat){ var adaDataUsaha=false; try{ adaDataUsaha=!!(window.__sudahMengisiNyata && window.__sudahMengisiNyata()); }catch(e){} cat.style.display=adaDataUsaha?"none":""; }
           var tgl=gid("bayarTanggal");
           if(tgl && !tgl.value) tgl.value=hariIniStr();
           var tier="mikro";
@@ -10147,6 +10851,9 @@
           tandaiTierBayar(tier);
           perbaruiRincianBayar();
           try{ muatKodeMarketingBayar(); }catch(e){}
+          /* Segarkan langganan + status pembayaran setiap kali layar
+             dibuka (Fase 2, S-B11) — bukan hanya saat pertama kali. */
+          try{ muatLanggananSegar(); }catch(e){}
           try{ muatStatusBayar(); }catch(e){}
         }
         window.__bayarBukaLayar=bayarBukaLayar;
@@ -10164,6 +10871,12 @@
         }
         function kompresGambarBayar(file){
           return new Promise(function(resolve){
+            /* Pengaman: bila gambar tidak pernah selesai dimuat (mis.
+               berkas rusak), kirim berkas aslinya setelah 2 detik —
+               jangan biarkan tombol kirim nonaktif selamanya. */
+            var sudah=false;
+            function selesai(hasil){ if(sudah) return; sudah=true; resolve(hasil); }
+            var pengaman=setTimeout(function(){ selesai(file); }, 2000);
             try{
               var reader=new FileReader();
               reader.onload=function(){
@@ -10179,15 +10892,15 @@
                     cx.fillStyle="#ffffff"; cx.fillRect(0,0,cv.width,cv.height);
                     cx.drawImage(img,0,0,cv.width,cv.height);
                     var blob=dataUrlKeBlob(cv.toDataURL("image/jpeg",0.7));
-                    resolve(blob||file);
-                  }catch(err){ resolve(file); }
+                    clearTimeout(pengaman); selesai(blob||file);
+                  }catch(err){ clearTimeout(pengaman); selesai(file); }
                 };
-                img.onerror=function(){ resolve(file); };
+                img.onerror=function(){ clearTimeout(pengaman); selesai(file); };
                 img.src=raw;
               };
-              reader.onerror=function(){ resolve(file); };
+              reader.onerror=function(){ clearTimeout(pengaman); selesai(file); };
               reader.readAsDataURL(file);
-            }catch(e){ resolve(file); }
+            }catch(e){ clearTimeout(pengaman); selesai(file); }
           });
         }
 
@@ -10199,6 +10912,31 @@
           }
           var inpPeg=gid("bayarPegawaiTambahan");
           if(inpPeg) inpPeg.addEventListener("input", function(){ bayarPeringatanNominal=false; perbaruiRincianBayar(); });
+          var btnKode=gid("btnBayarPakaiKode");
+          if(btnKode) btnKode.addEventListener("click", function(){ var inp=gid("bayarKodeMarketing"); var kode=inp?inp.value:""; try{ var p=verifikasiKodeBayar(kode, false); if(p && p.catch) p.catch(function(){}); }catch(e){} });
+          /* U-B1: salin nomor rekening (dengan umpan balik). Nomor dibaca
+             dari tampilan (sudah berkelompok per 4 digit), bukan dari
+             teks mentah — supaya teks mentah nomor rekening tetap muncul
+             sekali saja di berkas ini. */
+          var btnSalin=gid("btnSalinRekening");
+          if(btnSalin) btnSalin.addEventListener("click", function(){
+            var nrEl=gid("bayarNoRekening");
+            var teks=nrEl?String(nrEl.textContent||"").trim():"";
+            var st=gid("bayarSalinStatus");
+            function ok(){ if(st) st.textContent="Nomor tersalin"; try{ toast("Nomor rekening tersalin"); }catch(e){} }
+            function salinManual(){
+              try{
+                var ta=document.createElement("textarea"); ta.value=teks; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
+                var berhasil=false; try{ berhasil=document.execCommand("copy"); }catch(e2){}
+                document.body.removeChild(ta);
+                if(berhasil) ok(); else if(st) st.textContent="Tidak bisa menyalin otomatis — salin nomor di atas secara manual.";
+              }catch(e3){ if(st) st.textContent="Tidak bisa menyalin otomatis — salin nomor di atas secara manual."; }
+            }
+            try{
+              if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(teks).then(ok, function(){ salinManual(); }); }
+              else salinManual();
+            }catch(e){ salinManual(); }
+          });
           var inpNom=gid("bayarNominal");
           if(inpNom) inpNom.addEventListener("input", function(){ bayarPeringatanNominal=false; });
           var inpBukti=gid("bayarBukti");
@@ -10208,29 +10946,52 @@
             if(!f){ bayarFile=null; return; }
             bayarFile=f; bayarOcrTeks=""; bayarOcrSelesai=false;
             bayarPeringatanNominal=false; bayarPeringatanBsi=false;
+            sembunyikanOcr();
             if(typeof Tesseract==="undefined"){
               if(st) st.textContent="Pembaca bukti belum termuat di peramban ini — isi kolom di bawah secara manual.";
               popupBayar("Bukti belum bisa dibaca otomatis","Pustaka pembaca bukti belum termuat di peramban ini.","Baca angka di bukti transfer, lalu isi kolom di bawah secara manual.");
               return;
             }
+            /* U-B7: spinner + nonaktifkan tombol kirim selama pembacaan. */
+            var sp=gid("bayarOcrSpinner"); if(sp) sp.style.display="";
+            var bk=gid("btnBayarKirim"); if(bk) bk.disabled=true;
             if(st) st.textContent="Membaca bukti…";
             Tesseract.recognize(f,"ind+eng").then(function(res){
               var teks=String((res&&res.data&&res.data.text)||"").trim();
               bayarOcrTeks=teks; bayarOcrSelesai=true;
               var h=uraiBuktiBsi(teks);
-              var nom=gid("bayarNominal"); if(nom && h.jumlah!=null) nom.value=h.jumlah;
-              var tgl=gid("bayarTanggal"); if(tgl && h.tanggal) tgl.value=h.tanggal;
-              var nm=gid("bayarNamaPengirim"); if(nm && h.namaPengirim) nm.value=h.namaPengirim;
-              var rf=gid("bayarNoReferensi"); if(rf && h.noReferensi) rf.value=h.noReferensi;
+              var nom=gid("bayarNominal"); if(nom && h.jumlah!=null){ nom.value=h.jumlah; tandaiOcr("ocrCatNominal"); }
+              var tgl=gid("bayarTanggal"); if(tgl && h.tanggal){ tgl.value=h.tanggal; tandaiOcr("ocrCatTanggal"); }
+              var nm=gid("bayarNamaPengirim"); if(nm && h.namaPengirim){ nm.value=h.namaPengirim; tandaiOcr("ocrCatNama"); }
+              var rf=gid("bayarNoReferensi"); if(rf && h.noReferensi){ rf.value=h.noReferensi; tandaiOcr("ocrCatReferensi"); }
+              var noteOcr=gid("bayarOcrIsianNote"); if(noteOcr) noteOcr.style.display=(h.jumlah!=null||h.tanggal||h.namaPengirim||h.noReferensi)?"":"none";
+              if(sp) sp.style.display="none"; if(bk) bk.disabled=false;
               if(st) st.textContent=(h.jumlah!=null)?"Selesai dibaca — periksa kembali isian di bawah.":"Tidak bisa dibaca — isi manual.";
             }).catch(function(){
               bayarOcrSelesai=false;
+              if(sp) sp.style.display="none"; if(bk) bk.disabled=false;
               if(st) st.textContent="Tidak bisa dibaca — isi manual.";
               popupBayar("Bukti belum bisa dibaca","Bukti ini belum bisa dibaca otomatis — mungkin terlalu gelap, miring, atau buram.","Coba foto yang lebih terang dan rata, atau isi kolom di bawah secara manual.");
             });
           });
           var btnKirim=gid("btnBayarKirim");
           if(btnKirim) btnKirim.addEventListener("click", function(){ kirimBuktiBayar(); });
+          /* Ajukan ulang (Fase 2, S-B12): dari kartu status di layar
+             bayar, gulir ke kolom unggah bukti; dari ringkasan di layar
+             paket, buka layar bayar. */
+          var btnUlang=gid("btnBayarAjukanUlang");
+          if(btnUlang) btnUlang.addEventListener("click", function(){
+            var inp=gid("bayarBukti");
+            try{ if(inp && inp.scrollIntoView) inp.scrollIntoView(); }catch(e){}
+            try{ if(inp) inp.focus(); }catch(e){}
+          });
+          var btnUlangPaket=gid("btnPaketAjukanUlang");
+          if(btnUlangPaket) btnUlangPaket.addEventListener("click", function(){
+            /* tampilkanLayar hidup di dalam modul layar (bukan global),
+               jadi panggil lewat seam window.__tampilkanLayar seperti
+               tombol Bayar langganan di layar paket. */
+            try{ if(typeof window.__tampilkanLayar==="function") window.__tampilkanLayar("bayar"); }catch(e){}
+          });
         })();
 
         /* ---------- Kirim bukti pembayaran ---------- */
@@ -10258,13 +11019,11 @@
              pengiriman tetap diizinkan pada penekanan berikutnya — pemilik
              yang memverifikasi kebenarannya. */
           if(nominal!==total && !bayarPeringatanNominal){
-            bayarPeringatanNominal=true;
-            popupBayar("Nominal berbeda dengan tagihan","Nominal yang diisi "+fmtBayar(nominal)+" berbeda dengan total tagihan "+fmtBayar(total)+".","Periksa kembali nominalnya — bila sudah benar, tekan Kirim bukti pembayaran sekali lagi.");
+            popupKonfirmasiBayar("Nominal berbeda dengan tagihan","Nominal yang diisi "+fmtBayar(nominal)+" berbeda dengan total tagihan "+fmtBayar(total)+".","Periksa kembali nominalnya — bila sudah benar, ketuk Tetap kirim.","Tetap kirim", function(){ bayarPeringatanNominal=true; kirimBuktiBayar(); });
             return;
           }
           if(bayarOcrSelesai && !/bsi|soegianto/i.test(bayarOcrTeks) && !bayarPeringatanBsi){
-            bayarPeringatanBsi=true;
-            popupBayar("Bukti tidak menyebut BSI","Bukti yang dibaca tidak menyebut BSI atau nama penerima.","Periksa lagi fotonya — bila sudah benar, tekan Kirim bukti pembayaran sekali lagi.");
+            popupKonfirmasiBayar("Bukti tidak menyebut BSI","Bukti yang dibaca tidak menyebut BSI atau nama penerima.","Periksa lagi fotonya — bila sudah benar, ketuk Tetap kirim.","Tetap kirim", function(){ bayarPeringatanBsi=true; kirimBuktiBayar(); });
             return;
           }
           bayarMengirim=true;
@@ -10279,17 +11038,30 @@
                ganti paket): jenisnya tambahan_pegawai; selain itu langganan. */
             var paketSama=!!(bayarLangganan && bayarLangganan.aktif && bayarLangganan.paket===tier);
             var jenis=(jmlTambahan>0 && paketSama)?"tambahan_pegawai":"langganan";
-            var r=await sb.rpc("ajukan_pembayaran",{p_jenis:jenis, p_paket:tier, p_jumlah:total, p_tanggal_bayar:tanggal, p_nama_pengirim:nama, p_no_referensi:ref, p_bukti_path:path, p_pegawai_tambahan:jmlTambahan});
+            var r=await sb.rpc("ajukan_pembayaran",{p_jenis:jenis, p_paket:tier, p_jumlah:total, p_tanggal_bayar:tanggal, p_nama_pengirim:nama, p_no_referensi:ref, p_bukti_path:path, p_pegawai_tambahan:jmlTambahan, p_kode_marketing:(bayarKodeTerverifikasi||null), p_nominal_dibayar:nominal});
             if(r.error){
               if(tabelHilangBayar(r.error)){ popupBayar("Fitur ini belum aktif","Pengaturan cloud belum dijalankan.","Coba lagi nanti setelah pengaturan dijalankan."); }
               else { popupBayar("Belum bisa mengirim","Bukti belum terkirim — periksa koneksi internet Anda, lalu coba lagi."); }
               return;
             }
-            popupBayar("Bukti pembayaran sudah kami terima dan menunggu verifikasi pemilik.","Bukti Anda sudah tersimpan — pemilik akan memeriksa dan mengaktifkan langganan Anda.");
+            /* U-B3: perkiraan waktu verifikasi + cara mengeceknya. */
+            popupBayar("Bukti pembayaran sudah kami terima dan menunggu verifikasi pemilik.","Bukti Anda sudah tersimpan — pemilik memeriksa dan mengaktifkan langganan Anda, paling lambat 1×24 jam. Buka lagi layar Bayar Langganan untuk memeriksa statusnya di kartu Status pembayaran Anda.");
             bayarFile=null;
             var inpBukti=gid("bayarBukti"); if(inpBukti) inpBukti.value="";
+            /* U-B18: kosongkan seluruh formulir sesudah sukses — kartu
+               status menjadi satu-satunya jejak pengajuan ini. */
+            var fNom=gid("bayarNominal"); if(fNom) fNom.value="";
+            var fTgl=gid("bayarTanggal"); if(fTgl) fTgl.value="";
+            var fNm=gid("bayarNamaPengirim"); if(fNm) fNm.value="";
+            var fRf=gid("bayarNoReferensi"); if(fRf) fRf.value="";
+            var fKd=gid("bayarKodeMarketing"); if(fKd) fKd.value="";
+            bayarKodeTerverifikasi=""; bayarPunyaKode=false;
+            sembunyikanOcr();
+            try{ perbaruiRincianBayar(); }catch(e){}
             bayarPeringatanNominal=false; bayarPeringatanBsi=false;
             try{ await muatStatusBayar(); }catch(e){}
+            /* U-B3: gulir otomatis ke kartu status. */
+            try{ var ks=gid("bayarStatusCard"); if(ks && ks.scrollIntoView) ks.scrollIntoView(); }catch(e2){}
           }catch(e){
             popupBayar("Belum bisa mengirim","Bukti belum terkirim — periksa koneksi internet Anda, lalu coba lagi.");
           }finally{
@@ -10297,6 +11069,8 @@
             if(btn) btn.disabled=false;
           }
         }
+        /* Seam uji: isi berkas bukti tanpa lewat pemilih berkas. */
+        window.__bayarAturFile=function(f){ bayarFile=f||null; };
       })();
     </script>
 
@@ -10854,6 +11628,13 @@
           wizNama:{s:"Nama usaha Anda, seperti nama warung, toko, atau jasa yang Anda jalankan.",e:"Dapur Bu Sari.",h:"Cukup nama yang dikenal pelanggan."},
           wizSektor:{s:"Bidang usaha utama Anda. Pilihan ini menentukan saran dan angka pembanding untuk usaha Anda.",e:"Warung makan memilih Kuliner; laundry memilih Jasa.",h:"Pilih yang paling dekat dengan penghasilan utama Anda."},
           wizPanggilan:{s:"Sebutan ramah yang dipakai AI Coach saat menyapa dan memandu Anda (Mas, Mbak, Ibu, atau Bapak).",e:"Pilih Ibu bila Anda ingin disapa Ibu.",h:"Pilih yang paling nyaman untuk Anda. Boleh dilewati — AI akan menyapa secara netral tanpa sebutan."},
+          bayarNominal:{s:"Jumlah uang yang Anda transfer ke rekening di atas — harus sama dengan total tagihan di bawah rincian. Tulis angka saja tanpa titik.",e:"Total Rp31.500 — isi 31500.",h:"Salin angka total tagihan, lalu isi di sini. Bila berbeda dengan tagihan, aplikasi akan bertanya dulu sebelum mengirim."},
+          bayarTanggal:{s:"Tanggal Anda melakukan transfer, sesuai tanggal di bukti transfer.",e:"Transfer tanggal 16 November 2026 — isi 2026-11-16.",h:"Pilih tanggalnya dari kalender. Bila bukti dibaca otomatis, tanggal ini terisi sendiri."},
+          bayarNamaPengirim:{s:"Nama Anda seperti yang tertera di bukti transfer — nama pemilik rekening pengirim.",e:"Budi Santoso.",h:"Tulis nama persis seperti di bukti transfer supaya pemilik mudah mencocokkannya."},
+          bayarNoReferensi:{s:"Nomor referensi transfer yang tertera di bukti transfer Anda. Boleh dikosongkan bila di bukti Anda tidak ada nomor referensi.",e:"1234567890.",h:"Lihat di bukti transfer, biasanya tertulis 'No. Ref' atau 'Referensi'. Bila tidak ada, kosongkan saja."},
+          bayarKodeMarketing:{s:"Kode dari marketing yang mengajak Anda memakai aplikasi ini, bila ada. Kode yang sudah dicek aktif memberi diskon 10%.",e:"UMKM30.",h:"Tulis kodenya, lalu ketuk Pakai kode. Bila tidak ada yang mengajak Anda, kosongkan saja — Anda membayar harga penuh."},
+          bayarPegawaiTambahan:{s:"Jumlah pegawai di luar yang sudah termasuk di paket Anda. Pegawai tambahan bisa mencatat dan menjalankan SOP lewat aplikasi Pegawai.",e:"Paket Mikro sudah termasuk 1 pegawai — tambah 2 berarti total 3 pegawai.",h:"Isi 0 bila tidak menambah pegawai. Harganya berubah mengikuti paket yang dipilih di atas."},
+          bayarBukti:{s:"Foto tangkapan layar bukti transfer Anda. Aplikasi membaca angka di foto ini dan mengisi kolom di bawah secara otomatis — Anda tetap bisa mengoreksi semuanya.",e:"Tangkapan layar bukti transfer dari aplikasi BSI di HP Anda.",h:"Ketuk kolom ini, lalu pilih foto bukti transfer dari galeri atau kamera HP Anda."},
           cekUrl1:{s:"Tautan halaman publik usaha Anda di Google Maps / Profil Bisnis Google. Aplikasi meminta server membaca halaman publik itu dan menampilkan rating serta jumlah ulasan yang terbaca untuk Anda bandingkan.",e:"Tautan dari tombol Bagikan di Google Maps untuk tempat usaha Anda.",h:"Buka Google Maps, cari usaha Anda, ketuk Bagikan, salin tautannya, lalu tempel di sini dan ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda."},
           cekUrl2:{s:"Tautan halaman publik toko Anda di Tokopedia. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Tokopedia.",h:"Salin tautan toko Tokopedia Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
           cekUrl3:{s:"Tautan halaman publik toko Anda di Shopee. Aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca untuk Anda bandingkan dengan data usaha Anda.",e:"Tautan halaman toko dari tombol Bagikan di aplikasi Shopee.",h:"Salin tautan toko Shopee Anda, tempel di sini, lalu ketuk Cek otomatis. Yang dikirim hanya tautan publik ini — bukan data pribadi Anda. Bila halaman tidak bisa dibaca otomatis, tandai hasilnya manual seperti biasa."},
@@ -11220,6 +12001,10 @@
         var KAL_KEY="umkm-introspeksi-kalibrasi-setuju";
         var kalCache={key:"", ready:false, n:0, median:0, scope:"", lastTry:0};
         var lastKalHash="";
+        /* S-B9: hash terakhir yang dikirim tersimpan di HP ini (beserta
+           waktu kirim) — baris yang sama tidak dikirim dua kali walau
+           aplikasi dimuat ulang. */
+        try{ var _kalTersimpan=localStorage.getItem("umkm-introspeksi-kalibrasi-terakhir"); if(_kalTersimpan){ try{ var _kalObj=JSON.parse(_kalTersimpan); if(_kalObj && _kalObj.hash) lastKalHash=_kalObj.hash; }catch(e){} } }catch(e2){}
         function kalSetuju(){
           var cb=gid("inKalibrasi");
           if(cb) return !!cb.checked;
@@ -11294,9 +12079,44 @@
             if(omz<=0) return;
             /* SATU baris anonim: tanpa user_id, nama, email, telepon, alamat, GPS. */
             var row={ sektor:k.sek, provinsi:k.prov, kota:k.kota, omzet_bulanan:omz, sde_tahunan:Math.round(S.sdeThn||0), multiple_dipakai:+(S.mult||0), valuasi_tengah:Math.round(S.weighted||0), created_at:new Date().toISOString() };
-            var h=JSON.stringify(row);
+            /* Hash HANYA dari isi yang stabil (tanpa created_at — waktu
+               kirim selalu berubah, jadi hash yang memasukkannya tidak
+               pernah sama dan baris yang sama terkirim berulang). */
+            var h=JSON.stringify({sektor:row.sektor, provinsi:row.provinsi, kota:row.kota, omzet_bulanan:row.omzet_bulanan, sde_tahunan:row.sde_tahunan, multiple_dipakai:row.multiple_dipakai, valuasi_tengah:row.valuasi_tengah});
             if(h===lastKalHash) return; lastKalHash=h;
+            try{ localStorage.setItem("umkm-introspeksi-kalibrasi-terakhir", JSON.stringify({hash:h, waktu:new Date().toISOString()})); }catch(e){}
+            window.__kalibrasiTerkirim=(window.__kalibrasiTerkirim||0)+1;
             sbExt.from("kalibrasi").insert(row).then(function(){ kalCache.key=""; kalFetch(true); }, function(){});
+          }catch(e){}
+        };
+        window.__kalibrasiHashTerakhir=function(){ try{ var s=localStorage.getItem("umkm-introspeksi-kalibrasi-terakhir"); return s?JSON.parse(s).hash:""; }catch(e){ return ""; } };
+        /* Agregat anonim Pemda (Fase 2, S-K1): satu baris per kohort via
+           RPC tulis_agregat_umkm, BERSAMA pemanggilan kalibrasi di atas
+           (gerbang persetujuan yang sama). p_level = tingkat kematangan
+           (matLevel 0–4: Bertahan, Tercatat, Terukur, Tumbuh, Siap
+           Ekspansi) — BUKAN level skala. Tanpa nama, telepon, email,
+           GPS, transaksi, atau foto. Diam bila RPC belum ada di cloud
+           (belum dijalankan) — penyimpanan utama tidak pernah gagal
+           karenanya. Baris yang sama persis tidak dikirim dua kali. */
+        var lastAgregatHash="";
+        window.__agregatTerkirim=0;
+        window.__agregatTerakhir=null;
+        window.__agregatOnSave=function(snap){
+          if(!sbExt || !kalSetuju()) return;
+          try{
+            var k=kalInputs(); if(!k.sek) return;
+            var omz=Math.round((typeof S!=="undefined" && S.omzetBln)||0);
+            if(omz<=0) return;
+            var kid=(snap && snap.kohort_id)||(window.__kohortIdPastikan?window.__kohortIdPastikan():null);
+            if(!kid) return;
+            if(snap) snap.kohort_id=kid;
+            var mat=(typeof S!=="undefined" && typeof S.matLevel==="number")?S.matLevel:0;
+            var row={p_kohort_id:kid, p_provinsi:k.prov||"", p_kota:k.kota||"", p_level:Math.round(mat), p_sektor:k.sek, p_skor_kesehatan:Math.round((typeof S!=="undefined" && S.health)||0), p_skor_investasi:Math.round((typeof S!=="undefined" && S.scInv)||0), p_omzet_bulanan:omz, p_valuasi:Math.round((typeof S!=="undefined" && S.weighted)||0)};
+            var h=JSON.stringify(row);
+            if(h===lastAgregatHash) return; lastAgregatHash=h;
+            window.__agregatTerakhir=row;
+            window.__agregatTerkirim++;
+            sbExt.rpc("tulis_agregat_umkm", row).then(function(){}, function(){});
           }catch(e){}
         };
         setTimeout(function(){ kalFetch(false); }, 1200);
@@ -11367,7 +12187,7 @@
                  jadi diam-diam gagal-terbuka (bug ketahuan saat uji). */
               try{ if(window.__langgananAktif){ pro=await window.__langgananAktif(); diketahui=window.__proDiketahui(); } }catch(e){}
               if(diketahui && !pro){
-                try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Portal investor butuh Pro","Membuat tautan berbagi portal investor hanya untuk paket Pro.","Buka modul Langganan untuk melihat paket Pro.", {label:"Lihat langganan", href:"langganan"}); }catch(e2){}
+                try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Portal investor butuh Pro","Membuat tautan berbagi portal investor hanya untuk paket Pro.","Buka Paket & Layanan untuk melihat paket Pro.", {label:"Lihat paket", href:"paket"}); }catch(e2){}
                 return;
               }
             }
