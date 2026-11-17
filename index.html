@@ -607,6 +607,17 @@
       .pesan-hitung{font-size:.8rem}
       .pesan-baris td{background:var(--surface-2)}
       .pesan-baris .pesan-utas{margin-top:0}
+      /* ---------- Pengumuman dari pemilik di layar utama ----------
+         Kartu gelap + aksen emas seperti kartu lain; tanpa warna merah.
+         Wadah kosong tidak mengambil ruang. */
+      #pengumumanWrap{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+      #pengumumanWrap:empty{display:none}
+      .pengumuman-kartu{border-color:var(--gold)}
+      .pengumuman-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+      .pengumuman-judul{font-size:1.05rem;line-height:1.35;margin:0}
+      .pengumuman-isi{margin:8px 0 0;white-space:pre-wrap;overflow-wrap:break-word}
+      .pengumuman-tanggal{margin:8px 0 0;font-size:.8rem;color:var(--muted)}
+      .pengumuman-tutup{flex:0 0 auto;font:inherit;font-size:.85rem;font-weight:800;color:#171106;background:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:6px 14px;cursor:pointer;white-space:nowrap}
       /* Baris satu-baris untuk penjelasan yang sudah dibaca dan terlipat:
          aksen emas seperti kartu diskusi, bukan merah; teks dipotong jadi
          satu baris dengan elipsis. Ketuk untuk membuka lagi. */
@@ -1093,6 +1104,7 @@
       <section id="hariini">
         <div class="sec-head"><span class="sec-num">☀</span><h2>Mode Operasional</h2></div>
         <p class="sec-sub"><span id="hiSalam">Selamat pagi</span> · <span id="hiTanggal">—</span></p>
+        <div id="pengumumanWrap"></div>
         <div class="card">
           <div class="stat-row" style="margin-top:2px">
             <div class="stat"><div class="k">Uang masuk hari ini</div><div class="v" id="hiIn">Rp 0</div><button class="btn-explain kompak" type="button" data-explain="hi-masuk">Jelaskan ini</button></div>
@@ -5113,6 +5125,69 @@
         window.addEventListener("focus", function(){ try{ pesanLencanaMuat(); }catch(e){} });
       })();
 
+      /* --- Pengumuman dari pemilik: dibaca lewat RPC baca_pengumuman,
+         hanya bila pengguna masuk; tamu tidak pernah memanggil RPC.
+         Bila RPC belum ada di cloud, diam saja — layar utama tetap
+         jalan tanpa pengumuman dan tanpa pesan galat. Menutup kartu
+         hanya dicatat di peramban ini (localStorage), bukan di cloud. --- */
+      var PENGUMUMAN_KUNCI_TUTUP="umkm-introspeksi-pengumuman-ditutup:v1";
+      function pengumumanDitutup(){
+        try{
+          var d=JSON.parse(window.localStorage.getItem(PENGUMUMAN_KUNCI_TUTUP)||"[]");
+          return Array.isArray(d)?d:[];
+        }catch(e){ return []; }
+      }
+      function pengumumanRender(rows){
+        var wadah=document.getElementById("pengumumanWrap");
+        if(!wadah) return;
+        var tutup=pengumumanDitutup();
+        var sisa=(rows||[]).filter(function(p){ return p && p.id && tutup.indexOf(String(p.id))<0; });
+        if(!sisa.length){ wadah.innerHTML=""; return; }
+        wadah.innerHTML=sisa.map(function(p){
+          var waktu=pesanFmtWaktu(p.dibuat_pada);
+          return '<div class="card pengumuman-kartu" data-pengumuman-id="'+timEsc(p.id)+'"><div class="pengumuman-bar"><h3 class="pengumuman-judul">'+timEsc(p.judul||"Pengumuman")+'</h3><button type="button" class="pengumuman-tutup" data-pengumuman-tutup="'+timEsc(p.id)+'">Tutup</button></div><p class="pengumuman-isi">'+timEsc(p.isi||"")+'</p>'+(waktu?'<p class="pengumuman-tanggal">'+timEsc(waktu)+'</p>':"")+'</div>';
+        }).join("");
+      }
+      async function pengumumanMuat(){
+        var wadah=document.getElementById("pengumumanWrap");
+        if(!timPemilikMasuk()){ if(wadah) wadah.innerHTML=""; return []; }
+        var sb=timSb();
+        if(!sb){ if(wadah) wadah.innerHTML=""; return []; }
+        var r;
+        try{ r=await sb.rpc("baca_pengumuman",{}); }
+        catch(e){ if(wadah) wadah.innerHTML=""; return []; }
+        if(!r || r.error){ if(wadah) wadah.innerHTML=""; return []; }
+        var rows=Array.isArray(r.data)?r.data:[];
+        pengumumanRender(rows);
+        return rows;
+      }
+      function pengumumanTutup(id){
+        id=String(id||"");
+        if(!id) return;
+        var tutup=pengumumanDitutup();
+        if(tutup.indexOf(id)<0){
+          tutup.push(id);
+          try{ window.localStorage.setItem(PENGUMUMAN_KUNCI_TUTUP, JSON.stringify(tutup)); }catch(e){}
+        }
+        var wadah=document.getElementById("pengumumanWrap");
+        if(!wadah) return;
+        var daftar=wadah.querySelectorAll("[data-pengumuman-id]");
+        for(var i=0;i<daftar.length;i++){
+          if(daftar[i].getAttribute("data-pengumuman-id")===id){
+            if(daftar[i].parentNode) daftar[i].parentNode.removeChild(daftar[i]);
+            break;
+          }
+        }
+      }
+      window.__pengumuman={muat:pengumumanMuat, tutup:pengumumanTutup, render:pengumumanRender, ditutup:pengumumanDitutup};
+      (function(){
+        document.addEventListener("click", function(ev){
+          var t=ev.target && ev.target.closest ? ev.target.closest("[data-pengumuman-tutup]") : null;
+          if(!t) return;
+          pengumumanTutup(t.getAttribute("data-pengumuman-tutup"));
+        });
+      })();
+
       /* --- Struktur usaha: peran-peran yang ditentukan pemilik ---
          Daftar peran disimpan di snapshot data usaha (umkm_data.data ->
          'struktur', lewat collectSnapshot / applySnapshot — sama
@@ -5996,7 +6071,7 @@
           if(nama==="paket"||nama==="bayar"){ try{ if(window.__bayarBukaLayar) window.__bayarBukaLayar(); }catch(e){} }
           /* Masuk layar utama: jadwalkan pengingat data dasar yang belum
              lengkap (sekali sehari, hanya bila sebagian data sudah ada). */
-          if(nama==="hariini"){ try{ jadwalkanPopupData(); }catch(e){} }
+          if(nama==="hariini"){ try{ jadwalkanPopupData(); }catch(e){} try{ if(window.__pengumuman && window.__pengumuman.muat) window.__pengumuman.muat(); }catch(e){} }
           return true;
         }
         /* Layar yang memuat elemen tertentu (dipakai fokusKeKolom dan
@@ -6144,7 +6219,15 @@
             }
             var anak=0, blok=0, baris=0, input=0;
             unit.forEach(function(u){
-              try{ anak+=u.children.length; }catch(e){}
+              try{
+                var c=u.children.length;
+                /* Wadah pengumuman kosong tidak mengambil ruang
+                   (display:none bila :empty) — jangan dihitung
+                   sebagai anak berisi. */
+                var pw=u.querySelector ? u.querySelector("#pengumumanWrap") : null;
+                if(pw && !pw.children.length) c--;
+                anak+=c;
+              }catch(e){}
               try{ blok+=u.querySelectorAll(".card,.form-grid,table,.coach-box,.plan").length; }catch(e){}
               try{ baris+=u.querySelectorAll(".check-row,.pro-item,.q-row").length; }catch(e){}
               try{ input+=u.querySelectorAll("input,select,textarea").length; }catch(e){}
@@ -10827,6 +10910,10 @@
            bila blok pesan sudah dimuat; bila belum, lewati. Tamu tidak
            melihat lencana dan RPC tidak dipanggil. */
         try{ if(window.__pesan && window.__pesan.lencanaMuat) window.__pesan.lencanaMuat(); }catch(e){}
+        /* Pengumuman dari pemilik ikut dimuat di sini — fungsi itu ada
+           bila modul pengumuman sudah dimuat; bila belum, lewati.
+           Tamu tidak melihat pengumuman dan RPC tidak dipanggil. */
+        try{ if(window.__pengumuman && window.__pengumuman.muat) window.__pengumuman.muat(); }catch(e){}
         /* Intro halaman Data ikut status akun (Live #17) + banner
            pengaturan cloud ikut status akun (U-B13). */
         try{ if(window.__perbaruiIntroData) window.__perbaruiIntroData(); }catch(e){}
