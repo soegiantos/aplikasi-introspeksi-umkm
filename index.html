@@ -862,6 +862,19 @@
       .share-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
       @media(max-width:640px){.share-scores{grid-template-columns:repeat(2,1fr)}}
       @media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+      /* ---------- Desain logo & kemasan (AI mengarahkan, peramban menggambar) ---------- */
+      .desain-mockups{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+      .desain-mock{background:#222;border:1px solid #333;border-radius:14px;padding:12px;text-align:center}
+      .desain-mock.terpilih{border-color:#e3b959;box-shadow:0 0 0 1px #e3b959}
+      .desain-mock svg{max-width:100%;height:auto}
+      .desain-palet,.desain-ikon{display:flex;flex-wrap:wrap;gap:8px}
+      .desain-palet-btn,.desain-ikon-btn{display:inline-flex;align-items:center;gap:6px}
+      .desain-dot{display:inline-block;width:14px;height:14px;border-radius:50%}
+      .desain-label-preview{background:#fdf6ec;color:#222;border-radius:10px;padding:14px;text-align:center;max-width:340px;margin:10px auto 0}
+      .desain-label-preview .desain-label-nama{font-weight:800;font-size:1.05rem;margin:6px 0 2px}
+      .desain-label-preview .desain-label-isi{font-size:.82rem;line-height:1.5}
+      .desain-label-preview svg{max-width:120px;height:auto}
+      @media print{body *{visibility:hidden!important}#desainLabelPreview,#desainLabelPreview *{visibility:visible!important}#desainLabelPreview{position:absolute!important;left:0;top:0;width:100%;max-width:none;margin:0}}
     </style>
   </head>
   <body>
@@ -1564,6 +1577,7 @@
       <div class="menu-list">
         <a class="menu-row" href="#kemasan-sudut"><span><b>Foto 3 sudut & penilaian terbantu</b><span class="sub">Tampak atas, kemasan tertutup, dan isi/label dari dekat.</span></span><span class="arr">›</span></a>
         <a class="menu-row" href="#kemasan-label"><span><b>Contoh label & pemasok</b><span class="sub">Label siap cetak dan direktori jenis pemasok kemasan.</span></span><span class="arr">›</span></a>
+        <a class="menu-row" href="#kemasan-label"><span><b>Desain logo & kemasan</b><span class="sub">Konsep logo dari AI, digambar di peramban — lengkap dengan pratinjau label.</span></span><span class="arr">›</span></a>
       </div>
       </section>
 
@@ -1622,6 +1636,32 @@
             </ul>
             <p class="note" style="margin-top:8px">Catat nama, kontak, dan harga tiap pemasok yang Anda hubungi di pembukuan sebagai pengeluaran “Kemasan” agar HPP kemasan Anda selalu terukur.</p>
           </div>
+        </div>
+        <div class="card" id="desainCard" style="margin-top:14px">
+          <h3>Desain logo &amp; kemasan</h3>
+          <p class="note" style="margin-top:6px">Konsep dari AI, digambar di peramban — bukan gambar hasil AI. Nama usaha ditulis sebagai huruf sungguhan, jadi tidak mungkin salah eja. Nama, jenis usaha, dan kota diambil otomatis dari Data Usaha Anda.</p>
+          <div class="actions" style="margin-top:10px">
+            <button class="btn" id="btnDesainAI" type="button">Minta konsep desain dari AI</button>
+            <button class="btn" id="btnDesainLokal" type="button">Tampilkan konsep lokal (tanpa AI)</button>
+          </div>
+          <p class="note" id="desainStatus" role="status" style="margin-top:8px">Belum ada konsep — minta konsep dari AI, atau tampilkan konsep lokal.</p>
+          <div class="desain-mockups" id="desainMockups" style="margin-top:10px"></div>
+          <div class="form-grid" style="grid-template-columns:1fr;margin-top:12px">
+            <label class="f"><span>Tagline (maks 6 kata)</span><input type="text" id="desainTagline" maxlength="60" placeholder="contoh: Segar alami, dari dapur kami" /></label>
+          </div>
+          <p style="margin:12px 0 6px"><b>Pilih warna</b></p>
+          <div id="desainPalet" class="desain-palet"></div>
+          <p style="margin:12px 0 6px"><b>Pilih ikon</b></p>
+          <div id="desainIkon" class="desain-ikon"></div>
+          <p style="margin:12px 0 6px"><b>Pratinjau label lengkap</b></p>
+          <div id="desainLabelPreview" class="desain-label-preview"><p class="note" style="margin:0">Pratinjau label muncul sesudah ada konsep desain.</p></div>
+          <div class="actions" style="margin-top:12px">
+            <button class="btn" id="btnDesainSimpan" type="button">Simpan desain</button>
+            <button class="btn" id="btnDesainSvg" type="button">Unduh logo (SVG)</button>
+            <button class="btn" id="btnDesainPng" type="button">Unduh logo (PNG)</button>
+            <button class="btn" id="btnDesainCetak" type="button">Cetak label</button>
+          </div>
+          <p class="note" style="margin-top:8px">Desain tersimpan ikut tersimpan bersama data usaha Anda. Mengganti warna, ikon, atau tagline tidak memakai kuota AI lagi.</p>
         </div>
       </section>
 
@@ -7170,7 +7210,8 @@
             utangs:utangs.map(function(u){ if(!u.cid) u.cid=uuid(); return {cid:u.cid,ket:u.ket,jumlah:u.jumlah,tempo:u.tempo}; }),
             proaktif:{ last_seen: proaktifState.last_seen||null, lastConsCheck: proaktifState.lastConsCheck||null },
             qris_image: window.__qrisImage || null,
-            ai_pakai: window.__aiPakai || {bulan:bulanSekarang(), jumlah:0}
+            ai_pakai: window.__aiPakai || {bulan:bulanSekarang(), jumlah:0},
+            desain_kemasan: window.__desainKemasan || null
           };
         }
         window.__collectSnapshot=collectSnapshot;
@@ -7324,6 +7365,10 @@
           recalc();
           window.__proaktifDataReadyFlag=true; // data (termasuk transaksi) sudah terpasang — finalisasi kunjungan proaktif boleh jalan
           if(window.__renderProaktif){ try{ window.__renderProaktif(true); }catch(e){} }
+          /* Desain logo & kemasan tersimpan: pulihkan state modul lalu
+             gambar ulang mockup + pratinjau label dari desain itu. */
+          if(snap.desain_kemasan){ window.__desainKemasan=snap.desain_kemasan; }
+          if(window.__renderDesainKemasan){ try{ window.__renderDesainKemasan(); }catch(e){} }
           loading=false;
         }
 
@@ -7413,7 +7458,10 @@
               pegawai_tambahan: (snap.pegawai_tambahan!=null?snap.pegawai_tambahan:__pegawaiTambahanCloud),
               /* Kohort anonim (Fase 2, S-K1): tersimpan di
                  umkm_data.data -> 'kohort_id'. */
-              kohort_id: kohortId};
+              kohort_id: kohortId,
+              /* Desain logo & kemasan: dari snapshot (diisi modul desain);
+                 autosave yang sudah ada membawanya ke sini. */
+              desain_kemasan: snap.desain_kemasan||null};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
@@ -12845,6 +12893,306 @@
                 .catch(function(){ lokal(); });
             }catch(e){ lokal(); }
           });
+
+          /* ================= 5. DESAIN LOGO & KEMASAN (Cara 2 — gratis) =================
+             AI memberi KONSEP (simbol, warna, gaya huruf, tagline, susunan label);
+             peramban yang MENGGAMBAR logo sebagai SVG + huruf sungguhan, jadi nama
+             usaha tidak mungkin salah eja. Sama seperti penilaian kemasan di atas:
+             AI hanya menerima teks + fakta, tidak pernah membuat angka, dan skor
+             kemasan tidak berubah oleh desain. Fallback lokal memakai tabel
+             sektor bila AI belum tersambung (tanpa kuota). Mengubah warna, ikon,
+             atau tagline tidak memanggil AI lagi. Simpan memakai jalur autosave
+             yang sudah ada lewat window.__desainKemasan (lihat collectSnapshot). */
+          (function(){
+            function gid(id){ return document.getElementById(id); }
+            function escD(s){ try{ if(typeof esc==="function") return esc(s); }catch(e){} return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+            function toastD(m){ try{ if(typeof toast==="function"){ toast(m); return; } }catch(e){} var st=gid("desainStatus"); if(st) st.textContent=m; }
+            function popupD(j,a,l){ try{ if(typeof popupRamah==="function"){ popupRamah(j,a,l); return; } }catch(e){} toastD(a||j); }
+            function bersihkan(t){ try{ if(typeof window.__bersihkanJawabanAI==="function") return window.__bersihkanJawabanAI(t); }catch(e){} return String(t==null?"":t); }
+            function kuotaHabis(){ try{ if(typeof window.__kuotaAiHabis==="function") return !!window.__kuotaAiHabis(); }catch(e){} try{ if(typeof kuotaAiHabis==="function") return !!kuotaAiHabis(); }catch(e){} return false; }
+            function hitungAi(){ try{ if(typeof window.__tambahHitunganAi==="function"){ window.__tambahHitunganAi(); return; } }catch(e){} try{ if(typeof tambahHitunganAi==="function") tambahHitunganAi(); }catch(e){} }
+            function popupKuota(){ try{ if(typeof window.__popupKuotaHabis==="function"){ window.__popupKuotaHabis(); return; } }catch(e){} try{ if(typeof popupKuotaHabis==="function"){ popupKuotaHabis(); return; } }catch(e){} popupD("Kuota pertanyaan AI bulan ini sudah habis.","Bulan ini Anda sudah memakai kuota pertanyaan AI.","Kuota kembali awal bulan depan."); }
+
+            var DAFTAR_IKON=["mangkuk","cabai","daun","kantong","gelembung","gerigi","padi","centang"];
+            var PALET=[
+              {nama:"Emas / gelap", primer:"#e3b959", latar:"#141414"},
+              {nama:"Merah cabai / krem", primer:"#c0392b", latar:"#fdf6ec"},
+              {nama:"Hijau daun / krem", primer:"#2e7d32", latar:"#fdf6ec"},
+              {nama:"Biru / putih", primer:"#2f6fb2", latar:"#ffffff"},
+              {nama:"Teal / gelap", primer:"#57b7c2", latar:"#141414"},
+              {nama:"Cokelat / krem", primer:"#8d5a2b", latar:"#fdf6ec"}
+            ];
+            /* Konsep bawaan per sektor (dipakai fallback lokal + pelengkap parse AI). */
+            var FALLBACK={
+              kuliner:[
+                {simbol:"mangkuk", primer:"#e3b959", latar:"#141414", gaya:"klasik", tagline:"Masakan rumahan, rasa istimewa", susunan:"atas", bentuk:"bulat"},
+                {simbol:"cabai", primer:"#c0392b", latar:"#fdf6ec", gaya:"tegas", tagline:"Pedasnya nendang, nagih terus", susunan:"atas", bentuk:"kotak"},
+                {simbol:"daun", primer:"#2e7d32", latar:"#fdf6ec", gaya:"ramah", tagline:"Segar alami, dari dapur kami", susunan:"tengah", bentuk:"bulat"}
+              ],
+              retail:[
+                {simbol:"kantong", primer:"#2f6fb2", latar:"#ffffff", gaya:"tegas", tagline:"Belanja lengkap, harga bersahabat", susunan:"atas", bentuk:"kotak"},
+                {simbol:"kantong", primer:"#e3b959", latar:"#141414", gaya:"klasik", tagline:"Toko Anda, pilihan keluarga", susunan:"tengah", bentuk:"bulat"},
+                {simbol:"centang", primer:"#57b7c2", latar:"#141414", gaya:"ramah", tagline:"Belanja mudah, hati senang", susunan:"atas", bentuk:"bulat"}
+              ],
+              jasa:[
+                {simbol:"centang", primer:"#57b7c2", latar:"#141414", gaya:"tegas", tagline:"Kerja rapi, hasil memuaskan", susunan:"atas", bentuk:"bulat"},
+                {simbol:"gelembung", primer:"#4aa8c2", latar:"#ffffff", gaya:"ramah", tagline:"Bersih wangi, siap pakai", susunan:"atas", bentuk:"kotak"},
+                {simbol:"gerigi", primer:"#5a6b7a", latar:"#fdf6ec", gaya:"tegas", tagline:"Ahli, cepat, dan terpercaya", susunan:"tengah", bentuk:"bulat"}
+              ],
+              produsen:[
+                {simbol:"padi", primer:"#8d5a2b", latar:"#fdf6ec", gaya:"klasik", tagline:"Buatan tangan, mutu terjaga", susunan:"atas", bentuk:"bulat"},
+                {simbol:"daun", primer:"#2e7d32", latar:"#fdf6ec", gaya:"ramah", tagline:"Alami, teliti, dan berkualitas", susunan:"tengah", bentuk:"kotak"},
+                {simbol:"kantong", primer:"#2f6fb2", latar:"#ffffff", gaya:"tegas", tagline:"Karya lokal, bangga dipakai", susunan:"atas", bentuk:"bulat"}
+              ]
+            };
+            function sektorKunci(sek){
+              if(sek==="kuliner") return "kuliner";
+              if(sek==="retail") return "retail";
+              if(sek==="jasa") return "jasa";
+              if(sek==="manufaktur"||sek==="fashion"||sek==="agribisnis") return "produsen";
+              return "jasa";
+            }
+            function konsepLokal(sek){ var k=sektorKunci(sek); return FALLBACK[k].map(function(c){ return {simbol:c.simbol, primer:c.primer, latar:c.latar, gaya:c.gaya, tagline:c.tagline, susunan:c.susunan, bentuk:c.bentuk}; }); }
+            function dataUsaha(){
+              var d={nama:"", sektor:"", sektorLabel:"", kota:"", produk:""};
+              try{ d.nama=(gid("inNama").value||"").trim(); }catch(e){}
+              try{ var s=gid("inSektor"); d.sektor=s.value||""; d.sektorLabel=(s.selectedOptions&&s.selectedOptions[0])?s.selectedOptions[0].textContent:""; }catch(e){}
+              try{ d.kota=(gid("inKota").value||"").trim(); }catch(e){}
+              try{ d.produk=(gid("lblProduk").value||"").trim(); }catch(e){}
+              return d;
+            }
+
+            /* ---------- gambar ikon (satu warna primer, di atas latar) ---------- */
+            function ikonSvg(nama, warna, latar){
+              var w=escD(warna||"#e3b959"), l=escD(latar||"#141414");
+              if(nama==="mangkuk") return '<path d="M55 108 a35 22 0 0 0 70 0 z" fill="'+w+'"/><rect x="50" y="104" width="80" height="6" rx="3" fill="'+w+'"/><path d="M72 96 q6 -10 0 -18 M90 96 q6 -10 0 -18 M108 96 q6 -10 0 -18" stroke="'+w+'" stroke-width="4" fill="none" stroke-linecap="round"/>';
+              if(nama==="cabai") return '<path d="M60 118 q-14 -52 34 -64 q40 -10 44 22 q3 26 -26 34 q-34 6 -52 8 z" fill="'+w+'"/><path d="M138 62 q16 -14 26 -6" stroke="'+w+'" stroke-width="6" fill="none" stroke-linecap="round"/>';
+              if(nama==="daun") return '<path d="M90 52 q42 18 30 62 q-30 14 -52 -6 q-12 -34 22 -56 z" fill="'+w+'"/><path d="M88 62 q-4 34 6 52" stroke="'+l+'" stroke-width="4" fill="none" stroke-linecap="round"/>';
+              if(nama==="kantong") return '<path d="M62 74 h56 l-8 44 a4 4 0 0 1 -4 3 h-32 a4 4 0 0 1 -4 -3 z" fill="'+w+'"/><path d="M76 74 q14 -26 28 0" stroke="'+w+'" stroke-width="5" fill="none" stroke-linecap="round"/>';
+              if(nama==="gelembung") return '<circle cx="76" cy="90" r="22" fill="none" stroke="'+w+'" stroke-width="5"/><circle cx="108" cy="68" r="13" fill="none" stroke="'+w+'" stroke-width="4"/><circle cx="112" cy="104" r="8" fill="'+w+'"/>';
+              if(nama==="gerigi"){ var g=""; for(var i=0;i<8;i++){ g+='<rect x="86" y="50" width="8" height="14" rx="2" fill="'+w+'" transform="rotate('+(i*45)+' 90 88)"/>'; } return g+'<circle cx="90" cy="88" r="24" fill="'+w+'"/><circle cx="90" cy="88" r="10" fill="'+l+'"/>'; }
+              if(nama==="padi") return '<path d="M90 52 v62" stroke="'+w+'" stroke-width="4" stroke-linecap="round"/><ellipse cx="78" cy="64" rx="7" ry="12" fill="'+w+'" transform="rotate(-35 78 64)"/><ellipse cx="102" cy="64" rx="7" ry="12" fill="'+w+'" transform="rotate(35 102 64)"/><ellipse cx="78" cy="84" rx="7" ry="12" fill="'+w+'" transform="rotate(-35 78 84)"/><ellipse cx="102" cy="84" rx="7" ry="12" fill="'+w+'" transform="rotate(35 102 84)"/><ellipse cx="78" cy="104" rx="7" ry="12" fill="'+w+'" transform="rotate(-35 78 104)"/><ellipse cx="102" cy="104" rx="7" ry="12" fill="'+w+'" transform="rotate(35 102 104)"/>';
+              /* centang */
+              return '<path d="M52 92 l22 22 l48 -58" stroke="'+w+'" stroke-width="11" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+            }
+            function logoSvg(k, namaUsaha, ukuran){
+              var u=ukuran||180;
+              var primer=k.primer||"#e3b959", latar=k.latar||"#141414";
+              var nama=String(namaUsaha||"Usaha Anda").trim()||"Usaha Anda";
+              var tampil=(k.gaya==="tegas")?nama.toUpperCase():nama;
+              var fs=tampil.length>22?11:(tampil.length>16?12.5:14);
+              var fam=(k.gaya==="klasik")?"Georgia, 'Times New Roman', serif":"system-ui, -apple-system, 'Segoe UI', sans-serif";
+              var fw=(k.gaya==="ramah")?"700":"800";
+              var ls=(k.gaya==="tegas")?"2":((k.gaya==="klasik")?"1":"0.5");
+              var bentuk=(k.bentuk==="kotak")
+                ? '<rect x="6" y="6" width="168" height="168" rx="18" fill="'+escD(latar)+'" stroke="'+escD(primer)+'" stroke-width="4"/>'
+                : '<circle cx="90" cy="90" r="86" fill="'+escD(latar)+'" stroke="'+escD(primer)+'" stroke-width="4"/><circle cx="90" cy="90" r="76" fill="none" stroke="'+escD(primer)+'" stroke-width="1"/>';
+              return '<svg width="'+u+'" height="'+u+'" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo '+escD(nama)+'">'+bentuk+ikonSvg(k.simbol, primer, latar)+'<text x="90" y="146" text-anchor="middle" font-family="'+fam+'" font-size="'+fs+'" font-weight="'+fw+'" letter-spacing="'+ls+'" fill="'+escD(primer)+'">'+escD(tampil)+'</text><text x="90" y="162" text-anchor="middle" font-family="'+fam+'" font-size="8.5" fill="'+escD(primer)+'" opacity="0.85">'+escD(String(k.tagline||"").toUpperCase())+'</text></svg>';
+            }
+
+            /* ---------- state + render ---------- */
+            var konsepList=[];
+            var terpilih=0;
+            function konsepAktif(){ return konsepList[terpilih]||null; }
+            function namaGaya(g){ return g==="tegas"?"Tegas":(g==="ramah"?"Ramah":"Klasik"); }
+            function renderMockups(){
+              var wadah=gid("desainMockups"); if(!wadah) return;
+              var d=dataUsaha();
+              if(!konsepList.length){ wadah.innerHTML='<p class="note">Belum ada konsep — ketuk "Minta konsep desain dari AI" atau "Tampilkan konsep lokal".</p>'; return; }
+              wadah.innerHTML=konsepList.map(function(k,i){
+                return '<div class="desain-mock'+(i===terpilih?" terpilih":"")+'" data-desain-mock="'+i+'">'+logoSvg(k, d.nama, 150)+'<p class="note" style="margin:8px 0 4px">Konsep '+(i+1)+' — Simbol: '+escD(k.simbol)+' · '+escD(namaGaya(k.gaya))+'</p><p class="note" style="margin:0 0 8px">“'+escD(k.tagline||"")+'”</p><button class="btn" type="button" data-desain-pilih="'+i+'">'+(i===terpilih?"✓ Terpilih":"Pilih konsep "+(i+1))+'</button></div>';
+              }).join("");
+            }
+            function renderLabelDesain(){
+              var box=gid("desainLabelPreview"); if(!box) return;
+              var k=konsepAktif(); var d=dataUsaha();
+              var produk="", berat="", komp="", izin="", exp="", kontak="";
+              try{ produk=(gid("lblProduk").value||"").trim(); berat=(gid("lblBerat").value||"").trim(); komp=(gid("lblKomp").value||"").trim(); izin=(gid("lblIzin").value||"").trim(); exp=(gid("lblExp").value||"").trim(); kontak=(gid("lblKontak").value||"").trim(); }catch(e){}
+              if(!k){ box.innerHTML='<p class="note" style="margin:0">Pratinjau label muncul sesudah ada konsep desain — minta konsep dari AI atau tampilkan konsep lokal.</p>'; return; }
+              var tagline=((gid("desainTagline")&&gid("desainTagline").value.trim())||k.tagline||"");
+              var kk={simbol:k.simbol, primer:k.primer, latar:k.latar, gaya:k.gaya, tagline:tagline, susunan:k.susunan, bentuk:k.bentuk};
+              box.innerHTML='<div>'+logoSvg(kk, d.nama, 120)+'</div>'
+                +'<div class="desain-label-nama">'+escD(produk||"(Nama Produk)")+'</div>'
+                +'<div class="desain-label-isi">'
+                +(d.nama?escD(d.nama)+'<br>':"")
+                +'Berat bersih: '+escD(berat||"—")+'<br>'
+                +'Komposisi: '+escD(komp||"—")+'<br>'
+                +(izin?escD(izin)+'<br>':"")
+                +(exp?escD(exp)+'<br>':"")
+                +'Pesan: '+escD(kontak||"—")+'</div>';
+            }
+            function renderPengubah(){
+              var wp=gid("desainPalet");
+              if(wp){ wp.innerHTML=PALET.map(function(p,i){ return '<button class="btn desain-palet-btn" type="button" data-desain-palet="'+i+'" aria-label="Warna '+escD(p.nama)+'"><span class="desain-dot" style="background:'+escD(p.primer)+'"></span><span class="desain-dot" style="background:'+escD(p.latar)+';border:1px solid #999"></span>'+escD(p.nama)+'</button>'; }).join(""); }
+              var wi=gid("desainIkon");
+              if(wi){ wi.innerHTML=DAFTAR_IKON.map(function(n){ return '<button class="btn desain-ikon-btn" type="button" data-desain-ikon="'+n+'" aria-label="Ikon '+escD(n)+'"><svg width="26" height="26" viewBox="40 40 100 90" aria-hidden="true">'+ikonSvg(n, "#e3b959", "#141414")+'</svg>'+escD(n)+'</button>'; }).join(""); }
+            }
+            function pilih(i){
+              if(!konsepList.length) return;
+              terpilih=Math.max(0, Math.min(konsepList.length-1, i|0));
+              var k=konsepAktif();
+              var ti=gid("desainTagline"); if(ti && k) ti.value=k.tagline||"";
+              renderMockups(); renderLabelDesain();
+            }
+
+            /* ---------- parse jawaban AI (toleran; pelengkap dari fallback) ---------- */
+            function parseSatu(bag, fb){
+              var b=String(bag||"");
+              var ikon=null; var m=b.match(/\b(mangkuk|cabai|daun|kantong|gelembung|gerigi|padi|centang)\b/i); if(m) ikon=m[1].toLowerCase();
+              var hex=(b.match(/#[0-9a-fA-F]{6}\b/g)||[]).map(function(h){ return h.toLowerCase(); });
+              var gaya=null; var g=b.match(/\b(tegas|ramah|klasik)\b/i); if(g) gaya=g[1].toLowerCase();
+              var bTanpaSusunan=b.replace(/susunan[^.\n]*/i, "");
+              var tagline="";
+              var tm=bTanpaSusunan.match(/tagline[^:\n]*[:\-–]\s*([^.\n]+)/i);
+              if(tm){ tagline=tm[1].replace(/["“”]/g,"").trim().replace(/[,.;!?]+$/,""); var kata=tagline.split(/\s+/).filter(Boolean); if(kata.length>6) tagline=kata.slice(0,6).join(" "); }
+              var susunan=/logo di tengah/i.test(b)?"tengah":"atas";
+              return {simbol:ikon||fb.simbol, primer:hex[0]||fb.primer, latar:hex[1]||fb.latar, gaya:gaya||fb.gaya, tagline:tagline||fb.tagline, susunan:susunan, bentuk:fb.bentuk};
+            }
+            function parseKonsep(teks, fbList){
+              var t=bersihkan(teks||"");
+              var potong=t.split(/konsep\s*\d+\s*[:\-–.]?/i);
+              var chunks=potong.slice(1);
+              if(chunks.length<1){
+                var bernomor=t.match(/\d+\.\s+[^\n]+(?:\n(?!\d+\.)[^\n]+)*/g);
+                if(bernomor && bernomor.length>=2) chunks=bernomor;
+              }
+              var hasil=[];
+              for(var i=0;i<3;i++){
+                var fb=fbList[i%fbList.length];
+                if(chunks[i]) hasil.push(parseSatu(chunks[i], fb));
+                else hasil.push({simbol:fb.simbol, primer:fb.primer, latar:fb.latar, gaya:fb.gaya, tagline:fb.tagline, susunan:fb.susunan, bentuk:fb.bentuk});
+              }
+              return hasil;
+            }
+            function promptDesain(d){
+              return "Buatkan 3 konsep desain logo dan label kemasan untuk usaha UMKM berikut. Nama usaha: "+(d.nama||"(belum diisi)")+". Sektor: "+(d.sektorLabel||d.sektor||"(belum diisi)")+". Kota: "+(d.kota||"(belum diisi)")+". Produk contoh: "+(d.produk||"(belum diisi)")+". Untuk tiap konsep beri: (1) simbol dari daftar ini saja: mangkuk, cabai, daun, kantong, gelembung, gerigi, padi, centang; (2) 2 warna (nama + kode hex); (3) gaya huruf: tegas / ramah / klasik; (4) tagline singkat maks 6 kata; (5) susunan label: logo di atas / logo di tengah. Jawab singkat dan rapi. Jangan membuat angka, harga, atau klaim tentang produk.";
+            }
+            function tampilkanLokal(d, alasan){
+              konsepList=konsepLokal(d.sektor); terpilih=0;
+              var ti=gid("desainTagline"); if(ti) ti.value=konsepList[0].tagline||"";
+              renderMockups(); renderLabelDesain();
+              var st=gid("desainStatus");
+              if(st) st.textContent="Konsep lokal dari sektor usaha Anda (AI belum tersambung)"+(alasan?" — "+alasan:"")+". Pilih satu konsep, lalu ubah warna, ikon, atau tagline bila perlu.";
+              return konsepList;
+            }
+            async function mintaKonsep(){
+              var st=gid("desainStatus");
+              if(kuotaHabis()){ popupKuota(); return null; }
+              var d=dataUsaha();
+              var prompt=promptDesain(d);
+              if(st) st.textContent="Sedang meminta konsep desain dari AI…";
+              function lokal(){ return tampilkanLokal(d); }
+              try{
+                var res=await fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt:prompt, question:prompt, context:{jenis:"konsep_desain_kemasan"}})});
+                if(!res.ok) throw new Error("belum tersambung");
+                var data=await res.json();
+                var ans=data && (data.answer || data.reply || data.text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content));
+                if(!ans || !String(ans).trim()){ return lokal(); }
+                var fb=konsepLokal(d.sektor);
+                konsepList=parseKonsep(String(ans), fb);
+                terpilih=0;
+                hitungAi();
+                var ti=gid("desainTagline"); if(ti) ti.value=konsepList[0].tagline||"";
+                renderMockups(); renderLabelDesain();
+                if(st) st.textContent="3 konsep dari AI sudah siap — pilih satu, lalu ubah warna, ikon, atau tagline bila perlu. Mengubahnya tidak memakai kuota lagi.";
+                return konsepList;
+              }catch(e){ return lokal(); }
+            }
+
+            /* ---------- simpan / unduh / cetak ---------- */
+            function tanggalHariIni(){ var d=new Date(); function p(n){ return (n<10?"0":"")+n; } return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); }
+            function simpan(){
+              var k=konsepAktif();
+              if(!k){ popupD("Belum ada desain untuk disimpan","Minta konsep desain dari AI atau tampilkan konsep lokal dulu.","Pilih satu konsep, lalu ketuk Simpan desain."); return null; }
+              var tagline=((gid("desainTagline")&&gid("desainTagline").value.trim())||k.tagline||"");
+              k.tagline=tagline;
+              window.__desainKemasan={konsep:{simbol:k.simbol, gaya:k.gaya, susunan:k.susunan, bentuk:k.bentuk}, ikon:k.simbol, palet:{primer:k.primer, latar:k.latar}, tagline:tagline, dipilihPada:tanggalHariIni()};
+              toastD("Desain tersimpan");
+              return window.__desainKemasan;
+            }
+            function svgTerpilih(){
+              var k=konsepAktif(); if(!k) return "";
+              var d=dataUsaha();
+              var tagline=((gid("desainTagline")&&gid("desainTagline").value.trim())||k.tagline||"");
+              var kk={simbol:k.simbol, primer:k.primer, latar:k.latar, gaya:k.gaya, tagline:tagline, susunan:k.susunan, bentuk:k.bentuk};
+              return logoSvg(kk, d.nama, 540);
+            }
+            function namaBerkas(){
+              var d=dataUsaha();
+              var s=String(d.nama||"logo-umkm").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"logo-umkm";
+              return "logo-"+s;
+            }
+            function unduhSVG(){
+              var svg=svgTerpilih();
+              if(!svg){ popupD("Belum ada logo untuk diunduh","Minta konsep desain dari AI atau tampilkan konsep lokal dulu.","Pilih satu konsep, lalu unduh logonya."); return ""; }
+              try{
+                var blob=new Blob([svg],{type:"image/svg+xml;charset=utf-8"});
+                var url=URL.createObjectURL(blob);
+                var a=document.createElement("a"); a.href=url; a.download=namaBerkas()+".svg"; a.click();
+                setTimeout(function(){ try{ URL.revokeObjectURL(url); }catch(e){} },2000);
+                toastD("Logo diunduh (.svg)");
+              }catch(e){ popupD("Logo belum bisa diunduh","Peramban ini tidak mengizinkan unduhan berkas.","Coba lagi, atau pakai tombol Cetak label."); }
+              return svg;
+            }
+            function unduhPNG(){
+              var svg=svgTerpilih();
+              if(!svg){ popupD("Belum ada logo untuk diunduh","Minta konsep desain dari AI atau tampilkan konsep lokal dulu.","Pilih satu konsep, lalu unduh logonya."); return; }
+              try{
+                var blob=new Blob([svg],{type:"image/svg+xml;charset=utf-8"});
+                var url=URL.createObjectURL(blob);
+                var img=new Image();
+                img.onload=function(){
+                  try{
+                    var cv=document.createElement("canvas"); cv.width=540; cv.height=540;
+                    var ctx=cv.getContext("2d"); if(!ctx) throw new Error("canvas tidak tersedia");
+                    ctx.drawImage(img,0,0,540,540);
+                    try{ URL.revokeObjectURL(url); }catch(e){}
+                    if(!cv.toBlob) throw new Error("canvas tidak tersedia");
+                    cv.toBlob(function(b){
+                      if(!b){ popupD("Logo PNG belum bisa dibuat","Peramban ini tidak bisa mengubah SVG menjadi PNG.","Unduh logo (.svg) saja — berkas SVG bisa dibuka di semua aplikasi desain."); return; }
+                      var u2=URL.createObjectURL(b);
+                      var a=document.createElement("a"); a.href=u2; a.download=namaBerkas()+".png"; a.click();
+                      setTimeout(function(){ try{ URL.revokeObjectURL(u2); }catch(e){} },2000);
+                      toastD("Logo diunduh (.png)");
+                    },"image/png");
+                  }catch(e2){ popupD("Logo PNG belum bisa dibuat","Peramban ini tidak bisa mengubah SVG menjadi PNG.","Unduh logo (.svg) saja — berkas SVG bisa dibuka di semua aplikasi desain."); }
+                };
+                img.onerror=function(){ try{ URL.revokeObjectURL(url); }catch(e){} popupD("Logo PNG belum bisa dibuat","Gambar logo tidak bisa dimuat untuk diubah ke PNG.","Unduh logo (.svg) saja — berkas SVG bisa dibuka di semua aplikasi desain."); };
+                img.src=url;
+              }catch(e){ popupD("Logo PNG belum bisa dibuat","Peramban ini tidak bisa mengubah SVG menjadi PNG.","Unduh logo (.svg) saja — berkas SVG bisa dibuka di semua aplikasi desain."); }
+            }
+
+            /* ---------- pulihkan desain tersimpan + render ulang ---------- */
+            function renderDesainTersimpan(){
+              var sv=null;
+              try{ sv=window.__desainKemasan||null; }catch(e){}
+              if(!sv) return false;
+              var fb=konsepLokal(dataUsaha().sektor);
+              var k={simbol:sv.ikon||(sv.konsep&&sv.konsep.simbol)||fb[0].simbol, primer:(sv.palet&&sv.palet.primer)||fb[0].primer, latar:(sv.palet&&sv.palet.latar)||fb[0].latar, gaya:(sv.konsep&&sv.konsep.gaya)||fb[0].gaya, tagline:sv.tagline||fb[0].tagline, susunan:(sv.konsep&&sv.konsep.susunan)||"atas", bentuk:(sv.konsep&&sv.konsep.bentuk)||fb[0].bentuk};
+              konsepList=[k, fb[1], fb[2]]; terpilih=0;
+              var ti=gid("desainTagline"); if(ti) ti.value=k.tagline||"";
+              renderMockups(); renderLabelDesain();
+              return true;
+            }
+            function renderDesainKemasan(){ if(!renderDesainTersimpan()){ renderMockups(); renderLabelDesain(); } }
+            window.__renderDesainKemasan=renderDesainKemasan;
+
+            /* ---------- kabel tombol ---------- */
+            var bAi=gid("btnDesainAI"); if(bAi) bAi.addEventListener("click", function(){ mintaKonsep(); });
+            var bLokal=gid("btnDesainLokal"); if(bLokal) bLokal.addEventListener("click", function(){ tampilkanLokal(dataUsaha(), "pilihan Anda"); });
+            var bSimpan=gid("btnDesainSimpan"); if(bSimpan) bSimpan.addEventListener("click", function(){ simpan(); });
+            var bSvg=gid("btnDesainSvg"); if(bSvg) bSvg.addEventListener("click", function(){ unduhSVG(); });
+            var bPng=gid("btnDesainPng"); if(bPng) bPng.addEventListener("click", function(){ unduhPNG(); });
+            var bCetak=gid("btnDesainCetak"); if(bCetak) bCetak.addEventListener("click", function(){ try{ window.print(); }catch(e){} });
+            var wadah=gid("desainMockups"); if(wadah) wadah.addEventListener("click", function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest("[data-desain-pilih]"):null; if(!t) return; pilih(+t.getAttribute("data-desain-pilih")); });
+            var wp=gid("desainPalet"); if(wp) wp.addEventListener("click", function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest("[data-desain-palet]"):null; if(!t) return; var k=konsepAktif(); if(!k) return; var p=PALET[+t.getAttribute("data-desain-palet")]; if(!p) return; k.primer=p.primer; k.latar=p.latar; renderMockups(); renderLabelDesain(); });
+            var wi=gid("desainIkon"); if(wi) wi.addEventListener("click", function(ev){ var t=ev.target&&ev.target.closest?ev.target.closest("[data-desain-ikon]"):null; if(!t) return; var k=konsepAktif(); if(!k) return; k.simbol=t.getAttribute("data-desain-ikon"); renderMockups(); renderLabelDesain(); });
+            var ti=gid("desainTagline"); if(ti) ti.addEventListener("input", function(){ var k=konsepAktif(); if(!k) return; k.tagline=ti.value; renderLabelDesain(); });
+            ["lblProduk","lblBerat","lblKomp","lblIzin","lblExp","lblKontak"].forEach(function(id){ var el=gid(id); if(el) el.addEventListener("input", renderLabelDesain); });
+            renderPengubah();
+            renderDesainKemasan();
+            window.__desainUji={mintaKonsep:mintaKonsep, pilih:pilih, simpan:simpan, unduhSVG:unduhSVG, unduhPNG:unduhPNG, fallback:function(){ return tampilkanLokal(dataUsaha()); }, konsep:function(){ return konsepList.slice(); }, aktif:function(){ return konsepAktif(); }, parse:parseKonsep, lokal:konsepLokal, render:renderDesainKemasan, svg:svgTerpilih, prompt:promptDesain};
+          })();
         })();
       })();
     </script>
