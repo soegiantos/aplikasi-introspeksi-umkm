@@ -1837,6 +1837,7 @@
             <div><h3 style="font-size:.98rem">Posisi Keuangan (Data Usaha + stok, piutang, utang &amp; kas)</h3><table class="mini-table"><tbody id="neracaBody"></tbody></table></div>
           </div>
           <div style="margin-top:16px"><h3 style="font-size:.98rem">Arus Kas (Data Usaha per bulan + catatan transaksi)</h3><table class="mini-table"><tbody id="akBody"></tbody></table></div>
+          <div style="margin-top:16px"><h3 style="font-size:.98rem">Perkiraan PPh Final</h3><table class="mini-table"><tbody id="pphBody"></tbody></table><p class="note" style="margin-top:8px">Perkiraan dari data Anda sendiri — bukan penetapan pajak. Dihitung 0,5% dari omzet tahun berjalan (transaksi masuk tercatat tahun ini) di atas Rp500 jt; bila omzet tahun ini Rp500 jt atau kurang, perkiraannya Rp0.</p></div>
           <div class="actions"><button class="btn" id="btnReportPdf" type="button">Unduh laporan lengkap (PDF)</button><button class="btn ghost" id="btnReport" type="button">Unduh laporan lengkap (.txt)</button><button class="btn ghost" id="btnReportHtml" type="button">Unduh laporan untuk dicetak (.html)</button></div>
           <p class="note" id="ocrNote" style="margin-top:10px">Baca nota: unggah foto nota di atas — teks nota dibaca otomatis di HP Anda dan jumlah terbesar yang terbaca diisikan sebagai jumlah transaksi untuk Anda periksa.</p>
         </div>
@@ -2133,6 +2134,7 @@
             </ul>
             <p class="note paket-tier-label" style="display:none"><b>Dipilih</b></p>
           </div>
+          <p class="note" id="paketHargaFinal">Harga di atas sudah final — tidak ada PPN yang ditambahkan.</p>
           <p class="note" id="paketProBelum">Pendaftaran langganan belum dibuka.</p>
           <p class="note" id="paketStatusBayar" role="status" style="display:none"></p>
           <div class="actions" id="paketAjukanUlangWrap" style="display:none"><button class="btn ghost small" id="btnPaketAjukanUlang" type="button">Ajukan ulang</button></div>
@@ -4385,7 +4387,15 @@
 
       /* agregat transaksi: dipakai Laba Rugi, Posisi Keuangan, Arus Kas, BEP & forecast */
       function txAgg(){ let inn=0,out=0,hppTx=0,opexTx=0; txs.forEach(function(t){ if(t.jenis==="masuk") inn+=t.jumlah; else { out+=t.jumlah; if(t.kat==="Bahan baku"||t.kat==="Kemasan") hppTx+=t.jumlah; else opexTx+=t.jumlah; } }); return {inn:inn,out:out,hppTx:hppTx,opexTx:opexTx,net:inn-out}; }
+      function renderPphFinal(){
+        var el=$("pphBody"); if(!el) return;
+        var th=new Date().getFullYear(), omzet=0;
+        txs.forEach(function(t){ if(t.jenis==="masuk" && String(t.tgl||"").slice(0,4)===String(th)) omzet+= (+t.jumlah||0); });
+        var pph=Math.max(0, omzet-500000000)*0.005;
+        el.innerHTML="<tr><td>Omzet tahun "+th+" (transaksi masuk tercatat)</td><td>"+fmtFull(omzet)+"</td></tr><tr><td>Batas bebas pajak per tahun</td><td>"+fmtFull(500000000)+"</td></tr><tr><td><b>Perkiraan PPh Final (0,5% dari omzet di atas Rp500 jt)</b></td><td><b>"+fmtFull(Math.round(pph))+"</b></td></tr>";
+      }
       function renderReports(){
+        renderPphFinal();
         if(!S.omzetBln && S.omzetBln!==0) return;
         const agg=txAgg();
         const pendapatan=(S.omzetBln||0)+agg.inn, hppVal=(S.omzetBln||0)*(S.hppPct||0)+agg.hppTx, labaKotor=pendapatan-hppVal;
