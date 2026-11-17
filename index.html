@@ -46,14 +46,6 @@
       .topbar-in{max-width:1180px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
       .brand{font-weight:800;font-size:1rem;display:flex;align-items:center;gap:9px}
       .brand-mark{width:32px;height:32px;border-radius:9px;flex:none;object-fit:contain;display:block}
-      /* ---------- Header bisa dilipat (tombol #btnLipatHeader) ----------
-         Terlipat = strip ramping: baris navigasi + bilah akun
-         disembunyikan, merek + tombol buka tetap terlihat.
-         Tombol lipat/buka selalu terlihat dan ikut karakter
-         tombol standar: pill (dari .btn) + min-height 48px. */
-      #btnLipatHeader{min-height:48px;flex:none}
-      .topbar.terlipat .topbar-in{padding-top:6px;padding-bottom:6px}
-      .topbar.terlipat nav.main,.topbar.terlipat .account-bar{display:none!important}
       nav.main{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
       nav.main a{color:var(--ink-soft);text-decoration:none;font-weight:600;font-size:.92rem;padding:10px 12px;border-radius:999px;min-height:44px;display:inline-flex;align-items:center;transition:background .18s ease,color .18s ease,transform .18s ease}
       nav.main a:hover{background:var(--surface-2);color:var(--ink)}
@@ -66,6 +58,11 @@
       .stat .k{font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
       .stat .v{font-size:1.5rem;font-weight:800;margin-top:4px;line-height:1.15}
       .stat .s{font-size:.85rem;color:var(--ink-soft);margin-top:2px}
+      /* Baris sumber hitungan valuasi (§71) + label "Data contoh": sumber
+         menyebut omzet + HPP yang dipakai; label contoh menandai bahwa
+         yang tampil hanya data contoh (bukan data usaha nyata). */
+      .sumber-val{font-size:.85rem;color:var(--ink-soft);margin:6px 0 0}
+      .label-contoh{display:inline-block;font-size:.8rem;font-weight:700;color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:2px 10px;margin-top:8px}
       .stat.hero-val{border-color:var(--accent);background:var(--accent-soft)}
       @media(max-width:820px){.stat-row{grid-template-columns:repeat(2,1fr)}}
       @media(max-width:430px){.stat-row{grid-template-columns:1fr 1fr}.stat .v{font-size:1.2rem}}
@@ -1028,7 +1025,6 @@
           <a class="tautan-admin" id="btnSaveCloud" tabindex="0">Register</a>
           <button class="btn ghost small" id="btnModeTampilan" type="button" title="Mode tampilan saat ini: HP — ketuk untuk pindah ke PC">Mode: HP</button>
         </div>
-        <button class="btn ghost" id="btnLipatHeader" type="button" aria-expanded="true" aria-controls="navUtama accountBar">Sembunyikan menu</button>
       </div>
     </div>
 
@@ -1078,7 +1074,7 @@
           <div class="stat"><div class="k">Level UMKM</div><div class="v" id="stLevel">—</div><div class="s" id="stLevelSub">berdasarkan omzet tahunan</div><p class="rujukan" id="rujLevelHero">—</p><button class="btn-explain kompak" type="button" data-explain="level" data-explain-target="explain-hero-level">Jelaskan ini</button></div>
           <div class="stat"><div class="k">Skor Kesehatan Usaha (keseluruhan)</div><div class="v" id="stHealth">—</div><div class="s" id="stHealthSub">Gabungan keuangan, produk, pasar &amp; teknologi — bukan skor keuangan saja.</div><p class="rujukan" id="rujHealth">—</p><button class="btn-explain kompak" type="button" data-explain="kesehatan" data-explain-target="explain-hero-kesehatan">Jelaskan ini</button></div>
           <div class="stat"><div class="k">Skor Siap Investasi</div><div class="v" id="stInvest">—</div><div class="s" id="stInvestSub">kelengkapan untuk penawaran kerjasama investasi</div><p class="rujukan" id="rujInvestHero">—</p><button class="btn-explain kompak" type="button" data-explain="investasi" data-explain-target="explain-hero-investasi">Jelaskan ini</button></div>
-          <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><div class="s" id="stValRange">rentang rendah – tinggi</div><p class="rujukan" id="rujVal">—</p><button class="btn-explain kompak" type="button" data-explain="valuasi" data-explain-target="explain-hero-valuasi">Jelaskan ini</button></div>
+          <div class="stat hero-val"><div class="k">Estimasi Valuasi (tengah)</div><div class="v" id="stVal">—</div><p class="sumber-val" id="stValSumber" style="display:none"></p><span class="label-contoh" id="stValContoh" style="display:none">Data contoh</span><div class="s" id="stValRange">rentang rendah – tinggi</div><p class="rujukan" id="rujVal">—</p><button class="btn-explain kompak" type="button" data-explain="valuasi" data-explain-target="explain-hero-valuasi">Jelaskan ini</button></div>
         </div>
       </header>
 
@@ -2649,6 +2645,26 @@
       }
       window.__adaDataInti=adaDataInti;
 
+      /* ---------- "Hanya data contoh" (§71) ----------
+         Pasangan benih ("Dapur Bu Sari" + omzet 45000000) BUKAN data nyata
+         — sama seperti adaDataInti(). Bila yang ada HANYA pasangan benih
+         itu (adaDataInti() false: tanpa transaksi/stok/piutang/utang dan
+         semua jawaban introspeksi masih 0/"Belum"), dasbor menampilkan
+         label "Data contoh" dan valuasi + skor tetap "—" lewat gerbang
+         adaData yang sudah ada. Bila ada satu saja data nyata (transaksi,
+         jawaban bukan 0, HPP, dsb.), ini false dan valuasi tampil normal. */
+      function hanyaDataContoh(){
+        try{
+          var nama=($("inNama")&&$("inNama").value||"").trim();
+          var omzetRaw=($("inOmzet")&&$("inOmzet").value||"").trim();
+          var benih=nama.toLowerCase()==="dapur bu sari" && omzetRaw==="45000000";
+          if(!benih) return false;
+          if(typeof adaDataInti==="function" && adaDataInti()) return false;
+          return true;
+        }catch(e){ return false; }
+      }
+      window.__hanyaDataContoh=hanyaDataContoh;
+
       /* ---------- ITEM F: kalimat intro Data Usaha yang menyesuaikan ----------
          Intro menyebut isian inti apa saja yang belum diisi (dengan nama yang
          sama seperti label kolom), supaya pengguna langsung tahu apa yang
@@ -2931,6 +2947,24 @@
         $("valLow").textContent=adaData?fmtShort(valLow):"—"; $("valHigh").textContent=adaData?fmtShort(valHigh):"—";
         $("stVal").textContent=adaData?fmtShort(weighted):"—";
         $("stValRange").textContent=!adaData?PESAN_ISI_DATA:"rentang "+fmtShort(valLow)+" – "+fmtShort(valHigh);
+        /* Baris sumber hitungan valuasi + label "Data contoh" (§71):
+           sumber tampil bila ada data inti (valuasi nyata), menyebut
+           omzet + HPP yang dipakai hitungan; label contoh tampil bila
+           yang ada hanya pasangan benih (valuasi "—" lewat gerbang
+           adaData di atas). Keduanya tidak pernah tampil bersamaan. */
+        (function(){
+          var sum=$("stValSumber"), lbl=$("stValContoh");
+          var contoh=false; try{ contoh=(typeof hanyaDataContoh==="function")?hanyaDataContoh():false; }catch(e){}
+          if(lbl) lbl.style.display=contoh?"":"none";
+          if(sum){
+            if(!adaData){ sum.style.display="none"; sum.textContent=""; }
+            else {
+              var hpp=num("inHpp");
+              sum.textContent="Dihitung dari: omzet "+fmtShort(omzetBln)+"/bulan"+(hpp>0?", HPP "+hpp+"%":"")+".";
+              sum.style.display="";
+            }
+          }
+        })();
         const mv=$("mobileVal"); if(mv) mv.textContent=adaData?fmtShort(weighted):"—";
         if(!adaData){
           /* Gerbang: kartu metode valuasi menampilkan "—" bila belum ada
@@ -4766,6 +4800,14 @@
       }
       function risetBukaLayar(){
         var u=timPemilikMasuk();
+        var kartu=$("risetCard");
+        /* Pemilik adalah admin — kartu riset (minta riset ke admin lewat
+           WhatsApp) tidak masuk akal untuknya: ia akan meminta riset ke
+           dirinya sendiri. Sembunyikan kartu ini untuk akun pemilik saja;
+           pengguna UMKM biasa dan tamu tetap melihat kartu seperti biasa. */
+        var pemilik=!!(u && u.email && String(u.email).toLowerCase()==="soegianto@fst.unair.ac.id");
+        if(pemilik){ if(kartu) kartu.style.display="none"; return; }
+        if(kartu) kartu.style.display="";
         var tamu=$("risetTamu"), isi=$("risetIsi");
         if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; return; }
         if(tamu) tamu.style.display="none";
@@ -6120,7 +6162,7 @@
              pernah ditandai emas. btnQrisCloseFull sengaja TIDAK masuk:
              tombol Tutup di dalam overlay QRIS putih menjaga desain
              hitam-putih overlay itu sendiri. */
-          var ID_NAVIGASI=["btnDataSelesai","btnTutupTopik","btnCloseSql","btnForgotCancel","btnWizardClose","btnFieldHelpCloseTop","btnFieldHelpClose","btnQrisFull","btnGreetStart","btnWizFinish","btnWizDetail","btnBatalBayar","btnSapaIsi","btnHiMasuk","btnHiKeluar","btnHiLangkah","btnUbahData","btnVoiceKoreksi","btnShowSql","btnLipatHeader"];
+          var ID_NAVIGASI=["btnDataSelesai","btnTutupTopik","btnCloseSql","btnForgotCancel","btnWizardClose","btnFieldHelpCloseTop","btnFieldHelpClose","btnQrisFull","btnGreetStart","btnWizFinish","btnWizDetail","btnBatalBayar","btnSapaIsi","btnHiMasuk","btnHiKeluar","btnHiLangkah","btnUbahData","btnVoiceKoreksi","btnShowSql"];
           function bacaSet(){ try{ var s=localStorage.getItem(KUNCI_TOMBOL); if(!s) return {}; var o=JSON.parse(s); return (o&&typeof o==="object")?o:{}; }catch(e){ return {}; } }
           function simpanSet(o){ try{ localStorage.setItem(KUNCI_TOMBOL, JSON.stringify(o)); }catch(e){} }
           function bolehDitandai(el){
@@ -6276,40 +6318,6 @@
           try{ window.addEventListener("resize", perbaruiTombolMode); }catch(e){}
           terapkanMode();
           window.__modeTampilan={baca:bacaMode, terapkan:terapkanMode, ganti:gantiMode, kunci:KUNCI_MODE, apakahPc:apakahPc, perbaruiTombol:perbaruiTombolMode};
-        })();
-        /* ---------- HEADER BISA DILIPAT ----------
-           Tombol #btnLipatHeader melipat header jadi strip ramping:
-           baris navigasi + bilah akun disembunyikan (CSS .topbar.terlipat),
-           merek + tombol buka tetap terlihat di strip. Status lipat
-           tersimpan di localStorage "umkm-introspeksi-header-terlipat"
-           ("1"|"0") dan diterapkan saat muat, jadi tetap terlipat
-           sesudah muat ulang. Tombol ini tombol navigasi: id-nya masuk
-           ID_NAVIGASI di atas, jadi boleh tetap emas sesudah diklik
-           (mekanisme .sudah-diklik yang ada). */
-        (function(){
-          var KUNCI_LIPAT="umkm-introspeksi-header-terlipat";
-          function bacaLipat(){
-            try{ return localStorage.getItem(KUNCI_LIPAT)==="1"; }
-            catch(e){ return false; }
-          }
-          function terapkanLipat(){
-            var lipat=bacaLipat();
-            var bar=document.querySelector(".topbar");
-            if(bar) bar.classList.toggle("terlipat", lipat);
-            var b=gid("btnLipatHeader");
-            if(b){ b.textContent=lipat?"Tampilkan menu":"Sembunyikan menu"; b.setAttribute("aria-expanded", lipat?"false":"true"); }
-            return lipat;
-          }
-          function gantiLipat(){
-            var lipat=!bacaLipat();
-            try{ localStorage.setItem(KUNCI_LIPAT, lipat?"1":"0"); }catch(e){}
-            terapkanLipat();
-            return lipat;
-          }
-          var tombol=gid("btnLipatHeader");
-          if(tombol) tombol.addEventListener("click", function(){ gantiLipat(); });
-          terapkanLipat();
-          window.__lipatHeader={baca:bacaLipat, terapkan:terapkanLipat, ganti:gantiLipat, kunci:KUNCI_LIPAT};
         })();
       })();
     </script>
