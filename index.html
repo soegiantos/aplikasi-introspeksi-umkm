@@ -588,6 +588,24 @@
       .foto-inisial{width:44px;height:44px;border-radius:50%;background:var(--surface-2);border:1px solid var(--gold);color:var(--gold);font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;font-size:1.05rem}
       .foto-sel{display:inline-flex;align-items:center;gap:8px}
       .lap-foto{width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+      /* ---------- Pesan antaraktor: utas tanya jawab per minat / laporan /
+         jalankan SOP + lencana "Pesan • N" di strip status akun ----------
+         Pesan adalah teks yang ditulis pengguna sendiri (bukan AI). */
+      .pesan-lencana{font-size:.82rem;font-weight:800;color:#171106;background:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:3px 10px;cursor:pointer;white-space:nowrap}
+      .pesan-utas{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface-2)}
+      .pesan-utas .pesan-judul{font-size:.9rem;margin-bottom:8px}
+      .pesan-daftar{display:flex;flex-direction:column;gap:8px}
+      .pesan-item{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg)}
+      .pesan-item p{margin:0}
+      .pesan-item .pesan-isi{margin-top:4px;white-space:pre-wrap;overflow-wrap:break-word}
+      .pesan-waktu{font-size:.8rem;color:var(--muted);font-weight:400}
+      .pesan-baru{font-size:.75rem;font-weight:800;color:#171106;background:var(--gold);border-radius:999px;padding:1px 8px;margin-left:6px;white-space:nowrap}
+      .pesan-tulis{margin-top:10px}
+      .pesan-tulis .pesan-input{width:100%;resize:vertical}
+      .pesan-tulis-baris{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px}
+      .pesan-hitung{font-size:.8rem}
+      .pesan-baris td{background:var(--surface-2)}
+      .pesan-baris .pesan-utas{margin-top:0}
       /* Baris satu-baris untuk penjelasan yang sudah dibaca dan terlipat:
          aksen emas seperti kartu diskusi, bukan merah; teks dipotong jadi
          satu baris dengan elipsis. Ketuk untuk membuka lagi. */
@@ -1018,6 +1036,7 @@
     <div class="status-strip" id="statusAkunStrip" role="button" tabindex="0" aria-label="Status akun — ketuk untuk detail">
       <span class="status-pill" id="statusAkunPill">Mode coba — belum daftar</span>
       <span class="status-sub" id="statusAkunSub">Data tersimpan di HP ini saja</span>
+      <span class="pesan-lencana" id="pesanLencana" style="display:none" role="button" tabindex="0" aria-label="Pesan belum dibaca — ketuk untuk membuka Minat masuk">Pesan • 0</span>
       <span class="status-hint" id="statusAkunHint">Ketuk untuk detail</span>
     </div>
 
@@ -2511,7 +2530,7 @@
         return fmtFull(n);
       }
       function toast(msg){ if(!msg) return; const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2600); }
-      function popupRamah(judul, apa, lakukan){ if(window.tampilPopupRamah){ window.tampilPopupRamah(judul, apa, lakukan); } else { toast(apa||judul); } }
+      function popupRamah(judul, apa, lakukan, aksi){ if(window.tampilPopupRamah){ window.tampilPopupRamah(judul, apa, lakukan, aksi); } else { toast(apa||judul); } }
 
       /* ---------- introspection questions ---------- */
       const DIMS = [
@@ -2698,6 +2717,111 @@
         el.textContent=awal+" "+(terdaftar?INTRO_SIMPAN_TERDAFTAR:INTRO_SIMPAN_TAMU);
       }
       window.__perbaruiIntroData=perbaruiIntroData;
+
+      /* ---------- POP-UP PENGINGAT: data dasar belum lengkap ----------
+         Pengguna yang SUDAH punya sebagian data inti tapi belum semua
+         ISIAN_INTI terisi diingatkan sekali sehari (maksimal) lewat
+         pop-up ramah saat mendarat di layar utama — supaya analisa
+         (skor kesehatan, level, valuasi) bisa lebih utuh dan sarannya
+         lebih tepat. Pengguna baru yang belum ada data sama sekali
+         TIDAK diingatkan (mereka sudah dipandu wizard); pengguna yang
+         datanya sudah lengkap juga tidak. Logika "kurang" memakai
+         ISIAN_INTI yang sama dengan intro Data (konsisten), hanya
+         aturan nolnya beda: angka 0 yang diketik DIHITUNG terisi
+         (utang 0 = tidak punya utang), KECUALI omzet dan HPP yang
+         harus lebih dari 0. Pilihan pembukuan/legalitas bernilai 0
+         berarti "Belum" — tetap dihitung belum terisi, sama seperti
+         gerbang skor. Nama yang tampil mengikuti label formulir
+         ("omzet per bulan", "pembukuan") supaya mudah dicari. */
+      var POPUP_DATA_KUNCI="umkm-introspeksi-popup-data-terakhir";
+      var POPUP_DATA_JEDA_MS=1500;
+      var POPUP_DATA_NAMA_TAMPIL={"omzet":"omzet per bulan","pencatatan":"pembukuan"};
+      /* Tanggal hari ini (YYYY-MM-DD) khusus popup ini — jangan pakai
+         todayStr(): ia hanya hidup di dalam IIFE QRIS (bukan global),
+         sehingga typeof todayStr di sini "undefined" dan tanggal tidak
+         pernah tercatat (popup muncul terus tiap buka layar). */
+      function popupDataHariIni(){ var d=new Date(); function dua(n){ n=String(n); return n.length<2?"0"+n:n; } return d.getFullYear()+"-"+dua(d.getMonth()+1)+"-"+dua(d.getDate()); }
+      var __popupDataTimer=null;
+      function popupDataKolomKosong(){
+        var nama=($("inNama")&&$("inNama").value||"").trim();
+        var omzetRaw=($("inOmzet")&&$("inOmzet").value||"").trim();
+        var benih=nama.toLowerCase()==="dapur bu sari" && omzetRaw==="45000000";
+        var kurang=[];
+        for(var i=0;i<ISIAN_INTI.length;i++){
+          var id=ISIAN_INTI[i][0], label=ISIAN_INTI[i][1], jenis=ISIAN_INTI[i][2];
+          if(benih && (id==="inNama"||id==="inOmzet")){ kurang.push([id,label]); continue; }
+          var el=$(id); if(!el){ kurang.push([id,label]); continue; }
+          var v=String(el.value||"").trim();
+          if(v===""){ kurang.push([id,label]); continue; }
+          if(jenis==="angka"){
+            var n=parseFloat(v);
+            if(isNaN(n)){ kurang.push([id,label]); continue; }
+            /* Omzet dan HPP harus lebih dari 0; pembukuan dan
+               legalitas bernilai 0 berarti "Belum" (pilihan, bukan
+               angka ketikan); kolom angka ketikan lain cukup terisi
+               angka apa pun — 0 adalah jawaban (utang 0 = tidak
+               punya utang). */
+            if(id==="inOmzet"||id==="inHpp"){ if(n<=0) kurang.push([id,label]); }
+            else if(id==="inBuku"||id==="inLegal"){ if(n===0) kurang.push([id,label]); }
+          }
+        }
+        return kurang;
+      }
+      function popupDataTeksKurang(kurang){
+        var nama=kurang.map(function(k){ return POPUP_DATA_NAMA_TAMPIL[k[1]]||k[1]; });
+        if(nama.length<=4) return nama.join(", ");
+        return nama.slice(0,4).join(", ")+" dan "+(nama.length-4)+" lainnya";
+      }
+      function popupDataSudahHariIni(){
+        try{
+          var hariIni=popupDataHariIni();
+          if(!hariIni) return false;
+          var tersimpan=null;
+          try{ tersimpan=window.localStorage.getItem(POPUP_DATA_KUNCI); }catch(e){}
+          return tersimpan===hariIni;
+        }catch(e){ return false; }
+      }
+      function popupDataTandaiHariIni(){
+        try{
+          var hariIni=popupDataHariIni();
+          if(!hariIni) return;
+          try{ window.localStorage.setItem(POPUP_DATA_KUNCI, hariIni); }catch(e){}
+        }catch(e){}
+      }
+      function cobaTampilkanPopupData(){
+        try{
+          if(document.body.getAttribute("data-layar")!=="hariini") return false;
+          if(document.hidden) return false;
+          var dt=$("layarDitutup"); if(dt && !dt.hidden) return false;
+          var ag=$("authGate"); if(ag && ag.style.display==="block") return false;
+          var wv=$("wizardOverlay"); if(wv && wv.classList && wv.classList.contains("show")) return false;
+          var fp=$("friendlyPopupOverlay"); if(fp && fp.classList && fp.classList.contains("show")) return false;
+          var eo=$("explainOverlay"); if(eo && eo.classList && eo.classList.contains("show")) return false;
+          if(typeof adaDataInti==="function" && !adaDataInti()) return false;
+          var kurang=popupDataKolomKosong();
+          if(!kurang.length) return false;
+          if(popupDataSudahHariIni()) return false;
+          popupDataTandaiHariIni();
+          var sebut=popupDataTeksKurang(kurang);
+          var targetPertama=kurang[0][0];
+          if(typeof popupRamah!=="function") return false;
+          popupRamah("Lengkapi data usaha Anda",
+            "Supaya skor kesehatan, level, dan valuasi usaha Anda bisa dihitung lebih utuh dan sarannya lebih tepat, boleh kami minta tolong lengkapi data usaha Anda? Yang masih kosong: "+sebut+".",
+            "Ketuk Isi sekarang untuk melengkapi — ketuk Nanti saja bila mau diisi besok.",
+            {label:"Isi sekarang", fn:function(){ if(typeof window.__fokusKeKolom==="function"){ try{ window.__fokusKeKolom(targetPertama); }catch(e){} } }});
+          var ok=document.getElementById("btnFriendlyPopupOk");
+          if(ok) ok.textContent="Nanti saja";
+          return true;
+        }catch(e){ return false; }
+      }
+      function jadwalkanPopupData(){
+        try{
+          if(__popupDataTimer){ try{ clearTimeout(__popupDataTimer); }catch(e){} __popupDataTimer=null; }
+          __popupDataTimer=setTimeout(function(){ __popupDataTimer=null; try{ cobaTampilkanPopupData(); }catch(e){} }, POPUP_DATA_JEDA_MS);
+        }catch(e){}
+      }
+      /* Celah uji (jsdom): fungsi dalam dipakai harness, bukan fitur pengguna. */
+      window.__popupDataUji={tampilkan:cobaTampilkanPopupData, jadwalkan:jadwalkanPopupData, kolomKosong:popupDataKolomKosong, teksKurang:popupDataTeksKurang, sudahHariIni:popupDataSudahHariIni, tandaiHariIni:popupDataTandaiHariIni, kunci:POPUP_DATA_KUNCI, jeda:POPUP_DATA_JEDA_MS};
 
       function recalc(){
         const adaData=adaDataInti();
@@ -4692,7 +4816,11 @@
       async function toggleTim(email, aktifBaru){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return; } var r=await sb.from("akses_pegawai").update({aktif:!!aktifBaru}).eq("email",email).eq("pemilik_id",u.id); if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); return; } popupRamah("Belum bisa mengubah","Status pegawai belum berubah — periksa koneksi internet Anda, lalu coba lagi."); return; } toast(aktifBaru?"Pegawai diaktifkan":"Pegawai dinonaktifkan"); await timMuat(); }
       function hapusTim(email){ var target=null; timDaftar.forEach(function(p){ if(String(p.email||"").toLowerCase()===String(email||"").toLowerCase()) target=p; }); var tampil=(target&&(target.nama||target.email))||email; if(window.tampilPopupRamah){ window.tampilPopupRamah("Hapus pegawai ini?","\""+tampil+"\" akan dihapus dari daftar tim dan tidak bisa lagi masuk Aplikasi Pegawai.","Ketuk Hapus pegawai bila sudah yakin — ketuk Mengerti untuk batal.",{label:"Hapus pegawai", fn:function(){ hapusTimJalankan(email); }}); } else { hapusTimJalankan(email); } }
       async function hapusTimJalankan(email){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return; } var r=await sb.from("akses_pegawai").delete().eq("email",email).eq("pemilik_id",u.id); if(r.error){ if(timBelumAktif(r.error)){ popupRamah("Fitur ini belum aktif","Pengaturan cloud belum dijalankan — salinan pengaturannya ada di Aplikasi Pegawai."); return; } popupRamah("Belum bisa menghapus","Pegawai belum terhapus — periksa koneksi internet Anda, lalu coba lagi."); return; } toast("Pegawai dihapus"); audit("Pegawai dihapus dari tim"); await timMuat(); }
-      async function timLogMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var tabel=$("timLogTabel"), kosong=$("timLogKosong"), setup=$("timLogSetup"); if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none"; if(!sb){ if(tabel) tabel.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>"; return; } var r=await sb.rpc("ringkasan_tim_untuk_pemilik",{}); if(r.error){ if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(tabel) tabel.innerHTML=""; return; } popupRamah("Catatan tim belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return; } var rows=r.data||[]; if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; return; } var petaFoto=await petaFotoUrl(rows); var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Email</th><th>SOP</th><th>Tanggal</th><th>Langkah</th><th>Status</th><th>Dicek oleh</th><th></th></tr></thead><tbody>"+rows.map(function(x){ var total=null; if(Array.isArray(sopsList)){ sopsList.forEach(function(s){ if(s.id===x.sop_id) total=(s.steps||[]).length; }); } var langkah=(total!=null)?((+x.langkah_selesai||0)+" dari "+total):((+x.langkah_selesai||0)+" langkah"); var aksi=(x.selesai&&!x.dicek_oleh)?'<button type="button" class="btn ghost small" data-verifikasi="'+timEsc(x.pegawai_email||"")+"|"+timEsc(x.sop_id||"")+"|"+timEsc(x.tanggal||"")+'">Tandai sudah dicek</button>':""; return "<tr><td><span class=\"foto-sel\">"+selFotoHtml(petaFoto[x.foto_path], x.pegawai_nama)+"<span>"+timEsc(x.pegawai_nama||"—")+"</span></span></td><td>"+timEsc(x.pegawai_email||"—")+"</td><td>"+timEsc(x.sop_nama||"—")+"</td><td>"+timEsc(timFmtTgl(x.tanggal))+"</td><td>"+timEsc(langkah)+"</td><td>"+timEsc(timStatusJalankan(x))+"</td><td>"+timEsc(x.dicek_oleh||"—")+"</td><td>"+aksi+"</td></tr>"; }).join("")+"</tbody></table>"; if(tabel) tabel.innerHTML=html; }
+      async function timLogMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var tabel=$("timLogTabel"), kosong=$("timLogKosong"), setup=$("timLogSetup"); if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none"; if(!sb){ if(tabel) tabel.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>"; return; } var r=await sb.rpc("ringkasan_tim_untuk_pemilik",{}); if(r.error){ if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(tabel) tabel.innerHTML=""; return; } popupRamah("Catatan tim belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return; } var rows=r.data||[]; if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; return; } var petaFoto=await petaFotoUrl(rows); var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Email</th><th>SOP</th><th>Tanggal</th><th>Langkah</th><th>Status</th><th>Dicek oleh</th><th></th></tr></thead><tbody>"+rows.map(function(x){ var total=null; if(Array.isArray(sopsList)){ sopsList.forEach(function(s){ if(s.id===x.sop_id) total=(s.steps||[]).length; }); } var langkah=(total!=null)?((+x.langkah_selesai||0)+" dari "+total):((+x.langkah_selesai||0)+" langkah"); var aksi=(x.selesai&&!x.dicek_oleh)?'<button type="button" class="btn ghost small" data-verifikasi="'+timEsc(x.pegawai_email||"")+"|"+timEsc(x.sop_id||"")+"|"+timEsc(x.tanggal||"")+'">Tandai sudah dicek</button>':""; var kunciSop=timEsc(x.pegawai_email||"")+"|"+timEsc(x.sop_id||"")+"|"+timEsc(String(x.tanggal||"").slice(0,10)); return "<tr><td><span class=\"foto-sel\">"+selFotoHtml(petaFoto[x.foto_path], x.pegawai_nama)+"<span>"+timEsc(x.pegawai_nama||"—")+"</span></span></td><td>"+timEsc(x.pegawai_email||"—")+"</td><td>"+timEsc(x.sop_nama||"—")+"</td><td>"+timEsc(timFmtTgl(x.tanggal))+"</td><td>"+timEsc(langkah)+"</td><td>"+timEsc(timStatusJalankan(x))+"</td><td>"+timEsc(x.dicek_oleh||"—")+"</td><td>"+aksi+"</td></tr>"
+          /* Utas komentar di bawah tiap baris pelaksanaan SOP (tambahan
+             di samping catatan verifikasi "Tandai sudah dicek" yang
+             tetap satu arah dan tetap berfungsi seperti sebelumnya). */
+          +"<tr class=\"pesan-baris\"><td colspan=\"8\"><div class=\"pesan-utas\" data-pesan-konteks=\"sop_jalankan\" data-pesan-konteks-id=\""+kunciSop+"\">"+pesanHtmlUtas("Komentar SOP")+"</div></td></tr>"; }).join("")+"</tbody></table>"; if(tabel) tabel.innerHTML=html; if(tabel) Array.prototype.forEach.call(tabel.querySelectorAll(".pesan-utas"), function(w){ pesanMuat(w.getAttribute("data-pesan-konteks"), w.getAttribute("data-pesan-konteks-id"), w); }); }
       /* Pemilik menandai pekerjaan SOP yang sudah selesai sebagai sudah
          dicek (dicek_oleh "Pemilik"). Penjaga server juga menerima bila
          baris sudah dicek — panggilan kedua mengembalikan baris yang
@@ -4715,6 +4843,163 @@
         await timLogMuat();
         return true;
       }
+
+      /* --- Pesan antaraktor: utas tanya jawab investor <-> pemilik dan
+         pegawai <-> pemilik (satu utas per minat / laporan / jalankan
+         SOP) lewat RPC kirim_pesan, pesan_konteks, tandai_pesan_dibaca,
+         dan pesan_belum_dibaca. Format konteks_id mengikuti kontrak
+         yang sama dengan pengaturan pesan di cloud: 'minat' = id minat,
+         'laporan' = id laporan, 'sop_jalankan' =
+         "pegawai_email|sop_id|YYYY-MM-DD". Penerima selalu null saat
+         kirim — penerima diturunkan otomatis di server, jadi klien
+         tidak pernah memegang email lawan bicara (nama saja cukup).
+         Pesan adalah teks yang ditulis pengguna sendiri (bukan AI);
+         paling panjang 500 karakter. Bila RPC belum ada di cloud
+         (pengaturan pesan belum dijalankan), tampilkan pesan jujur
+         "Fitur pesan belum aktif" — bukan galat mentah. */
+      var __pesanBelumAktif=false;
+      function pesanPengguna(){ return timPemilikMasuk(); }
+      function pesanEmailSaya(){ var u=pesanPengguna(); return (u && u.email) ? String(u.email).toLowerCase() : ""; }
+      /* Waktu Indonesia "17 Nov 2026, 06:30" — disusun manual supaya
+         pemisah jam selalu ":" (bukan "." seperti bawaan id-ID). */
+      function pesanFmtWaktu(iso){
+        try{
+          var d=new Date(iso); if(isNaN(d.getTime())) return "";
+          var bulan=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+          var jam=String(d.getHours()); if(jam.length<2) jam="0"+jam;
+          var mnt=String(d.getMinutes()); if(mnt.length<2) mnt="0"+mnt;
+          return d.getDate()+" "+bulan[d.getMonth()]+" "+d.getFullYear()+", "+jam+":"+mnt;
+        }catch(e){ return ""; }
+      }
+      function pesanHtmlUtas(judul){
+        return '<p class="pesan-judul"><b>'+timEsc(judul)+'</b></p>'
+          +'<div class="pesan-daftar" data-pesan-daftar></div>'
+          +'<div class="pesan-tulis"><textarea class="ta pesan-input" rows="2" maxlength="500" placeholder="contoh: Terima kasih, boleh ceritakan rencana kerja samanya?" data-pesan-input aria-label="Tulis pesan"></textarea>'
+          +'<div class="pesan-tulis-baris"><span class="note pesan-hitung" data-pesan-hitung>0/500</span><button type="button" class="btn small" data-pesan-kirim>Kirim</button></div></div>'
+          +'<div class="actions" style="margin-top:8px"><button type="button" class="btn ghost small" data-pesan-muat>Muat ulang</button></div>';
+      }
+      function pesanBuatUtas(konteks, kid, judul){
+        var d=document.createElement("div");
+        d.className="pesan-utas";
+        d.setAttribute("data-pesan-konteks", konteks);
+        d.setAttribute("data-pesan-konteks-id", kid);
+        d.innerHTML=pesanHtmlUtas(judul||"Tanya jawab");
+        return d;
+      }
+      function pesanHitung(ta){
+        var wadah=ta.closest ? ta.closest(".pesan-utas") : null;
+        var h=wadah ? wadah.querySelector("[data-pesan-hitung]") : null;
+        if(h) h.textContent=String(ta.value||"").length+"/500";
+      }
+      async function pesanMuat(konteks, kid, wadah){
+        var daftar=wadah ? wadah.querySelector("[data-pesan-daftar]") : null;
+        if(!wadah || !daftar) return false;
+        var sb=timSb();
+        if(!sb){ daftar.innerHTML='<p class="note">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>'; return false; }
+        daftar.innerHTML='<p class="note">Memuat pesan…</p>';
+        var r;
+        try{ r=await sb.rpc("pesan_konteks",{p_konteks:konteks, p_konteks_id:kid}); }
+        catch(e){ r={error:{message:String((e && e.message) || e)}}; }
+        if(r.error){
+          if(timBelumAktif(r.error)){ __pesanBelumAktif=true; daftar.innerHTML='<p class="note"><b>Fitur pesan belum aktif.</b> Pengaturan pesan di cloud belum dijalankan.</p>'; return false; }
+          daftar.innerHTML='<p class="note">Pesan belum bisa dimuat — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>';
+          return false;
+        }
+        var rows=Array.isArray(r.data) ? r.data : [];
+        var saya=pesanEmailSaya();
+        if(!rows.length){
+          daftar.innerHTML='<p class="note">Belum ada pesan — tulis pesan pertama di bawah ini.</p>';
+          return true;
+        }
+        daftar.innerHTML=rows.map(function(m){
+          var masuk=String(m.pengirim_email||"").toLowerCase()!==saya;
+          var baru=masuk && !m.dibaca;
+          return '<div class="pesan-item'+(masuk?" pesan-masuk":" pesan-keluar")+'"><p><b>'+timEsc(m.pengirim_nama||"—")+'</b> <span class="pesan-waktu">'+timEsc(pesanFmtWaktu(m.dibuat_pada))+'</span>'+(baru?'<span class="pesan-baru">Belum dibaca</span>':"")+'</p><p class="pesan-isi">'+timEsc(m.isi||"")+'</p></div>';
+        }).join("");
+        /* Utas dibuka: tandai pesan masuk yang belum dibaca sebagai
+           dibaca, lalu segarkan lencana. */
+        var belum=rows.filter(function(m){ return !m.dibaca && String(m.pengirim_email||"").toLowerCase()!==saya; });
+        if(belum.length){
+          var janji=belum.map(function(m){
+            try{ return sb.rpc("tandai_pesan_dibaca",{p_id:m.id}); }catch(e){ return null; }
+          });
+          Promise.all(janji.map(function(p){ return (p && p.catch) ? p.catch(function(){}) : null; })).then(function(){
+            try{ pesanLencanaMuat(); }catch(e){}
+          });
+        }
+        return true;
+      }
+      async function pesanKirim(konteks, kid, wadah){
+        var ta=wadah ? wadah.querySelector("[data-pesan-input]") : null;
+        if(!ta) return false;
+        var isi=String(ta.value||"").trim();
+        if(!isi){ popupRamah("Tulis pesan dulu","Tulis pesan Anda dulu sebelum menekan Kirim.","Pesan paling panjang 500 karakter."); return false; }
+        if(isi.length>500){ popupRamah("Pesan terlalu panjang","Pesan paling panjang 500 karakter — perpendek dulu sebelum mengirim."); return false; }
+        var sb=timSb();
+        if(!sb){ popupRamah("Tidak bisa terhubung","Periksa koneksi internet Anda, lalu coba lagi."); return false; }
+        var r;
+        try{ r=await sb.rpc("kirim_pesan",{p_konteks:konteks, p_konteks_id:kid, p_penerima:null, isi:isi}); }
+        catch(e){ r={error:{message:String((e && e.message) || e)}}; }
+        if(r.error){
+          if(timBelumAktif(r.error)){ __pesanBelumAktif=true; popupRamah("Fitur pesan belum aktif","Pengaturan pesan di cloud belum dijalankan, jadi pesan belum bisa dikirim."); }
+          else { popupRamah("Pesan belum terkirim",(r.error.message||"Periksa koneksi internet Anda, lalu coba lagi.")); }
+          return false;
+        }
+        ta.value=""; pesanHitung(ta);
+        toast("Pesan terkirim");
+        await pesanMuat(konteks, kid, wadah);
+        return true;
+      }
+      /* Lencana "Pesan • N" di strip status akun: hanya untuk pengguna
+         yang masuk (tamu tidak melihat lencana dan RPC tidak dipanggil),
+         hanya tampil bila N>0, diam bila RPC belum ada di cloud. */
+      async function pesanLencanaMuat(){
+        var lencana=document.getElementById("pesanLencana");
+        if(!lencana) return 0;
+        var u=pesanPengguna();
+        if(!u){ lencana.style.display="none"; lencana.textContent=""; return 0; }
+        var sb=timSb();
+        if(!sb){ lencana.style.display="none"; return 0; }
+        var r;
+        try{ r=await sb.rpc("pesan_belum_dibaca",{}); }
+        catch(e){ lencana.style.display="none"; return 0; }
+        if(r.error){ lencana.style.display="none"; return 0; }
+        var n=+(r.data||0);
+        if(n>0){ lencana.textContent="Pesan • "+n; lencana.style.display=""; }
+        else { lencana.style.display="none"; lencana.textContent=""; }
+        return n;
+      }
+      function pesanBukaLayarPesan(){
+        if(typeof window.__tampilkanLayar==="function"){ try{ window.__tampilkanLayar("portal"); return; }catch(e){} }
+        try{ document.body.setAttribute("data-layar","portal"); }catch(e){}
+      }
+      window.__pesan={muat:pesanMuat, kirim:pesanKirim, lencanaMuat:pesanLencanaMuat, fmtWaktu:pesanFmtWaktu, buatUtas:pesanBuatUtas, belumAktif:function(){ return __pesanBelumAktif; }, bukaLayar:pesanBukaLayarPesan};
+      (function(){
+        var lencanaEl=document.getElementById("pesanLencana");
+        if(lencanaEl){
+          /* Ketuk lencana membuka Minat masuk — dan TIDAK membuka
+             halaman Paket & Layanan (ketukan strip di bawahnya). */
+          lencanaEl.addEventListener("click", function(ev){ ev.stopPropagation(); pesanBukaLayarPesan(); });
+          lencanaEl.addEventListener("keydown", function(ev){ if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); ev.stopPropagation(); pesanBukaLayarPesan(); } });
+        }
+        document.addEventListener("click", function(ev){
+          var t=ev.target && ev.target.closest ? ev.target.closest("[data-pesan-kirim],[data-pesan-muat]") : null;
+          if(!t) return;
+          var wadah=t.closest ? t.closest(".pesan-utas") : null;
+          if(!wadah) return;
+          var k=wadah.getAttribute("data-pesan-konteks"), kid=wadah.getAttribute("data-pesan-konteks-id");
+          if(t.hasAttribute("data-pesan-kirim")) pesanKirim(k, kid, wadah);
+          else if(t.hasAttribute("data-pesan-muat")) pesanMuat(k, kid, wadah);
+        });
+        document.addEventListener("input", function(ev){
+          var t=ev.target;
+          if(t && t.hasAttribute && t.hasAttribute("data-pesan-input")) pesanHitung(t);
+        });
+        /* Kembali ke tab / jendela: segarkan lencana supaya jumlah
+           pesan belum dibaca tidak basi. */
+        document.addEventListener("visibilitychange", function(){ try{ if(!document.hidden) pesanLencanaMuat(); }catch(e){} });
+        window.addEventListener("focus", function(){ try{ pesanLencanaMuat(); }catch(e){} });
+      })();
 
       /* --- Struktur usaha: peran-peran yang ditentukan pemilik ---
          Daftar peran disimpan di snapshot data usaha (umkm_data.data ->
@@ -5094,7 +5379,9 @@
         });
       }
       function lapBukaLayar(){ var u=timPemilikMasuk(); var tamu=$("lapTamu"), isi=$("lapIsi"); if(!u){ if(tamu) tamu.style.display=""; if(isi) isi.style.display="none"; return; } if(tamu) tamu.style.display="none"; if(isi) isi.style.display=""; lapMuat(); }
-      async function lapMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var tabel=$("lapTabel"), kosong=$("lapKosong"), setup=$("lapSetup"), retensi=$("lapRetensi"); if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none"; if(retensi) retensi.style.display="none"; if(!sb){ if(tabel) tabel.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>"; return; } var r=await sb.rpc("laporan_tim_untuk_pemilik",{}); if(r.error){ if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(tabel) tabel.innerHTML=""; return; } popupRamah("Laporan pegawai belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return; } var rows=r.data||[]; lapDaftar=rows; if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; return; } var petaFoto=await petaFotoUrl(rows); var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Jenis</th><th>Keterangan</th><th>Jumlah</th><th>Foto</th><th>SOP</th><th>Tanggal</th><th>Status</th><th></th></tr></thead><tbody>"+rows.map(function(x){ var jenis=x.jenis==="kwitansi"?"Kwitansi":"Foto"; var jumlah=(x.jenis==="kwitansi"&&x.jumlah!=null)?fmtFull(x.jumlah):"—"; var foto=x.file_path&&petaFoto[x.file_path]?'<a href="'+timEsc(petaFoto[x.file_path])+'" target="_blank" rel="noopener"><img src="'+timEsc(petaFoto[x.file_path])+'" alt="Foto laporan" class="lap-foto"></a>':"—"; var aksi=(x.jenis==="kwitansi"&&!x.dicatat&&!lapDicatatLokal[String(x.id)])?'<button type="button" class="btn ghost small" data-catat-lap="'+timEsc(x.id)+'">Catat sebagai transaksi</button>':""; return "<tr><td><span class=\"foto-sel\">"+selFotoHtml(petaFoto[x.foto_path], x.pegawai_nama)+"<span>"+timEsc(x.pegawai_nama||"—")+"</span></span></td><td>"+jenis+"</td><td>"+timEsc(x.keterangan||"—")+"</td><td>"+timEsc(jumlah)+"</td><td>"+foto+"</td><td>"+timEsc(x.sop_nama||"—")+"</td><td>"+timEsc(timFmtTgl(x.tanggal))+"</td><td>"+(x.dicatat?"Sudah dicatat":"Tercatat")+"</td><td>"+aksi+"</td></tr>"; }).join("")+"</tbody></table>"; if(tabel) tabel.innerHTML=html; var batas=new Date(); batas.setMonth(batas.getMonth()-12); var lama=rows.some(function(x){ try{ var d=new Date(x.tanggal); return !isNaN(d.getTime()) && d<batas; }catch(e){ return false; } }); if(lama && retensi) retensi.style.display=""; }
+      async function lapMuat(){ var u=timPemilikMasuk(); if(!u) return; var sb=timSb(); var tabel=$("lapTabel"), kosong=$("lapKosong"), setup=$("lapSetup"), retensi=$("lapRetensi"); if(kosong) kosong.style.display="none"; if(setup) setup.style.display="none"; if(retensi) retensi.style.display="none"; if(!sb){ if(tabel) tabel.innerHTML="<p class=\"note\">Tidak bisa terhubung — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>"; return; } var r=await sb.rpc("laporan_tim_untuk_pemilik",{}); if(r.error){ if(timBelumAktif(r.error)){ if(setup) setup.style.display=""; if(tabel) tabel.innerHTML=""; return; } popupRamah("Laporan pegawai belum bisa dimuat","Periksa koneksi internet Anda, lalu tekan Muat ulang."); return; } var rows=r.data||[]; lapDaftar=rows; if(!rows.length){ if(kosong) kosong.style.display=""; if(tabel) tabel.innerHTML=""; return; } var petaFoto=await petaFotoUrl(rows); var html="<table class=\"tabel-tim\"><thead><tr><th>Pegawai</th><th>Jenis</th><th>Keterangan</th><th>Jumlah</th><th>Foto</th><th>SOP</th><th>Tanggal</th><th>Status</th><th></th></tr></thead><tbody>"+rows.map(function(x){ var jenis=x.jenis==="kwitansi"?"Kwitansi":"Foto"; var jumlah=(x.jenis==="kwitansi"&&x.jumlah!=null)?fmtFull(x.jumlah):"—"; var foto=x.file_path&&petaFoto[x.file_path]?'<a href="'+timEsc(petaFoto[x.file_path])+'" target="_blank" rel="noopener"><img src="'+timEsc(petaFoto[x.file_path])+'" alt="Foto laporan" class="lap-foto"></a>':"—"; var aksi=(x.jenis==="kwitansi"&&!x.dicatat&&!lapDicatatLokal[String(x.id)])?'<button type="button" class="btn ghost small" data-catat-lap="'+timEsc(x.id)+'">Catat sebagai transaksi</button>':""; return "<tr><td><span class=\"foto-sel\">"+selFotoHtml(petaFoto[x.foto_path], x.pegawai_nama)+"<span>"+timEsc(x.pegawai_nama||"—")+"</span></span></td><td>"+jenis+"</td><td>"+timEsc(x.keterangan||"—")+"</td><td>"+timEsc(jumlah)+"</td><td>"+foto+"</td><td>"+timEsc(x.sop_nama||"—")+"</td><td>"+timEsc(timFmtTgl(x.tanggal))+"</td><td>"+(x.dicatat?"Sudah dicatat":"Tercatat")+"</td><td>"+aksi+"</td></tr>"
+          /* Utas komentar di bawah tiap laporan. */
+          +"<tr class=\"pesan-baris\"><td colspan=\"9\"><div class=\"pesan-utas\" data-pesan-konteks=\"laporan\" data-pesan-konteks-id=\""+timEsc(x.id)+"\">"+pesanHtmlUtas("Komentar laporan")+"</div></td></tr>"; }).join("")+"</tbody></table>"; if(tabel) tabel.innerHTML=html; if(tabel) Array.prototype.forEach.call(tabel.querySelectorAll(".pesan-utas"), function(w){ pesanMuat(w.getAttribute("data-pesan-konteks"), w.getAttribute("data-pesan-konteks-id"), w); }); var batas=new Date(); batas.setMonth(batas.getMonth()-12); var lama=rows.some(function(x){ try{ var d=new Date(x.tanggal); return !isNaN(d.getTime()) && d<batas; }catch(e){ return false; } }); if(lama && retensi) retensi.style.display=""; }
       async function lapCatat(id){
         var u=timPemilikMasuk(); if(!u) return false;
         /* Idempotensi sisi klien (Fase 2, S-B5): laporan yang sedang
@@ -5595,6 +5882,9 @@
           /* Masuk layar Paket & Layanan atau Bayar Langganan: muat ulang
              rincian tagihan, kode marketing, dan status pembayaran. */
           if(nama==="paket"||nama==="bayar"){ try{ if(window.__bayarBukaLayar) window.__bayarBukaLayar(); }catch(e){} }
+          /* Masuk layar utama: jadwalkan pengingat data dasar yang belum
+             lengkap (sekali sehari, hanya bila sebagian data sudah ada). */
+          if(nama==="hariini"){ try{ jadwalkanPopupData(); }catch(e){} }
           return true;
         }
         /* Layar yang memuat elemen tertentu (dipakai fokusKeKolom dan
@@ -7097,8 +7387,11 @@
               return '<div class="card" style="margin:0 0 10px"><p><b>'+esc(x.investor_nama||"Investor")+'</b>'+(lembaga[x.investor_id]?" — "+esc(lembaga[x.investor_id]):"")+'</p>'
                 +'<p class="note" style="margin-top:4px">'+(x.pesan?esc(x.pesan):"Tanpa pesan.")+'</p>'
                 +'<p style="margin-top:6px">Dana yang diminati: <b>'+esc(dana)+'</b>'+(tgl?" · "+esc(tgl):"")+'</p>'
-                +'<p class="note" style="margin-top:4px">Status: <b>'+label+'</b></p>'+aksi+'</div>';
+                +'<p class="note" style="margin-top:4px">Status: <b>'+label+'</b></p>'+aksi
+                /* Utas tanya jawab di bawah tiap minat masuk. */
+                +'<div class="pesan-utas" data-pesan-konteks="minat" data-pesan-konteks-id="'+esc(x.id)+'">'+pesanHtmlUtas("Tanya jawab dengan investor")+'</div></div>';
             }).join("");
+            Array.prototype.forEach.call(daftar.querySelectorAll(".pesan-utas"), function(w){ pesanMuat(w.getAttribute("data-pesan-konteks"), w.getAttribute("data-pesan-konteks-id"), w); });
           }catch(e){
             daftar.innerHTML='<p class="note">Minat masuk belum bisa dimuat — periksa koneksi internet Anda, lalu tekan Muat ulang.</p>';
           }
@@ -10452,6 +10745,10 @@
         /* Gerbang riset data usaha (layar Saran) ikut diperbarui di sini —
            fungsi itu ada bila blok tim sudah dimuat; bila belum, lewati. */
         try{ if(window.__risetBukaLayar) window.__risetBukaLayar(); }catch(e){}
+        /* Lencana "Pesan • N" ikut diperbarui di sini — fungsi itu ada
+           bila blok pesan sudah dimuat; bila belum, lewati. Tamu tidak
+           melihat lencana dan RPC tidak dipanggil. */
+        try{ if(window.__pesan && window.__pesan.lencanaMuat) window.__pesan.lencanaMuat(); }catch(e){}
         /* Intro halaman Data ikut status akun (Live #17) + banner
            pengaturan cloud ikut status akun (U-B13). */
         try{ if(window.__perbaruiIntroData) window.__perbaruiIntroData(); }catch(e){}
