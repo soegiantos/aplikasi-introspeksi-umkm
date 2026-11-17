@@ -261,6 +261,10 @@
       .ai-box h3{color:var(--teal);display:flex;gap:8px;align-items:center}
       .ai-box p{margin-top:8px}
       .ai-box h3{color:#8fd3dc}
+      .teori-lipat{margin-top:8px}
+      .teori-lipat summary{cursor:pointer;color:var(--gold);font-weight:700}
+      .teori-lipat p{margin-top:10px}
+      .hero-nama{display:block;margin-top:10px;font-weight:700}
 
       /* ---------- introspection ---------- */
       .q-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
@@ -1045,12 +1049,12 @@
     <div class="wrap">
       <header class="hero">
         <h1>Kenali kekuatan usaha Anda, lalu naikkan nilainya.</h1>
-        <p class="lede">Isi data usaha sekali — lihat level UMKM, skor kesehatan, estimasi valuasi, hasil introspeksi, dan rencana perbaikan 30–60–90 hari dari angka Anda sendiri.</p>
+        <p class="lede">Isi data usaha sekali — lihat level UMKM, skor kesehatan, estimasi valuasi, hasil introspeksi, dan rencana perbaikan 30–60–90 hari dari angka Anda sendiri.<span id="heroNamaUsaha" class="hero-nama" style="display:none"></span></p>
         <p class="note" id="heroHpHint" style="margin-top:10px">Di HP: gunakan menu di bagian bawah layar untuk berpindah bagian — Mode Operasional, Data, Level, Valuasi, Introspeksi, Keuangan, Saran, dan Panduan. Bilah hijau di atas menu menampilkan valuasi terbaru Anda setiap saat.</p>
         <div class="guided-cta">
           <div class="txt">
             <h3>Cara paling mudah memulai</h3>
-            <p>Empat langkah singkat, satu pertanyaan setiap langkah, dengan contoh di setiap kolom. Jawaban Anda otomatis mengisi formulir lengkap di bawah, dan angkanya tetap dihitung oleh rumus aplikasi yang transparan.</p>
+            <p>Empat langkah singkat, satu pertanyaan setiap langkah. Jawaban Anda otomatis mengisi formulir, dan angkanya dihitung rumus aplikasi yang transparan.</p>
           </div>
           <button class="btn big" id="btnWizardHero" type="button">Mulai langkah demi langkah</button>
         </div>
@@ -1144,7 +1148,7 @@
           <div class="pro-head">
             <div>
               <h3>Perlu Perhatian</h3>
-              <p class="note" id="proaktifIntro" style="margin-top:4px">Saran proaktif dari data usaha Anda sendiri — diperiksa otomatis setiap aplikasi dibuka dan setiap angka berubah. AI Coach hanya menjelaskan; semua angka dihitung rumus aplikasi dari data Anda.</p>
+              <p class="note" id="proaktifIntro" style="margin-top:4px">AI Coach hanya menjelaskan; semua angka dihitung rumus aplikasi dari data Anda.</p>
             </div>
             <span class="pro-count ok" id="proaktifCount">Memeriksa…</span>
           </div>
@@ -1314,7 +1318,7 @@
       <!-- ============ 3. VALUASI ============ -->
       <section id="valuasi">
         <div class="sec-head"><span class="sec-num">03</span><h2>Valuasi usaha — tiga metode</h2></div>
-        <p class="sec-sub">Penilai profesional tidak memakai satu rumus. Hasil akhir adalah rentang nilai wajar dari gabungan metode aset bersih, pengali laba pemilik (SDE), dan arus kas terdiskon (DCF) sederhana 3 tahun.</p>
+        <p class="sec-sub">Hasil akhir adalah rentang nilai wajar dari gabungan tiga metode: aset bersih, pengali laba pemilik (SDE), dan arus kas terdiskon (DCF) sederhana 3 tahun.</p>
         <div class="card">
           <div class="k" style="font-size:.82rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)">Rentang nilai wajar usaha Anda</div>
           <div class="val-big" id="valMid">—</div>
@@ -1381,7 +1385,7 @@
       <!-- ============ 5. KEUANGAN ============ -->
       <section id="keuangan">
         <div class="sec-head"><span class="sec-num">05</span><h2>Keuangan &amp; ekonomi</h2></div>
-        <p class="sec-sub">Dua hitungan yang paling sering membuat UMKM rugi tanpa sadar: harga jual yang tidak menutup komisi kanal online, dan kewajiban bagi hasil yang lebih besar dari kemampuan laba.</p>
+        <p class="sec-sub">Dua hitungan di sini: harga jual yang menutup komisi kanal online, dan bagi hasil yang tidak melebihi kemampuan laba.</p>
         <div class="grid-2">
           <div class="card">
             <h3>Kalkulator HPP &amp; harga per kanal</h3>
@@ -1437,12 +1441,12 @@
 
       <!-- ============ 6. SARAN AI ============ -->
       <section id="saran">
-        <div class="sec-head"><span class="sec-num">06</span><h2>Saran penguatan usaha</h2></div>
+        <div class="sec-head"><span class="sec-num">06</span><h2 id="saranJudul">Saran penguatan usaha</h2></div>
         <!-- Rekomendasi versi awal dihasilkan mesin aturan dari jawaban pengguna; bukan keluaran model AI generatif. -->
-        <p class="sec-sub">Rekomendasi berikut disusun dari sektor, level, dan jawaban introspeksi Anda — bukan saran umum yang sama untuk semua orang.</p>
+        <p class="sec-sub" id="saranSub">Rekomendasi berikut disusun dari sektor, level, dan jawaban introspeksi Anda — bukan saran umum yang sama untuk semua orang.</p>
         <div class="coach-box" id="coachBox">
           <h3><span aria-hidden="true">✦</span> Modul 9 · Tanya AI Coach</h3>
-          <p style="margin-top:6px">Tulis pertanyaan dengan bahasa sehari-hari, misalnya “Kenapa skor investasi saya rendah?” atau “Apa yang harus saya perbaiki dulu?”. AI Coach hanya menjelaskan angka hasil perhitungan aplikasi — angka valuasi, skor, HPP, dan BEP tetap dihitung oleh rumus aplikasi, bukan oleh AI.</p>
+          <p style="margin-top:6px">Tulis pertanyaan dengan bahasa sehari-hari, misalnya “Kenapa skor investasi saya rendah?”. AI Coach hanya menjelaskan angka hasil perhitungan aplikasi — valuasi, skor, HPP, dan BEP tetap dihitung rumus aplikasi, bukan oleh AI.</p>
           <div class="chat-log" id="coachChat" aria-live="polite" aria-label="Riwayat percakapan dengan AI Coach">
             <p class="chat-empty" id="coachChatEmpty">Belum ada percakapan. Tulis pertanyaan pertama Anda di kolom paling bawah — misalnya “Kenapa skor investasi saya rendah?”. Bila AI membalas dengan pertanyaan, jawab saja di kolom yang sama.</p>
           </div>
@@ -1509,8 +1513,8 @@
 
       <!-- ============ 6b. RENCANA PERBAIKAN (dari Saran) ============ -->
       <section id="saran-rencana">
-        <div class="sec-head"><span class="sec-num">06a</span><h2>Rencana perbaikan 30–60–90 hari</h2></div>
-        <p class="sec-sub">Saran penguatan dan rencana perbaikan yang disusun dari sektor, level, dan jawaban introspeksi Anda.</p>
+        <div class="sec-head"><span class="sec-num">06a</span><h2 id="rencanaJudul">Rencana perbaikan 30–60–90 hari</h2></div>
+        <p class="sec-sub" id="rencanaSub">Saran penguatan dan rencana perbaikan yang disusun dari sektor, level, dan jawaban introspeksi Anda.</p>
         <div class="grid-3">
           <div class="card advice"><h3><span class="ic" style="background:var(--gold-soft);color:var(--gold)">▣</span> Pemaketan barang</h3><div id="advPack"></div></div>
           <div class="card advice"><h3><span class="ic" style="background:var(--accent-soft);color:var(--accent)">Rp</span> Keuangan &amp; ekonomi</h3><div id="advFin"></div></div>
@@ -1531,7 +1535,7 @@
       <!-- ============ 7. PRODUK & PEMAKETAN — AI KEMASAN ============ -->
       <section id="kemasan">
         <div class="sec-head"><span class="sec-num">07</span><h2>Produk &amp; pemaketan — penilaian foto kemasan</h2></div>
-        <p class="sec-sub">Unggah foto produk Anda, lalu jawab 6 periksa label. Setiap foto yang Anda unggah juga <b>diukur langsung di peramban Anda</b> — tingkat terang, kontras, dan ketajamannya dihitung dari piksel foto — lalu fakta terukur itu digabung dengan jawaban periksa menjadi skor per aspek. Ini penilaian terbantu (pengukuran foto + daftar periksa), bukan deteksi isi foto: aplikasi tidak mengenali objek atau membaca tulisan di foto kemasan Anda.</p>
+        <p class="sec-sub">Unggah foto produk Anda, lalu jawab 6 periksa label. Foto diukur langsung di peramban Anda — tingkat terang, kontras, dan ketajamannya dihitung dari piksel foto — lalu digabung dengan jawaban periksa menjadi skor per aspek. Ini penilaian terbantu, bukan deteksi isi foto: aplikasi tidak mengenali objek atau membaca tulisan di foto kemasan Anda.</p>
         <div class="grid-2">
           <div class="card">
             <h3>Foto produk / kemasan</h3>
@@ -1612,7 +1616,7 @@
       <!-- ============ 8. PEMBUKUAN & SAK EMKM ============ -->
       <section id="buku">
         <div class="sec-head"><span class="sec-num">08</span><h2>Pembukuan harian, stok, piutang &amp; laporan SAK EMKM</h2></div>
-        <p class="sec-sub">Catat transaksi seperti buku kas digital. Semua catatan tersimpan ke cloud akun Anda dan termuat lagi saat Anda masuk berikutnya. Transaksi ikut menghitung Laba Rugi, BEP, prediksi arus kas, dan laporan SAK EMKM — bukan hanya tampil sebagai daftar. Foto nota membantu mengisi keterangan, dan tombol suara bisa mengisi keterangan, jumlah, jenis, dan kategori sekaligus dari satu ucapan — contoh: 'penjualan lima puluh ribu'. <b>Peringatan: periksa kembali angkanya sebelum menambah transaksi</b>, terutama angka hasil ucapan suara.</p>
+        <p class="sec-sub">Catat transaksi seperti buku kas digital. Semua catatan tersimpan ke cloud akun Anda dan termuat lagi saat Anda masuk berikutnya. Transaksi ikut menghitung Laba Rugi, BEP, prediksi arus kas, dan laporan SAK EMKM. Foto nota membantu mengisi keterangan, dan tombol suara bisa mengisi keterangan, jumlah, jenis, dan kategori sekaligus dari satu ucapan — contoh: 'penjualan lima puluh ribu'. <b>Peringatan: periksa kembali angkanya sebelum menambah transaksi</b>, terutama angka hasil ucapan suara.</p>
         <div class="menu-list">
         <a class="menu-row" href="#buku-transaksi"><span><b>Tambah transaksi</b><span class="sub">Catat penjualan & pengeluaran, foto nota, dan suara.</span></span><span class="arr">›</span></a>
         <a class="menu-row" href="#buku-qris"><span><b>Terima Pembayaran QRIS</b><span class="sub">Kode QRIS usaha dan tandai pembayaran pembeli.</span></span><span class="arr">›</span></a>
@@ -1789,7 +1793,7 @@
       <!-- ============ 9. CEK DATA LOKAL ============ -->
       <section id="cekdata">
         <div class="sec-head"><span class="sec-num">09</span><h2>Cek data online lokal &amp; Skor Konsistensi</h2></div>
-        <p class="sec-sub">Calon investor dan pembeli memeriksa jejak usaha Anda di 9 sumber ini. Untuk tiap sumber, buka sumbernya, bandingkan dengan data yang Anda klaim di formulir, lalu tandai hasilnya. Skor Konsistensi naik hanya bila data benar-benar sesuai. Untuk Google Maps, Tokopedia, Shopee, dan media sosial, Anda juga bisa menempel tautan publiknya lalu menekan <b>Cek otomatis</b> — aplikasi meminta server membaca halaman publik itu dan menampilkan sinyal yang terbaca (nama, rating, jumlah ulasan, harga). Bila halaman tidak bisa dibaca otomatis, pesan jujurnya akan tampil dan pilihan manual tetap bisa dipakai seperti biasa.</p>
+        <p class="sec-sub">Calon investor dan pembeli memeriksa jejak usaha Anda di 9 sumber ini. Untuk tiap sumber, buka sumbernya, bandingkan dengan data yang Anda klaim di formulir, lalu tandai hasilnya. Skor Konsistensi naik hanya bila data benar-benar sesuai. Untuk Google Maps, Tokopedia, Shopee, dan media sosial, Anda juga bisa menempel tautan publiknya lalu menekan <b>Cek otomatis</b> — bila halaman tidak bisa dibaca otomatis, pesan jujurnya akan tampil dan pilihan manual tetap bisa dipakai.</p>
         <div class="card" id="consCard"><div id="consChecks"></div>
           <div style="margin-top:14px"><div class="dim-head"><h3>Skor Konsistensi Data</h3><span class="pill mid" id="consScore">0/100</span></div><div class="bar"><i id="consBar"></i></div><p class="note" id="consNote">Skor 100 hanya bila ke-9 sumber sudah dicek dan semuanya sesuai. Sumber yang belum dicek dihitung 0 — sama seperti cara calon investor melihat data yang tidak bisa diverifikasi.</p></div>
         </div>
@@ -1970,7 +1974,10 @@
         </div>
         <div class="ai-box">
           <h3><span aria-hidden="true">✦</span> 7 lapisan kecerdasan di aplikasi ini</h3>
-          <p><b>1 Membaca foto nota</b> — teks nota dibaca otomatis dari foto dan input suara membantu mengubah bukti transaksi menjadi catatan. <b>2 Pengali lokal</b> — pengali dasar per sektor disesuaikan usia usaha, pertumbuhan, pembukuan, dan ketergantungan pemilik; bila data kalibrasi anonim usaha sejenis di kota Anda sudah terkumpul minimal 5 (dan Anda mengizinkan berbagi data anonim), median pengali lokal ikut digabungkan dan jumlah sampelnya ditulis terbuka di penjelasan valuasi. <b>3 Peringatan dini</b> — margin negatif, Rasio Kemampuan Bagi Hasil di bawah 1, dan utang di atas aset ditandai otomatis sebagai peringatan. <b>4 Penjelasan angka</b> — setiap valuasi disertai penjelasan yang bisa ditelusur ke rumusnya. <b>5 Penilaian kemasan</b> — penilaian terbantu: pengukuran foto (terang, kontras, ketajaman) + 6 periksa label, digabung menjadi skor 5 aspek. <b>6 Pemeriksaan konsistensi</b> — Skor Konsistensi dari 9 sumber lokal. <b>7 AI Coach</b> — rencana 30–60–90 hari yang berubah mengikuti jawaban dan angka Anda. Ketujuh lapisan ini berjalan sebagai mesin aturan transparan langsung di halaman ini.</p>
+          <details class="teori-lipat">
+            <summary>Baca selengkapnya</summary>
+            <p><b>1 Membaca foto nota</b> — teks nota dibaca otomatis dari foto dan input suara membantu mengubah bukti transaksi menjadi catatan. <b>2 Pengali lokal</b> — pengali dasar per sektor disesuaikan usia usaha, pertumbuhan, pembukuan, dan ketergantungan pemilik; bila data kalibrasi anonim usaha sejenis di kota Anda sudah terkumpul minimal 5 (dan Anda mengizinkan berbagi data anonim), median pengali lokal ikut digabungkan dan jumlah sampelnya ditulis terbuka di penjelasan valuasi. <b>3 Peringatan dini</b> — margin negatif, Rasio Kemampuan Bagi Hasil di bawah 1, dan utang di atas aset ditandai otomatis sebagai peringatan. <b>4 Penjelasan angka</b> — setiap valuasi disertai penjelasan yang bisa ditelusur ke rumusnya. <b>5 Penilaian kemasan</b> — penilaian terbantu: pengukuran foto (terang, kontras, ketajaman) + 6 periksa label, digabung menjadi skor 5 aspek. <b>6 Pemeriksaan konsistensi</b> — Skor Konsistensi dari 9 sumber lokal. <b>7 AI Coach</b> — rencana 30–60–90 hari yang berubah mengikuti jawaban dan angka Anda. Ketujuh lapisan ini berjalan sebagai mesin aturan transparan langsung di halaman ini.</p>
+          </details>
         </div>
       </section>
 
@@ -2580,14 +2587,14 @@
 
       /* ---------- sector data ---------- */
       const SECTOR = {
-        kuliner:{mult:3.0, pack:["Foto produk dari 3 sudut: tampak atas, kemasan tertutup, dan isi terbuka — dinilai dari cahaya, kebersihan latar, dan kejelasan label.","Cetak label tahan air berisi: nama produk, komposisi, berat bersih, nomor PIRT/halal, tanggal kedaluwarsa, dan nomor WhatsApp pemesanan.","Buat 3 ukuran kemasan: personal, keluarga, dan hampers — ukuran besar menaikkan nilai transaksi per pelanggan.","Uji kemasan kirim luar kota: vakum / frozen pack agar bisa masuk marketplace, bukan hanya delivery lokal."]},
-        retail:{mult:3.0, pack:["Kelompokkan produk laris dalam bundel hemat (paket sembako, paket bulanan) — bundel menaikkan nilai belanja per kunjungan.","Pasang label harga yang seragam dan jelas di semua rak; harga yang harus ditanyakan menurunkan konversi.","Buat kemasan ulang (repack) ukuran kecil untuk produk curah agar margin per gram lebih tinggi.","Tampilkan tanggal kedaluwarsa paling depan (FEFO) dan buat sudut khusus produk promo dekat kasir."]},
-        jasa:{mult:2.5, pack:["Ubah layanan jadi paket bernama jelas: Paket Hemat, Paket Lengkap, Paket Premium — pelanggan jasa membeli kepastian, bukan jam kerja.","Terbitkan kartu garansi / kartu member fisik atau digital sebagai 'kemasan' layanan Anda.","Buat daftar harga tertulis yang bisa difoto pelanggan dan dibagikan ulang di WhatsApp.","Sediakan paket berlangganan (mis. cuci bulanan, servis berkala) untuk pendapatan yang berulang."]},
-        manufaktur:{mult:3.5, pack:["Standarkan kemasan primer dengan label lengkap: spesifikasi, cara pakai, peringatan, dan kode produksi.","Siapkan kemasan sekunder (master box) yang kuat untuk pengiriman antar kota dan retur rendah.","Buat katalog produk satu halaman (PDF) berisi foto, spesifikasi, dan harga tier grosir.","Pertimbangkan private label / maklon untuk mengisi kapasitas produksi yang menganggur."]},
-        fashion:{mult:3.0, pack:["Kemasan adalah iklan: paper bag / box bermerek + kartu ucapan membuat produk terasa premium dan layak difoto pelanggan.","Sertakan label perawatan (washing instruction) dan tag ukuran yang konsisten di semua produk.","Foto lookbook dengan model nyata dan latar bersih untuk katalog WhatsApp dan marketplace.","Buat bundel set (atasan + bawahan) dengan harga paket untuk menaikkan nilai per transaksi."]},
-        agribisnis:{mult:2.5, pack:["Grading produk (A/B/C) dengan kemasan berbeda per grade — grade A untuk ritel modern, grade B untuk pasar tradisional.","Label harus memuat asal produk, tanggal panen/packing, dan berat bersih yang jujur.","Kemasan vakum atau MAP untuk memperpanjang umur simpan hasil segar.","Siapkan kemasan curah 5–25 kg untuk pembeli B2B (restoran, katering, reseller)."]},
-        digital:{mult:4.0, pack:["Kemas layanan jadi produk: paket jasa dengan deliverables, tenggat, dan harga tetap yang tertulis.","Buat halaman portofolio dan studi kasus singkat sebagai 'kemasan' kredibilitas.","Tawarkan retainer bulanan agar pendapatan tidak mulai dari nol tiap bulan.","Dokumentasikan proses kerja (SOP) agar kualitas tidak bergantung pada satu orang."]},
-        lainnya:{mult:2.8, pack:["Pastikan label produk lengkap: nama, komposisi/spesifikasi, berat, izin, kedaluwarsa, dan kontak.","Foto produk dari 3 sudut dengan cahaya terang dan latar bersih untuk semua kanal jual.","Buat variasi ukuran / paket bundel agar pelanggan punya pilihan naik kelas.","Uji ketahanan kemasan untuk pengiriman luar kota sebelum masuk marketplace."]}
+        kuliner:{mult:3.0, pack:["Foto produk {NAMA} dari 3 sudut: tampak atas, kemasan tertutup, dan isi terbuka — dinilai dari cahaya, kebersihan latar, dan kejelasan label.","Cetak label tahan air untuk {NAMA} berisi: nama produk, komposisi, berat bersih, nomor PIRT/halal, tanggal kedaluwarsa, dan nomor WhatsApp pemesanan.","Buat 3 ukuran kemasan {NAMA}: personal, keluarga, dan hampers — ukuran besar menaikkan nilai transaksi per pelanggan.","Uji kemasan kirim luar kota untuk {NAMA}: vakum / frozen pack agar bisa masuk marketplace, bukan hanya delivery lokal."]},
+        retail:{mult:3.0, pack:["Kelompokkan produk laris {NAMA} dalam bundel hemat (paket sembako, paket bulanan) — bundel menaikkan nilai belanja per kunjungan.","Pasang label harga yang seragam dan jelas di semua rak {NAMA}; harga yang harus ditanyakan menurunkan konversi.","Buat kemasan ulang (repack) ukuran kecil untuk produk curah {NAMA} agar margin per gram lebih tinggi.","Tampilkan tanggal kedaluwarsa paling depan (FEFO) dan buat sudut khusus produk promo dekat kasir {NAMA}."]},
+        jasa:{mult:2.5, pack:["Ubah layanan {NAMA} jadi paket bernama jelas: Paket Hemat, Paket Lengkap, Paket Premium — pelanggan jasa membeli kepastian, bukan jam kerja.","Terbitkan kartu garansi / kartu member fisik atau digital sebagai 'kemasan' layanan {NAMA}.","Buat daftar harga tertulis {NAMA} yang bisa difoto pelanggan dan dibagikan ulang di WhatsApp.","Sediakan paket berlangganan {NAMA} (mis. cuci bulanan, servis berkala) untuk pendapatan yang berulang."]},
+        manufaktur:{mult:3.5, pack:["Standarkan kemasan primer {NAMA} dengan label lengkap: spesifikasi, cara pakai, peringatan, dan kode produksi.","Siapkan kemasan sekunder (master box) yang kuat untuk pengiriman antar kota dan retur rendah.","Buat katalog produk {NAMA} satu halaman (PDF) berisi foto, spesifikasi, dan harga tier grosir.","Pertimbangkan private label / maklon untuk mengisi kapasitas produksi {NAMA} yang menganggur."]},
+        fashion:{mult:3.0, pack:["Kemasan adalah iklan: paper bag / box bermerek {NAMA} + kartu ucapan membuat produk terasa premium dan layak difoto pelanggan.","Sertakan label perawatan (washing instruction) dan tag ukuran yang konsisten di semua produk {NAMA}.","Foto lookbook {NAMA} dengan model nyata dan latar bersih untuk katalog WhatsApp dan marketplace.","Buat bundel set (atasan + bawahan) {NAMA} dengan harga paket untuk menaikkan nilai per transaksi."]},
+        agribisnis:{mult:2.5, pack:["Grading produk {NAMA} (A/B/C) dengan kemasan berbeda per grade — grade A untuk ritel modern, grade B untuk pasar tradisional.","Label {NAMA} harus memuat asal produk, tanggal panen/packing, dan berat bersih yang jujur.","Kemasan vakum atau MAP untuk memperpanjang umur simpan hasil segar {NAMA}.","Siapkan kemasan curah 5–25 kg {NAMA} untuk pembeli B2B (restoran, katering, reseller) di {KOTA}."]},
+        digital:{mult:4.0, pack:["Kemas layanan {NAMA} jadi produk: paket jasa dengan deliverables, tenggat, dan harga tetap yang tertulis.","Buat halaman portofolio dan studi kasus singkat {NAMA} sebagai 'kemasan' kredibilitas.","Tawarkan retainer bulanan {NAMA} agar pendapatan tidak mulai dari nol tiap bulan.","Dokumentasikan proses kerja (SOP) {NAMA} agar kualitas tidak bergantung pada satu orang."]},
+        lainnya:{mult:2.8, pack:["Pastikan label produk {NAMA} lengkap: nama, komposisi/spesifikasi, berat, izin, kedaluwarsa, dan kontak.","Foto produk {NAMA} dari 3 sudut dengan cahaya terang dan latar bersih untuk semua kanal jual.","Buat variasi ukuran / paket bundel {NAMA} agar pelanggan punya pilihan naik kelas.","Uji ketahanan kemasan {NAMA} untuk pengiriman luar kota sebelum masuk marketplace."]}
       };
       const TECH_LADDER = [
         "Fondasi: QRIS untuk semua pembayaran + WhatsApp Business dengan katalog dan pesan sambutan otomatis.",
@@ -3052,7 +3059,8 @@
         })();
 
         recalcFinance(sdeBln, labaBersihBln);
-        buildAdvice({sektor,skala,matLevel,dimScore,scInv,buku,legal,terg,mult,sdeThn,margin});
+        buildAdvice({sektor,skala,matLevel,dimScore,scInv,buku,legal,terg,mult,sdeThn,margin,hppPct,omzetBln,labaBersihBln});
+        renderPersonalisasi();
         S={omzetThn,sdeThn,labaBersihBln,weighted,valLow,valHigh,mult,health,scInv,skala,matLevel,dimScore,asetBersih,omzetBln,hppPct,opex,gaji,aset,utang,tumbuh};
         /* Skor tambahan (konsistensi, kemasan, legalitas) ditulis oleh
            updateCons/updatePack/updateLegal, bukan recalc — jadi recalc
@@ -3197,50 +3205,112 @@
         else { v.textContent="Belum mampu — bagi hasil melebihi laba"; v.className="pill low"; $("invNote").textContent="Dengan laba saat ini dana investasi sebesar ini belum aman untuk dikerjasamakan. Naikkan laba dulu (harga/HPP) atau mulai dari besaran dana yang jauh lebih kecil."; }
       }
 
+      /* ---------- saran penguatan: tiap butir menyebut data pengguna ----------
+         Semua butir diturunkan dari profil usaha itu sendiri (nama, kota,
+         sektor, HPP, omzet, margin, skor) — bukan teks umum yang sama untuk
+         semua orang. Bila belum ada data usaha inti, ketiga kartu meminta
+         isi data dulu (gerbang yang sama dengan advFin/advTech). Angka
+         tetap dari rumus lokal; LLM tidak membuat angka. */
+      function namaUsahaTampil(){
+        var n=""; try{ var el=$("inNama"); if(el) n=(el.value||"").trim(); }catch(e){}
+        return n||"usaha Anda";
+      }
+      function skorKemasanSekarang(){
+        try{
+          var el=$("packScore");
+          if(el){ var v=parseInt(String(el.textContent||"").trim(),10); if(!isNaN(v)) return v; }
+        }catch(e){}
+        /* Cadangan bila teks skor belum diperbarui: hitung dari keadaan
+           yang sama dengan updatePack (6 periksa + foto sudut / foto). */
+        try{
+          var base=(typeof packState!=="undefined"?packState.reduce(function(a,b){return a+b},0):0)/6*85;
+          if(typeof angleCount!=="undefined" && angleCount>0) base+=Math.min(15,angleCount*5);
+          else if(typeof packHasPhoto!=="undefined" && packHasPhoto) base+=10;
+          return Math.round(base);
+        }catch(e){}
+        return null;
+      }
+      function renderPersonalisasi(){
+        var nama=""; try{ var el=$("inNama"); if(el) nama=(el.value||"").trim(); }catch(e){}
+        var kota=""; try{ var ek=$("inKota"); if(ek) kota=(ek.value||"").trim(); }catch(e){}
+        var sektorLbl=""; try{ var es=$("inSektor"); if(es && es.selectedOptions && es.selectedOptions[0]) sektorLbl=(es.selectedOptions[0].textContent||"").trim(); }catch(e){}
+        var hero=$("heroNamaUsaha");
+        if(hero){
+          if(nama){ hero.textContent=[nama, sektorLbl, kota].filter(Boolean).join(" · "); hero.style.display="block"; }
+          else hero.style.display="none";
+        }
+        var sj=$("saranJudul"); if(sj) sj.textContent=nama?("Saran penguatan untuk "+nama):"Saran penguatan usaha";
+        var ss=$("saranSub"); if(ss) ss.textContent=nama?("Rekomendasi berikut disusun dari sektor, level, dan jawaban introspeksi "+nama+" — bukan saran umum yang sama untuk semua orang."):"Rekomendasi berikut disusun dari sektor, level, dan jawaban introspeksi Anda — bukan saran umum yang sama untuk semua orang.";
+        var rs=$("rencanaSub"); if(rs) rs.textContent=nama?("Saran penguatan dan rencana perbaikan untuk "+nama+", disusun dari sektor, level, dan jawaban introspeksi Anda."):"Saran penguatan dan rencana perbaikan yang disusun dari sektor, level, dan jawaban introspeksi Anda.";
+      }
+      window.__renderPersonalisasi=renderPersonalisasi;
+      window.__namaUsahaTampil=namaUsahaTampil;
       function buildAdvice(c){
-        $("advPack").innerHTML="<ul>"+SECTOR[c.sektor].pack.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
-        /* Gerbang saran: butir keuangan & teknologi menyebut angka analisa
-           (margin, Skor Siap Investasi, skor teknologi) — bila belum ada
-           data usaha inti, keduanya diganti satu butir jujur minta isi
-           data. Saran kemasan (umum per sektor) dan rencana 30/60/90 hari
-           (langkah tanpa angka) tetap tampil sebagai ajakan mengisi. */
         var adaDataAdv=true; try{ adaDataAdv=(typeof adaDataInti==="function")?adaDataInti():true; }catch(e){ adaDataAdv=true; }
-        const fin=[];
-        if (c.buku===0) fin.push("Buka rekening / e-wallet khusus usaha minggu ini juga — pemisahan uang adalah syarat pertama semua penilaian.");
-        if (c.buku===1) fin.push("Naikkan catatan manual ke spreadsheet atau aplikasi kasir agar laba rugi bulanan tersusun otomatis (SAK EMKM).");
-        if (c.buku>=2) fin.push("Pembukuan sudah teratur — kunci konsistensinya: tutup buku tiap akhir bulan dan arsipkan laporan 12 bulan terakhir untuk calon investor.");
-        fin.push("Pasang harga berbeda per kanal jual (lihat kalkulator HPP): menyamakan harga GoFood dengan harga warung memangkas margin ±20%.");
-        if (c.margin<0.1) fin.push("Margin laba bersih Anda tipis ("+(c.margin*100).toLocaleString("id-ID",{maximumFractionDigits:1})+"%). Audit tiga biaya terbesar dan negosiasikan ulang harga bahan baku utama.");
-        else fin.push("Margin laba bersih "+(c.margin*100).toLocaleString("id-ID",{maximumFractionDigits:1})+"% — sisihkan minimal 10% laba sebagai dana darurat usaha sebelum ekspansi.");
-        if (c.scInv<70) fin.push("Skor siap investasi Anda "+c.scInv+"/100. Lengkapi "+(c.legal===0?"NIB lewat OSS (gratis, online)":"dokumen laporan 3–6 bulan")+" sebelum menawarkan kerjasama investasi agar penawaran Anda meyakinkan.");
-        else fin.push("Skor siap investasi Anda "+c.scInv+"/100 — profil ini layak ditawarkan. Bawa ringkasan introspeksi ini sebagai bahan diskusi awal dengan calon investor.");
-        $("advFin").innerHTML=adaDataAdv?"<ul>"+fin.map(x=>"<li>"+x+"</li>").join("")+"</ul>":"<ul><li>"+PESAN_ISI_DATA+"</li></ul>";
+        var namaT=namaUsahaTampil();
+        var kotaT=""; try{ var ek2=$("inKota"); if(ek2) kotaT=(ek2.value||"").trim(); }catch(e){} kotaT=kotaT||"kota Anda";
+        if(!adaDataAdv){
+          $("advPack").innerHTML="<ul><li>"+PESAN_ISI_DATA+"</li></ul>";
+          $("advFin").innerHTML="<ul><li>"+PESAN_ISI_DATA+"</li></ul>";
+          $("advTech").innerHTML="<ul><li>"+PESAN_ISI_DATA+"</li></ul>";
+        } else {
+          var skorKem=skorKemasanSekarang();
+          var packLead=skorKem!==null
+            ? "Skor kemasan "+esc(namaT)+" sekarang "+skorKem+"/100 — perbaiki dari 6 periksa label dan foto 3 sudut di layar Produk &amp; Pemaketan."
+            : "Skor kemasan "+esc(namaT)+" belum dinilai — jawab 6 periksa label di layar Produk &amp; Pemaketan untuk melihat skornya.";
+          var packItems=SECTOR[c.sektor].pack.map(function(x){ return x.replace(/\{NAMA\}/g, esc(namaT)).replace(/\{KOTA\}/g, esc(kotaT)); });
+          $("advPack").innerHTML="<ul><li>"+packLead+"</li>"+packItems.map(function(x){ return "<li>"+x+"</li>"; }).join("")+"</ul>";
+          const fin=[];
+          /* Keuangan: tiap butir menyebut angka usaha itu sendiri. */
+          var marginPersen=(c.margin*100).toLocaleString("id-ID",{maximumFractionDigits:1});
+          var omzetTxt=c.omzetBln>0?" dari omzet "+fmtShort(c.omzetBln)+"/bulan":"";
+          var hppTxt=c.hppPct>0?(" HPP "+esc(namaT)+" "+Math.round(c.hppPct*100)+"%"+(c.omzetBln>0?" dari omzet "+fmtShort(c.omzetBln)+"/bulan":"")+" —"):"";
+          if (c.buku===0) fin.push("Pisahkan uang "+esc(namaT)+" dari uang pribadi minggu ini juga — buka rekening / e-wallet khusus usaha; pemisahan uang adalah syarat pertama semua penilaian.");
+          if (c.buku===1) fin.push("Catatan "+esc(namaT)+" masih manual — naikkan ke spreadsheet atau aplikasi kasir agar laba rugi bulanan tersusun otomatis (SAK EMKM).");
+          if (c.buku>=2) fin.push("Pembukuan "+esc(namaT)+" sudah teratur — kunci konsistensinya: tutup buku tiap akhir bulan dan arsipkan laporan 12 bulan terakhir untuk calon investor.");
+          if (c.omzetBln>0){
+            var marginKanal=Math.round((c.margin*100-20)*10)/10;
+            if (marginKanal>0) fin.push("Harga GoFood/GrabFood dipotong komisi 20% — dengan margin "+esc(namaT)+" "+marginPersen+"%, samakan harga dengan harga warung dan margin tinggal sekitar "+marginKanal.toLocaleString("id-ID",{maximumFractionDigits:1})+"%. Pasang harga berbeda per kanal (lihat kalkulator HPP).");
+            else fin.push("Harga GoFood/GrabFood dipotong komisi 20% — dengan margin "+esc(namaT)+" "+marginPersen+"%, samakan harga dengan harga warung dan tiap pesanan jadi rugi. Pasang harga berbeda per kanal (lihat kalkulator HPP).");
+          } else {
+            fin.push("Pasang harga berbeda per kanal jual (lihat kalkulator HPP): harga GoFood/GrabFood dipotong komisi 20% dari harga jual.");
+          }
+          if (c.margin<0.1) fin.push("Margin laba bersih Anda tipis ("+marginPersen+"%)."+hppTxt+" Audit tiga biaya terbesar dan negosiasikan ulang harga bahan baku utama.");
+          else fin.push("Margin laba bersih "+marginPersen+"%"+omzetTxt+" — sisihkan minimal 10% laba"+(c.labaBersihBln>0?" (sekitar "+fmtShort(Math.round(c.labaBersihBln*0.1))+"/bulan)":"")+" sebagai dana darurat usaha sebelum ekspansi.");
+          if (c.scInv<70) fin.push("Skor siap investasi "+esc(namaT)+" "+c.scInv+"/100. Lengkapi "+(c.legal===0?"NIB lewat OSS (gratis, online)":"dokumen laporan 3–6 bulan")+" sebelum menawarkan kerjasama investasi agar penawaran Anda meyakinkan.");
+          else fin.push("Skor siap investasi "+esc(namaT)+" "+c.scInv+"/100 — profil ini layak ditawarkan. Bawa ringkasan introspeksi ini sebagai bahan diskusi awal dengan calon investor.");
+          $("advFin").innerHTML="<ul>"+fin.map(function(x){ return "<li>"+x+"</li>"; }).join("")+"</ul>";
 
-        let ladder=TECH_LADDER.slice();
-        if (answers["mkt-2"]===2) ladder[2]="Optimasi kanal online yang sudah berjalan: samakan katalog di semua kanal, pasang harga khusus per kanal (lihat kalkulator HPP), dan balas chat dengan balasan cepat.";
-        const start=Math.min(c.matLevel, ladder.length-1);
-        const tech=ladder.slice(start, start+3).map((x,i)=> (i===0?"<b>Langkah Anda berikutnya:</b> ":"")+x);
-        if (c.dimScore.tech<40) tech.unshift("Skor teknologi Anda baru "+c.dimScore.tech+"/100 — jangan loncat ke alat canggih; kuasai satu anak tangga dalam satu waktu.");
-        $("advTech").innerHTML=adaDataAdv?"<ul>"+tech.map(x=>"<li>"+x+"</li>").join("")+"</ul>":"<ul><li>"+PESAN_ISI_DATA+"</li></ul>";
+          /* Teknologi: tangga yang sama, tapi langkah pertama menyebut nama usaha. */
+          let ladder=TECH_LADDER.slice();
+          if (answers["mkt-2"]===2) ladder[2]="Optimasi kanal online "+esc(namaT)+" yang sudah berjalan: samakan katalog di semua kanal, pasang harga khusus per kanal (lihat kalkulator HPP), dan balas chat dengan balasan cepat.";
+          const start=Math.min(c.matLevel, ladder.length-1);
+          const tech=ladder.slice(start, start+3).map(function(x,i){ return (i===0?"<b>Langkah Anda berikutnya untuk "+esc(namaT)+":</b> ":"")+x; });
+          if (c.dimScore.tech<40) tech.unshift("Skor teknologi Anda baru "+c.dimScore.tech+"/100 — jangan loncat ke alat canggih; kuasai satu anak tangga dalam satu waktu.");
+          $("advTech").innerHTML="<ul>"+tech.map(function(x){ return "<li>"+x+"</li>"; }).join("")+"</ul>";
+        }
 
+        /* Rencana 30–60–90 hari: pilihan langkah tetap dari jawaban
+           introspeksi, tapi tiap langkah menyebut nama usaha dan angka
+           yang sedang berlaku (HPP, pengali, SDE). */
         const p30=[],p60=[],p90=[];
-        if (answers["fin-0"]<2) p30.push("Pisahkan rekening usaha dan pribadi; semua omzet masuk satu pintu.");
-        if (answers["fin-1"]<2) p30.push("Catat transaksi harian tanpa bolong selama 30 hari (foto nota + aplikasi kasir).");
+        if (answers["fin-0"]<2) p30.push("Pisahkan rekening usaha dan pribadi; semua omzet "+esc(namaT)+" masuk satu pintu.");
+        if (answers["fin-1"]<2) p30.push("Catat transaksi harian "+esc(namaT)+" tanpa bolong selama 30 hari (foto nota + aplikasi kasir).");
         if (c.legal===0) p30.push("Urus NIB lewat OSS — gratis dan menjadi kunci kerjasama investasi serta program pemerintah.");
-        if (answers["fin-2"]<2) p30.push("Hitung ulang HPP semua produk utama dan perbaiki harga per kanal.");
-        if (!p30.length) p30.push("Kunci kebiasaan baik yang sudah berjalan: tutup buku bulanan dan evaluasi margin per produk.");
-        if (answers["ops-0"]<2) p60.push("Tulis SOP / resep baku untuk proses inti agar kualitas tidak bergantung ingatan.");
-        if (answers["mkt-0"]<2) p60.push("Perbarui kemasan: label lengkap + foto produk baru dari 3 sudut.");
-        if (answers["mkt-2"]<2) p60.push("Buka satu kanal online baru dengan harga khusus kanal (bukan harga jual langsung).");
-        if (answers["ops-2"]<2) p60.push("Rapikan catatan stok dan aset — cocokkan fisik dengan catatan sebulan sekali.");
-        if (!p60.length) p60.push("Uji satu produk / paket baru ke pelanggan setia dan ukur responsnya selama 30 hari.");
-        if (c.terg>=50) p90.push("Latih satu orang pengganti untuk tugas paling kritis; targetkan usaha tetap jalan 3 hari tanpa Anda.");
-        if (c.scInv>=45) p90.push("Susun berkas penawaran kerjasama investasi: laporan 3–6 bulan, NIB, dan hasil uji Rasio Kemampuan Bagi Hasil dari halaman ini.");
-        else p90.push("Genapkan 3 bulan laporan rapi berturut-turut, lalu uji ulang skor siap investasi Anda di sini.");
-        p90.push("Hitung ulang valuasi setelah 90 hari — bandingkan pengali dan SDE dengan hari ini untuk melihat kemajuan nyata.");
-        $("plan30").innerHTML=p30.map(x=>"<li>"+x+"</li>").join("");
-        $("plan60").innerHTML=p60.map(x=>"<li>"+x+"</li>").join("");
-        $("plan90").innerHTML=p90.map(x=>"<li>"+x+"</li>").join("");
+        if (answers["fin-2"]<2) p30.push(c.hppPct>0?("HPP "+esc(namaT)+" "+Math.round(c.hppPct*100)+"% — hitung ulang HPP semua produk utama dan perbaiki harga per kanal."):"Hitung ulang HPP semua produk utama dan perbaiki harga per kanal.");
+        if (!p30.length) p30.push("Kunci kebiasaan baik "+esc(namaT)+" yang sudah berjalan: tutup buku bulanan dan evaluasi margin per produk.");
+        if (answers["ops-0"]<2) p60.push("Tulis SOP / resep baku "+esc(namaT)+" untuk proses inti agar kualitas tidak bergantung ingatan.");
+        if (answers["mkt-0"]<2) p60.push("Perbarui kemasan "+esc(namaT)+": label lengkap + foto produk baru dari 3 sudut.");
+        if (answers["mkt-2"]<2) p60.push("Buka satu kanal online baru untuk "+esc(namaT)+" dengan harga khusus kanal (bukan harga jual langsung).");
+        if (answers["ops-2"]<2) p60.push("Rapikan catatan stok dan aset "+esc(namaT)+" — cocokkan fisik dengan catatan sebulan sekali.");
+        if (!p60.length) p60.push("Uji satu produk / paket baru "+esc(namaT)+" ke pelanggan setia dan ukur responsnya selama 30 hari.");
+        if (c.terg>=50) p90.push("Latih satu orang pengganti untuk tugas paling kritis "+esc(namaT)+"; targetkan usaha tetap jalan 3 hari tanpa Anda.");
+        if (c.scInv>=45) p90.push("Susun berkas penawaran kerjasama investasi "+esc(namaT)+": laporan 3–6 bulan, NIB, dan hasil uji Rasio Kemampuan Bagi Hasil dari halaman ini.");
+        else p90.push("Genapkan 3 bulan laporan rapi berturut-turut, lalu uji ulang skor siap investasi "+esc(namaT)+" di sini.");
+        p90.push("Hitung ulang valuasi "+esc(namaT)+" setelah 90 hari — pengali Anda sekarang "+c.mult.toLocaleString("id-ID",{maximumFractionDigits:2})+(c.sdeThn>0?" dan SDE "+fmtShort(c.sdeThn)+"/tahun; bandingkan keduanya dengan hari ini untuk melihat kemajuan nyata.":"; bandingkan pengali ini dengan hari ini untuk melihat kemajuan nyata."));
+        $("plan30").innerHTML=p30.map(function(x){ return "<li>"+x+"</li>"; }).join("");
+        $("plan60").innerHTML=p60.map(function(x){ return "<li>"+x+"</li>"; }).join("");
+        $("plan90").innerHTML=p90.map(function(x){ return "<li>"+x+"</li>"; }).join("");
       }
 
       function lokasiText(){
