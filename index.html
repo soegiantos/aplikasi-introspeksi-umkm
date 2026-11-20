@@ -907,6 +907,8 @@
       @media(max-width:640px){.aspect-row{grid-template-columns:118px 1fr 44px}}
       /* ---------- mode portal berbagi (?bagikan=TOKEN) ---------- */
       body.bagikan-mode .auth-gate, body.bagikan-mode .sql-modal, body.bagikan-mode .topbar, body.bagikan-mode .guest-banner, body.bagikan-mode .wrap, body.bagikan-mode .wizard-overlay, body.bagikan-mode .help-overlay, body.bagikan-mode .toast{display:none!important}
+      body.toko-mode .auth-gate, body.toko-mode .sql-modal, body.toko-mode .topbar, body.toko-mode .guest-banner, body.toko-mode .wrap, body.toko-mode .wizard-overlay, body.toko-mode .help-overlay, body.toko-mode .toast{display:none!important}
+      .toko-link{display:block;text-align:center;padding:14px 18px;font-size:1rem}
       .portal-share-view{max-width:760px;margin:0 auto;padding:28px 18px 64px}
       .share-badge{display:inline-block;background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold);border-radius:999px;padding:6px 14px;font-weight:700;font-size:.85rem}
       .share-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
@@ -1897,6 +1899,10 @@
               <label class="f"><span>Harga jual / unit (Rp)</span><input type="text" inputmode="numeric" id="stJual" placeholder="contoh: 78000" min="0" /></label>
             </div>
             <div class="actions"><button class="btn" id="btnStock" type="button">Tambah stok</button></div>
+            <div class="actions" style="margin-top:10px"><button class="btn ghost" id="btnImporContoh" type="button">Unduh contoh impor (.xlsx)</button><button class="btn ghost" id="btnImporStok" type="button">Impor dari Excel/CSV</button></div>
+            <input type="file" id="fileImporStok" accept=".xlsx,.xls,.csv" style="display:none" />
+            <p class="note" id="imporStokNote" role="status" style="display:none;margin-top:10px"></p>
+            <p class="note">Impor menambah barang ke stok — barang yang namanya sudah ada tidak digandakan. Baris yang salah format dijelaskan di sini dengan bahasa ramah, bukan sebagai galat.</p>
             <div id="stockEmpty" class="empty-note">Belum ada stok tercatat.</div>
             <table class="mini-table" id="stockTable" style="display:none"><thead><tr><th>Barang</th><th>Stok</th><th>Nilai stok</th><th></th></tr></thead><tbody id="stockBody"></tbody></table>
             <p class="note" style="margin-top:8px">Total nilai stok (harga beli): <b id="stockTotal">Rp 0</b></p>
@@ -1950,9 +1956,20 @@
           </div>
           <div style="margin-top:16px"><h3 style="font-size:.98rem">Arus Kas (Data Usaha per bulan + catatan transaksi)</h3><table class="mini-table"><tbody id="akBody"></tbody></table></div>
           <div style="margin-top:16px"><h3 style="font-size:.98rem">Perkiraan PPh Final</h3><table class="mini-table"><tbody id="pphBody"></tbody></table><p class="note" style="margin-top:8px">Perkiraan dari data Anda sendiri — bukan penetapan pajak. Dihitung 0,5% dari omzet tahun berjalan di atas Rp500 jt — dan omzet di sini HANYA transaksi masuk yang tercatat di aplikasi tahun ini, bukan omzet bulanan di Data Usaha. Bila omzet tahun ini Rp500 jt atau kurang, perkiraannya Rp0.</p></div>
-          <div class="actions"><button class="btn" id="btnReportPdf" type="button">Unduh laporan lengkap (PDF) <span class="lencana-daftar">Perlu daftar</span></button><button class="btn ghost" id="btnReport" type="button">Unduh laporan lengkap (.txt) <span class="lencana-daftar">Perlu daftar</span></button><button class="btn ghost" id="btnReportHtml" type="button">Unduh laporan untuk dicetak (.html) <span class="lencana-daftar">Perlu daftar</span></button></div>
+          <div class="actions"><button class="btn" id="btnReportPdf" type="button">Unduh laporan lengkap (PDF) <span class="lencana-daftar">Perlu daftar</span></button><button class="btn ghost" id="btnReport" type="button">Unduh laporan lengkap (.txt) <span class="lencana-daftar">Perlu daftar</span></button><button class="btn ghost" id="btnReportHtml" type="button">Unduh laporan untuk dicetak (.html) <span class="lencana-daftar">Perlu daftar</span></button><button class="btn ghost" id="btnEksporExcel" type="button">Unduh laporan (Excel) <span class="lencana-daftar">Perlu daftar</span></button><button class="btn ghost" id="btnEksporPdfSak" type="button">Unduh laporan SAK EMKM (PDF) <span class="lencana-daftar">Perlu daftar</span></button></div>
           <p class="note">Laporan lengkap hanya untuk pengguna terdaftar — daftar dulu sebelum mengunduh.</p>
           <p class="note" id="ocrNote" style="margin-top:10px">Baca nota: unggah foto nota di atas — teks nota dibaca otomatis di HP Anda dan jumlah terbesar yang terbaca diisikan sebagai jumlah transaksi untuk Anda periksa.</p>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Laporan harian otomatis</h3>
+          <p class="note">Setiap hari, ringkasan omzet, penjualan, dan stok menipis dikirim ke email akun Anda — tanpa perlu membuka aplikasi dulu. Angkanya sama dengan yang tampil di dasbor hari itu.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
+            <label class="f"><span>Ringkasan harian</span><select id="lhStatus"><option value="mati">Mati</option><option value="aktif">Aktif — kirim setiap hari</option></select></label>
+            <label class="f"><span>Jam kirim</span><select id="lhJam"><option value="5">05:00</option><option value="6">06:00</option><option value="7" selected>07:00</option><option value="8">08:00</option><option value="9">09:00</option><option value="10">10:00</option><option value="12">12:00</option><option value="17">17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option><option value="21">21:00</option></select></label>
+          </div>
+          <p class="note">Dikirim ke email akun Anda (<span id="lhEmailTujuan">—</span>). Bila Anda menutup ringkasan ini, kirim ulang besok tetap berjalan selama statusnya Aktif.</p>
+          <div class="actions"><button class="btn" id="btnLhKirim" type="button">Kirim ringkasan sekarang</button><button class="btn ghost" id="btnLhBerhenti" type="button">Berhenti langganan</button><button class="btn ghost" id="btnLhSalin" type="button">Salin ringkasan</button></div>
+          <p class="note" id="lhNote" role="status" style="display:none;margin-top:10px"></p>
         </div>
       </section>
 
@@ -1979,6 +1996,24 @@
         <div class="grid-2">
           <div class="card"><h3>Kanal yang sudah aktif</h3><div id="channelChecks"></div><p class="note" style="margin-top:10px" id="channelNote">—</p></div>
           <div class="card"><h3>Kalender konten 7 hari</h3><table class="mini-table"><thead><tr><th>Hari</th><th>Ide konten</th></tr></thead><tbody id="contentCal"></tbody></table><p class="note" style="margin-top:8px">Pilih jenis usaha di formulir Data untuk menyesuaikan ide konten dengan sektor Anda.</p></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Halaman tautan toko</h3>
+          <p class="note">Satu tautan berisi semua pintu usaha Anda — WhatsApp, peta, marketplace, dan media sosial. Tempel di bio media sosial atau cetak sebagai QR di toko. Isi yang Anda ubah di sini tampil di halaman yang sama, tanpa tautan baru. Hanya isian di bawah ini yang tampil di halaman publik — tanpa email, tanpa lokasi GPS, tanpa rincian transaksi.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
+            <label class="f"><span>Nomor WhatsApp usaha</span><input type="tel" id="ttWa" placeholder="contoh: 081234567890" /></label>
+            <label class="f"><span>Tautan Google Maps / Profil Bisnis</span><input type="url" id="ttMaps" placeholder="contoh: https://maps.app.goo.gl/..." /></label>
+            <label class="f"><span>Tautan Tokopedia</span><input type="url" id="ttTokopedia" placeholder="contoh: https://www.tokopedia.com/namatoko" /></label>
+            <label class="f"><span>Tautan Shopee</span><input type="url" id="ttShopee" placeholder="contoh: https://shopee.co.id/namatoko" /></label>
+            <label class="f"><span>Instagram</span><input type="url" id="ttInstagram" placeholder="contoh: https://www.instagram.com/namatoko" /></label>
+            <label class="f"><span>TikTok</span><input type="url" id="ttTiktok" placeholder="contoh: https://www.tiktok.com/@namatoko" /></label>
+            <label class="f"><span>Facebook</span><input type="url" id="ttFacebook" placeholder="contoh: https://www.facebook.com/namatoko" /></label>
+            <label class="f"><span>Tautan katalog / pemesanan</span><input type="url" id="ttKatalog" placeholder="contoh: https://..." /></label>
+          </div>
+          <label class="f" style="margin-top:12px"><span>Sambutan singkat di halaman toko</span><input type="text" id="ttSambutan" placeholder="contoh: Selamat datang di Warung Kopi Senja — pesan langsung lewat WhatsApp." /></label>
+          <div class="actions" style="margin-top:12px"><button class="btn" id="btnTokoSimpan" type="button">Simpan &amp; perbarui halaman toko</button><button class="btn ghost" id="btnTokoSalin" type="button">Salin tautan toko</button><button class="btn ghost" id="btnTokoCabut" type="button">Cabut tautan toko</button></div>
+          <p class="note" id="tokoNote" role="status" style="display:none;margin-top:10px"></p>
+          <div id="tokoHasil" style="display:none;margin-top:10px"><label class="f"><span>Tautan toko Anda</span><input type="text" id="tokoLinkInput" readonly /></label></div>
         </div>
       </section>
 
@@ -6272,6 +6307,401 @@
       $("btnReport").addEventListener("click",function(){ if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh bundle siap investor"); return; } const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([fullReport()],{type:"text/plain;charset=utf-8"})); a.download="laporan-lengkap-umkm-tumbuh.txt"; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000); audit("Laporan lengkap diunduh."); toast("Laporan lengkap diunduh"); });
       $("btnReportHtml").addEventListener("click",function(){ if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh bundle siap investor"); return; } const html="<!doctype html><html lang='id'><head><meta charset='utf-8'><title>Laporan UMKM Tumbuh</title><style>body{font-family:Arial,sans-serif;max-width:800px;margin:24px auto;line-height:1.6;padding:0 16px}pre{white-space:pre-wrap}</style></head><body><h1>Laporan UMKM Tumbuh</h1><pre>"+fullReport().replace(/&/g,"&amp;").replace(/</g,"&lt;")+"</pre><p>Estimasi untuk introspeksi — bukan appraisal resmi KJPP. Cetak dari menu peramban (Bagikan / Print) bila butuh PDF.</p></body></html>"; const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"})); a.download="laporan-umkm-tumbuh.html"; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},2000); audit("Laporan cetak (.html) diunduh."); });
 
+      /* ================= GELOMBANG 1 — ekspor, impor, laporan harian =================
+         Empat item menang cepat (peta jalan Bab 5, Tabel 8). Semuanya memakai
+         data yang sudah ada — tidak ada buku kedua, tidak ada tabel baru.
+         Aturan yang dijaga di sini: tidak ada pesan galat merah (semua
+         kendala jadi popupRamah berbahasa Indonesia), tidak ada istilah
+         bank/kredit, tidak ada kata "Supabase" di UI, placeholder memakai
+         "contoh:", dan kuota gratis tetap dihormati. */
+      var __sheetJSJanji=null;
+      function loadSheetJS(){
+        if(window.XLSX) return Promise.resolve(window.XLSX);
+        if(__sheetJSJanji) return __sheetJSJanji;
+        __sheetJSJanji=new Promise(function(selesai, gagal){
+          var s=document.createElement("script");
+          s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+          var batas=setTimeout(function(){ gagal(new Error("waktu habis")); }, 15000);
+          s.onload=function(){ clearTimeout(batas); if(window.XLSX) selesai(window.XLSX); else gagal(new Error("pustaka tidak termuat")); };
+          s.onerror=function(){ clearTimeout(batas); gagal(new Error("gagal memuat")); };
+          document.head.appendChild(s);
+        });
+        __sheetJSJanji.catch(function(){ __sheetJSJanji=null; });
+        return __sheetJSJanji;
+      }
+      function angkaDariSel(teks){
+        var s=String(teks||"").replace(/Rp/g,"").replace(/ /g," ").trim();
+        var negatif=false;
+        if(s.charAt(0)==="−" || s.charAt(0)==="-"){ negatif=true; s=s.slice(1); }
+        s=s.replace(/\./g,"").replace(/,/g,".").replace(/[^\d.]/g,"");
+        var v=parseFloat(s); if(!isFinite(v)) v=0;
+        return negatif?-v:v;
+      }
+      function barisTabel(id){
+        var out=[];
+        try{
+          var tb=document.getElementById(id); if(!tb) return out;
+          var trs=tb.querySelectorAll("tr");
+          for(var i=0;i<trs.length;i++){
+            var sel=trs[i].querySelectorAll("td");
+            if(sel.length<2) continue;
+            var label=String(sel[0].textContent||"").trim().replace(/\s+/g," ");
+            var nilai=angkaDariSel(sel[1].textContent||"");
+            if(label) out.push([label, nilai]);
+          }
+        }catch(e){}
+        return out;
+      }
+      /* Angka laporan yang sama persis dengan renderReports — dipakai sebagai
+         cadangan bila tabel layar belum sempat digambar, dan oleh ringkasan
+         harian. Rumusnya disalin dari renderReports / renderPphFinal. */
+      function angkaLaporan(){
+        var agg=null, aggBln=null;
+        try{ agg=txAgg(); }catch(e){ agg={inn:0,out:0,hppTx:0,opexTx:0,net:0}; }
+        try{ aggBln=txAggBulan(); }catch(e){ aggBln={inn:0,out:0,hppTx:0,opexTx:0,net:0}; }
+        var pendapatan=0; try{ pendapatan=pendapatanBulanan(); }catch(e){ pendapatan=aggBln.inn; }
+        var omzetBln=0, hppPct=0, opex=0, gaji=0, asetData=0, utangData=0;
+        try{ omzetBln=(typeof S!=="undefined" && S.omzetBln)||0; hppPct=(typeof S!=="undefined" && S.hppPct)||0; opex=(typeof S!=="undefined" && S.opex)||0; gaji=(typeof S!=="undefined" && S.gaji)||0; asetData=(typeof S!=="undefined" && S.aset)||0; utangData=(typeof S!=="undefined" && S.utang)||0; }catch(e){}
+        var hppVal=omzetBln*hppPct+agg.hppTx;
+        var labaKotor=pendapatan-hppVal;
+        var biayaOps=opex+gaji+agg.opexTx;
+        var labaBersih=labaKotor-biayaOps;
+        var stokVal=(stocks||[]).reduce(function(a,s){ return a+(+s.qty||0)*(+s.beli||0); },0);
+        var piVal=(pis||[]).reduce(function(a,p){ return a+(+p.jumlah||0); },0);
+        var utangList=0; try{ utangList=(typeof window.__utangTotal==="function")?window.__utangTotal():0; }catch(e){}
+        var utangEff=utangList>0?utangList:utangData;
+        var totalAset=asetData+piVal;
+        var modal=totalAset-utangEff;
+        var kasMasuk=pendapatan;
+        var kasKeluarTetap=omzetBln*hppPct+opex+gaji;
+        var kasKeluarTx=agg.out;
+        var arusKasBersih=kasMasuk-kasKeluarTetap-kasKeluarTx;
+        var th=new Date().getFullYear(), omzetTahun=0;
+        (txs||[]).forEach(function(t){ if(t.jenis==="masuk" && tahunDariTgl(t.tgl)===String(th)) omzetTahun+=(+t.jumlah||0); });
+        var pph=Math.max(0, omzetTahun-500000000)*0.005;
+        return {pendapatan:pendapatan, hpp:hppVal, labaKotor:labaKotor, biayaOps:biayaOps, labaBersih:labaBersih, stokVal:stokVal, piVal:piVal, asetData:asetData, utangEff:utangEff, totalAset:totalAset, modal:modal, kasNet:agg.net, kasMasuk:kasMasuk, kasKeluarTetap:kasKeluarTetap, kasKeluarTx:kasKeluarTx, arusKasBersih:arusKasBersih, omzetTahun:omzetTahun, pph:Math.round(pph)};
+      }
+      /* --- Item 1: ekspor laporan ke Excel (angka diambil dari tabel layar,
+         supaya sama persis dengan yang tampil; cadangan: angkaLaporan) --- */
+      function eksporExcelData(XLSXLib){
+        var namaUsaha=""; try{ namaUsaha=(gid("inNama")||{}).value||""; }catch(e){}
+        var tgl=""; try{ tgl=new Date().toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }catch(e){}
+        var wb=XLSXLib.utils.book_new();
+        var lap=angkaLaporan();
+        function tambahLembar(judul, baris){
+          var aoa=[[judul+(namaUsaha?" — "+namaUsaha:""), "Diunduh "+tgl],[]];
+          baris.forEach(function(r){ aoa.push(r); });
+          var ws=XLSXLib.utils.aoa_to_sheet(aoa);
+          ws["!cols"]=[{wch:56},{wch:22},{wch:22},{wch:22},{wch:22}];
+          XLSXLib.utils.book_append_sheet(wb, ws, judul);
+        }
+        var lr=barisTabel("lrBody");
+        if(!lr.length) lr=[["Pendapatan usaha",lap.pendapatan],["Harga pokok penjualan (HPP)",-lap.hpp],["Laba kotor",lap.labaKotor],["Biaya operasional + gaji",-lap.biayaOps],["Laba bersih",lap.labaBersih]];
+        var nr=barisTabel("neracaBody");
+        if(!nr.length) nr=[["Total aset usaha (Data Usaha)",lap.asetData],["Persediaan / stok barang",lap.stokVal],["Piutang pelanggan",lap.piVal],["Kas dari catatan transaksi",lap.kasNet],["Total aset",lap.totalAset],["Utang usaha",-lap.utangEff],["Modal / aset bersih",lap.modal]];
+        var ak=barisTabel("akBody");
+        if(!ak.length) ak=[["Kas masuk — pendapatan usaha",lap.kasMasuk],["Kas keluar — HPP, operasional & gaji",-lap.kasKeluarTetap],["Kas keluar — pengeluaran transaksi",-lap.kasKeluarTx],["Arus kas bersih",lap.arusKasBersih],["Saldo kas dari catatan transaksi",lap.kasNet]];
+        var ph=barisTabel("pphBody");
+        if(!ph.length) ph=[["Omzet tahun berjalan (transaksi masuk)",lap.omzetTahun],["Batas bebas pajak per tahun",500000000],["Perkiraan PPh Final (0,5%)",lap.pph]];
+        tambahLembar("Laba Rugi", [["Uraian","Jumlah (Rp)"]].concat(lr));
+        tambahLembar("Posisi Keuangan", [["Uraian","Jumlah (Rp)"]].concat(nr));
+        tambahLembar("Arus Kas", [["Uraian","Jumlah (Rp)"]].concat(ak));
+        tambahLembar("PPh Final", [["Uraian","Jumlah (Rp)"]].concat(ph));
+        tambahLembar("Transaksi", [["Tanggal","Keterangan","Kategori","Jenis","Jumlah (Rp)"]].concat((txs||[]).map(function(t){ return [t.tgl||"", t.ket||"", t.kat||"", t.jenis||"", Math.round(+t.jumlah||0)]; })));
+        tambahLembar("Stok", [["Barang","Jumlah","Harga beli (Rp)","Harga jual (Rp)","Nilai (Rp)"]].concat((stocks||[]).map(function(s){ return [s.nama||"", Math.round(+s.qty||0), Math.round(+s.beli||0), Math.round(+s.jual||0), Math.round((+s.qty||0)*(+s.beli||0))]; })));
+        tambahLembar("Piutang", [["Pelanggan","Jatuh tempo","Jumlah (Rp)"]].concat((pis||[]).map(function(p){ return [p.nama||"", p.tempo||"", Math.round(+p.jumlah||0)]; })));
+        var daftarUtang=[];
+        try{ if(typeof window.__daftarUtang==="function") daftarUtang=window.__daftarUtang(); }catch(e){}
+        if(!daftarUtang.length){
+          try{
+            var trsU=document.querySelectorAll("#utBody tr");
+            for(var iu=0;iu<trsU.length;iu++){ var selU=trsU[iu].querySelectorAll("td"); if(selU.length>=3) daftarUtang.push({ket:String(selU[0].textContent||"").trim(), tempo:String(selU[1].textContent||"").trim(), jumlah:angkaDariSel(selU[2].textContent||"")}); }
+          }catch(e){}
+        }
+        tambahLembar("Utang", [["Keterangan","Jatuh tempo","Jumlah (Rp)"]].concat(daftarUtang.map(function(u){ return [u.ket||"", u.tempo||"", Math.round(+u.jumlah||0)]; })));
+        return {wb:wb, namaBerkas:"laporan-umkm-tumbuh.xlsx"};
+      }
+      async function unduhExcel(){
+        if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh laporan (Excel)"); return; }
+        var XLSXLib=null;
+        try{ XLSXLib=await loadSheetJS(); }catch(e){ XLSXLib=null; }
+        if(!XLSXLib){ popupRamah("Berkas Excel belum bisa dibuat","Pustaka Excel belum termuat di peramban ini.","Periksa internet Anda, lalu coba lagi."); return; }
+        try{
+          var hasil=eksporExcelData(XLSXLib);
+          XLSXLib.writeFile(hasil.wb, hasil.namaBerkas);
+          audit("Laporan Excel diunduh."); toast("Laporan Excel diunduh");
+        }catch(e){ popupRamah("Berkas Excel belum bisa dibuat","Terjadi kendala saat menyusun berkas Excel.","Coba lagi sebentar lagi."); }
+      }
+      /* --- Item 1 (PDF): laporan SAK EMKM dari tabel layar yang sama --- */
+      function barisSakPdf(){
+        var namaUsaha=""; try{ namaUsaha=(gid("inNama")||{}).value||""; }catch(e){}
+        var tgl=""; try{ tgl=new Date().toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }catch(e){}
+        var lap=angkaLaporan();
+        var out=["Laporan SAK EMKM"+(namaUsaha?" — "+namaUsaha:""), tgl, ""];
+        function bagian(judul, id, cadangan){
+          out.push(judul);
+          var rows=barisTabel(id);
+          if(!rows.length && cadangan) rows=cadangan;
+          if(!rows.length){ out.push("—"); out.push(""); return; }
+          rows.forEach(function(r){ out.push(r[0]+" : "+fmtFull(r[1])); });
+          out.push("");
+        }
+        bagian("Laporan Laba Rugi", "lrBody", [["Pendapatan usaha",lap.pendapatan],["Harga pokok penjualan (HPP)",-lap.hpp],["Laba kotor",lap.labaKotor],["Biaya operasional + gaji",-lap.biayaOps],["Laba bersih",lap.labaBersih]]);
+        bagian("Laporan Posisi Keuangan", "neracaBody", [["Total aset usaha",lap.asetData],["Persediaan / stok barang",lap.stokVal],["Piutang pelanggan",lap.piVal],["Kas dari catatan transaksi",lap.kasNet],["Total aset",lap.totalAset],["Utang usaha",-lap.utangEff],["Modal / aset bersih",lap.modal]]);
+        bagian("Laporan Arus Kas", "akBody", [["Kas masuk — pendapatan usaha",lap.kasMasuk],["Kas keluar — HPP, operasional & gaji",-lap.kasKeluarTetap],["Kas keluar — pengeluaran transaksi",-lap.kasKeluarTx],["Arus kas bersih",lap.arusKasBersih],["Saldo kas dari catatan transaksi",lap.kasNet]]);
+        bagian("Perkiraan PPh Final", "pphBody", [["Omzet tahun berjalan (transaksi masuk)",lap.omzetTahun],["Batas bebas pajak per tahun",500000000],["Perkiraan PPh Final (0,5%)",lap.pph]]);
+        out.push("Perkiraan dari data Anda sendiri — bukan penetapan pajak.");
+        return out;
+      }
+      function unduhPdfSak(){
+        if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Mengunduh laporan SAK EMKM (PDF)"); return; }
+        if(!(window.jspdf && window.jspdf.jsPDF)){ popupRamah("Unduhan PDF belum bisa dibuat","Pustaka PDF belum termuat di peramban ini.","Pakai tombol unduh .txt atau .html — isinya sama lengkapnya."); return; }
+        try{
+          var doc=new window.jspdf.jsPDF();
+          var pecah=doc.splitTextToSize(barisSakPdf().join("\n"),180);
+          doc.setFontSize(11); var y=15;
+          pecah.forEach(function(ln){ if(y>280){ doc.addPage(); y=15; } doc.text(ln,15,y); y+=6; });
+          doc.save("laporan-sak-emkm.pdf");
+          audit("Laporan SAK EMKM (PDF) diunduh."); toast("Laporan SAK EMKM (PDF) diunduh");
+        }catch(e){ popupRamah("Unduhan PDF belum bisa dibuat","Terjadi kendala saat menyusun PDF.","Coba lagi sebentar lagi."); }
+      }
+      /* --- Item 2: impor barang dari Excel/CSV --- */
+      var CONTOH_IMPOR=[
+        ["Beras 5 kg",20,68000,78000],["Beras 10 kg",12,132000,145000],["Minyak goreng 1 L",24,38000,45000],["Minyak goreng 2 L",15,74000,85000],["Gula pasir 1 kg",30,17500,20000],["Tepung terigu 1 kg",25,13000,16000],["Telur ayam 1 kg",18,28000,33000],["Mie instan goreng",100,3000,3500],["Mie instan kuah",100,3000,3500],["Kopi bubuk 100 g",20,12000,15000],
+        ["Teh celup (isi 25)",15,9000,12000],["Susu kental manis",20,13000,16000],["Kecap manis 600 ml",18,22000,26000],["Saus sambal 340 ml",15,18000,22000],["Garam dapur 500 g",40,6000,8000],["Bawang merah 1 kg",10,32000,38000],["Bawang putih 1 kg",10,38000,45000],["Cabai merah 1 kg",8,45000,55000],["Kentang 1 kg",12,18000,22000],["Wortel 1 kg",10,12000,15000],
+        ["Tomat 1 kg",12,10000,13000],["Ayam potong 1 kg",10,36000,42000],["Daging sapi 1 kg",5,125000,140000],["Ikan lele 1 kg",8,28000,33000],["Tahu putih (isi 10)",20,10000,12000],["Tempe (papan)",25,6000,8000],["Kerupuk udang 250 g",30,9000,12000],["Kerupuk kulit 100 g",20,15000,18000],["Kacang tanah 500 g",15,14000,17000],["Gula merah 1 kg",12,18000,22000],
+        ["Santan instan 65 ml",40,4000,5000],["Margarin 200 g",18,9000,11000],["Mentega 100 g",12,14000,17000],["Keju cheddar 165 g",10,22000,26000],["Roti tawar",15,15000,18000],["Air mineral 600 ml",48,3500,4000],["Air mineral 1,5 L",24,6000,7000],["Teh botol 450 ml",36,5000,6000],["Kopi sachet",100,1500,2000],["Gula sachet",100,1000,1500],
+        ["Susu UHT 1 L",12,18000,21000],["Jus jeruk 1 L",10,15000,18000],["Biskuit cokelat",25,8000,10000],["Wafer cokelat",25,7000,9000],["Permen susu",50,500,1000],["Cokelat batangan",20,10000,12000],["Sabun mandi",30,5000,6500],["Sampo sachet",100,1000,1500],["Pasta gigi",20,12000,15000],["Sikat gigi",30,6000,8000],
+      ];
+      function contohImporAOA(){ return [["Nama barang","Jumlah stok","Harga beli (Rp)","Harga jual (Rp)"]].concat(CONTOH_IMPOR); }
+      async function unduhContohImpor(){
+        var XLSXLib=null;
+        try{ XLSXLib=await loadSheetJS(); }catch(e){ XLSXLib=null; }
+        if(!XLSXLib){ popupRamah("Contoh impor belum bisa diunduh","Pustaka Excel belum termuat di peramban ini.","Periksa internet Anda, lalu coba lagi."); return; }
+        try{
+          var wb=XLSXLib.utils.book_new();
+          var ws=XLSXLib.utils.aoa_to_sheet(contohImporAOA());
+          ws["!cols"]=[{wch:28},{wch:14},{wch:18},{wch:18}];
+          XLSXLib.utils.book_append_sheet(wb, ws, "Barang");
+          XLSXLib.writeFile(wb, "contoh-impor-barang-umkm-tumbuh.xlsx");
+          audit("Contoh impor barang diunduh."); toast("Contoh impor diunduh — isi 50 barang contoh");
+        }catch(e){ popupRamah("Contoh impor belum bisa diunduh","Terjadi kendala saat menyusun berkas contoh.","Coba lagi sebentar lagi."); }
+      }
+      function angkaImpor(v){
+        if(v==null || v==="") return 0;
+        if(typeof v==="number") return v;
+        var s=String(v).trim().replace(/Rp/g,"").replace(/\s/g,"");
+        if(!s) return 0;
+        if(s.indexOf(",")>=0){ s=s.replace(/\./g,"").replace(",","."); }
+        else if(/^\d{1,3}(\.\d{3})+$/.test(s)){ s=s.replace(/\./g,""); }
+        return parseFloat(s);
+      }
+      function parseCsvTeks(teks){
+        var baris=[], cur=[], field="", dalam=false;
+        var s=String(teks||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+        for(var i=0;i<s.length;i++){
+          var c=s.charAt(i);
+          if(dalam){
+            if(c==='"'){ if(s.charAt(i+1)==='"'){ field+='"'; i++; } else { dalam=false; } }
+            else field+=c;
+          } else if(c==='"'){ dalam=true; }
+          else if(c===","){ cur.push(field); field=""; }
+          else if(c==="\n"){ cur.push(field); field=""; baris.push(cur); cur=[]; }
+          else field+=c;
+        }
+        if(field!=="" || cur.length){ cur.push(field); baris.push(cur); }
+        return baris;
+      }
+      function barisImporDariAOA(aoa){
+        var bersih=[];
+        (aoa||[]).forEach(function(r){
+          if(!r) return;
+          var sel=r.map(function(c){ return (c==null?"":String(c)).trim(); });
+          if(!sel.join("")) return;
+          bersih.push(sel);
+        });
+        var mulai=0;
+        if(bersih.length && /nama/i.test(bersih[0][0]||"")) mulai=1;
+        return {rows:bersih.slice(mulai), mulai:mulai};
+      }
+      async function sisaKuotaStok(){
+        if(!LANGGANAN_AKTIF) return Infinity;
+        var pro=false, diketahui=false, adaAkun=false;
+        try{
+          if(window.__penggunaAktif) adaAkun=!!window.__penggunaAktif();
+          if(window.__langgananAktif){ pro=await window.__langgananAktif(); diketahui=window.__proDiketahui(); }
+        }catch(e){}
+        var bukanPro = pro ? false : (diketahui || !adaAkun);
+        if(!bukanPro) return Infinity;
+        return Math.max(0, (BATAS_GRATIS.stok||0) - stocks.length);
+      }
+      async function imporDariArray(aoa){
+        var parsed=barisImporDariAOA(aoa);
+        var rows=parsed.rows, mulai=parsed.mulai;
+        if(!rows.length){ popupRamah("Berkas impor masih kosong","Berkas yang dipilih tidak berisi baris barang.","Pilih berkas contoh impor atau berkas Excel/CSV berisi daftar barang."); return {ditambah:0, duplikat:0, bermasalah:0, kenaKuota:0}; }
+        var ada={};
+        (stocks||[]).forEach(function(s){ ada[String(s.nama||"").trim().toLowerCase().replace(/\s+/g," ")]=true; });
+        var sisa=await sisaKuotaStok();
+        var ditambah=0, duplikat=0, bermasalah=0, kenaKuota=0, alasan=[];
+        for(var i=0;i<rows.length;i++){
+          var r=rows[i], noBaris=i+mulai+1;
+          var nama=String(r[0]||"").trim();
+          if(!nama){ bermasalah++; if(alasan.length<5) alasan.push("Baris "+noBaris+": nama barang kosong."); continue; }
+          var kunci=nama.toLowerCase().replace(/\s+/g," ");
+          if(ada[kunci]){ duplikat++; continue; }
+          var qty=angkaImpor(r[1]), beli=angkaImpor(r[2]), jual=angkaImpor(r[3]);
+          if(!isFinite(qty) || qty<0 || !isFinite(beli) || beli<0 || !isFinite(jual) || jual<0){
+            bermasalah++;
+            if(alasan.length<5) alasan.push("Baris "+noBaris+" ("+nama+"): jumlah atau harga bukan angka — tulis angka saja, contoh: 20 dan 68000.");
+            continue;
+          }
+          if(ditambah>=sisa){ kenaKuota++; continue; }
+          stocks.push({id:++stSeq, nama:nama, qty:Math.round(qty), beli:Math.round(beli), jual:Math.round(jual)});
+          ada[kunci]=true; ditambah++;
+        }
+        renderStock();
+        var ringkasan="Barang ditambah: "+ditambah+".";
+        if(duplikat) ringkasan+=" Sudah ada (tidak digandakan): "+duplikat+".";
+        if(bermasalah) ringkasan+=" Baris bermasalah: "+bermasalah+".";
+        if(kenaKuota) ringkasan+=" Tidak masuk karena batas gratis "+(BATAS_GRATIS.stok||0)+" stok: "+kenaKuota+".";
+        var note=$("imporStokNote");
+        if(note){ note.style.display="block"; note.textContent="Hasil impor — "+ringkasan+(alasan.length?" "+alasan.join(" "):""); }
+        popupRamah("Impor selesai", ringkasan, alasan.length?alasan.join(" "):(kenaKuota?"Naik ke Pro untuk mencatat stok tanpa batas.":"Periksa daftar stok di atas — barang baru sudah masuk."));
+        try{ audit("Impor stok: "+ditambah+" ditambah, "+duplikat+" duplikat dilewati, "+bermasalah+" bermasalah."); }catch(e){}
+        return {ditambah:ditambah, duplikat:duplikat, bermasalah:bermasalah, kenaKuota:kenaKuota};
+      }
+      async function imporBarangDariBerkas(file){
+        if(!file) return;
+        var nama=String(file.name||"").toLowerCase();
+        try{
+          var aoa=null;
+          if(/\.csv$/.test(nama)){
+            var teks=await file.text();
+            aoa=parseCsvTeks(teks);
+          } else {
+            var XLSXLib=await loadSheetJS();
+            var buf=await file.arrayBuffer();
+            var wb=XLSXLib.read(buf, {type:"array"});
+            var ws=wb.Sheets[wb.SheetNames[0]];
+            aoa=XLSXLib.utils.sheet_to_json(ws, {header:1, defval:""});
+          }
+          await imporDariArray(aoa);
+        }catch(e){
+          popupRamah("Berkas impor belum bisa dibaca","Berkas ini tidak bisa dibaca sebagai Excel atau CSV.","Pastikan berkasnya .xlsx atau .csv, lalu coba lagi — atau unduh contoh impor dan isi mengikuti formatnya.");
+        }
+      }
+      /* --- Item 4: laporan harian otomatis (email akun; WhatsApp menyusul) --- */
+      function tanggalHariIniStr(){ var d=new Date(); function dua(n){ n=String(n); return n.length<2?"0"+n:n; } return d.getFullYear()+"-"+dua(d.getMonth()+1)+"-"+dua(d.getDate()); }
+      function ringkasanHarian(){
+        var hari=tanggalHariIniStr();
+        var masukHari=0, keluarHari=0, jmlJual=0;
+        (txs||[]).forEach(function(t){ var tg=String(t.tgl||"").trim(); if(tg!==hari && tg!=="hari ini") return; if(t.jenis==="masuk"){ masukHari+=+t.jumlah||0; jmlJual++; } else { keluarHari+=+t.jumlah||0; } });
+        var aggBln=null; try{ aggBln=txAggBulan(); }catch(e){ aggBln={inn:0,out:0,net:0}; }
+        var lap=null; try{ lap=angkaLaporan(); }catch(e){ lap=null; }
+        var menipis=(stocks||[]).filter(function(s){ return (+s.qty||0)<5; }).map(function(s){ return (s.nama||"Barang")+" ("+Math.round(+s.qty||0)+")"; });
+        var piTot=(pis||[]).reduce(function(a,p){ return a+(+p.jumlah||0); },0);
+        var namaUsaha=""; try{ namaUsaha=(gid("inNama")||{}).value||""; }catch(e){}
+        var tglIndo=""; try{ tglIndo=new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"}); }catch(e){ tglIndo=hari; }
+        var baris=[];
+        baris.push("Ringkasan harian"+(namaUsaha?" — "+namaUsaha:""));
+        baris.push(tglIndo);
+        baris.push("");
+        baris.push("Hari ini:");
+        baris.push("• Omzet: "+fmtFull(masukHari)+" ("+jmlJual+" penjualan)");
+        baris.push("• Pengeluaran: "+fmtFull(keluarHari));
+        baris.push("");
+        baris.push("Bulan berjalan:");
+        baris.push("• Omzet: "+fmtFull(aggBln.inn||0));
+        if(lap) baris.push("• Laba bersih: "+fmtFull(lap.labaBersih));
+        baris.push("");
+        baris.push("Stok menipis: "+(menipis.length?menipis.join(", "):"tidak ada — semua stok cukup."));
+        baris.push("Piutang: "+fmtFull(piTot)+" dari "+(pis||[]).length+" pelanggan.");
+        baris.push("");
+        baris.push("Dibuat otomatis oleh UMKM Tumbuh dari data Anda.");
+        return {teks:baris.join("\n"), subjek:"Ringkasan harian UMKM Tumbuh — "+tglIndo+(namaUsaha?" — "+namaUsaha:""), omzetHariIni:masukHari, penjualanHariIni:jmlJual, omzetBulan:aggBln.inn||0};
+      }
+      async function kirimRingkasanHarian(otomatis){
+        if(window.__isGuestMode && window.__isGuestMode()){ if(!otomatis) window.__showRegisterGate("Mengirim ringkasan harian"); return {ok:false, tamu:true}; }
+        var ring=ringkasanHarian();
+        var token=null;
+        try{ if(typeof window.__sesiToken==="function"){ token=await window.__sesiToken(); } }catch(e){}
+        if(!token){ try{ if(typeof sb!=="undefined" && sb && sb.auth){ var ses=await sb.auth.getSession(); token=ses && ses.data && ses.data.session && ses.data.session.access_token; } }catch(e){} }
+        if(!token){ if(!otomatis) popupRamah("Ringkasan belum bisa dikirim","Sesi Anda sudah berakhir.","Masuk lagi, lalu tekan Kirim ringkasan sekarang."); return {ok:false}; }
+        try{
+          var r=await fetch("/api/laporan-harian",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({subjek:ring.subjek, isi:ring.teks})});
+          var d=null; try{ d=await r.json(); }catch(e){}
+          if(r.ok && d && d.ok){
+            try{ localStorage.setItem("umkm-introspeksi-lh-terakhir", tanggalHariIniStr()); }catch(e){}
+            var nt=$("lhNote"); if(nt){ nt.style.display="block"; nt.textContent="Terakhir terkirim "+new Date().toLocaleString("id-ID")+" ke "+(d.terkirim_ke||"email akun Anda")+"."; }
+            if(!otomatis){ try{ toast("Ringkasan harian terkirim ke email Anda"); }catch(e){} }
+            return {ok:true};
+          }
+          if(d && d.belum_aktif){
+            if(!otomatis) popupRamah("Pengiriman email belum tersambung","Layanan email untuk ringkasan harian belum diaktifkan di server.","Ringkasan hari ini sudah dibuat — tekan Salin ringkasan, lalu tempel ke email atau WhatsApp Anda.");
+            return {ok:false, belum_aktif:true};
+          }
+          if(!otomatis) popupRamah("Ringkasan belum terkirim","Pengiriman ringkasan belum berhasil — mungkin koneksi sedang terganggu.","Periksa internet Anda, lalu tekan Kirim ringkasan sekarang lagi.");
+          return {ok:false};
+        }catch(e){
+          if(!otomatis) popupRamah("Ringkasan belum terkirim","Pengiriman ringkasan belum berhasil — mungkin koneksi sedang terganggu.","Periksa internet Anda, lalu tekan Kirim ringkasan sekarang lagi.");
+          return {ok:false};
+        }
+      }
+      var __lhSudahCobaHariIni="";
+      function cekLaporanHarianOtomatis(){
+        try{
+          var st=gid("lhStatus"); if(!st || st.value!=="aktif") return;
+          var jam=parseInt((gid("lhJam")||{}).value||"7",10); if(isNaN(jam)) jam=7;
+          var skrg=new Date(); if(skrg.getHours()<jam) return;
+          var hari=tanggalHariIniStr();
+          if(__lhSudahCobaHariIni===hari) return;
+          var terakhir=""; try{ terakhir=localStorage.getItem("umkm-introspeksi-lh-terakhir")||""; }catch(e){}
+          if(terakhir===hari) return;
+          __lhSudahCobaHariIni=hari;
+          var em=gid("lhEmailTujuan"); try{ var u=(window.__penggunaAktif?window.__penggunaAktif():null); if(em && u && u.email) em.textContent=u.email; }catch(e){}
+          kirimRingkasanHarian(true);
+        }catch(e){}
+      }
+      setTimeout(cekLaporanHarianOtomatis, 15000);
+      setInterval(cekLaporanHarianOtomatis, 30*60*1000);
+      /* --- Penyambung tombol Gelombang 1 --- */
+      (function(){
+        var bC=$("btnImporContoh"); if(bC) bC.addEventListener("click", function(){ unduhContohImpor(); });
+        var bI=$("btnImporStok"); if(bI) bI.addEventListener("click", function(){ var f=$("fileImporStok"); if(f) f.click(); });
+        var fI=$("fileImporStok"); if(fI) fI.addEventListener("change", function(){ var f=fI.files && fI.files[0]; fI.value=""; if(f) imporBarangDariBerkas(f); });
+        var bE=$("btnEksporExcel"); if(bE) bE.addEventListener("click", function(){ unduhExcel(); });
+        var bP=$("btnEksporPdfSak"); if(bP) bP.addEventListener("click", function(){ unduhPdfSak(); });
+        var bK=$("btnLhKirim"); if(bK) bK.addEventListener("click", function(){ kirimRingkasanHarian(false); });
+        var bB=$("btnLhBerhenti"); if(bB) bB.addEventListener("click", function(){
+          var st=gid("lhStatus"); if(st){ st.value="mati"; }
+          var nt=$("lhNote"); if(nt){ nt.style.display="block"; nt.textContent="Langganan ringkasan harian dimatikan. Anda bisa mengaktifkannya lagi kapan saja di atas."; }
+          try{ toast("Langganan ringkasan harian dimatikan"); }catch(e){}
+        });
+        var bS=$("btnLhSalin"); if(bS) bS.addEventListener("click", function(){
+          var ring=ringkasanHarian();
+          function done(){ try{ toast("Ringkasan harian tersalin"); }catch(e){} }
+          if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(ring.teks).then(done, function(){ popupRamah("Ringkasan belum tersalin","Penyalinan otomatis belum berhasil di peramban ini.","Buka laporan di layar, lalu salin manual dari sana."); }); }
+          else popupRamah("Ringkasan belum tersalin","Penyalinan otomatis belum didukung peramban ini.","Buka laporan di layar, lalu salin manual dari sana.");
+        });
+      })();
+      /* Seam uji Gelombang 1 (pola yang sama dengan __collectSnapshot /
+         __applySnapshot): dipakai rangkaian uji otomatis, bukan oleh UI. */
+      window.__g1={
+        eksporExcelData:eksporExcelData, barisSakPdf:barisSakPdf, angkaLaporan:angkaLaporan,
+        imporDariArray:imporDariArray, contohImpor:contohImporAOA, parseCsv:parseCsvTeks,
+        ringkasanHarian:ringkasanHarian, kirimRingkasanHarian:kirimRingkasanHarian,
+        setDataUji:function(o){
+          if(o.txs){ txs.splice(0,txs.length); (o.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||null, tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0}); }); }
+          if(o.stocks){ stocks.splice(0,stocks.length); (o.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0}); }); }
+          if(o.pis){ pis.splice(0,pis.length); (o.pis||[]).forEach(function(p){ pis.push({id:++piSeq, nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—"}); }); }
+          if(o.utangs){ try{ if(typeof window.__tambahUtangUji==="function") window.__tambahUtangUji(o.utangs); }catch(e){} }
+          try{ renderTx(); }catch(e){}
+          try{ renderStock(); }catch(e){}
+          try{ renderPi(); }catch(e){}
+          try{ renderReports(); }catch(e){}
+        }
+      };
+
       /* --- BEP, arus kas, portal investor --- */
       function extraUpdate(){
         if(!S || S.omzetBln===undefined) return;
@@ -6319,7 +6749,7 @@
          investor read-only dari snapshot yang tersimpan untuk token itu.
          Penanda ini dipasang SEBELUM skrip multi-user agar gerbang masuk, sapaan,
          dan wizard tidak pernah terbuka pada mode ini. */
-      (function(){ try{ var t=new URLSearchParams(location.search).get("bagikan"); if(t){ window.__bagikanMode=true; window.__bagikanToken=t; } }catch(e){} })();
+      (function(){ try{ var t=new URLSearchParams(location.search).get("bagikan"); if(t){ window.__bagikanMode=true; window.__bagikanToken=t; } var k=new URLSearchParams(location.search).get("toko"); if(k){ window.__tokoMode=true; window.__tokoToken=k; } }catch(e){} })();
     </script>
 
     <script>
@@ -7271,6 +7701,11 @@
            aktif (tanpa ini skrip kedua tidak bisa membaca tabel langganan). */
         window.__sbAuth = function(){ return sb; };
         window.__penggunaAktif = function(){ return currentUser; };
+        /* Jembatan token sesi untuk fitur lintas-blok (mis. laporan harian):
+           klien Supabase (sb) hidup di dalam IIFE ini, jadi blok lain tidak
+           bisa membacanya langsung. Mengembalikan access_token pengguna yang
+           sedang masuk, atau null bila tidak ada sesi. */
+        window.__sesiToken = async function(){ try{ if(sb && sb.auth){ var s=await sb.auth.getSession(); return s && s.data && s.data.session && s.data.session.access_token; } }catch(e){} return null; };
 
         function gid(id){ return document.getElementById(id); }
         function uuid(){ if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(c){ var r=Math.random()*16|0, v=c==="x"?r:(r&0x3|0x8); return v.toString(16); }); }
@@ -7658,6 +8093,8 @@
 
         /* ---------- daftar utang (modul baru) ---------- */
         window.__utangTotal = function(){ return utangs.reduce(function(a,u){ return a+(+u.jumlah||0); },0); };
+        window.__daftarUtang = function(){ return utangs.map(function(u){ return {ket:u.ket, jumlah:u.jumlah, tempo:u.tempo}; }); };
+        window.__tambahUtangUji = function(daftar){ utangs.splice(0,utangs.length); (daftar||[]).forEach(function(u){ utangs.push({cid:uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—"}); }); renderUtang(); };
         function renderUtang(){
           var has=utangs.length>0;
           gid("utEmpty").style.display=has?"none":"block"; gid("utTable").style.display=has?"table":"none";
@@ -13294,6 +13731,11 @@
           renderBagikan(window.__bagikanToken);
           return; // mode ini tidak menjalankan fitur lain sama sekali
         }
+        if(window.__tokoMode){
+          document.body.classList.add("toko-mode");
+          renderToko(window.__tokoToken);
+          return; // mode ini tidak menjalankan fitur lain sama sekali
+        }
         function fmtTgl(iso){ try{ return new Date(iso).toLocaleString("id-ID",{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}); }catch(e){ return String(iso||""); } }
         function renderBagikan(token){
           var view=document.createElement("div"); view.className="portal-share-view"; view.id="portalShareView";
@@ -13309,7 +13751,7 @@
           sbExt.rpc("portal_snapshot", {p_token: token}).then(function(r){
             var row=null;
             if(!r.error && r.data){ row=Array.isArray(r.data) ? r.data[0] : r.data; }
-            if(!row || !row.data){ gagal(); return; }
+            if(!row || !row.data || row.data.jenis==="toko"){ gagal(); return; }
             var d=row.data||{}, sk=d.skor||{}, v=d.valuasi||{}, sak=d.sak_emkm||{};
             function skorCard(label, val){ return "<div class='stat'><div class='k'>"+escF(label)+"</div><div class='v'>"+(val==null?"—":escF(val)+"/100")+"</div></div>"; }
             var h="";
@@ -13324,6 +13766,55 @@
             h+="<p class='note' style='margin-top:16px'>Ringkasan ini dibuat pemilik usaha pada "+fmtTgl(d.dibuat_pada || row.created_at)+" dan dibagikan atas izinnya. Halaman ini hanya menampilkan ringkasan — tidak ada formulir, tidak ada data pribadi, dan tidak ada yang bisa diubah dari sini.</p>";
             view.innerHTML=h;
             document.title="Portal Investor — "+(d.nama_usaha||"UMKM");
+          }, function(){ gagal(); });
+        }
+
+        /* ================= 3b. MODE HALAMAN TOKO (?toko=TOKEN) =================
+           Halaman publik hanya-baca: nama usaha, sambutan, dan tautan yang
+           pemilik isi sendiri di kartu Halaman tautan toko. Dibaca lewat
+           fungsi portal_snapshot yang sama dengan mode portal berbagi —
+           token dicocokkan persis, paling banyak satu baris, dan baris
+           toko tidak pernah dirender sebagai tampilan investor (dan
+           sebaliknya). Tanpa email, tanpa nomor HP selain WhatsApp usaha
+           yang pemilik isi sendiri, tanpa lokasi GPS, tanpa transaksi. */
+        function renderToko(token){
+          var view=document.createElement("div"); view.className="portal-share-view"; view.id="tokoShareView";
+          view.innerHTML="<p class='note'>Sedang memuat halaman toko\u2026</p>";
+          document.body.appendChild(view);
+          function gagal(){
+            view.innerHTML="<span class='share-badge'>Halaman toko</span><h1 style='margin-top:16px'>Tautan toko tidak ditemukan atau sudah dicabut</h1><p class='note' style='margin-top:10px'>Tautan ini tidak lagi aktif. Minta tautan terbaru langsung kepada pemilik usaha.</p>";
+          }
+          if(!sbExt || !token){ gagal(); return; }
+          sbExt.rpc("portal_snapshot", {p_token: token}).then(function(r){
+            var row=null;
+            if(!r.error && r.data){ row=Array.isArray(r.data) ? r.data[0] : r.data; }
+            if(!row || !row.data || row.data.jenis!=="toko"){ gagal(); return; }
+            var d=row.data||{}, t=d.tautan||{};
+            function tautanBtn(label, href){ if(!href) return ""; return "<a class='btn toko-link' href='"+escF(href)+"' target='_blank' rel='noopener'>"+escF(label)+"</a>"; }
+            function waLink(no){
+              var angka=String(no||"").replace(/\D/g,"");
+              if(!angka) return "";
+              if(angka.charAt(0)==="0") angka="62"+angka.slice(1);
+              return "https://wa.me/"+angka;
+            }
+            var h="";
+            h+="<span class='share-badge'>Halaman toko</span>";
+            h+="<h1 style='margin-top:16px'>"+escF(d.nama_usaha||"Toko")+"</h1>";
+            if(d.kota) h+="<p class='note' style='margin-top:6px'>"+escF(d.kota)+(d.provinsi?" \u00b7 "+escF(d.provinsi):"")+"</p>";
+            if(d.sambutan) h+="<p style='margin-top:10px'>"+escF(d.sambutan)+"</p>";
+            h+="<div style='display:grid;gap:10px;margin-top:18px'>";
+            if(t.wa) h+=tautanBtn("Chat WhatsApp", waLink(t.wa));
+            if(t.maps) h+=tautanBtn("Lihat di Google Maps", t.maps);
+            if(t.tokopedia) h+=tautanBtn("Tokopedia", t.tokopedia);
+            if(t.shopee) h+=tautanBtn("Shopee", t.shopee);
+            if(t.instagram) h+=tautanBtn("Instagram", t.instagram);
+            if(t.tiktok) h+=tautanBtn("TikTok", t.tiktok);
+            if(t.facebook) h+=tautanBtn("Facebook", t.facebook);
+            if(t.katalog) h+=tautanBtn("Lihat katalog & pesan", t.katalog);
+            h+="</div>";
+            h+="<p class='note' style='margin-top:16px'>Halaman toko "+escF(d.nama_usaha||"usaha ini")+" — dibuat pemilik usaha lewat UMKM Tumbuh.</p>";
+            view.innerHTML=h;
+            document.title=(d.nama_usaha||"Toko")+" — Halaman Toko";
           }, function(){ gagal(); });
         }
 
@@ -13629,6 +14120,110 @@
             }catch(e){
               note.textContent="Tautan belum bisa dicabut — periksa koneksi internet Anda lalu coba lagi. Selama belum tercabut, tautan lama masih aktif.";
               try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Tautan belum bisa dicabut","Pencabutan tautan belum berhasil — mungkin koneksi internet sedang terganggu.","Periksa internet Anda, lalu coba cabut lagi. Selama belum tercabut, tautan lama masih aktif."); }catch(e2){}
+            }
+            br.disabled=false;
+          });
+        })();
+
+        /* ================= 3c. HALAMAN TAUTAN TOKO (Gelombang 1, item 3) ================
+           Pola yang sama dengan Portal Investor via tautan berbagi: token acak
+           disimpan di perangkat ini, snapshot publik ditulis ke tabel
+           portal_berbagi lewat kunci anon, dibaca publik lewat RPC
+           portal_snapshot, dicabut lewat RPC portal_cabut. Bedanya: snapshot
+           toko bertanda jenis:"toko" (tidak pernah dirender sebagai tampilan
+           investor), dan tombol "Simpan & perbarui" menulis ulang snapshot
+           dengan TOKEN YANG SAMA — jadi perubahan isi tampil di halaman yang
+           sama tanpa tautan baru. Isi halaman hanya yang pemilik isi sendiri
+           di kartu ini; tanpa email, tanpa lokasi GPS, tanpa transaksi. */
+        (function initTautanToko(){
+          var TOKO_KEY="umkm-introspeksi-toko-token";
+          var tokoToken=null;
+          try{ tokoToken=localStorage.getItem(TOKO_KEY); }catch(e){}
+          function tampilTautanToko(token){
+            var inp=gid("tokoLinkInput"); if(inp) inp.value="https://aplikasi-introspeksi-umkm.vercel.app/?toko="+token;
+            var box=gid("tokoHasil"); if(box) box.style.display="block";
+          }
+          if(tokoToken) tampilTautanToko(tokoToken);
+          function genTokenToko(){
+            var a=new Uint8Array(18);
+            if(window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+            else for(var i=0;i<a.length;i++) a[i]=Math.floor(Math.random()*256);
+            return Array.prototype.map.call(a, function(b){ return ("0"+b.toString(16)).slice(-2); }).join("");
+          }
+          function rapikanTautan(u){
+            var s=String(u||"").trim();
+            if(!s) return "";
+            if(/^https?:\/\//i.test(s)) return s;
+            return "https://"+s;
+          }
+          function buildTokoSnapshot(){
+            return {
+              jenis:"toko",
+              nama_usaha:(gid("inNama")||{}).value||"",
+              kota:(gid("inKota")||{}).value||"",
+              provinsi:(gid("inProvinsi")||{}).value||"",
+              sambutan:(gid("ttSambutan")||{}).value||"",
+              tautan:{
+                wa:String((gid("ttWa")||{}).value||"").trim(),
+                maps:rapikanTautan((gid("ttMaps")||{}).value||""),
+                tokopedia:rapikanTautan((gid("ttTokopedia")||{}).value||""),
+                shopee:rapikanTautan((gid("ttShopee")||{}).value||""),
+                instagram:rapikanTautan((gid("ttInstagram")||{}).value||""),
+                tiktok:rapikanTautan((gid("ttTiktok")||{}).value||""),
+                facebook:rapikanTautan((gid("ttFacebook")||{}).value||""),
+                katalog:rapikanTautan((gid("ttKatalog")||{}).value||"")
+              },
+              dibuat_pada:new Date().toISOString()
+            };
+          }
+          var bs=gid("btnTokoSimpan");
+          if(bs) bs.addEventListener("click", async function(){
+            if(window.__isGuestMode && window.__isGuestMode()){ window.__showRegisterGate("Membuat halaman tautan toko"); return; }
+            var note=gid("tokoNote");
+            if(!sbExt){ if(note){ note.style.display="block"; note.textContent="Halaman toko belum bisa disimpan — koneksi cloud belum termuat. Isian di atas tetap tersimpan di perangkat ini."; } return; }
+            bs.disabled=true;
+            if(note){ note.style.display="block"; note.textContent="Sedang menyimpan halaman toko…"; }
+            var token=tokoToken;
+            try{
+              if(token){ try{ await sbExt.rpc("portal_cabut", {p_token: token}); }catch(e){} }
+              else { token=genTokenToko(); }
+              var r=await sbExt.from("portal_berbagi").insert({token:token, data:buildTokoSnapshot()});
+              if(r.error) throw r.error;
+              tokoToken=token;
+              try{ localStorage.setItem(TOKO_KEY, token); }catch(e){}
+              tampilTautanToko(token);
+              if(note) note.textContent="Halaman toko diperbarui pada "+new Date().toLocaleString("id-ID")+". Tautan di bawah tetap sama — perubahan isi langsung tampil di halaman itu.";
+              try{ audit("Halaman tautan toko diperbarui."); }catch(e){}
+              try{ toast("Halaman toko diperbarui"); }catch(e){}
+            }catch(e){
+              if(note) note.textContent="Halaman toko belum bisa disimpan — penyimpanan tautan di cloud belum tersedia. Isian di atas tetap tersimpan di perangkat ini.";
+              try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Halaman toko belum bisa disimpan","Penyimpanan tautan di cloud belum tersedia saat ini.","Isian di atas tetap tersimpan di perangkat ini — coba lagi sebentar lagi."); }catch(e2){}
+            }
+            bs.disabled=false;
+          });
+          var bc=gid("btnTokoSalin");
+          if(bc) bc.addEventListener("click", function(){
+            var inp=gid("tokoLinkInput"); if(!inp || !inp.value) return;
+            function done(){ try{ toast("Tautan toko tersalin — siap ditempel di bio atau dicetak sebagai QR"); }catch(e){} }
+            if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(inp.value).then(done, function(){ inp.select(); try{ document.execCommand("copy"); done(); }catch(e){} }); }
+            else { inp.select(); try{ document.execCommand("copy"); done(); }catch(e){} }
+          });
+          var br=gid("btnTokoCabut");
+          if(br) br.addEventListener("click", async function(){
+            var note=gid("tokoNote");
+            if(!tokoToken){ if(note){ note.style.display="block"; note.textContent="Belum ada tautan toko yang aktif di perangkat ini."; } return; }
+            br.disabled=true; if(note){ note.style.display="block"; note.textContent="Sedang mencabut tautan toko…"; }
+            try{
+              if(sbExt){ await sbExt.rpc("portal_cabut", {p_token: tokoToken}); }
+              tokoToken=null;
+              try{ localStorage.removeItem(TOKO_KEY); }catch(e){}
+              var box=gid("tokoHasil"); if(box) box.style.display="none";
+              var inp=gid("tokoLinkInput"); if(inp) inp.value="";
+              if(note) note.textContent="Tautan toko sudah dicabut — tautan lama tidak bisa dibuka lagi. Anda bisa membuat tautan baru kapan saja.";
+              try{ audit("Tautan toko dicabut."); }catch(e){}
+            }catch(e){
+              if(note) note.textContent="Tautan toko belum bisa dicabut — periksa koneksi internet Anda lalu coba lagi. Selama belum tercabut, tautan lama masih aktif.";
+              try{ if(window.tampilPopupRamah) window.tampilPopupRamah("Tautan toko belum bisa dicabut","Pencabutan tautan belum berhasil — mungkin koneksi internet sedang terganggu.","Periksa internet Anda, lalu coba cabut lagi. Selama belum tercabut, tautan lama masih aktif."); }catch(e2){}
             }
             br.disabled=false;
           });
