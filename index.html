@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#0d1411" />
+    <link rel="manifest" href="manifest.webmanifest" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -2143,6 +2144,13 @@
           <div id="g6DashboardPusat" style="margin-top:10px"></div>
           <div id="g6LaporanCabang" style="margin-top:10px"></div>
         </div>
+        <div class="card" style="margin-top:14px" id="g7PpobCard">
+          <h3>PPOB — pulsa, paket data &amp; token listrik (Gelombang 7)</h3>
+          <p class="note">Layanan tambahan di meja kasir: pulsa, paket data, dan token listrik. Margin selalu dihitung (harga jual − harga mitra), tidak pernah diketik.</p>
+          <div id="g7PpobRingkasan" style="margin-top:10px"></div>
+          <p class="note" style="margin-top:8px">Kelola di Mode Kasir → PPOB. Mode contoh: semua harga berlabel contoh dan pesanan tidak masuk pembukuan.</p>
+        </div>
+
       </section>
 
       <!-- ============ 9. CEK DATA LOKAL ============ -->
@@ -2230,7 +2238,7 @@
             <div><div class="k">Total keranjang</div><div class="v" id="posBarTotal">Rp 0</div><div class="k" id="posBarItem">0 item</div></div>
             <button class="btn" id="posBtnKeranjang" type="button">Lihat keranjang</button>
           </div>
-          <div class="actions" style="margin-top:12px"><button class="btn ghost" id="posBtnJualRiwayat" type="button">Riwayat &amp; tutup kas</button><button class="btn ghost" id="posBtnJualPengaturan" type="button">Pengaturan kasir</button><button class="btn ghost" id="posBtnJualPelanggan" type="button">Pelanggan</button><button class="btn ghost" id="posBtnJualMeja" type="button">Meja &amp; antrean</button><button class="btn ghost" id="posBtnJualAnalisis" type="button">Analisis kasir</button></div>
+          <div class="actions" style="margin-top:12px"><button class="btn ghost" id="posBtnJualRiwayat" type="button">Riwayat &amp; tutup kas</button><button class="btn ghost" id="posBtnJualPengaturan" type="button">Pengaturan kasir</button><button class="btn ghost" id="posBtnJualPelanggan" type="button">Pelanggan</button><button class="btn ghost" id="posBtnJualMeja" type="button">Meja &amp; antrean</button><button class="btn ghost" id="posBtnJualAnalisis" type="button">Analisis kasir</button><button class="btn ghost" id="posBtnJualPpob" type="button">PPOB — pulsa &amp; token</button></div>
         </div>
 
         <div id="posViewKeranjang" style="display:none">
@@ -2503,6 +2511,15 @@
             <div class="actions" style="margin-top:12px"><button class="btn ghost" id="posBtnAnalisisJual" type="button">Kembali ke layar jual</button></div>
           </div>
         </div>
+        <div id="posViewPpob" style="display:none">
+          <div class="card">
+            <h3>PPOB — pulsa, paket data &amp; token listrik</h3>
+            <p class="note" style="margin-top:6px">Jual pulsa, paket data, dan token listrik dari meja kasir. Mode contoh adalah bawaan — semua harga berlabel contoh dan pesanan tidak masuk pembukuan sampai ada mitra PPOB.</p>
+            <div id="g7PpobDaftar" style="margin-top:10px"></div>
+            <div class="actions" style="margin-top:12px"><button class="btn ghost" id="posBtnPpobJual" type="button">Kembali ke layar jual</button></div>
+          </div>
+        </div>
+
       </section>
 
       <section id="cekdata">
@@ -7291,7 +7308,7 @@
         imporDariArray:imporDariArray, contohImpor:contohImporAOA, parseCsv:parseCsvTeks,
         ringkasanHarian:ringkasanHarian, kirimRingkasanHarian:kirimRingkasanHarian,
         setDataUji:function(o){
-          if(o.txs){ txs.splice(0,txs.length); (o.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||null, tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, utangSupplier:!!t.utangSupplier, pelunasanUtang:!!t.pelunasanUtang, pembelianCid:t.pembelianCid||null, gaji:!!t.gaji, invoiceCid:t.invoiceCid||null, posCid:t.posCid||null}); }); }
+          if(o.txs){ txs.splice(0,txs.length); (o.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||null, tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, utangSupplier:!!t.utangSupplier, pelunasanUtang:!!t.pelunasanUtang, pembelianCid:t.pembelianCid||null, gaji:!!t.gaji, invoiceCid:t.invoiceCid||null, posCid:t.posCid||null, ppob:!!t.ppob}); }); }
           if(o.stocks){ stocks.splice(0,stocks.length); (o.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||null, nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0, kat:s.kat||"Lainnya", grosir:+s.grosir||0, minGrosir:+s.minGrosir||10, kode:s.kode||"", varian:Array.isArray(s.varian)?s.varian:[], favorit:!!s.favorit, tanpaStok:!!s.tanpaStok, bahan:!!s.bahan, lapisan:Array.isArray(s.lapisan)?s.lapisan.map(function(l){ return {cid:l.cid||null, harga:+l.harga||0, sisa:+l.sisa||0, tgl:l.tgl||"", sumber:l.sumber||"awal", sudahBiaya:!!l.sudahBiaya}; }):[]}); }); }
           if(o.pis){ pis.splice(0,pis.length); (o.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||null, nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—", batal:!!p.batal, posCid:p.posCid||null, invoiceCid:p.invoiceCid||null}); }); }
           if(o.utangs){ try{ if(typeof window.__tambahUtangUji==="function") window.__tambahUtangUji(o.utangs); }catch(e){} }
@@ -7358,7 +7375,7 @@
         try{ var s=+localStorage.getItem(POS_PIN_KUNCI_KEY)||0; return s>Date.now()?s:0; }catch(e){ return 0; }
       }
       /* ---------- tampilan antar-pandang kasir ---------- */
-      var POS_VIEWS=["Pin","Shift","Jual","Keranjang","Bayar","Struk","Riwayat","Pengaturan","Katalog","Pelanggan","Meja","Analisis"];
+      var POS_VIEWS=["Pin","Shift","Jual","Keranjang","Bayar","Struk","Riwayat","Pengaturan","Katalog","Pelanggan","Meja","Analisis","Ppob"];
       function posTampil(nama){
         POS_VIEWS.forEach(function(v){ var el=gid("posView"+v); if(el) el.style.display=(v===nama)?"":"none"; });
         if(nama==="Shift") posRenderShift();
@@ -7370,6 +7387,7 @@
         if(nama==="Pelanggan"){ try{ posRenderPelanggan(); }catch(e){} }
         if(nama==="Meja"){ try{ if(typeof g6RenderMeja==="function") g6RenderMeja(); }catch(e){} }
         if(nama==="Analisis"){ try{ if(typeof g6RenderAnalisis==="function") g6RenderAnalisis(); }catch(e){} }
+        if(nama==="Ppob"){ try{ if(typeof g7RenderPpob==="function") g7RenderPpob(); }catch(e){} }
         if(nama==="Katalog") posRenderKatalog();
         posPerbaruiChip();
       }
@@ -13337,6 +13355,409 @@ window.__g6={
   else initG6();
 })();
 
+/* ================= GELOMBANG 7 — PPOB (PULSA, PAKET DATA, TOKEN LISTRIK) =================
+   Butir 50 Tabel Induk peta jalan. Butir 48 (Android/iOS resmi) dan 49
+   (desktop PC) TIDAK berupa kode di aplikasi web — persiapannya ada di
+   folder native/ di repo (konfigurasi Capacitor + Electron + panduan
+   penerbitan); lihat laporan-bangun-gelombang-7.md.
+   Keputusan Bab 14 yang diterapkan di sini (usulan bawaan peta jalan):
+   - PPOB (keputusan 2): BAWAAAN = TUNDA sampai ada mitra dengan
+     pengembalian saldo OTOMATIS yang tercatat; PPOB tidak boleh menggerus
+     kepercayaan kasir utama demi margin kecil. Karena itu modul ini
+     dibangun LENGKAP tetapi bawaan MODE CONTOH: alur pemesanan jalan
+     penuh, harga berlabel contoh, pesanan hanya tercatat di riwayat
+     PPOB — TIDAK masuk pembukuan, TIDAK memakai kuota, TIDAK menyentuh
+     mitra mana pun. Mode live hanya bisa dinyalakan pemilik usaha
+     sesudah mitra + kunci API server + deposit diatur (lihat pengaturan
+     di bawah dan /api/ppob.js); tanpa itu, percobaan menyalakan live
+     ditolak dengan popup ramah dan mode tetap contoh.
+   - Waktu aplikasi native (keputusan 3): sesudah Gelombang 6 tuntas —
+     Gelombang 6 sudah tuntas, jadi pembungkus native disiapkan sekarang;
+     versi web tetap menjadi jalur pembaruan utama (pembungkus memuat
+     URL live, bukan salinan kode).
+   Arsitektur mengikuti Gelombang 4–6: modul disuntik ke blok <script>
+   yang sama dengan kode POS, tepat sebelum penyambung Gelombang 4; seam
+   window.__g7; kunci snapshot baru g7Ppob/g7PpobPengaturan (per-usaha
+   aktif, seperti kunci G6); sub-tampilan POS baru "Ppob".
+   Model data:
+   - KATALOG (contoh): 20 produk — Pulsa 4 operator x 3 nominal, Paket
+     Data 4 paket, Token Listrik 4 nominal. Harga jual contoh dan harga
+     mitra contoh tertulis di katalog; MARGIN SELALU DIHITUNG (harga jual
+     efektif - harga mitra), tidak pernah diketik. Margin tambahan
+     (pengaturan, bawaan Rp 0) ditambahkan ke harga jual semua produk.
+   - RIWAYAT g7Ppob: [{cid, waktu, produk, kategori, operator, tujuan,
+     hargaJual, hargaMitra, margin, status, mode, serial, kasir,
+     txMasukCid, txBiayaCid, catatan}]. status: "contoh" | "berhasil" |
+     "gagal". Serial contoh diawali "CTH-".
+   - PENGATURAN g7PpobPengaturan: {mode:"contoh"|"live", mitra:"",
+     marginTambahan:0, aktif:true}. mitra dan tarif adalah PENGATURAN,
+     bukan tertanam mati — daftar harga mitra nyata menggantikan katalog
+     contoh lewat endpoint /api/ppob (bukan lewat edit kode).
+   - PENCATATAN (hanya mode live): penjualan dicatat sebagai 1 transaksi
+     MASUK (harga jual, lewat tambahTransaksi — JADI memakai kuota yang
+     sama seperti penjualan kasir) + 1 baris KELUAR biaya mitra
+     (kat "Biaya mitra PPOB", tanpa kuota — seperti baris HPP G4, dengan
+     penanda ppob:true). Transaksi gagal: siapa menanggungnya mengikuti
+     kontrak mitra — endpoint wajib mengembalikan saldo_dikembalikan bila
+     mitra mengembalikan saldo; kegagalan dicatat di riwayat, tidak
+     pernah diam-diam.
+   ATURAN KERAS: tanpa pesan galat merah (semua popup ramah), tanpa
+   istilah lembaga keuangan, tanpa nama layanan cloud di UI, placeholder memakai
+   "contoh:". Kunci DeepSeek TIDAK PERNAH di frontend. PPOB tidak pernah
+   menampilkan saldo/kunci/deposit nyata; semua angka sebelum mitra nyata
+   terhubung berlabel contoh.
+   Pelajaran gelombang sebelumnya yang dipakai di sini: jangan panggil
+   gid() saat parse (semua wiring di DOMContentLoaded); salin nilai
+   snapshot (jangan simpan referensi hidup); seam uji window.__g7. */
+
+var g7Ppob=[];            /* riwayat pesanan PPOB */
+var g7PpobPengaturan={mode:"contoh", mitra:"", marginTambahan:0, aktif:true};
+var g7Kategori="Pulsa";   /* tab aktif di layar PPOB */
+var g7Operator="Telkomsel";
+var g7ProdukCid=null;     /* produk yang dipilih */
+var g7StrukTerakhir="";   /* teks struk pesanan terakhir */
+
+/* Katalog contoh — harga dalam rupiah. Margin pulsa & token Rp 750,
+   paket data Rp 1.000–4.000 (dihitung tangan, lihat uji-g7.js). */
+var G7_KATALOG=[
+  {cid:"ppob-pulsa-telkomsel-10", kategori:"Pulsa", operator:"Telkomsel", nama:"Pulsa Telkomsel 10.000", nominal:10000, hargaJual:11500, hargaMitra:10750},
+  {cid:"ppob-pulsa-telkomsel-20", kategori:"Pulsa", operator:"Telkomsel", nama:"Pulsa Telkomsel 20.000", nominal:20000, hargaJual:21500, hargaMitra:20750},
+  {cid:"ppob-pulsa-telkomsel-50", kategori:"Pulsa", operator:"Telkomsel", nama:"Pulsa Telkomsel 50.000", nominal:50000, hargaJual:51500, hargaMitra:50750},
+  {cid:"ppob-pulsa-indosat-10", kategori:"Pulsa", operator:"Indosat", nama:"Pulsa Indosat 10.000", nominal:10000, hargaJual:11500, hargaMitra:10750},
+  {cid:"ppob-pulsa-indosat-20", kategori:"Pulsa", operator:"Indosat", nama:"Pulsa Indosat 20.000", nominal:20000, hargaJual:21500, hargaMitra:20750},
+  {cid:"ppob-pulsa-indosat-50", kategori:"Pulsa", operator:"Indosat", nama:"Pulsa Indosat 50.000", nominal:50000, hargaJual:51500, hargaMitra:50750},
+  {cid:"ppob-pulsa-xl-10", kategori:"Pulsa", operator:"XL", nama:"Pulsa XL 10.000", nominal:10000, hargaJual:11500, hargaMitra:10750},
+  {cid:"ppob-pulsa-xl-20", kategori:"Pulsa", operator:"XL", nama:"Pulsa XL 20.000", nominal:20000, hargaJual:21500, hargaMitra:20750},
+  {cid:"ppob-pulsa-xl-50", kategori:"Pulsa", operator:"XL", nama:"Pulsa XL 50.000", nominal:50000, hargaJual:51500, hargaMitra:50750},
+  {cid:"ppob-pulsa-tri-10", kategori:"Pulsa", operator:"Tri", nama:"Pulsa Tri 10.000", nominal:10000, hargaJual:11500, hargaMitra:10750},
+  {cid:"ppob-pulsa-tri-20", kategori:"Pulsa", operator:"Tri", nama:"Pulsa Tri 20.000", nominal:20000, hargaJual:21500, hargaMitra:20750},
+  {cid:"ppob-pulsa-tri-50", kategori:"Pulsa", operator:"Tri", nama:"Pulsa Tri 50.000", nominal:50000, hargaJual:51500, hargaMitra:50750},
+  {cid:"ppob-data-1gb", kategori:"Paket Data", operator:"Semua operator", nama:"Paket Data 1 GB / 3 hari", nominal:0, hargaJual:12000, hargaMitra:11000},
+  {cid:"ppob-data-3gb", kategori:"Paket Data", operator:"Semua operator", nama:"Paket Data 3 GB / 7 hari", nominal:0, hargaJual:25000, hargaMitra:23500},
+  {cid:"ppob-data-10gb", kategori:"Paket Data", operator:"Semua operator", nama:"Paket Data 10 GB / 30 hari", nominal:0, hargaJual:55000, hargaMitra:52000},
+  {cid:"ppob-data-25gb", kategori:"Paket Data", operator:"Semua operator", nama:"Paket Data 25 GB / 30 hari", nominal:0, hargaJual:95000, hargaMitra:91000},
+  {cid:"ppob-token-20", kategori:"Token Listrik", operator:"PLN", nama:"Token Listrik 20.000", nominal:20000, hargaJual:21500, hargaMitra:20750},
+  {cid:"ppob-token-50", kategori:"Token Listrik", operator:"PLN", nama:"Token Listrik 50.000", nominal:50000, hargaJual:51500, hargaMitra:50750},
+  {cid:"ppob-token-100", kategori:"Token Listrik", operator:"PLN", nama:"Token Listrik 100.000", nominal:100000, hargaJual:101500, hargaMitra:100750},
+  {cid:"ppob-token-200", kategori:"Token Listrik", operator:"PLN", nama:"Token Listrik 200.000", nominal:200000, hargaJual:201500, hargaMitra:200750}
+];
+var G7_KATEGORI=["Pulsa","Paket Data","Token Listrik"];
+var G7_OPERATOR=["Telkomsel","Indosat","XL","Tri"];
+
+function g7Uuid(){ try{ if(typeof posUuid==="function") return posUuid(); }catch(e){} try{ if(typeof uuid==="function") return uuid(); }catch(e){} return "g7-"+Date.now().toString(36)+"-"+Math.floor(Math.random()*1000000000).toString(36); }
+function g7Sekarang(){ try{ if(typeof posWaktuSekarang==="function") return posWaktuSekarang(); }catch(e){} return new Date().toISOString(); }
+function g7HariIni(){ try{ if(typeof tglIsoHariIni==="function") return tglIsoHariIni(); }catch(e){} var d=new Date(); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }
+function g7Popup(judul, apa, lakukan, opsi){ try{ if(typeof popupRamah==="function"){ popupRamah(judul, apa, lakukan, opsi); return; } }catch(e){} try{ if(typeof toast==="function") toast(judul+": "+apa); }catch(e){} }
+function g7Esc(s){ try{ if(typeof esc==="function") return esc(s); }catch(e){} return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function g7Rp(n){ try{ if(typeof fmtFull==="function") return fmtFull(n); }catch(e){} return "Rp "+Math.round(+n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,"."); }
+function g7AdalahTamu(){ try{ return !!(window.__isGuestMode && window.__isGuestMode()); }catch(e){} return false; }
+function g7NamaKasir(){ try{ if(typeof posIdentitas!=="undefined" && posIdentitas && posIdentitas.nama) return posIdentitas.nama; }catch(e){} return "Kasir"; }
+
+/* ---------- katalog & harga ---------- */
+function g7KatalogCari(cid){ for(var i=0;i<G7_KATALOG.length;i++){ if(G7_KATALOG[i].cid===cid) return G7_KATALOG[i]; } return null; }
+function g7MarginTambahan(){ var m=Math.round(+((g7PpobPengaturan||{}).marginTambahan)||0); return m<0?0:m; }
+function g7HargaJual(p){ return Math.round((+p.hargaJual||0)+g7MarginTambahan()); }
+function g7Margin(p){ return Math.round(g7HargaJual(p)-(+p.hargaMitra||0)); }
+function g7ProdukTampil(){ return G7_KATALOG.filter(function(p){ if(p.kategori!==g7Kategori) return false; if(g7Kategori==="Pulsa" && p.operator!==g7Operator) return false; return true; }); }
+function g7Mode(){ return ((g7PpobPengaturan||{}).mode==="live")?"live":"contoh"; }
+function g7Mitra(){ return String((g7PpobPengaturan||{}).mitra||"").trim(); }
+
+/* ---------- validasi tujuan ---------- */
+function g7NormalisasiNomor(teks){
+  var d=String(teks||"").replace(/\D/g,"");
+  if(d.indexOf("62")===0) d="0"+d.slice(2);
+  return d;
+}
+function g7TujuanSah(tujuan, kategori){
+  var t=String(tujuan||"").trim();
+  if(kategori==="Token Listrik") return /^\d{11,12}$/.test(t)?t:null;
+  var d=g7NormalisasiNomor(t);
+  return /^08\d{8,11}$/.test(d)?d:null;
+}
+function g7LabelTujuan(kategori){ return kategori==="Token Listrik"?"Nomor meter / ID pelanggan (11–12 angka)":"Nomor HP tujuan (contoh: 081234567890)"; }
+
+/* ---------- struk ---------- */
+function g7TeksStruk(r){
+  var baris=[];
+  baris.push("UMKM Tumbuh — PPOB"+(r.mode==="contoh"?" (CONTOH)":""));
+  baris.push(r.produk);
+  baris.push("Tujuan: "+r.tujuan);
+  baris.push("Harga jual: "+g7Rp(r.hargaJual)+(r.mode==="contoh"?" (contoh)":""));
+  if(r.mode==="contoh") baris.push("Harga mitra: "+g7Rp(r.hargaMitra)+" (contoh)");
+  baris.push("Margin: "+g7Rp(r.margin));
+  baris.push("Nomor: "+r.serial);
+  baris.push("Status: "+(r.status==="contoh"?"Contoh — bukan transaksi nyata":r.status==="berhasil"?"Berhasil":"Gagal"));
+  baris.push("Kasir: "+r.kasir+" · "+String(r.waktu||"").slice(0,19).replace("T"," "));
+  if(r.mode==="contoh") baris.push("Pesanan contoh ini tidak masuk pembukuan dan tidak mengurangi saldo apa pun.");
+  return baris.join("\n");
+}
+
+/* ---------- pemesanan ---------- */
+function g7Pesan(){
+  var p=g7KatalogCari(g7ProdukCid);
+  if(!p){ g7Popup("Pilih dulu produknya","Pilih salah satu produk PPOB — pulsa, paket data, atau token listrik — sebelum memproses pesanan.","Ketuk produknya, lalu tekan Proses pesanan."); return false; }
+  var tujuanEl=null; try{ tujuanEl=gid("g7Tujuan"); }catch(e){}
+  var tujuanMentah=tujuanEl?tujuanEl.value:"";
+  var tujuan=g7TujuanSah(tujuanMentah, p.kategori);
+  if(!tujuan){
+    if(p.kategori==="Token Listrik") g7Popup("Nomor meter belum benar","Nomor meter / ID pelanggan token listrik harus 11–12 angka.","Periksa lagi nomornya, lalu tekan Proses pesanan.");
+    else g7Popup("Nomor HP belum benar","Nomor HP tujuan harus diawali 08 dan panjangnya 10–13 angka.","Periksa lagi nomornya, lalu tekan Proses pesanan.");
+    return false;
+  }
+  var mode=g7Mode();
+  var hargaJual=g7HargaJual(p), hargaMitra=+p.hargaMitra||0, margin=g7Margin(p);
+  var ringkas="Produk: "+p.nama+"\nTujuan: "+tujuan+"\nHarga jual: "+g7Rp(hargaJual)+(mode==="contoh"?" (contoh)":"")+"\nHarga mitra: "+g7Rp(hargaMitra)+(mode==="contoh"?" (contoh)":"")+"\nMargin: "+g7Rp(margin)+"\nMode: "+(mode==="contoh"?"Contoh — bukan transaksi nyata":"Live");
+  /* Konfirmasi lewat tombol aksi popup (pola aplikasi): pengguna menekan
+     tombol aksi untuk melanjutkan; menutup popup berarti batal. */
+  g7Popup("Proses pesanan PPOB ini?", ringkas, mode==="contoh"?"Tekan 'Ya, proses (contoh)' — pesanan hanya tercatat di riwayat PPOB dan tidak masuk pembukuan.":"Tekan 'Ya, proses' — penjualan dan biaya mitra akan tercatat di pembukuan.", {label:mode==="contoh"?"Ya, proses (contoh)":"Ya, proses", fn:function(){ g7ProsesPesanan(p, tujuan, hargaJual, hargaMitra, margin, mode); }});
+  return true;
+}
+
+async function g7ProsesPesanan(p, tujuan, hargaJual, hargaMitra, margin, mode){
+  var r={cid:g7Uuid(), waktu:g7Sekarang(), produk:p.nama, kategori:p.kategori, operator:p.operator, tujuan:tujuan,
+    hargaJual:hargaJual, hargaMitra:hargaMitra, margin:margin, status:"contoh", mode:mode, serial:"", kasir:g7NamaKasir(),
+    txMasukCid:null, txBiayaCid:null, catatan:""};
+  if(mode==="contoh"){
+    r.status="contoh";
+    r.serial="CTH-"+String(Math.floor(100000+Math.random()*900000));
+    r.catatan="Pesanan contoh — belum terhubung ke mitra, tidak masuk pembukuan.";
+    g7Ppob.push(r);
+    g7StrukTerakhir=g7TeksStruk(r);
+    try{ g7RenderSemua(); }catch(e){}
+    try{ if(typeof saveData==="function") saveData(); }catch(e){}
+    g7Popup("Pesanan contoh tercatat","Pesanan "+p.nama+" untuk "+tujuan+" tercatat sebagai contoh (nomor "+r.serial+").","Harga di atas adalah contoh — belum ada pulsa, paket data, atau token yang benar-benar terkirim.");
+    return true;
+  }
+  /* Mode live: tamu tidak boleh — pesanan live butuh akun usaha. */
+  if(g7AdalahTamu()){
+    g7Popup("Masuk dulu dengan akun usaha","Pesanan PPOB live hanya bisa dibuat sesudah masuk dengan akun usaha — data tamu tidak terhubung ke mitra.","Masuk atau daftar dulu, lalu ulangi pesanan ini.");
+    return false;
+  }
+  var serial="", gagal="";
+  try{
+    var resp=await fetch("/api/ppob", {method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({aksi:"beli", produk:p.cid, tujuan:tujuan, hargaJual:hargaJual, hargaMitra:hargaMitra})});
+    var j=null; try{ j=await resp.json(); }catch(e){}
+    if(resp && resp.ok && j && j.ok){ serial=String(j.serial||""); }
+    else { gagal=(j && j.error)?String(j.error):"Mitra belum menjawab — pesanan tidak diproses."; }
+  }catch(e){ gagal="Tidak bisa menghubungi layanan PPOB — periksa internet, lalu coba lagi."; }
+  if(gagal){
+    r.status="gagal"; r.catatan=gagal;
+    g7Ppob.push(r);
+    try{ g7RenderSemua(); }catch(e){}
+    try{ if(typeof saveData==="function") saveData(); }catch(e){}
+    g7Popup("Pesanan PPOB gagal", gagal, "Tidak ada uang yang tercatat — coba lagi nanti, atau hubungi pemilik usaha bila pesanan sudah dibayar pelanggan.");
+    return false;
+  }
+  /* Mitra menjawab berhasil — catat penjualan (pakai kuota) + biaya mitra. */
+  var okMasuk=false;
+  try{ okMasuk=await tambahTransaksi("PPOB "+p.nama+" — "+tujuan, Math.round(hargaJual), "masuk", "Penjualan PPOB"); }catch(e){ okMasuk=false; }
+  if(!okMasuk){
+    r.status="gagal"; r.catatan="Kuota transaksi bulan ini sudah habis — penjualan tidak tercatat. Mitra sudah memproses; hubungi pemilik usaha untuk menindaklanjuti nomor "+serial+".";
+    g7Ppob.push(r);
+    try{ g7RenderSemua(); }catch(e){}
+    try{ if(typeof saveData==="function") saveData(); }catch(e){}
+    g7Popup("Kuota transaksi sudah habis","Kuota gratis bulan ini sudah habis, jadi penjualan PPOB ini tidak bisa dicatat.","Naikkan paket atau tunggu bulan depan — simpan nomor "+serial+" untuk ditindaklanjuti pemilik usaha.");
+    return false;
+  }
+  var biayaCid=g7Uuid();
+  try{
+    txs.push({id:++txSeq, cid:biayaCid, tgl:g7HariIni(), ket:"Biaya mitra PPOB — "+p.nama+" ("+g7Mitra()+")", jenis:"keluar", kat:"Biaya mitra PPOB", jumlah:Math.round(hargaMitra), ppob:true, posCid:null});
+    if(typeof renderTx==="function") renderTx();
+  }catch(e){}
+  r.status="berhasil"; r.serial=serial; r.txBiayaCid=biayaCid;
+  try{ var tMasuk=null; for(var i=txs.length-1;i>=0;i--){ if(txs[i] && txs[i].kat==="Penjualan PPOB" && String(txs[i].ket||"").indexOf(tujuan)>=0){ tMasuk=txs[i]; break; } } if(tMasuk) r.txMasukCid=tMasuk.cid||null; }catch(e){}
+  g7Ppob.push(r);
+  g7StrukTerakhir=g7TeksStruk(r);
+  try{ g7RenderSemua(); }catch(e){}
+  try{ if(typeof saveData==="function") saveData(); }catch(e){}
+  g7Popup("Pesanan PPOB berhasil","Pesanan "+p.nama+" untuk "+tujuan+" berhasil (nomor "+serial+"). Margin "+g7Rp(margin)+" tercatat di pembukuan.","Struk bisa dibagikan ke pelanggan dari layar PPOB.");
+  return true;
+}
+
+/* ---------- pengaturan ---------- */
+async function g7SimpanPengaturan(){
+  var modeEl=null, mitraEl=null, marginEl=null, aktifEl=null;
+  try{ modeEl=gid("g7SetMode"); mitraEl=gid("g7SetMitra"); marginEl=gid("g7SetMargin"); aktifEl=gid("g7SetAktif"); }catch(e){}
+  var modeBaru=modeEl?modeEl.value:"contoh";
+  var mitraBaru=mitraEl?String(mitraEl.value||"").trim():"";
+  var marginBaru=marginEl?Math.max(0, Math.round(+marginEl.value||0)):0;
+  var aktifBaru=aktifEl?!!aktifEl.checked:true;
+  if(modeBaru==="live"){
+    if(!mitraBaru){
+      g7Popup("Mitra belum ditulis","Mode live butuh nama mitra PPOB dulu — tanpa mitra, pesanan tidak bisa diteruskan ke mana pun.","Tulis nama mitranya, lalu simpan lagi.");
+      try{ if(modeEl) modeEl.value="contoh"; }catch(e){}
+      return false;
+    }
+    /* Gerbang live adalah endpoint server: hanya bila kunci API +
+       alamat mitra sudah tersimpan di server, mode live boleh nyala. */
+    var siap=false;
+    try{
+      var resp=await fetch("/api/ppob", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({aksi:"cek"})});
+      var j=null; try{ j=await resp.json(); }catch(e){}
+      siap=!!(resp && resp.ok && j && j.ok && j.aktif);
+    }catch(e){ siap=false; }
+    if(!siap){
+      g7Popup("Mode live belum bisa dinyalakan","Layanan PPOB di server belum aktif — mitra belum terdaftar atau kunci API belum disimpan di server.","Daftarkan mitra dan simpan kunci API di server dulu (langkahnya ada di laporan Gelombang 7), lalu coba lagi.");
+      try{ if(modeEl) modeEl.value="contoh"; }catch(e){}
+      return false;
+    }
+    g7PpobPengaturan={mode:"live", mitra:mitraBaru, marginTambahan:marginBaru, aktif:aktifBaru};
+    try{ g7RenderSemua(); }catch(e){}
+    try{ if(typeof saveData==="function") saveData(); }catch(e){}
+    try{ if(typeof toast==="function") toast("Mode live PPOB dinyalakan — mitra "+mitraBaru); }catch(e){}
+    return true;
+  }
+  g7PpobPengaturan={mode:"contoh", mitra:mitraBaru, marginTambahan:marginBaru, aktif:aktifBaru};
+  try{ g7RenderSemua(); }catch(e){}
+  try{ if(typeof saveData==="function") saveData(); }catch(e){}
+  try{ if(typeof toast==="function") toast("Pengaturan PPOB disimpan"); }catch(e){}
+  return true;
+}
+
+/* ---------- ringkasan hari ini ---------- */
+function g7RingkasanHariIni(){
+  var hari=g7HariIni(), jual=0, margin=0, berhasil=0, contoh=0, gagal=0;
+  g7Ppob.forEach(function(r){
+    if(String(r.waktu||"").slice(0,10)!==hari) return;
+    if(r.status==="berhasil"){ berhasil++; jual+=+r.hargaJual||0; margin+=+r.margin||0; }
+    else if(r.status==="contoh"){ contoh++; }
+    else if(r.status==="gagal"){ gagal++; }
+  });
+  return {hari:hari, jual:jual, margin:margin, berhasil:berhasil, contoh:contoh, gagal:gagal, total:g7Ppob.length};
+}
+
+/* ---------- render ---------- */
+function g7RenderPpob(){
+  var host=null; try{ host=gid("g7PpobDaftar"); }catch(e){}
+  if(!host) return;
+  var mode=g7Mode();
+  var h="";
+  h+="<p class='note'>Jual pulsa, paket data, dan token listrik dari meja kasir. <b>Mode saat ini: "+(mode==="contoh"?"Contoh":"Live")+"</b>"+(mode==="contoh"?" — semua harga di bawah ini adalah contoh, pesanan tidak masuk pembukuan dan tidak mengurangi saldo apa pun.":" — pesanan tercatat di pembukuan.")+"</p>";
+  /* Tab kategori. */
+  h+="<div class='actions' style='margin-top:10px'>";
+  G7_KATEGORI.forEach(function(k){
+    h+="<button class='btn"+(k===g7Kategori?"":" ghost")+"' type='button' data-g7kat='"+g7Esc(k)+"'>"+g7Esc(k)+"</button>";
+  });
+  h+="</div>";
+  if(g7Kategori==="Pulsa"){
+    h+="<div class='form-grid' style='margin-top:10px'><label class='f'><span>Operator</span><select id='g7Operator'>";
+    G7_OPERATOR.forEach(function(o){ h+="<option value='"+g7Esc(o)+"'"+(o===g7Operator?" selected":"")+">"+g7Esc(o)+"</option>"; });
+    h+="</select></label></div>";
+  }
+  /* Daftar produk. */
+  var daftar=g7ProdukTampil();
+  h+="<div style='margin-top:12px'>";
+  daftar.forEach(function(p){
+    var terpilih=g7ProdukCid===p.cid;
+    h+="<div style='display:flex;gap:10px;align-items:center;margin-top:8px'><div style='flex:1'><b>"+g7Esc(p.nama)+"</b><span class='note' style='display:block'>Harga jual "+g7Rp(g7HargaJual(p))+" · margin "+g7Rp(g7Margin(p))+(mode==="contoh"?" · contoh":"")+"</span></div><button class='btn"+(terpilih?"":" ghost")+" small' type='button' data-g7produk='"+p.cid+"'>"+(terpilih?"Dipilih":"Pilih")+"</button></div>";
+  });
+  h+="</div>";
+  /* Tujuan + proses. */
+  var katTerpilih=g7KatalogCari(g7ProdukCid);
+  h+="<div class='form-grid' style='margin-top:12px'><label class='f'><span>"+g7Esc(g7LabelTujuan(katTerpilih?katTerpilih.kategori:g7Kategori))+"</span><input type='text' id='g7Tujuan' placeholder='contoh: 081234567890' autocomplete='off' inputmode='numeric' /></label></div>";
+  h+="<div class='actions' style='margin-top:10px'><button class='btn' id='g7BtnPesan' type='button'>Proses pesanan"+(mode==="contoh"?" (contoh)":"")+"</button></div>";
+  /* Struk terakhir. */
+  if(g7StrukTerakhir){
+    h+="<div class='card' style='margin-top:14px'><h3 style='font-size:.95rem'>Struk terakhir</h3><pre style='white-space:pre-wrap;margin-top:8px'>"+g7Esc(g7StrukTerakhir)+"</pre><div class='actions' style='margin-top:10px'><button class='btn ghost small' type='button' id='g7BtnSalinStruk'>Salin struk</button></div></div>";
+  }
+  /* Riwayat. */
+  h+="<h3 style='margin-top:16px'>Riwayat PPOB</h3>";
+  if(!g7Ppob.length) h+="<p class='note' style='margin-top:6px'>Belum ada pesanan PPOB.</p>";
+  else{
+    var urut=g7Ppob.slice().reverse().slice(0,20);
+    urut.forEach(function(r){
+      h+="<div style='margin-top:8px'><b>"+g7Esc(r.produk)+"</b> · "+g7Esc(r.tujuan)+" · "+g7Rp(r.hargaJual)+"<span class='note' style='display:block'>"+g7Esc(String(r.waktu||"").slice(0,19).replace("T"," "))+" · "+(r.status==="contoh"?"Contoh":r.status==="berhasil"?"Berhasil":"Gagal")+" · nomor "+g7Esc(r.serial||"—")+" · margin "+g7Rp(r.margin)+"</span></div>";
+    });
+  }
+  /* Pengaturan. */
+  h+="<h3 style='margin-top:16px'>Pengaturan PPOB</h3>";
+  h+="<p class='note' style='margin-top:6px'>Mitra dan tarif adalah pengaturan — bukan tertanam di kode. Sesuai keputusan peta jalan, mode live ditunda sampai ada mitra dengan pengembalian saldo otomatis yang tercatat.</p>";
+  h+="<div class='form-grid' style='margin-top:10px'>";
+  h+="<label class='f'><span>Mode</span><select id='g7SetMode'><option value='contoh'"+(mode==="contoh"?" selected":"")+">Contoh (bawaan)</option><option value='live'>Live (butuh mitra + kunci API server)</option></select></label>";
+  h+="<label class='f'><span>Nama mitra PPOB (bila sudah ada)</span><input type='text' id='g7SetMitra' placeholder='contoh: Mitra Pulsa Nusantara' value='"+g7Esc(g7Mitra())+"' /></label>";
+  h+="<label class='f'><span>Margin tambahan per pesanan (Rp)</span><input type='number' id='g7SetMargin' placeholder='contoh: 0' min='0' value='"+g7MarginTambahan()+"' /></label>";
+  h+="</div>";
+  h+="<label class='f' style='margin-top:10px'><span><input type='checkbox' id='g7SetAktif'"+(g7PpobPengaturan.aktif===false?"":" checked")+" /> Tampilkan PPOB di kasir</span></label>";
+  h+="<div class='actions' style='margin-top:10px'><button class='btn' id='g7BtnSimpanPengaturan' type='button'>Simpan pengaturan PPOB</button></div>";
+  host.innerHTML=h;
+  /* Wiring (diulang tiap render — elemen dibuat ulang). */
+  host.querySelectorAll("[data-g7kat]").forEach(function(b){
+    b.addEventListener("click", function(){ g7Kategori=b.getAttribute("data-g7kat"); g7ProdukCid=null; try{ g7RenderPpob(); }catch(e){} });
+  });
+  var opSel=null; try{ opSel=gid("g7Operator"); }catch(e){}
+  if(opSel) opSel.addEventListener("change", function(){ g7Operator=opSel.value; g7ProdukCid=null; try{ g7RenderPpob(); }catch(e){} });
+  host.querySelectorAll("[data-g7produk]").forEach(function(b){
+    b.addEventListener("click", function(){ g7ProdukCid=b.getAttribute("data-g7produk"); try{ g7RenderPpob(); }catch(e){} });
+  });
+  var btnPesan=null; try{ btnPesan=gid("g7BtnPesan"); }catch(e){}
+  if(btnPesan) btnPesan.addEventListener("click", function(){ g7Pesan(); });
+  var btnSalin=null; try{ btnSalin=gid("g7BtnSalinStruk"); }catch(e){}
+  if(btnSalin) btnSalin.addEventListener("click", function(){
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(g7StrukTerakhir).then(function(){ try{ if(typeof toast==="function") toast("Struk disalin"); }catch(e){} }, function(){ g7Popup("Tidak bisa menyalin struk","Peramban ini tidak mengizinkan penyalinan otomatis.","Salin manual dari teks struk di atas."); }); return; }
+    }catch(e){}
+    g7Popup("Tidak bisa menyalin struk","Peramban ini tidak mengizinkan penyalinan otomatis.","Salin manual dari teks struk di atas.");
+  });
+  var btnSimpan=null; try{ btnSimpan=gid("g7BtnSimpanPengaturan"); }catch(e){}
+  if(btnSimpan) btnSimpan.addEventListener("click", function(){ g7SimpanPengaturan(); });
+}
+
+function g7RenderRingkasan(){
+  var host=null; try{ host=gid("g7PpobRingkasan"); }catch(e){}
+  if(!host) return;
+  var s=g7RingkasanHariIni();
+  var h="<p class='note'>Hari ini ("+g7Esc(s.hari)+"): "+s.berhasil+" pesanan berhasil · penjualan "+g7Rp(s.jual)+" · margin "+g7Rp(s.margin)+" · "+s.contoh+" pesanan contoh · "+s.gagal+" gagal. Total riwayat: "+s.total+" pesanan.</p>";
+  h+="<p class='note' style='margin-top:6px'>Mode saat ini: <b>"+(g7Mode()==="contoh"?"Contoh":"Live")+"</b>"+(g7Mitra()?" · mitra: "+g7Esc(g7Mitra()):" · belum ada mitra")+". Kelola di Mode Kasir → PPOB.</p>";
+  host.innerHTML=h;
+}
+
+function g7RenderSemua(){
+  try{ g7RenderPpob(); }catch(e){}
+  try{ g7RenderRingkasan(); }catch(e){}
+}
+
+/* ---------- seam uji ---------- */
+window.__g7={
+  katalog:G7_KATALOG, kategori:G7_KATEGORI, operator:G7_OPERATOR,
+  cari:g7KatalogCari, hargaJual:g7HargaJual, margin:g7Margin, produkTampil:g7ProdukTampil,
+  normalisasiNomor:g7NormalisasiNomor, tujuanSah:g7TujuanSah,
+  pesan:g7Pesan, proses:g7ProsesPesanan, teksStruk:g7TeksStruk, ringkasan:g7RingkasanHariIni,
+  simpanPengaturan:g7SimpanPengaturan, mode:g7Mode,
+  renderSemua:g7RenderSemua,
+  setDataUji:function(o){
+    o=o||{};
+    if(o.ppob){ g7Ppob=JSON.parse(JSON.stringify(o.ppob)); }
+    if(o.pengaturan){ g7PpobPengaturan=Object.assign({mode:"contoh", mitra:"", marginTambahan:0, aktif:true}, o.pengaturan); }
+    if(o.kategori!==undefined) g7Kategori=o.kategori;
+    if(o.operator!==undefined) g7Operator=o.operator;
+    if(o.produkCid!==undefined) g7ProdukCid=o.produkCid;
+    g7StrukTerakhir="";
+    try{ g7RenderSemua(); }catch(e){}
+  },
+  ambilState:function(){
+    return {ppob:g7Ppob, pengaturan:g7PpobPengaturan, kategori:g7Kategori, operator:g7Operator, produkCid:g7ProdukCid, struk:g7StrukTerakhir};
+  }
+};
+
+/* ---------- penyambung tombol Gelombang 7 ---------- */
+(function(){
+  function klik(id, fn){ var b=null; try{ b=gid(id); }catch(e){} if(b) b.addEventListener("click", fn); }
+  function pasangSemua(){
+    klik("posBtnJualPpob", function(){ try{ if(typeof posTampil==="function") posTampil("Ppob"); }catch(e){} });
+    klik("posBtnPpobJual", function(){ try{ if(typeof posTampil==="function") posTampil("Jual"); }catch(e){} });
+  }
+  function initG7(){
+    try{ pasangSemua(); }catch(e){}
+    try{ g7RenderSemua(); }catch(e){}
+  }
+  /* gid() didefinisikan di blok skrip lain yang jalan sesudah blok ini
+     (pola yang sama dengan Gelombang 4–6) — semua penyambungan tombol dan
+     render awal menunggu DOMContentLoaded. */
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", initG7);
+  else initG7();
+})();
+
 /* ---------- penyambung tombol Gelombang 4 ---------- */
 (function(){
   function klik(id, fn){ var b=$(id); if(b) b.addEventListener("click", fn); }
@@ -14945,7 +15366,7 @@ window.__g6={
             sopSteps:Array.prototype.map.call(document.querySelectorAll(".sop-step"),function(t){return t.value;}),
             sops:sopDaftarTersimpan(),
             struktur:strukturBersihDaftar(strukturList),
-            txs:txs.map(function(t){ if(!t.cid) t.cid=uuid(); return {cid:t.cid,tgl:t.tgl,ket:t.ket,jenis:t.jenis,kat:t.kat,jumlah:t.jumlah,batal:!!t.batal,pelunasan:!!t.pelunasan,hpp:!!t.hpp,retur:!!t.retur,utangSupplier:!!t.utangSupplier,pelunasanUtang:!!t.pelunasanUtang,pembelianCid:t.pembelianCid||null,gaji:!!t.gaji,invoiceCid:t.invoiceCid||null,posCid:t.posCid||null}; }),
+            txs:txs.map(function(t){ if(!t.cid) t.cid=uuid(); return {cid:t.cid,tgl:t.tgl,ket:t.ket,jenis:t.jenis,kat:t.kat,jumlah:t.jumlah,batal:!!t.batal,pelunasan:!!t.pelunasan,hpp:!!t.hpp,retur:!!t.retur,utangSupplier:!!t.utangSupplier,pelunasanUtang:!!t.pelunasanUtang,pembelianCid:t.pembelianCid||null,gaji:!!t.gaji,invoiceCid:t.invoiceCid||null,posCid:t.posCid||null,ppob:!!t.ppob}; }),
             stocks:stocks.map(function(s){ if(!s.cid) s.cid=uuid(); return {cid:s.cid,nama:s.nama,qty:s.qty,beli:s.beli,jual:s.jual,kat:s.kat||"Lainnya",grosir:+s.grosir||0,minGrosir:+s.minGrosir||10,kode:s.kode||"",varian:Array.isArray(s.varian)?s.varian:[],favorit:!!s.favorit,tanpaStok:!!s.tanpaStok,bahan:!!s.bahan,lapisan:Array.isArray(s.lapisan)?s.lapisan.map(function(l){ return {cid:l.cid||null,harga:+l.harga||0,sisa:+l.sisa||0,tgl:l.tgl||"",sumber:l.sumber||"awal",sudahBiaya:!!l.sudahBiaya}; }):[]}; }),
             pis:pis.map(function(p){ if(!p.cid) p.cid=uuid(); return {cid:p.cid,nama:p.nama,jumlah:p.jumlah,tempo:p.tempo,batal:!!p.batal,posCid:p.posCid||null,invoiceCid:p.invoiceCid||null}; }),
             utangs:utangs.map(function(u){ if(!u.cid) u.cid=uuid(); return {cid:u.cid,ket:u.ket,jumlah:u.jumlah,tempo:u.tempo,supplier:!!u.supplier,pembelianCid:u.pembelianCid||null}; }),
@@ -15002,6 +15423,10 @@ window.__g6={
             g6Cabang: (typeof g6Cabang!=="undefined"?g6Cabang:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return JSON.parse(JSON.stringify(x)); }),
             g6Transfer: (typeof g6Transfer!=="undefined"?g6Transfer:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
             g6PesananOnline: (typeof g6PesananOnline!=="undefined"?g6PesananOnline:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return JSON.parse(JSON.stringify(x)); })
+            /* Gelombang 7: riwayat PPOB + pengaturan PPOB (per-usaha
+               aktif, seperti kunci G6). */
+            , g7Ppob: (typeof g7Ppob!=="undefined"?g7Ppob:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return JSON.parse(JSON.stringify(x)); }),
+            g7PpobPengaturan: (typeof g7PpobPengaturan!=="undefined"?JSON.parse(JSON.stringify(g7PpobPengaturan)):null)
           };
         }
         window.__collectSnapshot=collectSnapshot;
@@ -15142,6 +15567,10 @@ window.__g6={
             g6Cabang: gabungBaris(c.g6Cabang, t.g6Cabang),
             g6Transfer: gabungBaris(c.g6Transfer, t.g6Transfer),
             g6PesananOnline: gabungBaris(c.g6PesananOnline, t.g6PesananOnline)
+            /* Gelombang 7: riwayat digabung per cid; pengaturan cloud
+               menang (pengaturan adalah keputusan pemilik usaha). */
+            , g7Ppob: gabungBaris(c.g7Ppob, t.g7Ppob),
+            g7PpobPengaturan: (c.g7PpobPengaturan||t.g7PpobPengaturan||null)
           };
         }
         /* ---------- P0-3: lindungi isian yang sudah diubah pengguna ----------
@@ -15241,7 +15670,7 @@ window.__g6={
              daftar tetap kosong dan peran bawaan yang berlaku. */
           if(Array.isArray(snap.struktur)){ strukturList=strukturBersihDaftar(snap.struktur); }
           renderStruktur(); renderTimPeran();
-          txs.splice(0,txs.length); (snap.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||uuid(), tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, utangSupplier:!!t.utangSupplier, pelunasanUtang:!!t.pelunasanUtang, pembelianCid:t.pembelianCid||null, gaji:!!t.gaji, invoiceCid:t.invoiceCid||null, posCid:t.posCid||null}); });
+          txs.splice(0,txs.length); (snap.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||uuid(), tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, utangSupplier:!!t.utangSupplier, pelunasanUtang:!!t.pelunasanUtang, pembelianCid:t.pembelianCid||null, gaji:!!t.gaji, invoiceCid:t.invoiceCid||null, posCid:t.posCid||null, ppob:!!t.ppob}); });
           stocks.splice(0,stocks.length); (snap.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||uuid(), nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0, kat:s.kat||"Lainnya", grosir:+s.grosir||0, minGrosir:+s.minGrosir||10, kode:s.kode||"", varian:Array.isArray(s.varian)?s.varian:[], favorit:!!s.favorit, tanpaStok:!!s.tanpaStok, bahan:!!s.bahan, lapisan:Array.isArray(s.lapisan)?s.lapisan.map(function(l){ return {cid:l.cid||uuid(), harga:+l.harga||0, sisa:+l.sisa||0, tgl:l.tgl||"", sumber:l.sumber||"awal", sudahBiaya:!!l.sudahBiaya}; }):[]}); });
           pis.splice(0,pis.length); (snap.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||uuid(), nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—", batal:!!p.batal, posCid:p.posCid||null, invoiceCid:p.invoiceCid||null}); });
           utangs.splice(0,utangs.length); (snap.utangs||[]).forEach(function(u){ utangs.push({cid:u.cid||uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—", supplier:!!u.supplier, pembelianCid:u.pembelianCid||null}); });
@@ -15287,6 +15716,10 @@ window.__g6={
           if(Array.isArray(snap.g6Perangkat) && typeof g6Perangkat!=="undefined"){ g6Perangkat.splice(0,g6Perangkat.length); snap.g6Perangkat.forEach(function(x){ g6Perangkat.push(Object.assign({}, x)); }); }
           if(Array.isArray(snap.g6Konflik) && typeof g6Konflik!=="undefined"){ g6Konflik.splice(0,g6Konflik.length); snap.g6Konflik.forEach(function(x){ g6Konflik.push(Object.assign({}, x)); }); }
           if(Array.isArray(snap.g6Tim) && typeof g6Tim!=="undefined"){ g6Tim.splice(0,g6Tim.length); snap.g6Tim.forEach(function(x){ g6Tim.push(Object.assign({}, x)); }); }
+          /* Gelombang 7: pulihkan riwayat + pengaturan PPOB bila
+             snapshot memilikinya. */
+          if(Array.isArray(snap.g7Ppob) && typeof g7Ppob!=="undefined"){ g7Ppob.splice(0,g7Ppob.length); snap.g7Ppob.forEach(function(x){ g7Ppob.push(JSON.parse(JSON.stringify(x))); }); }
+          if(snap.g7PpobPengaturan && typeof g7PpobPengaturan!=="undefined"){ g7PpobPengaturan=Object.assign({mode:"contoh", mitra:"", marginTambahan:0, aktif:true}, snap.g7PpobPengaturan); }
           try{ if(typeof g4PerbaikiTandaTx==="function") g4PerbaikiTandaTx(); }catch(e){}
           try{ if(typeof g4RenderSemua==="function") g4RenderSemua(); }catch(e){}
           try{ if(typeof g5RenderSemua==="function") g5RenderSemua(); }catch(e){}
@@ -15313,6 +15746,8 @@ window.__g6={
              gambar ulang kartu G6. */
           try{ if(typeof g6PulihkanUsaha==="function") g6PulihkanUsaha(snap); }catch(e){}
           try{ if(typeof g6RenderSemua==="function") g6RenderSemua(); }catch(e){}
+          /* Gelombang 7: gambar ulang kartu PPOB. */
+          try{ if(typeof g7RenderSemua==="function") g7RenderSemua(); }catch(e){}
           loading=false;
         }
 
@@ -15488,7 +15923,10 @@ window.__g6={
               g6Reservasi: snap.g6Reservasi||null,
               g6Cabang: snap.g6Cabang||null,
               g6Transfer: snap.g6Transfer||null,
-              g6PesananOnline: snap.g6PesananOnline||null};
+              g6PesananOnline: snap.g6PesananOnline||null,
+              /* Gelombang 7: riwayat + pengaturan PPOB. */
+              g7Ppob: snap.g7Ppob||null,
+              g7PpobPengaturan: snap.g7PpobPengaturan||null};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
