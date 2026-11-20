@@ -2052,6 +2052,65 @@
           <div class="actions"><button class="btn" id="btnLhKirim" type="button">Kirim ringkasan sekarang</button><button class="btn ghost" id="btnLhBerhenti" type="button">Berhenti langganan</button><button class="btn ghost" id="btnLhSalin" type="button">Salin ringkasan</button></div>
           <p class="note" id="lhNote" role="status" style="display:none;margin-top:10px"></p>
         </div>
+        <div class="card" style="margin-top:14px" id="g5KeuanganCard">
+          <h3>Keuangan lanjutan — back office, gaji, PPN, komisi kanal &amp; AI Invoicing</h3>
+          <h3 style="margin-top:16px">Back office — penawaran → pesanan → pengiriman → tagihan</h3>
+          <p class="note">Satu penawaran yang disetujui dapat diteruskan menjadi pesanan, pengiriman, lalu tagihan tanpa mengetik ulang. Tagihan yang dibayar masuk sebagai pelunasan — omzet tidak dihitung dua kali. Tagihan yang belum lunas menjadi piutang.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:12px">
+            <label class="f"><span>Jenis dokumen</span><select id="g5BoJenis"><option value="quotation">Penawaran (quotation)</option><option value="so">Sales order</option><option value="do">Delivery order</option><option value="invoice">Invoice</option></select></label>
+            <label class="f"><span>Pelanggan</span><input type="text" id="g5BoPelanggan" placeholder="contoh: Bu Ani" /></label>
+            <label class="f"><span>WhatsApp pelanggan (opsional)</span><input type="tel" id="g5BoWa" placeholder="contoh: 081234567890" /></label>
+          </div>
+          <div id="g5BoBaris" style="margin-top:8px"></div>
+          <div class="actions" style="margin-top:8px"><button class="btn ghost" id="g5BtnBoBaris" type="button">Tambah baris</button><button class="btn" id="g5BtnBoBuat" type="button">Buat dokumen</button></div>
+          <div id="g5BoDaftar" style="margin-top:10px"></div>
+          <h3 style="margin-top:16px">Penggajian</h3>
+          <p class="note">Gaji bersih = gaji pokok + komisi penjualan − kasbon − potongan alpha (hari terjadwal tanpa absensi, 1 hari = pokok ÷ 26). Satu periode gaji menghasilkan satu catatan pengeluaran usaha.</p>
+          <div class="form-grid" style="grid-template-columns:1fr;margin-top:12px">
+            <label class="f"><span>Periode (tahun-bulan)</span><input type="text" id="g5GajiPeriode" placeholder="contoh: 2026-11" /></label>
+          </div>
+          <div id="g5GajiBaris" style="margin-top:8px"></div>
+          <div class="actions" style="margin-top:8px"><button class="btn ghost" id="g5BtnGajiBaris" type="button">Tambah pegawai</button><button class="btn" id="g5BtnGajiJalankan" type="button">Hitung &amp; simpan gaji</button></div>
+          <div id="g5GajiDaftar" style="margin-top:10px"></div>
+          <h3 style="margin-top:16px">PPN</h3>
+          <p class="note">Bawaan: PPN mati — harga sudah final, tidak ada PPN yang ditambahkan. Nyalakan hanya bila usaha Anda memang wajib memungut PPN (PKP). Bila menyala, PPN tampil terpisah di struk dan laporan, tidak menyatu ke harga.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
+            <label class="f"><span>Status PPN</span><span><input type="checkbox" id="g5PpnAktif" /> Aktifkan PPN per transaksi</span></label>
+            <label class="f"><span>Tarif PPN (%)</span><input type="text" inputmode="numeric" id="g5PpnTarif" value="11" /></label>
+          </div>
+          <div class="actions" style="margin-top:8px"><button class="btn ghost" id="g5BtnPpnSimpan" type="button">Simpan pengaturan PPN</button></div>
+          <div id="g5PpnLaporan" style="margin-top:10px"></div>
+          <h3 style="margin-top:16px">Komisi kanal online</h3>
+          <p class="note">Tarif komisi per kanal diisi pemilik usaha secara manual (sumber data: impor berkas laporan kanal + koreksi manual — sumber data selalu tertulis di laporan). Penjualan kasir jenis order ojek online/delivery dihitung otomatis dari tarif ini.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-top:12px">
+            <label class="f"><span>GrabFood (%)</span><input type="text" inputmode="numeric" id="g5KanalTarif-grabfood" placeholder="contoh: 20" /></label>
+            <label class="f"><span>GoFood (%)</span><input type="text" inputmode="numeric" id="g5KanalTarif-gofood" placeholder="contoh: 20" /></label>
+            <label class="f"><span>ShopeeFood (%)</span><input type="text" inputmode="numeric" id="g5KanalTarif-shopeefood" placeholder="contoh: 20" /></label>
+            <label class="f"><span>Lainnya (%)</span><input type="text" inputmode="numeric" id="g5KanalTarif-lainnya" placeholder="contoh: 20" /></label>
+          </div>
+          <div class="actions" style="margin-top:8px"><button class="btn ghost" id="g5BtnKanalTarif" type="button">Simpan tarif kanal</button></div>
+          <div class="form-grid" style="margin-top:12px">
+            <label class="f"><span>Impor laporan kanal (CSV/Excel: tanggal, kanal, kotor, komisi)</span><input type="file" id="g5KanalFile" accept=".csv,.xlsx,.xls" /></label>
+          </div>
+          <div class="actions" style="margin-top:8px"><button class="btn ghost" id="g5BtnKanalImpor" type="button">Impor laporan kanal</button></div>
+          <div id="g5KanalLaporan" class="tabel-geser" style="margin-top:8px"></div>
+          <h3 style="margin-top:16px">AI Invoicing — foto invoice pembelian jadi draf</h3>
+          <p class="note">Unggah foto invoice pembelian — teksnya dibaca di HP Anda (Tesseract.js, pola yang sama dengan foto nota), lalu dibuat draf pembelian. Draf TIDAK tersimpan sebelum Anda memeriksa dan menekan "Konfirmasi sebagai pembelian". Angka akhir selalu keputusan Anda — AI hanya menyusun draf.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
+            <label class="f"><span>Foto invoice pembelian</span><input type="file" id="g5AiFoto" accept="image/*" /></label>
+            <label class="f"><span>Nama supplier</span><input type="text" id="g5AiSupplier" placeholder="contoh: PT Kopi Nusantara" /></label>
+            <label class="f"><span>Total invoice (Rp)</span><input type="text" inputmode="numeric" id="g5AiTotal" placeholder="contoh: 2500000" /></label>
+          </div>
+          <img id="g5AiPratinjau" alt="Pratinjau foto invoice" style="display:none;max-width:220px;margin-top:8px;border-radius:8px" />
+          <input type="hidden" id="g5AiFotoData" />
+          <p class="note" id="g5AiStatus" style="margin-top:8px"></p>
+          <div class="actions" style="margin-top:8px"><button class="btn" id="g5BtnAiBaca" type="button">Baca foto invoice</button><button class="btn ghost" id="g5BtnAiMinta" type="button">Minta AI menyusun draf</button></div>
+          <div id="g5AiSaran" class="note" style="display:none;margin-top:10px"></div>
+          <div id="g5AiBaris" style="margin-top:8px"></div>
+          <div class="actions" style="margin-top:8px"><button class="btn ghost" id="g5BtnAiBaris" type="button">Tambah baris barang</button><button class="btn" id="g5BtnAiSimpan" type="button">Simpan draf</button></div>
+          <label class="f" style="margin-top:12px"><span>Teks hasil baca foto (untuk diperiksa/diperbaiki)</span><textarea id="g5AiTeksOcr" rows="3" placeholder="Teks hasil baca foto invoice tampil di sini."></textarea></label>
+          <div id="g5AiDaftar" style="margin-top:10px"></div>
+        </div>
       </section>
 
       <!-- ============ 9. CEK DATA LOKAL ============ -->
@@ -2173,8 +2232,22 @@
               <div class="actions" style="margin-top:8px"><button class="btn ghost" id="posBtnBagi" type="button">Pisahkan yang dicentang ke pesanan baru</button></div>
             </div>
 
+            <div class="card" style="margin-top:12px" id="g5MemberBox">
+              <h3>Pelanggan setia</h3>
+              <div class="form-grid" style="margin-top:10px">
+                <label class="f"><span>Pilih pelanggan</span><select id="g5MemberPilih"><option value="">— Tanpa pelanggan —</option></select></label>
+              </div>
+              <div id="g5MemberInfo" style="margin-top:6px"><p class="note">Pilih pelanggan untuk memakai diskon tingkat, tukar poin, atau cashback.</p></div>
+              <div class="form-grid" style="margin-top:10px">
+                <label class="f"><span>Tukar poin (min. 100 poin · 1 poin = Rp100)</span><input type="text" inputmode="numeric" id="g5PoinTukar" placeholder="contoh: 100" /></label>
+                <label class="f"><span>Pakai cashback (Rp)</span><input type="text" inputmode="numeric" id="g5CashbackPakai" placeholder="contoh: 5000" /></label>
+              </div>
+              <p class="note" style="margin-top:6px">Diskon member terpisah dari diskon kasir — tidak dihitung ke batas diskon 10% tanpa persetujuan.</p>
+            </div>
               <div class="stat"><div class="k">Subtotal</div><div class="v" id="posKeranjangSubtotal">Rp 0</div></div>
               <div class="stat"><div class="k">Diskon</div><div class="v" id="posKeranjangDiskon">Rp 0</div></div>
+              <div class="stat"><div class="k">Diskon member + tukar poin/cashback</div><div class="v" id="posKeranjangDiskonMember">Rp 0</div></div>
+              <div class="stat"><div class="k">PPN</div><div class="v" id="posKeranjangPpn">Rp 0</div></div>
               <div class="stat"><div class="k">Total bayar</div><div class="v" id="posKeranjangTotal">Rp 0</div></div>
             </div>
             <div class="actions" style="margin-top:12px"><button class="btn ghost" id="posBtnKembaliJual" type="button">Kembali ke layar jual</button><button class="btn" id="posBtnBayar" type="button">Lanjut ke pembayaran</button></div>
@@ -2206,6 +2279,10 @@
             </div>
             <div id="posAlamatBox" style="display:none;margin-top:10px">
               <label class="f"><span>Alamat pengiriman</span><input type="text" id="posAlamat" placeholder="contoh: Jl. Merdeka No. 12, Surabaya" /></label>
+            </div>
+            <div id="g5KanalBox" style="display:none;margin-top:10px">
+              <label class="f"><span>Kanal ojek online / delivery</span><select id="posKanal"><option value="grabfood">GrabFood</option><option value="gofood">GoFood</option><option value="shopeefood">ShopeeFood</option><option value="lainnya">Lainnya</option></select></label>
+              <p class="note" style="margin-top:6px">Komisi kanal dihitung otomatis dari tarif per kanal di Pengaturan (kartu Keuangan lanjutan).</p>
             </div>
             <div class="card" style="margin-top:12px">
               <h3>Pelanggan</h3>
@@ -2416,6 +2493,15 @@
           <p class="note" id="tokoNote" role="status" style="display:none;margin-top:10px"></p>
           <div id="tokoHasil" style="display:none;margin-top:10px"><label class="f"><span>Tautan toko Anda</span><input type="text" id="tokoLinkInput" readonly /></label></div>
         </div>
+        <div class="card" style="margin-top:14px" id="g5LoyalitasCard">
+          <h3>Pelanggan setia — poin, tingkat member &amp; 100 pelanggan paling setia</h3>
+          <p class="note">Poin dan tingkat dihitung dari penjualan kasir: 1 poin per Rp10.000 dari jumlah yang dibayar, 1 poin = Rp100 saat ditukar (minimal tukar 100 poin). Poin masuk saat pembayaran lunas — termasuk saat piutang dilunasi — dan berkurang saat ditukar atau saat penjualan dibatalkan.</p>
+          <div id="g5LoyalitasPengaturan" style="margin-top:10px"></div>
+          <h3 style="margin-top:16px">100 pelanggan paling setia</h3>
+          <p class="note">Diurutkan menurut total belanja, lalu frekuensi kunjungan. Pelanggan tanpa data belanja tampil sebagai tanda hubung, bukan nol.</p>
+          <div id="g5Top100" class="tabel-geser" style="margin-top:8px"></div>
+          <div id="g5LaporanPelanggan" style="margin-top:10px"></div>
+        </div>
       </section>
 
       <!-- ============ 12. ORANG & SOP ============ -->
@@ -2486,6 +2572,46 @@
             <p class="note" id="timLogKosong" style="display:none">Belum ada pegawai yang mencatat SOP hari ini.</p>
             <div id="timLogSetup" style="display:none"><p class="note"><b>Fitur ini belum aktif — pengaturan cloud belum dijalankan.</b></p><p class="note" style="margin-top:6px">Salinan pengaturannya ada di <a href="https://dashboard-pegawai-umkm.vercel.app" target="_blank" rel="noopener">Aplikasi Pegawai</a> — buka dan salin SQL-nya dari sana, lalu jalankan di SQL Editor cloud.</p></div>
           </div>
+        </div>
+        <div class="card" style="margin-top:14px" id="g5KaryawanCard">
+          <h3>Karyawan — absensi, jadwal, komisi &amp; gaji</h3>
+          <p class="note">Absensi dan jadwal di sini tersimpan di perangkat dan cloud usaha Anda. Kartu "Presensi hari ini" di bawah memakai data dari Aplikasi Pegawai bila sudah terhubung — keduanya tidak saling menimpa.</p>
+          <h3 style="margin-top:16px">Absensi pegawai</h3>
+          <p class="note">Foto selfie hanya bukti kehadiran — tersimpan privat dan tidak dihitung ke batas foto harian SOP. Absensi di luar jadwal tetap tercatat dan ditandai, bukan ditolak.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
+            <label class="f"><span>Pegawai (dari tim usaha)</span><select id="g5AbsPegawai"><option value="">— Pilih dari tim —</option></select></label>
+            <label class="f"><span>Nama pegawai</span><input type="text" id="g5AbsNama" placeholder="contoh: Rina Wati" /></label>
+            <label class="f"><span>Email pegawai</span><input type="email" id="g5AbsEmail" placeholder="contoh: rina@contoh.id" /></label>
+            <label class="f"><span>Foto selfie (bukti kehadiran)</span><input type="file" id="g5AbsFoto" accept="image/*" capture="user" /></label>
+          </div>
+          <img id="g5AbsPratinjau" alt="Pratinjau foto selfie" style="display:none;max-width:160px;margin-top:8px;border-radius:8px" />
+          <div class="actions" style="margin-top:8px"><button class="btn" id="g5BtnAbsMasuk" type="button">Catat masuk</button><button class="btn ghost" id="g5BtnAbsPulang" type="button">Catat pulang</button></div>
+          <div id="g5AbsRekap" class="tabel-geser" style="margin-top:10px"></div>
+          <h3 style="margin-top:16px">Jadwal kerja</h3>
+          <p class="note">Jadwal per pegawai per minggu. Jadwal yang bentrok (pegawai dan hari yang sama, jam bersinggungan) ditolak dengan pemberitahuan ramah.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
+            <label class="f"><span>Pegawai (dari tim usaha)</span><select id="g5JadwalEmail"><option value="">— Pilih dari tim —</option></select></label>
+            <label class="f"><span>Nama pegawai</span><input type="text" id="g5JadwalNama" placeholder="contoh: Rina Wati" /></label>
+            <label class="f"><span>Hari</span><select id="g5JadwalHari"><option value="0">Minggu</option><option value="1">Senin</option><option value="2">Selasa</option><option value="3">Rabu</option><option value="4">Kamis</option><option value="5">Jumat</option><option value="6">Sabtu</option></select></label>
+            <label class="f"><span>Jam masuk</span><input type="text" inputmode="numeric" id="g5JadwalMasuk" placeholder="contoh: 08:00" /></label>
+            <label class="f"><span>Jam pulang</span><input type="text" inputmode="numeric" id="g5JadwalPulang" placeholder="contoh: 17:00" /></label>
+          </div>
+          <div class="actions" style="margin-top:8px"><button class="btn ghost" id="g5BtnJadwalTambah" type="button">Tambah jadwal</button></div>
+          <div id="g5JadwalDaftar" style="margin-top:8px"></div>
+          <h3 style="margin-top:16px">Komisi per produk</h3>
+          <p class="note">Komisi hanya dihitung bila yang menjual adalah kasir (bukan pemilik usaha). Aturan komisi hanya dapat diubah pemilik usaha.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:12px">
+            <label class="f"><span>Barang</span><select id="g5KomProduk"><option value="">— Pilih produk —</option></select></label>
+            <label class="f"><span>Jenis komisi</span><select id="g5KomJenis"><option value="persen">Persen dari harga</option><option value="rupiah">Rupiah per barang</option></select></label>
+            <label class="f"><span>Nilai komisi</span><input type="text" inputmode="numeric" id="g5KomNilai" placeholder="contoh: 5" /></label>
+          </div>
+          <div class="actions" style="margin-top:8px"><button class="btn ghost" id="g5BtnKomSimpan" type="button">Simpan komisi produk</button></div>
+          <div id="g5KomDaftar" style="margin-top:8px"></div>
+          <h3 style="margin-top:16px">Rekap komisi</h3>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
+            <label class="f"><span>Periode (tahun-bulan, kosong = semua)</span><input type="text" id="g5KomPeriode" placeholder="contoh: 2026-11" /></label>
+          </div>
+          <div id="g5KomRekap" class="tabel-geser" style="margin-top:8px"></div>
         </div>
         <div class="card" style="margin-top:14px" id="presCard">
           <h3>Presensi hari ini</h3>
@@ -7106,9 +7232,9 @@
         imporDariArray:imporDariArray, contohImpor:contohImporAOA, parseCsv:parseCsvTeks,
         ringkasanHarian:ringkasanHarian, kirimRingkasanHarian:kirimRingkasanHarian,
         setDataUji:function(o){
-          if(o.txs){ txs.splice(0,txs.length); (o.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||null, tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, utangSupplier:!!t.utangSupplier, pelunasanUtang:!!t.pelunasanUtang, pembelianCid:t.pembelianCid||null, posCid:t.posCid||null}); }); }
+          if(o.txs){ txs.splice(0,txs.length); (o.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||null, tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, utangSupplier:!!t.utangSupplier, pelunasanUtang:!!t.pelunasanUtang, pembelianCid:t.pembelianCid||null, gaji:!!t.gaji, invoiceCid:t.invoiceCid||null, posCid:t.posCid||null}); }); }
           if(o.stocks){ stocks.splice(0,stocks.length); (o.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||null, nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0, kat:s.kat||"Lainnya", grosir:+s.grosir||0, minGrosir:+s.minGrosir||10, kode:s.kode||"", varian:Array.isArray(s.varian)?s.varian:[], favorit:!!s.favorit, tanpaStok:!!s.tanpaStok, bahan:!!s.bahan, lapisan:Array.isArray(s.lapisan)?s.lapisan.map(function(l){ return {cid:l.cid||null, harga:+l.harga||0, sisa:+l.sisa||0, tgl:l.tgl||"", sumber:l.sumber||"awal", sudahBiaya:!!l.sudahBiaya}; }):[]}); }); }
-          if(o.pis){ pis.splice(0,pis.length); (o.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||null, nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—", batal:!!p.batal, posCid:p.posCid||null}); }); }
+          if(o.pis){ pis.splice(0,pis.length); (o.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||null, nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—", batal:!!p.batal, posCid:p.posCid||null, invoiceCid:p.invoiceCid||null}); }); }
           if(o.utangs){ try{ if(typeof window.__tambahUtangUji==="function") window.__tambahUtangUji(o.utangs); }catch(e){} }
           try{ renderTx(); }catch(e){}
           try{ renderStock(); }catch(e){}
@@ -7403,7 +7529,14 @@
         try{ if(typeof posHitungVoucher==="function"){ voucherDiskon=posHitungVoucher({subtotal:subtotal, diskonItem:diskonItem, diskonTotal:diskonTotal})||0; if(voucherDiskon>0 && typeof posVoucherAktif!=="undefined" && posVoucherAktif) voucherKode=posVoucherAktif.kode||""; } }catch(e){}
         var potonganTukar=0;
         try{ if(typeof posPotonganTukar!=="undefined" && posPotonganTukar && +posPotonganTukar.jumlah>0) potonganTukar=Math.min(+posPotonganTukar.jumlah, Math.max(0, setelahItem-diskonTotal-voucherDiskon)); }catch(e){}
-        return {subtotal:subtotal, diskonItem:diskonItem, diskonTotal:diskonTotal, persen:persen, persenEfektif:persenEfektif, voucherDiskon:voucherDiskon, voucherKode:voucherKode, potonganTukar:potonganTukar, total:Math.max(0, setelahItem-diskonTotal-voucherDiskon-potonganTukar)};
+        /* Gelombang 5: diskon member (tingkat), tukar poin, pakai cashback,
+           dan PPN. Diskon member BUKAN diskon kasir — persenEfektif (gerbang
+           10%) tidak berubah. PPN bawaan mati (Bab 14). */
+        var diskonMember=0, persenMember=0, tingkatMember="", poinDipakai=0, poinNilai=0, cashbackDipakai=0, ppn=0;
+        try{ if(typeof g5HitungMember==="function"){ var gm=g5HitungMember(Math.max(0, setelahItem-diskonTotal-voucherDiskon-potonganTukar)); diskonMember=gm.diskon||0; persenMember=gm.persen||0; tingkatMember=gm.tingkat||""; poinDipakai=gm.poinDipakai||0; poinNilai=gm.poinNilai||0; cashbackDipakai=gm.cashbackDipakai||0; } }catch(e){}
+        var dasarPpn=Math.max(0, setelahItem-diskonTotal-voucherDiskon-potonganTukar-diskonMember-poinNilai-cashbackDipakai);
+        try{ if(typeof g5HitungPpn==="function"){ ppn=g5HitungPpn(dasarPpn)||0; } }catch(e){}
+        return {subtotal:subtotal, diskonItem:diskonItem, diskonTotal:diskonTotal, persen:persen, persenEfektif:persenEfektif, voucherDiskon:voucherDiskon, voucherKode:voucherKode, potonganTukar:potonganTukar, diskonMember:diskonMember, persenMember:persenMember, tingkatMember:tingkatMember, poinDipakai:poinDipakai, poinNilai:poinNilai, cashbackDipakai:cashbackDipakai, ppn:ppn, total:Math.max(0, dasarPpn+ppn)};
       }
       function posUbahQty(key, delta){
         for(var i=0;i<posKeranjang.length;i++){
@@ -7481,6 +7614,11 @@
         }
         var st=$("posKeranjangSubtotal"); if(st) st.textContent=fmtFull(h.subtotal);
         var dk=$("posKeranjangDiskon"); if(dk) dk.textContent=fmtFull(h.diskonItem+h.diskonTotal);
+        /* Gelombang 5: diskon member + tukar poin + cashback tampil terpisah
+           dari diskon kasir; PPN tampil terpisah dari harga. */
+        try{ var dkm=$("posKeranjangDiskonMember"); if(dkm) dkm.textContent=fmtFull((h.diskonMember||0)+(h.poinNilai||0)+(h.cashbackDipakai||0)); }catch(e){}
+        try{ var ppnEl=$("posKeranjangPpn"); if(ppnEl) ppnEl.textContent=fmtFull(h.ppn||0); }catch(e){}
+        try{ if(typeof g5RenderMemberBox==="function") g5RenderMemberBox(); }catch(e){}
         var tt=$("posKeranjangTotal"); if(tt) tt.textContent=fmtFull(h.total);
         var note=$("posDiskonNote");
         var box=$("posSetujuDiskonBox");
@@ -7516,6 +7654,7 @@
         try{ posRenderSplit(); }catch(e){}
         try{ posRenderPelangganPilih(); }catch(e){}
         var ab=$("posAlamatBox"); if(ab) ab.style.display=((typeof posJenisOrder!=="undefined" && (posJenisOrder==="delivery"||posJenisOrder==="ojek online"))?"":"none");
+        try{ if(typeof g5RenderKanalBox==="function") g5RenderKanalBox(); }catch(e){}
       }
       function posHitungKembalian(){
         var h=posHitung();
@@ -7645,6 +7784,8 @@
             voucher:(h.voucherKode?{kode:h.voucherKode, diskon:h.voucherDiskon}:null),
             bagian:(cara==="split"?splitBagian:null),
             potonganTukar:((+h.potonganTukar||0)>0?{nomor:((typeof posPotonganTukar!=="undefined" && posPotonganTukar)?posPotonganTukar.nomor||"":""), jumlah:Math.round(+h.potonganTukar||0)}:null),
+            /* Gelombang 5: kanal, diskon member, poin/cashback, PPN. */
+            kanal:null, diskonMember:Math.round(h.diskonMember||0), tingkatMember:h.tingkatMember||"", poinDipakai:+h.poinDipakai||0, poinNilai:Math.round(h.poinNilai||0), cashbackDipakai:Math.round(h.cashbackDipakai||0), ppn:Math.round(h.ppn||0), poinDidapat:0, cashbackDidapat:0, komisiKanal:0,
             pelangganCid:(typeof posPelangganTerpilihCid!=="undefined"?posPelangganTerpilihCid:null),
             caraBayar:cara, caraDibayar:caraDibayar, dibayar:Math.round(dibayar), sisa:Math.round(sisa), uangDiterima:Math.round(diterima), kembalian:Math.round(kembalian),
             status:sisa>0?"sebagian":"selesai", txId:txBaru?txBaru.id:null, piId:piBaru?piBaru.id:null,
@@ -7652,6 +7793,8 @@
           posPenjualan.push(penjualan);
           posPengaturan.nomorTerakhir=(+posPengaturan.nomorTerakhir||0)+1;
           posPenjualanTerakhir=penjualan;
+          /* Gelombang 5: poin + cashback + komisi pegawai + komisi kanal. */
+          try{ if(typeof g5SetelahPenjualan==="function") g5SetelahPenjualan(penjualan, h); }catch(e){}
           /* Gelombang 3: pelanggan terakhir beli, hitungan voucher naik,
              lalu bersihkan status voucher / potongan tukar / split. */
           try{
@@ -7713,6 +7856,11 @@
         if((+p.diskonTotal||0)>0) baris.push("Diskon total: -"+fmtFull(p.diskonTotal));
         if(p.voucher && (+p.voucher.diskon||0)>0) baris.push("Voucher "+p.voucher.kode+": -"+fmtFull(p.voucher.diskon));
         if(p.potonganTukar && (+p.potonganTukar.jumlah||0)>0) baris.push("Potongan tukar: -"+fmtFull(p.potonganTukar.jumlah));
+        /* Gelombang 5: diskon member, tukar poin, cashback, PPN — baris terpisah. */
+        if((+p.diskonMember||0)>0) baris.push("Diskon member"+(p.tingkatMember?" ("+p.tingkatMember+")":"")+": -"+fmtFull(p.diskonMember));
+        if((+p.poinNilai||0)>0) baris.push("Tukar poin ("+(+p.poinDipakai||0)+" poin): -"+fmtFull(p.poinNilai));
+        if((+p.cashbackDipakai||0)>0) baris.push("Cashback dipakai: -"+fmtFull(p.cashbackDipakai));
+        if((+p.ppn||0)>0) baris.push("PPN: "+fmtFull(p.ppn));
         baris.push("Total: "+fmtFull(p.total));
         baris.push("Cara bayar: "+p.caraBayar+(p.caraBayar==="campuran"?" ("+p.caraDibayar+")":"")+(p.caraBayar==="split" && Array.isArray(p.bagian)?" ("+p.bagian.map(function(b){ return b.cara+" "+fmtFull(b.jumlah); }).join(" + ")+")":""));
         if(p.caraBayar==="tunai" || p.caraBayar==="campuran" || p.caraBayar==="split"){ baris.push("Dibayar: "+fmtFull(p.dibayar)); baris.push("Kembalian: "+fmtFull(p.kembalian)); }
@@ -7851,6 +7999,8 @@
         try{ renderPi(); }catch(e){}
         try{ renderReports(); }catch(e){}
         try{ audit("Penjualan "+p.nomor+" dibatalkan ("+alasan+") — disetujui "+(penyetuju||"pemilik usaha")+"; stok dikembalikan."); }catch(e){}
+        /* Gelombang 5: kembalikan poin/cashback/komisi penjualan ini. */
+        try{ if(typeof g5SetelahBatal==="function") g5SetelahBatal(p); }catch(e){}
       }
       function posSetujuiBatal(koreksiCid){
         if(!posAdalahPemilik()){ popupRamah("Hanya pemilik usaha yang menyetujui","Persetujuan pembatalan hanya oleh pemilik usaha dari usaha ini.","Minta pemilik usaha yang menyetujui dari perangkatnya."); return false; }
@@ -7956,6 +8106,8 @@
         pi.jumlah=Math.round((+pi.jumlah||0)-bayar);
         if(p){ p.dibayar=(+p.dibayar||0)+bayar; p.sisa=Math.max(0,(+p.sisa||0)-bayar); if(p.sisa===0) p.status="selesai"; }
         if(pi.jumlah<=0){ var idx=pis.indexOf(pi); if(idx>=0) pis.splice(idx,1); }
+        /* Gelombang 5: poin + cashback dari jumlah yang baru dibayar. */
+        try{ if(typeof g5SetelahPelunasan==="function") g5SetelahPelunasan(p, bayar); }catch(e){}
         try{ renderTx(); }catch(e){}
         try{ renderPi(); }catch(e){}
         try{ renderReports(); }catch(e){}
@@ -8398,7 +8550,7 @@
           return "<div class='card' style='margin-top:10px'>"
             +"<p><b>"+esc(pl.nama)+"</b>"+(pl.wa?" — WA "+esc(pl.wa):"")+"</p>"
             +(pl.catatan?"<p class='note' style='margin-top:4px'>"+esc(pl.catatan)+"</p>":"")
-            +"<p class='note' style='margin-top:6px'>Belanja: "+riw.length+" penjualan · "+fmtFull(totalBelanja)+" · Sisa piutang: "+fmtFull(piu.total)+(pl.terakhirBeli?" · Terakhir belanja "+posTanggalJam(pl.terakhirBeli):"")+"</p>"
+            +"<p class='note' style='margin-top:6px'>Belanja: "+riw.length+" penjualan · "+fmtFull(totalBelanja)+" · Sisa piutang: "+fmtFull(piu.total)+(pl.terakhirBeli?" · Terakhir belanja "+posTanggalJam(pl.terakhirBeli):"")+((typeof g5RingkasanMember==="function")?g5RingkasanMember(pl):"")+"</p>"
             +"<div class='actions' style='margin-top:8px'><button class='btn' type='button' data-posplgpilih='"+esc(pl.cid)+"'>Pilih untuk penjualan</button><button class='btn ghost' type='button' data-posplghapus='"+esc(pl.cid)+"'>Hapus</button></div>"
             +"</div>";
         }).join("");
@@ -8412,6 +8564,7 @@
         posJenisOrder=j;
         posRenderJenisOrder();
         var ab=$("posAlamatBox"); if(ab) ab.style.display=(j==="delivery"||j==="ojek online")?"":"none";
+        try{ if(typeof g5RenderKanalBox==="function") g5RenderKanalBox(); }catch(e){}
       }
       function posRenderJenisOrder(){
         var wadah=$("posJenisChips"); if(!wadah) return;
@@ -9995,6 +10148,1496 @@ window.__g4={
       stokRusak:g4StokRusak, pengaturan:g4Pengaturan};
   }
 };
+/* ================= LOYALITAS, KARYAWAN & KEUANGAN LANJUTAN (Gelombang 5) =================
+   Pelanggan setia, karyawan, dan pekerjaan kantor — di dalam aplikasi yang
+   sama, bukan modul terpisah.
+   - Poin belanja (butir 25): 1 poin per Rp10.000 dari jumlah yang dibayar
+     (bukan total — piutang yang belum dibayar belum mendapat poin; poin
+     masuk saat pelunasan). 1 poin = Rp100 saat ditukar, minimal tukar
+     100 poin. Poin terlihat di kasir dan di daftar pelanggan.
+   - Membership bertingkat (butir 26): Perak / Emas / Platina menurut total
+     belanja seumur hidup; diskon tingkat tampil TERPISAH dari diskon kasir
+     di struk dan laporan, dan TIDAK dihitung ke gerbang persetujuan 10%.
+     Cashback per tingkat tercatat sebagai saldo rupiah pelanggan.
+   - Top 100 + laporan pelanggan (butir 27): peringkat menurut total belanja
+     lalu frekuensi; pelanggan tanpa data tampil sebagai tanda hubung.
+   - Absensi (butir 28): masuk/pulang dengan foto selfie sebagai bukti;
+     foto tersimpan privat dan TIDAK dihitung ke batas foto harian SOP.
+     Absensi di luar jadwal DITANDAI, bukan ditolak. Sisi aplikasi utama
+     ini mencatat lewat kartu Karyawan; Aplikasi Pegawai (repo terpisah)
+     masih perlu layarnya sendiri untuk menulis ke tabel cloud yang sama.
+   - Jadwal (butir 29): per pegawai per minggu; jadwal yang bentrok untuk
+     pegawai dan hari yang sama DITOLAK dengan popup ramah.
+   - Komisi pegawai (butir 30): per produk (rupiah atau persen), dihitung
+     otomatis dari penjualan kasir (bukan penjualan pemilik usaha sendiri);
+     rekap per pegawai per periode.
+   - Komisi kanal online (butir 31): keputusan Bab 14 — bawaan: impor berkas
+     laporan kanal + koreksi manual; tarif per kanal bisa diisi manual.
+     Sumber data selalu tertulis di laporan (penjualan kasir / impor berkas).
+   - Back office (butir 32): quotation -> sales order -> delivery order ->
+     invoice; invoice yang diterbitkan menulis transaksi masuk + piutang
+     (seperti penjualan bayar nanti); pelunasan menulis transaksi bertanda
+     pelunasan sehingga omzet tidak dihitung dua kali.
+   - Penggajian (butir 33): pokok + komisi - kasbon - potongan alpha
+     (alpha = hari terjadwal tanpa absensi; potongan per hari = pokok/26).
+     Satu periode gaji menghasilkan satu catatan pengeluaran yang jumlahnya
+     sama dengan total gaji bersih.
+   - PPN (butir 34): keputusan Bab 14 — bawaan MATI untuk semua usaha
+     (harga sudah final, pemilik bukan PKP). Pemilik yang memang PKP boleh
+     mengaktifkan per usaha dengan tarif yang bisa diatur; PPN tampil
+     terpisah di struk dan laporan, tidak menyatu ke harga.
+   - AI Invoicing (butir 35): foto invoice pembelian dibaca di peramban
+     (Tesseract.js, pola yang sama dengan foto nota) lalu disusun menjadi
+     DRAF transaksi pembelian; AI teks (/api/ai-chat) hanya membantu
+     menyusun draf dari teks hasil baca. Draf TIDAK PERNAH tersimpan sebelum
+     pemilik memeriksa dan menyetujuinya; angka akhir selalu keputusan
+     pemilik. Bila pembaca foto tidak tersedia, draf dibuat manual dengan
+     foto sebagai lampiran. */
+var g5Pengaturan={poinPerRp:10000, poinNilaiRp:100, poinMinTukar:100,
+  tier:[{nama:"Perak", min:0, diskon:2, cashback:1},{nama:"Emas", min:1000000, diskon:5, cashback:2},{nama:"Platina", min:5000000, diskon:10, cashback:3}],
+  ppnAktif:false, ppnTarif:11,
+  kanalTarif:{grabfood:20, gofood:20, shopeefood:20, lainnya:0},
+  gajiHariKerja:26};
+var g5KomisiProduk=[];
+var g5Komisi=[];
+var g5Absensi=[];
+var g5Jadwal=[];
+var g5KanalImpor=[];
+var g5Backoffice=[];
+var g5Gaji=[];
+var g5AiDraf=[];
+var g5PoinTukar=0; /* poin yang mau ditukar di keranjang saat ini */
+var g5CashbackPakai=0; /* rupiah cashback yang mau dipakai di keranjang saat ini */
+
+/* ---------- util ---------- */
+function g5PastikanMember(pl){
+  if(!pl) return null;
+  if(pl.poin==null) pl.poin=0;
+  if(pl.cashback==null) pl.cashback=0;
+  if(pl.totalBelanja==null) pl.totalBelanja=0;
+  if(pl.kunjungan==null) pl.kunjungan=0;
+  if(!pl.tingkat) pl.tingkat="Perak";
+  return pl;
+}
+function g5MemberTerpilih(){
+  try{
+    if(typeof posPelangganTerpilihCid==="undefined" || !posPelangganTerpilihCid) return null;
+    var pl=posPelangganCari(posPelangganTerpilihCid);
+    return g5PastikanMember(pl);
+  }catch(e){ return null; }
+}
+function g5TingkatUntuk(totalBelanja){
+  var daftar=(g5Pengaturan.tier||[]);
+  var hasil=daftar.length?daftar[0]:{nama:"Perak", diskon:2, cashback:1};
+  for(var i=0;i<daftar.length;i++){
+    if((+totalBelanja||0)>=(+daftar[i].min||0)) hasil=daftar[i];
+  }
+  return hasil;
+}
+function g5HitungMember(dasar){
+  /* Dipanggil posHitung: diskon tingkat + tukar poin + pakai cashback.
+     Mengembalikan angka rupiah yang sudah divalidasi terhadap saldo member. */
+  var nol={diskon:0, persen:0, tingkat:"", poinDipakai:0, poinNilai:0, cashbackDipakai:0, member:null};
+  var pl=g5MemberTerpilih();
+  if(!pl) { g5PoinTukar=0; g5CashbackPakai=0; return nol; }
+  var d=Math.max(0, +dasar||0);
+  var tg=g5TingkatUntuk(+pl.totalBelanja||0);
+  var diskon=Math.round(d*(+tg.diskon||0)/100);
+  var sisa=Math.max(0, d-diskon);
+  /* Tukar poin: baca isian keranjang, validasi terhadap saldo + minimum. */
+  var mintaPoin=0;
+  try{ mintaPoin=Math.floor(posAngka((gid("g5PoinTukar")||{}).value)); }catch(e){ mintaPoin=g5PoinTukar||0; }
+  if(!(mintaPoin>0)) mintaPoin=0;
+  if(mintaPoin>0 && mintaPoin<(+g5Pengaturan.poinMinTukar||100)){
+    mintaPoin=0; /* di bawah minimum tukar — diabaikan, bukan galat */
+  }
+  if(mintaPoin>(+pl.poin||0)) mintaPoin=Math.floor(+pl.poin||0);
+  var poinNilai=Math.min(mintaPoin*(+g5Pengaturan.poinNilaiRp||100), sisa);
+  var poinDipakai=(+g5Pengaturan.poinNilaiRp||100)>0?Math.floor(poinNilai/(+g5Pengaturan.poinNilaiRp||100)):0;
+  poinNilai=poinDipakai*(+g5Pengaturan.poinNilaiRp||100);
+  sisa=Math.max(0, sisa-poinNilai);
+  /* Pakai cashback: baca isian keranjang, batasi saldo + sisa total. */
+  var mintaCb=0;
+  try{ mintaCb=Math.round(posAngka((gid("g5CashbackPakai")||{}).value)); }catch(e){ mintaCb=g5CashbackPakai||0; }
+  if(!(mintaCb>0)) mintaCb=0;
+  if(mintaCb>(+pl.cashback||0)) mintaCb=Math.round(+pl.cashback||0);
+  var cashbackDipakai=Math.min(mintaCb, sisa);
+  g5PoinTukar=poinDipakai; g5CashbackPakai=cashbackDipakai;
+  return {diskon:diskon, persen:+tg.diskon||0, tingkat:tg.nama||"", poinDipakai:poinDipakai, poinNilai:poinNilai, cashbackDipakai:cashbackDipakai, member:pl};
+}
+function g5HitungPpn(dasar){
+  /* Bawaan MATI (Bab 14): hanya menghitung bila pemilik mengaktifkan. */
+  if(!g5Pengaturan.ppnAktif) return 0;
+  var tarif=+g5Pengaturan.ppnTarif||0;
+  if(!(tarif>0)) return 0;
+  return Math.round(Math.max(0, +dasar||0)*tarif/100);
+}
+function g5RingkasanMember(pl){
+  if(!pl) return "";
+  g5PastikanMember(pl);
+  return " · Poin: "+(+pl.poin||0)+" · Tingkat: "+esc(pl.tingkat||"Perak")+" · Cashback: "+fmtFull(+pl.cashback||0);
+}
+
+/* ---------- kotak member di keranjang ---------- */
+function g5RenderMemberBox(){
+  var pilih=gid("g5MemberPilih");
+  if(pilih){
+    var lama=pilih.value;
+    pilih.innerHTML="<option value=''>— Tanpa member —</option>"+(posPelanggan||[]).map(function(pl){
+      g5PastikanMember(pl);
+      return "<option value='"+esc(pl.cid)+"'>"+esc(pl.nama)+" ("+esc(pl.tingkat||"Perak")+" · "+(+pl.poin||0)+" poin)</option>";
+    }).join("");
+    var terpilih=(typeof posPelangganTerpilihCid!=="undefined" && posPelangganTerpilihCid)||lama;
+    if(terpilih){ try{ pilih.value=terpilih; }catch(e){} }
+  }
+  var info=gid("g5MemberInfo");
+  if(info){
+    var pl=g5MemberTerpilih();
+    if(!pl){ info.innerHTML="<p class='note'>Pilih member untuk memakai diskon tingkat, tukar poin, atau cashback. Member baru ditambahkan di layar Pelanggan kasir.</p>"; }
+    else{
+      var tg=g5TingkatUntuk(+pl.totalBelanja||0);
+      info.innerHTML="<p class='note'>"+esc(pl.nama)+" — Tingkat <b>"+esc(tg.nama)+"</b> (diskon "+(+tg.diskon||0)+"%, cashback "+(+tg.cashback||0)+"%) · Total belanja "+fmtFull(+pl.totalBelanja||0)+" · Poin <b>"+(+pl.poin||0)+"</b> · Saldo cashback <b>"+fmtFull(+pl.cashback||0)+"</b></p>";
+    }
+  }
+  var inpP=gid("g5PoinTukar");
+  if(inpP && !inpP.value) inpP.value=String(g5PoinTukar||0);
+  var inpC=gid("g5CashbackPakai");
+  if(inpC && !inpC.value) inpC.value=String(g5CashbackPakai||0);
+}
+function g5PilihMemberDariKeranjang(){
+  var sel=gid("g5MemberPilih");
+  var cid=sel?String(sel.value||""):"";
+  if(cid){
+    try{ if(typeof posPelangganTerpilihCid!=="undefined") posPelangganTerpilihCid=cid; }catch(e){}
+    var pl=posPelangganCari(cid);
+    if(pl){
+      var n=gid("posPelangganNama"); if(n) n.value=pl.nama||"";
+      var w=gid("posPelangganWa"); if(w) w.value=pl.wa||"";
+    }
+  } else {
+    try{ if(typeof posPelangganTerpilihCid!=="undefined") posPelangganTerpilihCid=null; }catch(e){}
+  }
+  /* Ganti member = penukaran diulang dari nol. */
+  try{ var ip2=gid("g5PoinTukar"); if(ip2) ip2.value=""; }catch(e){}
+  try{ var ic2=gid("g5CashbackPakai"); if(ic2) ic2.value=""; }catch(e){}
+  try{ posRenderKeranjang(); }catch(e){}
+  try{ posRenderPelangganPilih(); }catch(e){}
+}
+
+/* ---------- kotak kanal di layar bayar ---------- */
+function g5RenderKanalBox(){
+  var box=gid("g5KanalBox");
+  if(!box) return;
+  var jenis=(typeof posJenisOrder!=="undefined"?posJenisOrder:"makan di tempat");
+  var tampil=(jenis==="ojek online"||jenis==="delivery");
+  box.style.display=tampil?"":"none";
+  if(!tampil) return;
+  var sel=gid("posKanal");
+  if(sel && !sel.value) sel.value="grabfood";
+}
+function g5KanalTerpilih(){
+  try{
+    var jenis=(typeof posJenisOrder!=="undefined"?posJenisOrder:"makan di tempat");
+    if(jenis!=="ojek online" && jenis!=="delivery") return null;
+    var sel=gid("posKanal");
+    var v=sel?String(sel.value||""):"";
+    if(["grabfood","gofood","shopeefood","lainnya"].indexOf(v)<0) return null;
+    return v;
+  }catch(e){ return null; }
+}
+function g5NamaKanal(k){
+  return {grabfood:"GrabFood", gofood:"GoFood", shopeefood:"ShopeeFood", lainnya:"Lainnya"}[k]||k||"—";
+}
+
+/* ---------- sesudah penjualan / pelunasan / batal ---------- */
+function g5TambahPoinCashback(pl, dibayar){
+  /* Poin + cashback dari jumlah yang dibayar. Mengembalikan yang didapat. */
+  if(!pl || !(+dibayar>0)) return {poin:0, cashback:0};
+  g5PastikanMember(pl);
+  var poin=Math.floor((+dibayar||0)/(+g5Pengaturan.poinPerRp||10000));
+  var tg=g5TingkatUntuk(+pl.totalBelanja||0);
+  var cb=Math.round((+dibayar||0)*(+tg.cashback||0)/100);
+  pl.poin=(+pl.poin||0)+poin;
+  pl.cashback=(+pl.cashback||0)+cb;
+  return {poin:poin, cashback:cb};
+}
+function g5SetelahPenjualan(p, h){
+  if(!p) return;
+  /* Member: total belanja + kunjungan naik; poin/cashback dari yang dibayar;
+     poin/cashback yang dipakai di keranjang dikurangi; tingkat dihitung ulang. */
+  var pl=null;
+  try{ if(p.pelangganCid) pl=posPelangganCari(p.pelangganCid); }catch(e){}
+  if(!pl && p.pelanggan && p.pelanggan.nama){
+    try{ if(typeof posPelangganCariNama==="function") pl=posPelangganCariNama(p.pelanggan.nama); }catch(e){}
+  }
+  if(pl){
+    g5PastikanMember(pl);
+    pl.totalBelanja=(+pl.totalBelanja||0)+(+p.total||0);
+    pl.kunjungan=(+pl.kunjungan||0)+1;
+    var dapat=g5TambahPoinCashback(pl, +p.dibayar||0);
+    p.poinDidapat=dapat.poin; p.cashbackDidapat=dapat.cashback;
+    if((+h.poinDipakai||0)>0) pl.poin=Math.max(0, (+pl.poin||0)-(+h.poinDipakai||0));
+    if((+h.cashbackDipakai||0)>0) pl.cashback=Math.max(0, (+pl.cashback||0)-(+h.cashbackDipakai||0));
+    pl.tingkat=g5TingkatUntuk(+pl.totalBelanja||0).nama;
+  }
+  /* Komisi pegawai: hanya bila penjualnya kasir (bukan pemilik usaha). */
+  try{
+    if(p.kasir && typeof posAdalahPemilik==="function" && !posAdalahPemilik()){
+      (p.items||[]).forEach(function(it){
+        var kom=g5HitungKomisiItem(it);
+        if(kom>0){
+          g5Komisi.push({cid:posUuid(), tgl:tglIsoHariIni(), penjualanNomor:p.nomor||"", kasir:p.kasir||"Kasir",
+            stokId:(it.stokId!=null?it.stokId:null), stokCid:it.stokCid||null, nama:it.nama||"",
+            qty:+it.qty||0, komisi:Math.round(kom)});
+        }
+      });
+    }
+  }catch(e){}
+  /* Komisi kanal: jenis order ojek online/delivery + kanal terpilih. */
+  try{
+    var kanal=g5KanalTerpilih();
+    if(kanal){
+      var tarif=+((g5Pengaturan.kanalTarif||{})[kanal]||0);
+      p.kanal=kanal;
+      p.komisiKanal=Math.round((+p.total||0)*tarif/100);
+    }
+  }catch(e){}
+  g5PoinTukar=0; g5CashbackPakai=0;
+  /* Kosongkan isian tukar di kotak member — angka penjualan ini tidak
+     boleh terbawa ke penjualan berikutnya. */
+  try{ var ip=gid("g5PoinTukar"); if(ip) ip.value=""; }catch(e){}
+  try{ var ic=gid("g5CashbackPakai"); if(ic) ic.value=""; }catch(e){}
+  try{ posRenderPelanggan(); }catch(e){}
+  try{ g5RenderLoyalitas(); }catch(e){}
+}
+function g5SetelahPelunasan(p, bayar){
+  /* Pelunasan piutang: poin + cashback dari jumlah yang baru dibayar. */
+  if(!(bayar>0)) return;
+  var pl=null;
+  try{ if(p && p.pelangganCid) pl=posPelangganCari(p.pelangganCid); }catch(e){}
+  if(!pl && p && p.pelanggan && p.pelanggan.nama){
+    try{ if(typeof posPelangganCariNama==="function") pl=posPelangganCariNama(p.pelanggan.nama); }catch(e){}
+  }
+  if(pl){
+    g5PastikanMember(pl);
+    g5TambahPoinCashback(pl, bayar);
+    pl.tingkat=g5TingkatUntuk(+pl.totalBelanja||0).nama;
+  }
+  try{ posRenderPelanggan(); }catch(e){}
+  try{ g5RenderLoyalitas(); }catch(e){}
+}
+function g5SetelahBatal(p){
+  /* Void: kembalikan poin/cashback yang didapat, kembalikan yang dipakai,
+     kurangi total belanja + kunjungan, hapus komisi penjualan ini. */
+  if(!p) return;
+  var pl=null;
+  try{ if(p.pelangganCid) pl=posPelangganCari(p.pelangganCid); }catch(e){}
+  if(!pl && p.pelanggan && p.pelanggan.nama){
+    try{ if(typeof posPelangganCariNama==="function") pl=posPelangganCariNama(p.pelanggan.nama); }catch(e){}
+  }
+  if(pl){
+    g5PastikanMember(pl);
+    pl.totalBelanja=Math.max(0, (+pl.totalBelanja||0)-(+p.total||0));
+    pl.kunjungan=Math.max(0, (+pl.kunjungan||0)-1);
+    pl.poin=Math.max(0, (+pl.poin||0)-(+p.poinDidapat||0)+(+p.poinDipakai||0));
+    pl.cashback=Math.max(0, (+pl.cashback||0)-(+p.cashbackDidapat||0)+(+p.cashbackDipakai||0));
+    pl.tingkat=g5TingkatUntuk(+pl.totalBelanja||0).nama;
+  }
+  for(var i=g5Komisi.length-1;i>=0;i--){
+    if(g5Komisi[i].penjualanNomor && p.nomor && g5Komisi[i].penjualanNomor===p.nomor) g5Komisi.splice(i,1);
+  }
+  try{ posRenderPelanggan(); }catch(e){}
+  try{ g5RenderLoyalitas(); }catch(e){}
+}
+
+/* ---------- Top 100 + laporan pelanggan ---------- */
+function g5Top100(){
+  var daftar=(posPelanggan||[]).map(function(pl){
+    g5PastikanMember(pl);
+    var riw=[];
+    try{ if(typeof posPelangganRiwayat==="function") riw=posPelangganRiwayat(pl.cid)||[]; }catch(e){}
+    var total=riw.reduce(function(a,p){ return a+(p.status==="batal"?0:(+p.total||0)); },0);
+    return {cid:pl.cid, nama:pl.nama||"", wa:pl.wa||"", total:total, kunjungan:riw.length,
+      terakhir:pl.terakhirBeli||"", poin:+pl.poin||0, cashback:+pl.cashback||0,
+      tingkat:g5TingkatUntuk(total).nama};
+  });
+  daftar.sort(function(a,b){
+    if((+b.total||0)!==(+a.total||0)) return (+b.total||0)-(+a.total||0);
+    return (+b.kunjungan||0)-(+a.kunjungan||0);
+  });
+  return daftar.slice(0,100);
+}
+function g5RenderLoyalitas(){
+  var atas=gid("g5LoyalitasPengaturan");
+  if(atas){
+    atas.innerHTML="<p class='note'>Aturan poin: 1 poin per "+fmtFull(+g5Pengaturan.poinPerRp||10000)+" belanja · 1 poin = "+fmtFull(+g5Pengaturan.poinNilaiRp||100)+" saat ditukar · minimal tukar "+(+g5Pengaturan.poinMinTukar||100)+" poin. Ubah angkanya di bawah — berlaku untuk penjualan berikutnya.</p>"
+      +"<div class='form-grid' style='grid-template-columns:1fr 1fr;margin-top:8px'>"
+      +"<label class='f'><span>Belanja per 1 poin (Rp)</span><input type='text' inputmode='numeric' id='g5SetPoinPerRp' value='"+(+g5Pengaturan.poinPerRp||10000)+"' /></label>"
+      +"<label class='f'><span>Nilai 1 poin saat ditukar (Rp)</span><input type='text' inputmode='numeric' id='g5SetPoinNilai' value='"+(+g5Pengaturan.poinNilaiRp||100)+"' /></label>"
+      +"<label class='f'><span>Minimal tukar (poin)</span><input type='number' id='g5SetPoinMin' value='"+(+g5Pengaturan.poinMinTukar||100)+"' min='1' /></label>"
+      +"</div>"
+      +"<div style='margin-top:10px'><p><b>Tingkat member</b> — naik otomatis mengikuti total belanja seumur hidup.</p>"
+      +"<table class='mini-table' style='margin-top:6px'><thead><tr><th>Tingkat</th><th>Minimal belanja</th><th>Diskon</th><th>Cashback</th></tr></thead><tbody>"
+      +(g5Pengaturan.tier||[]).map(function(t,idx){
+        return "<tr><td>"+esc(t.nama)+"</td>"
+          +"<td><input type='text' inputmode='numeric' data-g5tiermin='"+idx+"' value='"+(+t.min||0)+"' style='max-width:130px' /></td>"
+          +"<td><input type='number' data-g5tierdiskon='"+idx+"' value='"+(+t.diskon||0)+"' min='0' max='100' style='max-width:70px' /> %</td>"
+          +"<td><input type='number' data-g5tiercashback='"+idx+"' value='"+(+t.cashback||0)+"' min='0' max='100' style='max-width:70px' /> %</td></tr>";
+      }).join("")
+      +"</tbody></table></div>"
+      +"<div class='actions' style='margin-top:8px'><button class='btn' id='g5BtnLoyalitasSimpan' type='button'>Simpan aturan loyalitas</button></div>";
+    var btn=gid("g5BtnLoyalitasSimpan");
+    if(btn) btn.addEventListener("click", function(){ g5LoyalitasSimpan(); });
+  }
+  var top=gid("g5Top100");
+  if(top){
+    var daftar=g5Top100();
+    if(!daftar.length){ top.innerHTML="<p class='note'>Belum ada pelanggan — tambahkan di layar Pelanggan kasir.</p>"; }
+    else{
+      top.innerHTML="<table class='mini-table'><thead><tr><th>#</th><th>Pelanggan</th><th>Total belanja</th><th>Kunjungan</th><th>Terakhir belanja</th><th>Poin</th><th>Tingkat</th></tr></thead><tbody>"
+        +daftar.map(function(r,i){
+          return "<tr><td>"+(i+1)+"</td><td>"+esc(r.nama)+(r.wa?"<br><span style='font-size:.82rem'>"+esc(r.wa)+"</span>":"")+"</td>"
+            +"<td>"+(r.total>0?fmtFull(r.total):"—")+"</td><td>"+(r.kunjungan>0?r.kunjungan:"—")+"</td>"
+            +"<td>"+(r.terakhir?esc(String(r.terakhir).slice(0,10)):"—")+"</td>"
+            +"<td>"+(+r.poin||0)+"</td><td>"+esc(r.tingkat)+"</td></tr>";
+        }).join("")+"</tbody></table>";
+    }
+  }
+  var lap=gid("g5LaporanPelanggan");
+  if(lap){
+    var semua=g5Top100();
+    var totalPoin=0, totalCb=0;
+    (posPelanggan||[]).forEach(function(pl){ totalPoin+=(+pl.poin||0); totalCb+=(+pl.cashback||0); });
+    lap.innerHTML="<p class='note'>Pelanggan terdaftar: <b>"+(posPelanggan||[]).length+"</b> · Total poin beredar: <b>"+totalPoin+"</b> · Total saldo cashback: <b>"+fmtFull(totalCb)+"</b> · Pelanggan paling setia: <b>"+(semua.length?esc(semua[0].nama):"—")+"</b></p>";
+  }
+}
+function g5LoyalitasSimpan(){
+  var perRp=Math.round(posAngka((gid("g5SetPoinPerRp")||{}).value));
+  var nilai=Math.round(posAngka((gid("g5SetPoinNilai")||{}).value));
+  var minTukar=Math.floor(posAngka((gid("g5SetPoinMin")||{}).value));
+  if(!(perRp>0)){ popupRamah("Belanja per 1 poin belum benar","Isi belanja per 1 poin — harus lebih dari Rp 0.","Isi angkanya, lalu tekan Simpan aturan loyalitas."); return false; }
+  if(!(nilai>0)){ popupRamah("Nilai 1 poin belum benar","Isi nilai 1 poin saat ditukar — harus lebih dari Rp 0.","Isi angkanya, lalu tekan Simpan aturan loyalitas."); return false; }
+  if(!(minTukar>0)){ popupRamah("Minimal tukar belum benar","Isi minimal tukar poin — harus 1 poin atau lebih.","Isi angkanya, lalu tekan Simpan aturan loyalitas."); return false; }
+  g5Pengaturan.poinPerRp=perRp; g5Pengaturan.poinNilaiRp=nilai; g5Pengaturan.poinMinTukar=minTukar;
+  document.querySelectorAll("[data-g5tiermin]").forEach(function(inp){
+    var idx=+inp.getAttribute("data-g5tiermin");
+    if(g5Pengaturan.tier[idx]) g5Pengaturan.tier[idx].min=Math.max(0, Math.round(posAngka(inp.value)));
+  });
+  document.querySelectorAll("[data-g5tierdiskon]").forEach(function(inp){
+    var idx=+inp.getAttribute("data-g5tierdiskon");
+    if(g5Pengaturan.tier[idx]) g5Pengaturan.tier[idx].diskon=Math.max(0, Math.min(100, +inp.value||0));
+  });
+  document.querySelectorAll("[data-g5tiercashback]").forEach(function(inp){
+    var idx=+inp.getAttribute("data-g5tiercashback");
+    if(g5Pengaturan.tier[idx]) g5Pengaturan.tier[idx].cashback=Math.max(0, Math.min(100, +inp.value||0));
+  });
+  /* Urutkan tingkat menurut minimal belanja supaya naik tingkat konsisten. */
+  g5Pengaturan.tier.sort(function(a,b){ return (+a.min||0)-(+b.min||0); });
+  try{ g5RenderLoyalitas(); }catch(e){}
+  try{ audit("Aturan loyalitas disimpan — 1 poin per "+fmtFull(perRp)+", 1 poin = "+fmtFull(nilai)+"."); }catch(e){}
+  popupRamah("Aturan loyalitas tersimpan","Aturan poin dan tingkat member sudah tersimpan — berlaku untuk penjualan berikutnya.","Periksa tabel tingkat di atas untuk melihat aturannya.");
+  return true;
+}
+
+/* ---------- absensi ---------- */
+function g5DaftarTim(){
+  try{
+    if(window.__tim && typeof window.__tim.daftar==="function"){
+      var d=window.__tim.daftar()||[];
+      return d.map(function(p){ return {nama:p.nama||"", email:String(p.email||"").toLowerCase()}; });
+    }
+  }catch(e){}
+  return [];
+}
+function g5JadwalUntuk(email, hari){
+  var e=String(email||"").toLowerCase();
+  for(var i=0;i<g5Jadwal.length;i++){
+    if(String(g5Jadwal[i].pegawaiEmail||"").toLowerCase()===e && +g5Jadwal[i].hari===+hari) return g5Jadwal[i];
+  }
+  return null;
+}
+function g5MenitDariJam(jam){
+  var b=String(jam||"").split(":");
+  return (+b[0]||0)*60+(+b[1]||0);
+}
+function g5AbsensiCatat(email, nama, jenis, foto){
+  email=String(email||"").trim().toLowerCase();
+  nama=String(nama||"").trim();
+  if(!email || !/^\S+@\S+\.\S+$/.test(email)){ popupRamah("Email pegawai belum benar","Tulis email aktif pegawai, contoh: rina@contoh.id.","Isi emailnya, lalu tekan catat kehadiran."); return false; }
+  if(!nama){ popupRamah("Nama pegawai belum diisi","Tulis nama pegawainya, contoh: Rina Wati.","Isi namanya, lalu tekan catat kehadiran."); return false; }
+  if(jenis!=="masuk" && jenis!=="pulang"){ popupRamah("Jenis kehadiran belum dipilih","Pilih Masuk atau Pulang.","Pilih salah satu, lalu tekan catat kehadiran."); return false; }
+  var tgl=tglIsoHariIni();
+  var sekarang=new Date();
+  var jam=String("0"+sekarang.getHours()).slice(-2)+":"+String("0"+sekarang.getMinutes()).slice(-2);
+  var rec=null;
+  for(var i=0;i<g5Absensi.length;i++){
+    if(g5Absensi[i].tgl===tgl && String(g5Absensi[i].pegawaiEmail||"").toLowerCase()===email){ rec=g5Absensi[i]; break; }
+  }
+  if(!rec){
+    rec={cid:posUuid(), tgl:tgl, pegawaiEmail:email, pegawaiNama:nama, masuk:"", pulang:"", fotoMasuk:"", fotoPulang:"", diLuarJadwal:false, catatan:""};
+    g5Absensi.push(rec);
+  }
+  if(jenis==="masuk" && rec.masuk){ popupRamah("Sudah tercatat masuk","Pegawai ini sudah tercatat masuk hari ini pukul "+rec.masuk+".","Tidak perlu mencatat masuk dua kali."); return false; }
+  if(jenis==="pulang" && rec.pulang){ popupRamah("Sudah tercatat pulang","Pegawai ini sudah tercatat pulang hari ini pukul "+rec.pulang+".","Tidak perlu mencatat pulang dua kali."); return false; }
+  if(jenis==="masuk") rec.masuk=jam; else rec.pulang=jam;
+  if(foto){
+    if(jenis==="masuk") rec.fotoMasuk=foto; else rec.fotoPulang=foto;
+  }
+  /* Di luar jadwal DITANDAI, bukan ditolak: bandingkan jam dengan jadwal hari ini. */
+  var hari=sekarang.getDay();
+  var jd=g5JadwalUntuk(email, hari);
+  if(jd){
+    var menit=g5MenitDariJam(jam);
+    var masukMenit=g5MenitDariJam(jd.masukJam), pulangMenit=g5MenitDariJam(jd.pulangJam);
+    if(jenis==="masuk" && menit>masukMenit+15) rec.diLuarJadwal=true;
+    if(jenis==="pulang" && menit<pulangMenit-15) rec.diLuarJadwal=true;
+    if(rec.diLuarJadwal) rec.catatan="Di luar jadwal ("+jd.masukJam+"–"+jd.pulangJam+")";
+  }
+  try{ g5RenderAbsensi(); }catch(e){}
+  try{ audit("Absensi "+jenis+" — "+nama+" pukul "+jam+(rec.diLuarJadwal?" (di luar jadwal)":"")+"."); }catch(e){}
+  popupRamah("Kehadiran tercatat","Kehadiran "+jenis+" untuk "+nama+" tercatat pukul "+jam+(rec.diLuarJadwal?" — ditandai di luar jadwal.":"")+" Foto selfie tersimpan privat dan tidak dihitung ke batas foto harian SOP.","Periksa rekap kehadiran di bawah.");
+  return true;
+}
+function g5KompresFoto(file){
+  /* Kompresi selfie ke data URL kecil (maks 320 px, JPEG 0,7) — foto
+     tersimpan privat di catatan absensi, bukan di galeri SOP. */
+  return new Promise(function(resolve){
+    var sudah=false;
+    function selesai(hasil){ if(sudah) return; sudah=true; resolve(hasil); }
+    var pengaman=setTimeout(function(){ selesai(""); }, 2000);
+    try{
+      if(typeof FileReader==="undefined"){ clearTimeout(pengaman); selesai(""); return; }
+      var reader=new FileReader();
+      reader.onload=function(){
+        try{
+          var img=new Image();
+          img.onload=function(){
+            try{
+              var max=320, w=img.naturalWidth||320, h=img.naturalHeight||320;
+              var sc=Math.min(1, max/Math.max(w,h));
+              var cv=document.createElement("canvas");
+              cv.width=Math.max(1,Math.round(w*sc)); cv.height=Math.max(1,Math.round(h*sc));
+              var cx=cv.getContext("2d");
+              cx.fillStyle="#ffffff"; cx.fillRect(0,0,cv.width,cv.height);
+              cx.drawImage(img,0,0,cv.width,cv.height);
+              clearTimeout(pengaman); selesai(cv.toDataURL("image/jpeg",0.7));
+            }catch(err){ clearTimeout(pengaman); selesai(""); }
+          };
+          img.onerror=function(){ clearTimeout(pengaman); selesai(""); };
+          img.src=reader.result;
+        }catch(err){ clearTimeout(pengaman); selesai(""); }
+      };
+      reader.onerror=function(){ clearTimeout(pengaman); selesai(""); };
+      reader.readAsDataURL(file);
+    }catch(e){ clearTimeout(pengaman); selesai(""); }
+  });
+}
+function g5RenderAbsensi(){
+  var sel=gid("g5AbsPegawai");
+  if(sel){
+    var tim=g5DaftarTim();
+    var lama=sel.value;
+    sel.innerHTML="<option value=''>— Pilih dari tim —</option>"+tim.map(function(p){
+      return "<option value='"+esc(p.email)+"'>"+esc(p.nama)+" — "+esc(p.email)+"</option>";
+    }).join("")+"<option value='__manual__'>Isi manual di bawah</option>";
+    if(lama){ try{ sel.value=lama; }catch(e){} }
+  }
+  var rek=gid("g5AbsRekap");
+  if(rek){
+    if(!g5Absensi.length){ rek.innerHTML="<p class='note'>Belum ada kehadiran tercatat hari ini.</p>"; }
+    else{
+      var hariIni=tglIsoHariIni();
+      var tampil=g5Absensi.slice().reverse().slice(0,30);
+      rek.innerHTML="<table class='mini-table'><thead><tr><th>Tanggal</th><th>Pegawai</th><th>Masuk</th><th>Pulang</th><th>Foto</th><th>Catatan</th></tr></thead><tbody>"
+        +tampil.map(function(a){
+          return "<tr><td>"+esc(a.tgl)+"</td><td>"+esc(a.pegawaiNama||"")+"<br><span style='font-size:.82rem'>"+esc(a.pegawaiEmail||"")+"</span></td>"
+            +"<td>"+(a.masuk||"—")+"</td><td>"+(a.pulang||"—")+"</td>"
+            +"<td>"+((a.fotoMasuk||a.fotoPulang)?"Ada":"—")+"</td>"
+            +"<td>"+(a.diLuarJadwal?"Di luar jadwal":"—")+(a.tgl===hariIni?"":"")+"</td></tr>";
+        }).join("")+"</tbody></table>";
+    }
+  }
+}
+
+/* ---------- jadwal ---------- */
+function g5NamaHari(h){
+  return ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"][+h]||"—";
+}
+function g5JadwalTambah(){
+  var email=String((gid("g5JadwalEmail")||{}).value||"").trim().toLowerCase();
+  var nama=String((gid("g5JadwalNama")||{}).value||"").trim();
+  var hari=+(gid("g5JadwalHari")||{}).value;
+  var masuk=String((gid("g5JadwalMasuk")||{}).value||"").trim();
+  var pulang=String((gid("g5JadwalPulang")||{}).value||"").trim();
+  if(!email || !/^\S+@\S+\.\S+$/.test(email)){ popupRamah("Email pegawai belum benar","Tulis email aktif pegawai, contoh: rina@contoh.id.","Isi emailnya, lalu tekan Tambah jadwal."); return false; }
+  if(!nama){ popupRamah("Nama pegawai belum diisi","Tulis nama pegawainya, contoh: Rina Wati.","Isi namanya, lalu tekan Tambah jadwal."); return false; }
+  if(!(hari>=0 && hari<=6)){ popupRamah("Hari belum dipilih","Pilih hari dalam seminggu untuk jadwal ini.","Pilih harinya, lalu tekan Tambah jadwal."); return false; }
+  if(!/^\d{1,2}:\d{2}$/.test(masuk) || !/^\d{1,2}:\d{2}$/.test(pulang)){ popupRamah("Jam belum benar","Isi jam masuk dan jam pulang dengan format jam:menit, contoh: 08:00.","Perbaiki jamnya, lalu tekan Tambah jadwal."); return false; }
+  if(g5MenitDariJam(pulang)<=g5MenitDariJam(masuk)){ popupRamah("Jam pulang harus sesudah jam masuk","Jam pulang "+pulang+" tidak sesudah jam masuk "+masuk+".","Perbaiki jamnya, lalu tekan Tambah jadwal."); return false; }
+  /* Bentrok: jadwal yang sama untuk pegawai dan hari yang sama, jamnya
+     bersinggungan — DITOLAK dengan popup ramah. */
+  for(var i=0;i<g5Jadwal.length;i++){
+    var j=g5Jadwal[i];
+    if(String(j.pegawaiEmail||"").toLowerCase()!==email) continue;
+    if(+j.hari!==hari) continue;
+    var mulai=g5MenitDariJam(j.masukJam), selesai=g5MenitDariJam(j.pulangJam);
+    var mBaru=g5MenitDariJam(masuk), sBaru=g5MenitDariJam(pulang);
+    if(mBaru<selesai && mulai<sBaru){
+      popupRamah("Jadwal bentrok",nama+" sudah punya jadwal hari "+g5NamaHari(hari)+" pukul "+j.masukJam+"–"+j.pulangJam+" — jadwal baru "+masuk+"–"+pulang+" bersinggungan.","Ubah jamnya, atau hapus jadwal yang lama dulu.");
+      return false;
+    }
+  }
+  g5Jadwal.push({cid:posUuid(), pegawaiEmail:email, pegawaiNama:nama, hari:hari, masukJam:masuk, pulangJam:pulang});
+  try{ g5RenderJadwal(); }catch(e){}
+  try{ g5RenderAbsensi(); }catch(e){}
+  try{ audit("Jadwal ditambahkan — "+nama+" "+g5NamaHari(hari)+" "+masuk+"–"+pulang+"."); }catch(e){}
+  popupRamah("Jadwal tersimpan","Jadwal "+nama+" hari "+g5NamaHari(hari)+" pukul "+masuk+"–"+pulang+" sudah tersimpan.","Periksa daftar jadwal di bawah.");
+  return true;
+}
+function g5JadwalHapus(cid){
+  for(var i=0;i<g5Jadwal.length;i++){
+    if(g5Jadwal[i].cid===cid){
+      var j=g5Jadwal[i];
+      g5Jadwal.splice(i,1);
+      try{ g5RenderJadwal(); }catch(e){}
+      try{ audit("Jadwal dihapus — "+j.pegawaiNama+" "+g5NamaHari(j.hari)+"."); }catch(e){}
+      return true;
+    }
+  }
+  return false;
+}
+function g5RenderJadwal(){
+  var sel=gid("g5JadwalEmail");
+  if(sel){
+    var tim=g5DaftarTim();
+    var lama=sel.value;
+    sel.innerHTML="<option value=''>— Pilih dari tim —</option>"+tim.map(function(p){
+      return "<option value='"+esc(p.email)+"'>"+esc(p.nama)+" — "+esc(p.email)+"</option>";
+    }).join("");
+    if(lama){ try{ sel.value=lama; }catch(e){} }
+  }
+  var daftar=gid("g5JadwalDaftar");
+  if(daftar){
+    if(!g5Jadwal.length){ daftar.innerHTML="<p class='note'>Belum ada jadwal — susun lewat formulir di atas.</p>"; }
+    else{
+      var urut=g5Jadwal.slice().sort(function(a,b){ return (+a.hari-b.hari)||String(a.pegawaiNama).localeCompare(String(b.pegawaiNama)); });
+      daftar.innerHTML="<table class='mini-table'><thead><tr><th>Pegawai</th><th>Hari</th><th>Jam</th><th></th></tr></thead><tbody>"
+        +urut.map(function(j){
+          return "<tr><td>"+esc(j.pegawaiNama)+"<br><span style='font-size:.82rem'>"+esc(j.pegawaiEmail)+"</span></td><td>"+g5NamaHari(j.hari)+"</td><td>"+esc(j.masukJam)+"–"+esc(j.pulangJam)+"</td><td><button type='button' data-g5jadwalhapus='"+esc(j.cid)+"' style='min-height:36px'>Hapus</button></td></tr>";
+        }).join("")+"</tbody></table>";
+      daftar.querySelectorAll("[data-g5jadwalhapus]").forEach(function(b){ b.addEventListener("click",function(){ g5JadwalHapus(b.getAttribute("data-g5jadwalhapus")); }); });
+    }
+  }
+}
+function g5HariAlpha(periode, email){
+  /* Hari terjadwal dalam satu periode (YYYY-MM) tanpa catatan absensi.
+     Dipakai potongan gaji. Mengembalikan jumlah hari alpha. */
+  var e=String(email||"").toLowerCase();
+  if(!/^\d{4}-\d{2}$/.test(String(periode||""))) return 0;
+  var thn=+String(periode).slice(0,4), bln=+String(periode).slice(5,7);
+  var akhir=new Date(thn, bln, 0).getDate();
+  var hariIni=new Date();
+  var alpha=0;
+  for(var d=1;d<=akhir;d++){
+    var tgl=new Date(thn, bln-1, d);
+    if(tgl>hariIni) break; /* hari yang belum lewat tidak dihitung alpha */
+    var iso=thn+"-"+String(bln).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+    var jd=g5JadwalUntuk(e, tgl.getDay());
+    if(!jd) continue;
+    var ada=g5Absensi.some(function(a){ return a.tgl===iso && String(a.pegawaiEmail||"").toLowerCase()===e && (a.masuk||a.pulang); });
+    if(!ada) alpha++;
+  }
+  return alpha;
+}
+
+/* ---------- komisi pegawai per produk ---------- */
+function g5KomisiProdukCari(stokId, stokCid){
+  for(var i=0;i<g5KomisiProduk.length;i++){
+    var k=g5KomisiProduk[i];
+    if(stokId!=null && k.stokId===stokId) return k;
+    if(stokCid && k.stokCid && k.stokCid===stokCid) return k;
+  }
+  return null;
+}
+function g5HitungKomisiItem(it){
+  if(!it || it.bebas || it.tanpaStok || it.paket) return 0;
+  var k=g5KomisiProdukCari(it.stokId!=null?it.stokId:null, it.stokCid||null);
+  if(!k) return 0;
+  var qty=+it.qty||0;
+  if(k.jenis==="rupiah") return qty*(+k.nilai||0);
+  return Math.round(qty*(+it.harga||0)*(+k.nilai||0)/100);
+}
+function g5KomisiProdukTambah(){
+  var stokId=+(gid("g5KomProduk")||{}).value||0;
+  var s=null;
+  for(var i=0;i<stocks.length;i++){ if(stocks[i].id===stokId){ s=stocks[i]; break; } }
+  if(!s){ popupRamah("Produk belum dipilih","Pilih produk yang komisinya mau diatur.","Pilih produknya, lalu isi komisinya."); return false; }
+  var jenis=String((gid("g5KomJenis")||{}).value||"persen");
+  if(jenis!=="rupiah" && jenis!=="persen") jenis="persen";
+  var nilai=Math.round(posAngka((gid("g5KomNilai")||{}).value));
+  if(!(nilai>0)){ popupRamah("Nilai komisi belum benar","Isi nilai komisi — harus lebih dari 0 (rupiah per barang, atau persen dari harga).","Isi nilainya, lalu tekan Simpan komisi."); return false; }
+  if(jenis==="persen" && nilai>100){ popupRamah("Persen komisi terlalu besar","Persen komisi paling besar 100%.","Kurangi persennya, lalu tekan Simpan komisi."); return false; }
+  var lama=g5KomisiProdukCari(s.id, s.cid);
+  if(lama){ lama.jenis=jenis; lama.nilai=nilai; lama.nama=s.nama; }
+  else g5KomisiProduk.push({cid:posUuid(), stokId:s.id, stokCid:s.cid||null, nama:s.nama, jenis:jenis, nilai:nilai});
+  try{ g5RenderKomisi(); }catch(e){}
+  try{ audit("Komisi produk disimpan — "+s.nama+" "+(jenis==="rupiah"?fmtFull(nilai)+" per barang":nilai+"%")+"."); }catch(e){}
+  popupRamah("Komisi tersimpan","Komisi untuk "+s.nama+" sudah tersimpan — dihitung otomatis setiap kali kasir menjual produk ini.","Hanya pemilik usaha yang boleh mengubah aturan komisi.");
+  return true;
+}
+function g5KomisiProdukHapus(cid){
+  for(var i=0;i<g5KomisiProduk.length;i++){
+    if(g5KomisiProduk[i].cid===cid){ g5KomisiProduk.splice(i,1); try{ g5RenderKomisi(); }catch(e){} return true; }
+  }
+  return false;
+}
+function g5RekapKomisi(periode){
+  /* Komisi per kasir dalam satu periode (YYYY-MM) atau semua periode bila kosong. */
+  var peta={};
+  (g5Komisi||[]).forEach(function(k){
+    if(periode && String(k.tgl||"").slice(0,7)!==periode) return;
+    var kunci=k.kasir||"Kasir";
+    if(!peta[kunci]) peta[kunci]={kasir:kunci, total:0, jumlah:0};
+    peta[kunci].total+=+k.komisi||0; peta[kunci].jumlah++;
+  });
+  var daftar=Object.keys(peta).map(function(k){ return peta[k]; });
+  daftar.sort(function(a,b){ return (+b.total||0)-(+a.total||0); });
+  return daftar;
+}
+function g5RenderKomisi(){
+  var sel=gid("g5KomProduk");
+  if(sel){
+    var lama=sel.value;
+    sel.innerHTML="<option value=''>— Pilih produk —</option>"+(stocks||[]).filter(function(s){ return !s.tanpaStok; }).map(function(s){
+      return "<option value='"+s.id+"'>"+esc(s.nama)+" — "+fmtFull(+s.jual||0)+"</option>";
+    }).join("");
+    if(lama){ try{ sel.value=lama; }catch(e){} }
+  }
+  var daftar=gid("g5KomDaftar");
+  if(daftar){
+    if(!g5KomisiProduk.length){ daftar.innerHTML="<p class='note'>Belum ada aturan komisi — atur lewat formulir di atas.</p>"; }
+    else{
+      daftar.innerHTML=g5KomisiProduk.map(function(k){
+        return "<p style='margin-top:6px'><b>"+esc(k.nama)+"</b> — "+(k.jenis==="rupiah"?fmtFull(+k.nilai||0)+" per barang":(+k.nilai||0)+"% dari harga")+" <button type='button' data-g5komhapus='"+esc(k.cid)+"' style='min-height:36px'>Hapus</button></p>";
+      }).join("");
+      daftar.querySelectorAll("[data-g5komhapus]").forEach(function(b){ b.addEventListener("click",function(){ g5KomisiProdukHapus(b.getAttribute("data-g5komhapus")); }); });
+    }
+  }
+  var rek=gid("g5KomRekap");
+  if(rek){
+    var periode=String((gid("g5KomPeriode")||{}).value||"").trim();
+    var daftar2=g5RekapKomisi(periode||null);
+    if(!daftar2.length){ rek.innerHTML="<p class='note'>Belum ada komisi tercatat"+(periode?" pada periode "+esc(periode):"")+".</p>"; }
+    else{
+      rek.innerHTML="<table class='mini-table'><thead><tr><th>Kasir</th><th>Penjualan beromisi</th><th>Total komisi</th></tr></thead><tbody>"
+        +daftar2.map(function(r){ return "<tr><td>"+esc(r.kasir)+"</td><td>"+r.jumlah+"</td><td>"+fmtFull(r.total)+"</td></tr>"; }).join("")+"</tbody></table>";
+    }
+  }
+}
+
+/* ---------- komisi kanal online ---------- */
+function g5KanalTarifSimpan(){
+  var kanal=["grabfood","gofood","shopeefood","lainnya"];
+  var berubah=false;
+  kanal.forEach(function(k){
+    var el=gid("g5KanalTarif-"+k);
+    if(!el) return;
+    var v=Math.max(0, Math.min(100, +el.value||0));
+    g5Pengaturan.kanalTarif[k]=v; berubah=true;
+  });
+  if(!berubah){ popupRamah("Tarif kanal belum diisi","Isi tarif komisi per kanal — persen dari total penjualan lewat kanal itu.","Isi tarifnya, lalu tekan Simpan tarif kanal."); return false; }
+  try{ g5RenderKanal(); }catch(e){}
+  try{ audit("Tarif komisi kanal disimpan."); }catch(e){}
+  popupRamah("Tarif kanal tersimpan","Tarif komisi per kanal sudah tersimpan — penjualan ojek online dan delivery dihitung otomatis dari tarif ini.","Periksa laporan kanal di bawah untuk melihat hasilnya.");
+  return true;
+}
+function g5KanalImporTeks(namaFile, teks){
+  /* Impor berkas laporan kanal (CSV): kolom tanggal, kanal, kotor, komisi.
+     Sumber selalu tercatat supaya angka bisa diperiksa kembali. */
+  var baris=String(teks||"").split(/\r?\n/).map(function(b){ return b.trim(); }).filter(function(b){ return b.length>0; });
+  if(!baris.length){ popupRamah("Berkas kosong","Berkas laporan kanal tidak berisi baris data.","Periksa berkasnya, lalu unggah ulang."); return 0; }
+  var mulai=0;
+  if(/tanggal/i.test(baris[0]) && /kanal/i.test(baris[0])) mulai=1;
+  var masuk=0, dilewati=0;
+  for(var i=mulai;i<baris.length;i++){
+    var sel=baris[i].split(/[,;]/).map(function(c){ return c.trim().replace(/^"|"$/g,""); });
+    if(sel.length<4){ dilewati++; continue; }
+    var tgl=String(sel[0]||"").slice(0,10);
+    var kanal=String(sel[1]||"").toLowerCase().replace(/\s+/g,"");
+    if(["grabfood","gofood","shopeefood","lainnya"].indexOf(kanal)<0){ dilewati++; continue; }
+    var kotor=Math.round(posAngka(sel[2]));
+    var komisi=Math.round(posAngka(sel[3]));
+    if(!(kotor>0) && !(komisi>0)){ dilewati++; continue; }
+    g5KanalImpor.push({cid:posUuid(), tgl:tgl||tglIsoHariIni(), kanal:kanal, kotor:kotor, komisi:komisi, sumber:"impor berkas: "+(namaFile||"berkas kanal")});
+    masuk++;
+  }
+  try{ g5RenderKanal(); }catch(e){}
+  if(!masuk){
+    popupRamah("Tidak ada baris yang bisa diimpor","Tidak ada baris yang cocok dengan format tanggal, kanal, kotor, komisi.","Periksa format berkasnya — contoh: 2026-11-20, GrabFood, 150000, 30000.");
+    return 0;
+  }
+  popupRamah("Impor selesai",masuk+" baris laporan kanal masuk"+(dilewati?" — "+dilewati+" baris dilewati karena formatnya tidak cocok":"")+". Sumber tiap baris tercatat sebagai impor berkas.","Periksa laporan kanal di bawah.");
+  return masuk;
+}
+function g5KanalImporDariBerkas(file){
+  if(!file){ popupRamah("Berkas belum dipilih","Pilih berkas laporan kanal (CSV atau Excel) dulu.","Pilih berkasnya, lalu tekan Impor laporan kanal."); return; }
+  var nama=file.name||"berkas kanal";
+  function selesai(teks){ g5KanalImporTeks(nama, teks); }
+  try{
+    if(/\.xlsx?$/i.test(nama) && window.XLSX){
+      var rd=new FileReader();
+      rd.onload=function(){
+        try{
+          var wb=window.XLSX.read(rd.result, {type:"array"});
+          var ws=wb.Sheets[wb.SheetNames[0]];
+          var csv=window.XLSX.utils.sheet_to_csv(ws);
+          selesai(csv);
+        }catch(e){ popupRamah("Berkas belum bisa dibaca","Berkas Excel ini belum bisa dibaca di peramban ini.","Coba simpan sebagai CSV, lalu unggah ulang."); }
+      };
+      rd.onerror=function(){ popupRamah("Berkas belum bisa dibaca","Berkas tidak bisa dibaca — periksa berkasnya.","Coba lagi, atau simpan sebagai CSV."); };
+      rd.readAsArrayBuffer(file);
+      return;
+    }
+    var r2=new FileReader();
+    r2.onload=function(){ selesai(String(r2.result||"")); };
+    r2.onerror=function(){ popupRamah("Berkas belum bisa dibaca","Berkas tidak bisa dibaca — periksa berkasnya.","Coba lagi, atau simpan sebagai CSV."); };
+    r2.readAsText(file);
+  }catch(e){
+    popupRamah("Berkas belum bisa dibaca","Berkas tidak bisa dibaca di peramban ini.","Coba simpan sebagai CSV, lalu unggah ulang.");
+  }
+}
+function g5LaporanKanal(){
+  var peta={};
+  function tambah(kanal, kotor, komisi, sumber){
+    if(!peta[kanal]) peta[kanal]={kanal:kanal, kotor:0, komisi:0, jumlah:0, sumber:{}};
+    peta[kanal].kotor+=+kotor||0; peta[kanal].komisi+=+komisi||0; peta[kanal].jumlah++;
+    peta[kanal].sumber[sumber]=true;
+  }
+  (posPenjualan||[]).forEach(function(p){
+    if(p.status==="batal") return;
+    if(!p.kanal) return;
+    tambah(p.kanal, +p.total||0, +p.komisiKanal||0, "penjualan kasir");
+  });
+  (g5KanalImpor||[]).forEach(function(r){
+    tambah(r.kanal, +r.kotor||0, +r.komisi||0, r.sumber||"impor berkas");
+  });
+  var daftar=Object.keys(peta).map(function(k){
+    var r=peta[k];
+    r.bersih=Math.max(0, (+r.kotor||0)-(+r.komisi||0));
+    r.sumberTeks=Object.keys(r.sumber).join("; ");
+    return r;
+  });
+  daftar.sort(function(a,b){ return (+b.kotor||0)-(+a.kotor||0); });
+  return daftar;
+}
+function g5RenderKanal(){
+  ["grabfood","gofood","shopeefood","lainnya"].forEach(function(k){
+    var el=gid("g5KanalTarif-"+k);
+    if(el) el.value=String(+((g5Pengaturan.kanalTarif||{})[k]||0));
+  });
+  var lap=gid("g5KanalLaporan");
+  if(lap){
+    var daftar=g5LaporanKanal();
+    if(!daftar.length){ lap.innerHTML="<p class='note'>Belum ada penjualan lewat kanal online dan belum ada berkas laporan kanal yang diimpor.</p>"; }
+    else{
+      lap.innerHTML="<table class='mini-table'><thead><tr><th>Kanal</th><th>Transaksi</th><th>Kotor</th><th>Komisi</th><th>Bersih</th><th>Sumber data</th></tr></thead><tbody>"
+        +daftar.map(function(r){
+          return "<tr><td>"+esc(g5NamaKanal(r.kanal))+"</td><td>"+r.jumlah+"</td><td>"+fmtFull(r.kotor)+"</td><td>"+fmtFull(r.komisi)+"</td><td>"+fmtFull(r.bersih)+"</td><td>"+esc(r.sumberTeks)+"</td></tr>";
+        }).join("")+"</tbody></table>";
+    }
+  }
+}
+
+/* ---------- back office ---------- */
+function g5BoNomor(jenis){
+  var awalan={quotation:"QT", so:"SO", do:"DO", invoice:"INV"}[jenis]||"BO";
+  var n=0;
+  (g5Backoffice||[]).forEach(function(d){ if(d.jenis===jenis) n++; });
+  return awalan+"-"+String(n+1).padStart(4,"0");
+}
+function g5BoBuat(jenis){
+  var pelanggan=String((gid("g5BoPelanggan")||{}).value||"").trim();
+  if(!pelanggan){ popupRamah("Nama pelanggan belum diisi","Isi nama pelanggan atau usaha yang dituju dokumen ini.","Isi namanya, lalu tekan Buat dokumen."); return false; }
+  var items=[];
+  document.querySelectorAll("[data-g5boitem]").forEach(function(row){
+    var nm=row.querySelector("[data-g5bonama]");
+    var qt=row.querySelector("[data-g5boqty]");
+    var hg=row.querySelector("[data-g5boharga]");
+    if(!nm || !String(nm.value||"").trim()) return;
+    var qty=posAngka(qt?qt.value:"");
+    var harga=Math.max(0, Math.round(posAngka(hg?hg.value:"")));
+    if(!(qty>0) || !(harga>0)) return;
+    items.push({nama:String(nm.value).trim(), qty:qty, harga:harga});
+  });
+  if(!items.length){ popupRamah("Belum ada baris dokumen","Isi setidaknya satu baris — nama barang/jasa, jumlah, dan harganya.","Lengkapi satu baris, lalu tekan Buat dokumen."); return false; }
+  var total=0; items.forEach(function(it){ total+=(+it.qty||0)*(+it.harga||0); });
+  var nomor=g5BoNomor(jenis);
+  var dok={cid:posUuid(), jenis:jenis, nomor:nomor, pelanggan:pelanggan,
+    wa:String((gid("g5BoWa")||{}).value||"").trim(),
+    items:items, total:Math.round(total),
+    status:jenis==="quotation"?"draf":"dibuat", tgl:tglIsoHariIni(), sumberCid:null, txId:null, piId:null};
+  g5Backoffice.push(dok);
+  var wadah=gid("g5BoBaris"); if(wadah) wadah.innerHTML="";
+  g5BoBarisTambah();
+  try{ g5RenderBackoffice(); }catch(e){}
+  try{ audit("Dokumen "+nomor+" ("+jenis+") dibuat untuk "+pelanggan+" — "+fmtFull(dok.total)+"."); }catch(e){}
+  popupRamah("Dokumen dibuat","Dokumen "+nomor+" sudah tersimpan dengan status "+dok.status+".","Lanjutkan ke tahap berikutnya dari daftar dokumen di bawah.");
+  return true;
+}
+function g5BoBarisTambah(){
+  var wadah=gid("g5BoBaris"); if(!wadah) return;
+  var div=document.createElement("div");
+  div.setAttribute("data-g5boitem","");
+  div.className="form-grid";
+  div.style.marginTop="8px";
+  div.innerHTML="<label class='f'><span>Barang / jasa</span><input type='text' data-g5bonama placeholder='contoh: Kopi kemasan 250g' /></label>"
+    +"<label class='f'><span>Jumlah</span><input type='number' data-g5boqty min='0' step='any' placeholder='contoh: 20' /></label>"
+    +"<label class='f'><span>Harga / unit (Rp)</span><input type='text' inputmode='numeric' data-g5boharga placeholder='contoh: 25000' /></label>"
+    +"<label class='f'><span>&nbsp;</span><button type='button' class='btn ghost' data-g5bohapusbaris>Hapus baris</button></label>";
+  div.querySelector("[data-g5bohapusbaris]").addEventListener("click",function(){ div.remove(); });
+  wadah.appendChild(div);
+}
+function g5BoCari(cid){
+  for(var i=0;i<g5Backoffice.length;i++){ if(g5Backoffice[i].cid===cid) return g5Backoffice[i]; }
+  return null;
+}
+function g5BoLanjut(cid){
+  var d=g5BoCari(cid);
+  if(!d) return false;
+  var urutan={quotation:"so", so:"do", do:"invoice"};
+  var berikut=urutan[d.jenis];
+  if(!berikut){ popupRamah("Dokumen ini sudah di tahap akhir","Invoice adalah tahap terakhir — pelunasan dicatat dari daftar di bawah.","Tekan Lunasi bila pelanggan sudah membayar."); return false; }
+  if(d.jenis==="quotation" && d.status!=="disetujui"){
+    popupRamah("Penawaran belum disetujui","Penawaran hanya bisa diteruskan sesudah berstatus disetujui.","Setujui dulu penawarannya, lalu teruskan ke sales order.");
+    return false;
+  }
+  var baru={cid:posUuid(), jenis:berikut, nomor:g5BoNomor(berikut), pelanggan:d.pelanggan, wa:d.wa||"",
+    items:JSON.parse(JSON.stringify(d.items||[])), total:+d.total||0,
+    status:berikut==="invoice"?"belum lunas":"dibuat", tgl:tglIsoHariIni(), sumberCid:d.cid, txId:null, piId:null};
+  g5Backoffice.push(baru);
+  d.status="diteruskan";
+  try{ g5RenderBackoffice(); }catch(e){}
+  try{ audit("Dokumen "+d.nomor+" diteruskan menjadi "+baru.nomor+" ("+berikut+")."); }catch(e){}
+  popupRamah("Dokumen diteruskan",d.nomor+" diteruskan menjadi "+baru.nomor+" — isinya disalin tanpa mengetik ulang.","Periksa daftar dokumen di bawah.");
+  return true;
+}
+function g5BoSetujui(cid){
+  var d=g5BoCari(cid);
+  if(!d || d.jenis!=="quotation") return false;
+  d.status="disetujui";
+  try{ g5RenderBackoffice(); }catch(e){}
+  try{ audit("Penawaran "+d.nomor+" disetujui."); }catch(e){}
+  return true;
+}
+async function g5BoTerbitkanInvoice(cid){
+  var d=g5BoCari(cid);
+  if(!d || d.jenis!=="invoice") return false;
+  if(d.txId){ popupRamah("Invoice ini sudah diterbitkan","Invoice "+d.nomor+" sudah tercatat sebagai transaksi dan piutang.","Periksa daftar piutang untuk melihat sisanya."); return false; }
+  var ket="Invoice "+d.nomor+" — "+d.pelanggan;
+  var ok=false;
+  try{ ok=await tambahTransaksi(ket, Math.round(+d.total||0), "masuk", "Penjualan", tglIsoHariIni(), "Terbitkan invoice."); }catch(e){ ok=false; }
+  if(!ok) return false;
+  var txBaru=null;
+  for(var ti=txs.length-1;ti>=0;ti--){ if(txs[ti].ket===ket){ txBaru=txs[ti]; break; } }
+  if(txBaru) txBaru.invoiceCid=d.cid;
+  var piBaru={id:++piSeq, nama:d.pelanggan, jumlah:Math.round(+d.total||0), tempo:"—", invoiceCid:d.cid};
+  pis.push(piBaru);
+  d.txId=txBaru?txBaru.id:null; d.piId=piBaru.id; d.status="belum lunas";
+  try{ renderPi(); }catch(e){}
+  try{ renderReports(); }catch(e){}
+  try{ g5RenderBackoffice(); }catch(e){}
+  try{ audit("Invoice "+d.nomor+" diterbitkan — "+fmtFull(d.total)+" menjadi piutang."); }catch(e){}
+  popupRamah("Invoice diterbitkan","Invoice "+d.nomor+" sudah tercatat — omzet masuk sekali, dan sisanya tercatat sebagai piutang atas nama "+d.pelanggan+".","Periksa daftar piutang untuk melihat sisanya.");
+  return true;
+}
+function g5BoBayar(cid, jumlah){
+  var d=g5BoCari(cid);
+  if(!d || d.jenis!=="invoice") return false;
+  /* Cari piutang lewat invoiceCid (bukan piId) — id piutang dibuat ulang
+     tiap applySnapshot, sedangkan invoiceCid dipertahankan snapshot. */
+  var pi=null;
+  for(var i=0;i<pis.length;i++){ if(pis[i].invoiceCid===d.cid && !pis[i].batal){ pi=pis[i]; break; } }
+  if(!pi || pi.batal){ popupRamah("Piutang invoice tidak ditemukan","Piutang untuk invoice ini sudah tidak ada.","Periksa daftar piutang di Pembukuan."); return false; }
+  var bayar=Math.min(Math.round(+jumlah||0), +pi.jumlah||0);
+  if(!(bayar>0)){ popupRamah("Jumlah pelunasan belum diisi","Isi jumlah yang dibayar — harus lebih dari Rp 0.","Isi jumlahnya, lalu tekan Lunasi invoice."); return false; }
+  var ket="Pelunasan invoice "+d.nomor+" — "+d.pelanggan+" (bukan omzet baru)";
+  txs.push({id:++txSeq, tgl:tglIsoHariIni(), ket:ket, jenis:"masuk", kat:"Pelunasan piutang", jumlah:Math.round(bayar), pelunasan:true, invoiceCid:d.cid});
+  pi.jumlah=Math.round((+pi.jumlah||0)-bayar);
+  if(pi.jumlah<=0){ var idx=pis.indexOf(pi); if(idx>=0) pis.splice(idx,1); d.status="lunas"; }
+  else d.status="sebagian lunas";
+  try{ renderTx(); }catch(e){}
+  try{ renderPi(); }catch(e){}
+  try{ renderReports(); }catch(e){}
+  try{ g5RenderBackoffice(); }catch(e){}
+  try{ audit("Pelunasan invoice "+d.nomor+" "+fmtFull(bayar)+"."); }catch(e){}
+  popupRamah("Pelunasan tercatat","Pelunasan "+fmtFull(bayar)+" untuk invoice "+d.nomor+" sudah tercatat — omzet tidak dihitung dua kali"+(pi.jumlah>0?" — sisa piutang "+fmtFull(pi.jumlah)+".":" — invoice sudah lunas."),"Periksa daftar dokumen dan piutang.");
+  return true;
+}
+function g5BoBatal(cid){
+  var d=g5BoCari(cid);
+  if(!d) return false;
+  if(d.status==="batal") return false;
+  d.status="batal";
+  txs.forEach(function(t){ if(t.invoiceCid===d.cid) t.batal=true; });
+  pis.forEach(function(pi){ if(pi.invoiceCid===d.cid) pi.batal=true; });
+  try{ renderTx(); }catch(e){}
+  try{ renderPi(); }catch(e){}
+  try{ renderReports(); }catch(e){}
+  try{ g5RenderBackoffice(); }catch(e){}
+  try{ audit("Dokumen "+d.nomor+" dibatalkan."); }catch(e){}
+  return true;
+}
+function g5RenderBackoffice(){
+  var daftar=gid("g5BoDaftar");
+  if(daftar){
+    if(!g5Backoffice.length){ daftar.innerHTML="<p class='note'>Belum ada dokumen — buat penawaran lewat formulir di atas.</p>"; }
+    else{
+      daftar.innerHTML=g5Backoffice.slice().reverse().map(function(d){
+        var label={quotation:"Penawaran", so:"Sales order", do:"Delivery order", invoice:"Invoice"}[d.jenis]||d.jenis;
+        var aksi="";
+        if(d.status!=="batal"){
+          if(d.jenis==="quotation" && d.status==="draf") aksi+="<button type='button' data-g5bosetujui='"+esc(d.cid)+"' style='min-height:36px'>Setujui</button> ";
+          if(d.jenis!=="invoice") aksi+="<button type='button' data-g5bolanjut='"+esc(d.cid)+"' style='min-height:36px'>Teruskan</button> ";
+          if(d.jenis==="invoice" && !d.txId) aksi+="<button type='button' data-g5boterbit='"+esc(d.cid)+"' style='min-height:36px'>Terbitkan invoice</button> ";
+          if(d.jenis==="invoice" && d.txId && d.status!=="lunas") aksi+="<button type='button' data-g5bobayar='"+esc(d.cid)+"' style='min-height:36px'>Lunasi</button> ";
+          aksi+="<button type='button' data-g5bobatal='"+esc(d.cid)+"' style='min-height:36px'>Batalkan</button>";
+        }
+        var isi=(d.items||[]).map(function(it){ return esc(it.nama)+" × "+it.qty+" @ "+fmtFull(it.harga); }).join(", ");
+        return "<div class='card' style='margin-top:8px'><p><b>"+esc(d.nomor)+"</b> — "+label+" · "+esc(d.pelanggan)+" · "+fmtFull(d.total)+" · "+esc(d.status)+(d.status==="batal"?"":"")+"</p>"
+          +"<p class='note' style='margin-top:4px'>"+isi+"</p>"
+          +(aksi?"<div class='actions' style='margin-top:8px'>"+aksi+"</div>":"")
+          +(d.jenis==="invoice" && d.txId && d.status!=="lunas"?"<div class='form-grid' style='margin-top:8px'><label class='f'><span>Jumlah dibayar (Rp)</span><input type='text' inputmode='numeric' data-g5bobayarjumlah='"+esc(d.cid)+"' placeholder='contoh: 500000' /></label></div>":"")
+          +"</div>";
+      }).join("");
+      daftar.querySelectorAll("[data-g5bosetujui]").forEach(function(b){ b.addEventListener("click",function(){ g5BoSetujui(b.getAttribute("data-g5bosetujui")); }); });
+      daftar.querySelectorAll("[data-g5bolanjut]").forEach(function(b){ b.addEventListener("click",function(){ g5BoLanjut(b.getAttribute("data-g5bolanjut")); }); });
+      daftar.querySelectorAll("[data-g5boterbit]").forEach(function(b){ b.addEventListener("click",function(){ g5BoTerbitkanInvoice(b.getAttribute("data-g5boterbit")); }); });
+      daftar.querySelectorAll("[data-g5bobayar]").forEach(function(b){ b.addEventListener("click",function(){
+        var cid=b.getAttribute("data-g5bobayar");
+        var inp=daftar.querySelector("[data-g5bobayarjumlah='"+cid+"']");
+        g5BoBayar(cid, posAngka(inp?inp.value:""));
+      }); });
+      daftar.querySelectorAll("[data-g5bobatal]").forEach(function(b){ b.addEventListener("click",function(){
+        var d=g5BoCari(b.getAttribute("data-g5bobatal"));
+        if(!d) return;
+        konfirmasiHapus("Batalkan dokumen ini?", "Dokumen "+d.nomor+" akan berstatus BATAL — transaksi dan piutangnya ikut dibatalkan, riwayatnya tetap terbaca.", "Batalkan dokumen",
+          function(){ g5BoBatal(d.cid); },
+          "Dokumen dibatalkan — ketuk Urungkan bila salah batal.",
+          function(){ d.status=d.txId?"belum lunas":"dibuat"; g5RenderBackoffice(); });
+      }); });
+    }
+  }
+}
+
+/* ---------- penggajian ---------- */
+function g5GajiHitung(periode, email, nama, pokok, kasbon){
+  var komisi=0;
+  (g5Komisi||[]).forEach(function(k){
+    if(String(k.tgl||"").slice(0,7)!==periode) return;
+    if(String(k.kasir||"")!==nama) return;
+    komisi+=+k.komisi||0;
+  });
+  var hariAlpha=g5HariAlpha(periode, email);
+  var potonganAlpha=Math.round((+pokok||0)/(+g5Pengaturan.gajiHariKerja||26))*hariAlpha;
+  var bersih=Math.max(0, Math.round((+pokok||0)+komisi-Math.max(0,+kasbon||0)-potonganAlpha));
+  return {periode:periode, pegawaiEmail:email, pegawaiNama:nama, pokok:Math.round(+pokok||0),
+    komisi:Math.round(komisi), potonganKasbon:Math.max(0, Math.round(+kasbon||0)),
+    potonganAlpha:potonganAlpha, hariAlpha:hariAlpha, bersih:bersih};
+}
+function g5GajiSlipTeks(r){
+  var baris=[];
+  baris.push("Slip gaji — "+r.periode);
+  baris.push("Pegawai: "+r.pegawaiNama+" ("+r.pegawaiEmail+")");
+  baris.push("--------------------------------");
+  baris.push("Gaji pokok: "+fmtFull(r.pokok));
+  baris.push("Komisi penjualan: "+fmtFull(r.komisi));
+  baris.push("Potongan kasbon: -"+fmtFull(r.potonganKasbon));
+  baris.push("Potongan alpha ("+r.hariAlpha+" hari): -"+fmtFull(r.potonganAlpha));
+  baris.push("--------------------------------");
+  baris.push("Gaji bersih: "+fmtFull(r.bersih));
+  return baris.join("\n");
+}
+async function g5GajiJalankan(){
+  var periode=String((gid("g5GajiPeriode")||{}).value||"").trim();
+  if(!/^\d{4}-\d{2}$/.test(periode)){ popupRamah("Periode gaji belum benar","Isi periode dengan format tahun-bulan, contoh: 2026-11.","Perbaiki periodenya, lalu tekan Hitung & simpan gaji."); return false; }
+  var baris=[];
+  document.querySelectorAll("[data-g5gajibaris]").forEach(function(row){
+    var nm=row.querySelector("[data-g5gajinama]");
+    var em=row.querySelector("[data-g5gajiemail]");
+    var pk=row.querySelector("[data-g5gajipokok]");
+    var kb=row.querySelector("[data-g5gajikasbon]");
+    if(!nm || !String(nm.value||"").trim()) return;
+    var email=String(em?em.value||"":"").trim().toLowerCase();
+    if(!email || !/^\S+@\S+\.\S+$/.test(email)) return;
+    var pokok=Math.round(posAngka(pk?pk.value:""));
+    if(!(pokok>0)) return;
+    var kasbon=Math.round(posAngka(kb?kb.value:""));
+    baris.push({nama:String(nm.value).trim(), email:email, pokok:pokok, kasbon:kasbon});
+  });
+  if(!baris.length){ popupRamah("Belum ada pegawai digaji","Isi setidaknya satu baris gaji — nama, email, dan gaji pokok.","Lengkapi satu baris, lalu tekan Hitung & simpan gaji."); return false; }
+  var sudah=g5Gaji.some(function(g){ return g.periode===periode; });
+  if(sudah){ popupRamah("Gaji periode ini sudah dihitung","Periode "+periode+" sudah punya catatan gaji — hapus dulu bila mau menghitung ulang.","Periksa daftar gaji di bawah, atau pilih periode lain."); return false; }
+  var total=0;
+  var rincian=baris.map(function(b){
+    var r=g5GajiHitung(periode, b.email, b.nama, b.pokok, b.kasbon);
+    total+=r.bersih;
+    return r;
+  });
+  if(!(total>0)){ popupRamah("Total gaji bersih Rp 0","Semua gaji bersih hasilnya Rp 0 — periksa gaji pokok dan potongannya.","Perbaiki isiannya, lalu tekan Hitung & simpan gaji."); return false; }
+  var ket="Gaji pegawai periode "+periode+" ("+rincian.length+" pegawai)";
+  var ok=false;
+  try{ ok=await tambahTransaksi(ket, Math.round(total), "keluar", "Gaji pegawai", tglIsoHariIni(), "Hitung & simpan gaji."); }catch(e){ ok=false; }
+  if(!ok) return false;
+  var txBaru=null;
+  for(var ti=txs.length-1;ti>=0;ti--){ if(txs[ti].ket===ket){ txBaru=txs[ti]; break; } }
+  if(txBaru) txBaru.gaji=true;
+  rincian.forEach(function(r){
+    r.cid=posUuid(); r.txId=txBaru?txBaru.id:null; r.slipTeks=g5GajiSlipTeks(r);
+    g5Gaji.push(r);
+  });
+  var wadah=gid("g5GajiBaris"); if(wadah) wadah.innerHTML="";
+  g5GajiBarisTambah();
+  try{ renderTx(); }catch(e){}
+  try{ renderReports(); }catch(e){}
+  try{ g5RenderGaji(); }catch(e){}
+  try{ audit("Gaji periode "+periode+" dihitung — total bersih "+fmtFull(total)+" ("+rincian.length+" pegawai), satu catatan pengeluaran."); }catch(e){}
+  popupRamah("Gaji tersimpan","Gaji periode "+periode+" sudah dihitung — total bersih "+fmtFull(total)+" tercatat sebagai satu pengeluaran usaha.","Periksa daftar gaji di bawah untuk rincian per pegawai dan slipnya.");
+  return true;
+}
+function g5GajiBarisTambah(){
+  var wadah=gid("g5GajiBaris"); if(!wadah) return;
+  var div=document.createElement("div");
+  div.setAttribute("data-g5gajibaris","");
+  div.className="form-grid";
+  div.style.marginTop="8px";
+  var opsi="<option value=''>— Pilih dari tim —</option>"+g5DaftarTim().map(function(p){
+    return "<option value='"+esc(p.email)+"|"+esc(p.nama)+"'>"+esc(p.nama)+" — "+esc(p.email)+"</option>";
+  }).join("");
+  div.innerHTML="<label class='f'><span>Pegawai</span><select data-g5gajipilih>"+opsi+"</select></label>"
+    +"<label class='f'><span>Nama pegawai</span><input type='text' data-g5gajinama placeholder='contoh: Rina Wati' /></label>"
+    +"<label class='f'><span>Email pegawai</span><input type='email' data-g5gajiemail placeholder='contoh: rina@contoh.id' /></label>"
+    +"<label class='f'><span>Gaji pokok (Rp)</span><input type='text' inputmode='numeric' data-g5gajipokok placeholder='contoh: 2000000' /></label>"
+    +"<label class='f'><span>Kasbon / potongan lain (Rp)</span><input type='text' inputmode='numeric' data-g5gajikasbon placeholder='contoh: 0' /></label>"
+    +"<label class='f'><span>&nbsp;</span><button type='button' class='btn ghost' data-g5gajihapusbaris>Hapus baris</button></label>";
+  div.querySelector("[data-g5gajipilih]").addEventListener("change",function(ev){
+    var v=String(ev.target.value||"");
+    if(!v) return;
+    var bagi=v.split("|");
+    var nm=div.querySelector("[data-g5gajinama]"); if(nm) nm.value=bagi[1]||"";
+    var em=div.querySelector("[data-g5gajiemail]"); if(em) em.value=bagi[0]||"";
+  });
+  div.querySelector("[data-g5gajihapusbaris]").addEventListener("click",function(){ div.remove(); });
+  wadah.appendChild(div);
+}
+function g5RenderGaji(){
+  var daftar=gid("g5GajiDaftar");
+  if(daftar){
+    if(!g5Gaji.length){ daftar.innerHTML="<p class='note'>Belum ada gaji dihitung — susun lewat formulir di atas.</p>"; }
+    else{
+      daftar.innerHTML=g5Gaji.slice().reverse().map(function(g){
+        return "<div class='card' style='margin-top:8px'><p><b>"+esc(g.periode)+"</b> — "+esc(g.pegawaiNama)+" · Bersih <b>"+fmtFull(g.bersih)+"</b></p>"
+          +"<p class='note' style='margin-top:4px'>Pokok "+fmtFull(g.pokok)+" + Komisi "+fmtFull(g.komisi)+" − Kasbon "+fmtFull(g.potonganKasbon)+" − Alpha "+g.hariAlpha+" hari ("+fmtFull(g.potonganAlpha)+")</p>"
+          +"<div class='actions' style='margin-top:8px'><button class='btn ghost' type='button' data-g5gajiwa='"+esc(g.cid)+"'>Kirim slip via WhatsApp</button></div></div>";
+      }).join("");
+      daftar.querySelectorAll("[data-g5gajiwa]").forEach(function(b){ b.addEventListener("click",function(){
+        var g=null;
+        for(var i=0;i<g5Gaji.length;i++){ if(g5Gaji[i].cid===b.getAttribute("data-g5gajiwa")){ g=g5Gaji[i]; break; } }
+        if(!g) return;
+        try{ window.open("https://wa.me/?text="+encodeURIComponent(g.slipTeks||g5GajiSlipTeks(g)), "_blank"); }catch(e){}
+      }); });
+    }
+  }
+}
+
+/* ---------- PPN ---------- */
+function g5PpnSimpan(){
+  var aktif=!!((gid("g5PpnAktif")||{}).checked);
+  var tarif=Math.max(0, Math.min(100, +((gid("g5PpnTarif")||{}).value||0)||0));
+  if(aktif && !(tarif>0)){ popupRamah("Tarif PPN belum benar","Isi tarif PPN — harus lebih dari 0% bila PPN diaktifkan.","Isi tarifnya, lalu tekan Simpan pengaturan PPN."); return false; }
+  g5Pengaturan.ppnAktif=aktif; g5Pengaturan.ppnTarif=tarif;
+  try{ g5RenderPpn(); }catch(e){}
+  try{ audit("Pengaturan PPN disimpan — "+(aktif?("aktif, tarif "+tarif+"%"):"mati (bawaan)")+"."); }catch(e){}
+  popupRamah("Pengaturan PPN tersimpan",aktif?"PPN aktif dengan tarif "+tarif+"% — PPN tampil terpisah di struk dan laporan, tidak menyatu ke harga.":"PPN tetap mati — harga sudah final tanpa tambahan PPN.","Periksa struk penjualan berikutnya untuk melihat baris PPN-nya.");
+  return true;
+}
+function g5LaporanPpn(periode){
+  var total=0, jumlah=0;
+  (posPenjualan||[]).forEach(function(p){
+    if(p.status==="batal") return;
+    if(periode && String(p.waktu||"").slice(0,7)!==periode) return;
+    if(!(+p.ppn||0)) return;
+    total+=+p.ppn||0; jumlah++;
+  });
+  return {total:total, jumlah:jumlah};
+}
+function g5RenderPpn(){
+  var c=gid("g5PpnAktif"); if(c) c.checked=!!g5Pengaturan.ppnAktif;
+  var t=gid("g5PpnTarif"); if(t) t.value=String(+g5Pengaturan.ppnTarif||11);
+  var lap=gid("g5PpnLaporan");
+  if(lap){
+    var periode=new Date();
+    var bln=periode.getFullYear()+"-"+String(periode.getMonth()+1).padStart(2,"0");
+    var r=g5LaporanPpn(bln);
+    lap.innerHTML="<p class='note'>PPN bulan berjalan ("+bln+"): <b>"+fmtFull(r.total)+"</b> dari "+r.jumlah+" penjualan · Status: <b>"+(g5Pengaturan.ppnAktif?("Aktif, tarif "+(+g5Pengaturan.ppnTarif||0)+"%"):"Mati (bawaan — harga final tanpa PPN)")+"</b></p>";
+  }
+}
+
+/* ---------- AI Invoicing ---------- */
+function g5AiParseTeks(teks){
+  /* Susun draf dari teks hasil baca foto: supplier = baris pertama yang
+     bermakna; total = angka terbesar; baris barang = baris dengan angka
+     jumlah x harga. Semua hasil adalah DRAF — pemilik memeriksa dulu. */
+  var hasil={supplier:"", items:[], total:0};
+  var baris=String(teks||"").split(/\r?\n/).map(function(b){ return b.trim(); }).filter(function(b){ return b.length>1; });
+  if(!baris.length) return hasil;
+  /* Supplier: baris pertama tanpa angka besar (biasanya nama toko). */
+  for(var i=0;i<Math.min(baris.length, 4);i++){
+    var b=baris[i];
+    if(!/\d{4,}/.test(b) && /[A-Za-z]/.test(b)){ hasil.supplier=b.replace(/^[^A-Za-z0-9]+/, "").slice(0, 60); break; }
+  }
+  /* Angka-angka: ambil semua angka ribuan; total = yang terbesar. */
+  var angka=[];
+  baris.forEach(function(b){
+    var cocok=b.match(/\d[\d.,]*/g)||[];
+    cocok.forEach(function(c){
+      var bersih=c.replace(/[.,]/g, "");
+      var v=parseInt(bersih, 10);
+      if(!isNaN(v) && v>=1000) angka.push(v);
+    });
+  });
+  if(angka.length) hasil.total=Math.max.apply(null, angka);
+  /* Baris barang: pola "nama ... qty ... harga" atau "nama x qty harga". */
+  baris.forEach(function(b){
+    var m=b.match(/^(.{2,40}?)\s+(?:x\s*)?(\d+(?:[.,]\d+)?)\s*(?:x|pcs|kg|bh|pcs\.?)?\s+(\d[\d.,]*)$/i);
+    if(m){
+      var nama=m[1].replace(/[^\w\s&'.,-]/g, "").trim();
+      var qty=parseFloat(String(m[2]).replace(",", "."));
+      var harga=parseInt(String(m[3]).replace(/[.,]/g, ""), 10);
+      if(nama && qty>0 && harga>=1000 && harga!==hasil.total) hasil.items.push({nama:nama, qty:qty, harga:harga});
+    }
+  });
+  if(!hasil.items.length && hasil.total>0){
+    /* Tidak ada baris barang yang terbaca — satu baris "Pembelian" supaya
+       draf tetap bisa diperiksa dan diisi pemilik. */
+    hasil.items.push({nama:"Pembelian (isi nama barang)", qty:1, harga:hasil.total});
+  }
+  return hasil;
+}
+async function g5AiBacaFoto(){
+  var inp=gid("g5AiFoto");
+  var f=inp && inp.files && inp.files[0];
+  var st=gid("g5AiStatus");
+  if(!f){ popupRamah("Foto invoice belum dipilih","Pilih foto invoice pembelian dulu — foto bisa dari kamera atau galeri.","Pilih fotonya, lalu tekan Baca foto invoice."); return false; }
+  if(typeof Tesseract==="undefined"){
+    if(st) st.textContent="Pembaca foto belum termuat di peramban ini — isi draf secara manual di bawah, foto tetap tersimpan sebagai lampiran.";
+    popupRamah("Foto belum bisa dibaca otomatis","Pustaka pembaca foto belum termuat di peramban ini.","Isi draf secara manual di bawah — foto tetap tersimpan sebagai lampiran draf.");
+    try{ await g5AiSimpanFotoLampiran(f); }catch(e){}
+    return false;
+  }
+  if(st) st.textContent="Membaca foto invoice… (proses berjalan di peramban Anda)";
+  var fotoData="";
+  try{ fotoData=await g5KompresFoto(f); }catch(e){ fotoData=""; }
+  try{
+    var res=await Tesseract.recognize(f, "ind+eng");
+    var teks=String((res && res.data && res.data.text)||"").trim();
+    var draf=g5AiParseTeks(teks);
+    g5AiIsiForm(draf, fotoData, teks);
+    if(st) st.textContent=(draf.total>0?"Selesai dibaca — periksa kembali draf di bawah sebelum disimpan.":"Teks terbaca, tetapi total tidak ditemukan — isi draf secara manual.");
+    try{ audit("Foto invoice dibaca — total terbaca "+fmtFull(draf.total||0)+"."); }catch(e){}
+    return true;
+  }catch(e){
+    if(st) st.textContent="Foto belum bisa dibaca otomatis — coba foto yang lebih terang dan rata, atau isi draf secara manual.";
+    popupRamah("Foto belum bisa dibaca","Foto ini belum bisa dibaca otomatis — mungkin terlalu gelap, miring, atau buram.","Coba foto yang lebih terang dan rata, atau isi draf secara manual di bawah.");
+    return false;
+  }
+}
+function g5AiIsiForm(draf, fotoData, teksOcr){
+  var sup=gid("g5AiSupplier"); if(sup) sup.value=draf.supplier||"";
+  var tot=gid("g5AiTotal"); if(tot) tot.value=draf.total>0?String(draf.total):"";
+  var wadah=gid("g5AiBaris"); if(wadah) wadah.innerHTML="";
+  (draf.items||[]).forEach(function(it){ g5AiBarisTambah(it); });
+  if(!(draf.items||[]).length) g5AiBarisTambah();
+  var t=gid("g5AiTeksOcr"); if(t) t.value=teksOcr||"";
+  var f=gid("g5AiFotoData"); if(f) f.value=fotoData||"";
+  var prev=gid("g5AiPratinjau");
+  if(prev){
+    if(fotoData){ prev.src=fotoData; prev.style.display="block"; }
+    else prev.style.display="none";
+  }
+}
+function g5AiBarisTambah(it){
+  var wadah=gid("g5AiBaris"); if(!wadah) return;
+  var div=document.createElement("div");
+  div.setAttribute("data-g5aibaris","");
+  div.className="form-grid";
+  div.style.marginTop="8px";
+  div.innerHTML="<label class='f'><span>Barang</span><input type='text' data-g5ainama placeholder='contoh: Kopi susu' value='"+esc((it&&it.nama)||"")+"' /></label>"
+    +"<label class='f'><span>Jumlah</span><input type='number' data-g5aiqty min='0' step='any' placeholder='contoh: 10' value='"+((it&&it.qty)||"")+"' /></label>"
+    +"<label class='f'><span>Harga beli / unit (Rp)</span><input type='text' inputmode='numeric' data-g5aiharga placeholder='contoh: 9000' value='"+((it&&it.harga)||"")+"' /></label>"
+    +"<label class='f'><span>&nbsp;</span><button type='button' class='btn ghost' data-g5aihapusbaris>Hapus baris</button></label>";
+  div.querySelector("[data-g5aihapusbaris]").addEventListener("click",function(){ div.remove(); });
+  wadah.appendChild(div);
+}
+async function g5AiSimpanFotoLampiran(file){
+  var fotoData="";
+  try{ fotoData=await g5KompresFoto(file); }catch(e){}
+  var f=gid("g5AiFotoData"); if(f) f.value=fotoData||"";
+  var prev=gid("g5AiPratinjau");
+  if(prev && fotoData){ prev.src=fotoData; prev.style.display="block"; }
+}
+async function g5AiMintaAi(){
+  var teks=String((gid("g5AiTeksOcr")||{}).value||"").trim();
+  if(!teks){ popupRamah("Belum ada teks hasil baca","Baca dulu foto invoice-nya — teks hasil baca dipakai AI untuk menyusun draf.","Tekan Baca foto invoice, lalu minta AI menyusun."); return false; }
+  var st=gid("g5AiStatus");
+  if(st) st.textContent="AI sedang menyusun draf dari teks hasil baca…";
+  try{
+    var r=await fetch("/api/ai-chat",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({prompt:"Susun draf invoice pembelian dari teks berikut. Jawab dengan: nama supplier, daftar barang (nama, jumlah, harga per unit), dan total. Bila ada angka yang tidak yakin, tulis tidak yakin.",
+        context:{jenis:"ai_invoicing", teksOcr:teks.slice(0,1500)}})});
+    if(!r.ok){ throw new Error("ai "+r.status); }
+    var data=await r.json();
+    var jawab=String((data&&data.answer)||"").trim();
+    var saran=gid("g5AiSaran");
+    if(saran){ saran.style.display=""; saran.textContent=jawab||"AI tidak memberi saran — isi draf secara manual."; }
+    if(st) st.textContent="AI sudah memberi saran — salin angkanya ke draf di bawah dan periksa sebelum disimpan.";
+    return true;
+  }catch(e){
+    if(st) st.textContent="AI online belum bisa menjawab — isi draf secara manual dari teks hasil baca.";
+    popupRamah("AI belum bisa menjawab","AI online sedang tidak bisa dihubungi — draf tetap bisa diisi manual dari teks hasil baca.","Isi draf secara manual, lalu tekan Simpan draf.");
+    return false;
+  }
+}
+function g5AiSimpanDraf(){
+  var supplier=String((gid("g5AiSupplier")||{}).value||"").trim();
+  var items=[];
+  document.querySelectorAll("[data-g5aibaris]").forEach(function(row){
+    var nm=row.querySelector("[data-g5ainama]");
+    var qt=row.querySelector("[data-g5aiqty]");
+    var hg=row.querySelector("[data-g5aiharga]");
+    if(!nm || !String(nm.value||"").trim()) return;
+    var qty=posAngka(qt?qt.value:"");
+    var harga=Math.max(0, Math.round(posAngka(hg?hg.value:"")));
+    if(!(qty>0) || !(harga>0)) return;
+    items.push({nama:String(nm.value).trim(), qty:qty, harga:harga});
+  });
+  if(!supplier && !items.length){ popupRamah("Draf masih kosong","Isi nama supplier atau setidaknya satu baris barang.","Lengkapi drafnya, lalu tekan Simpan draf."); return false; }
+  if(!items.length){ popupRamah("Baris barang belum diisi","Isi setidaknya satu baris barang dengan jumlah dan harga belinya.","Lengkapi satu baris, lalu tekan Simpan draf."); return false; }
+  var total=0; items.forEach(function(it){ total+=(+it.qty||0)*(+it.harga||0); });
+  var foto=String((gid("g5AiFotoData")||{}).value||"");
+  var draf={cid:posUuid(), tgl:tglIsoHariIni(), supplier:supplier||"—", items:items, total:Math.round(total),
+    foto:foto, status:"draf", sumber:"ocr"};
+  g5AiDraf.push(draf);
+  try{ g5RenderAi(); }catch(e){}
+  try{ audit("Draf AI Invoicing disimpan — "+(supplier||"tanpa supplier")+" "+fmtFull(draf.total)+" (menunggu konfirmasi)."); }catch(e){}
+  popupRamah("Draf tersimpan","Draf invoice sudah tersimpan — draf TIDAK menjadi transaksi sebelum Anda memeriksanya dan menekan Konfirmasi sebagai pembelian.","Periksa draf di bawah, lalu konfirmasi bila angkanya sudah benar.");
+  return true;
+}
+async function g5AiKonfirmasi(cid){
+  var d=null;
+  for(var i=0;i<g5AiDraf.length;i++){ if(g5AiDraf[i].cid===cid){ d=g5AiDraf[i]; break; } }
+  if(!d) return false;
+  if(d.status!=="draf"){ popupRamah("Draf ini sudah diproses","Draf ini sudah "+(d.status==="disimpan"?"dikonfirmasi sebagai pembelian":"dibatalkan")+".","Periksa daftar draf di bawah."); return false; }
+  /* Supplier: pakai yang sudah ada, atau buat baru. */
+  var sup=null;
+  for(var s=0;s<g4Supplier.length;s++){
+    if(String(g4Supplier[s].nama||"").toLowerCase()===String(d.supplier||"").toLowerCase()){ sup=g4Supplier[s]; break; }
+  }
+  if(!sup && d.supplier && d.supplier!=="—"){
+    sup={cid:posUuid(), nama:d.supplier, kontak:"", catatan:"Dari AI Invoicing"};
+    g4Supplier.push(sup);
+    try{ g4RenderSupplier(); }catch(e){}
+  }
+  if(!sup){
+    popupRamah("Supplier belum jelas","Nama supplier di draf ini kosong — isi nama suppliernya dulu.","Isi nama supplier di draf, lalu konfirmasi lagi.");
+    return false;
+  }
+  var total=+d.total||0;
+  if(!(total>0)){ popupRamah("Total draf masih Rp 0","Total draf masih Rp 0 — periksa jumlah dan harga tiap baris.","Perbaiki barisnya, lalu konfirmasi lagi."); return false; }
+  var nomor="PB-"+String((+g4Pengaturan.nomorPembelianTerakhir||0)+1).padStart(4,"0");
+  var ket="Pembelian "+nomor+" — "+sup.nama+" (AI Invoicing)";
+  var ok=false;
+  try{ ok=await tambahTransaksi(ket, Math.round(total), "keluar", "Bahan baku", tglIsoHariIni(), "Konfirmasi draf AI Invoicing."); }catch(e){ ok=false; }
+  if(!ok) return false;
+  var txBaru=null;
+  for(var ti=txs.length-1;ti>=0;ti--){ if(txs[ti].ket===ket){ txBaru=txs[ti]; break; } }
+  var pbCid=posUuid();
+  if(txBaru) txBaru.pembelianCid=pbCid;
+  var tanpaStok=0;
+  (d.items||[]).forEach(function(it){
+    var st=null;
+    for(var j=0;j<stocks.length;j++){
+      if(String(stocks[j].nama||"").toLowerCase()===String(it.nama||"").toLowerCase()){ st=stocks[j]; break; }
+    }
+    if(!st){ tanpaStok++; return; }
+    st.qty=(+st.qty||0)+(+it.qty||0);
+    if(!Array.isArray(st.lapisan)) st.lapisan=[];
+    st.lapisan.push({cid:posUuid(), harga:+it.harga||0, sisa:+it.qty||0, tgl:tglIsoHariIni(), sumber:"pembelian", sudahBiaya:true});
+  });
+  g4Pembelian.push({cid:pbCid, nomor:nomor, tgl:tglIsoHariIni(), supplierCid:sup.cid, supplierNama:sup.nama, cara:"tunai",
+    items:(d.items||[]).map(function(it){ return {stokCid:null, stokId:null, nama:it.nama, qty:it.qty, harga:it.harga}; }),
+    total:Math.round(total), txId:txBaru?txBaru.id:null, utangCid:null, status:"lunas"});
+  g4Pengaturan.nomorPembelianTerakhir=(+g4Pengaturan.nomorPembelianTerakhir||0)+1;
+  d.status="disimpan"; d.nomorPembelian=nomor;
+  try{ renderStock(); }catch(e){}
+  try{ renderTx(); }catch(e){}
+  try{ renderReports(); }catch(e){}
+  try{ g4RenderPembelian(); }catch(e){}
+  try{ g5RenderAi(); }catch(e){}
+  try{ audit("Draf AI Invoicing dikonfirmasi — pembelian "+nomor+" "+fmtFull(total)+"."); }catch(e){}
+  popupRamah("Pembelian tersimpan","Draf dikonfirmasi menjadi pembelian "+nomor+" — biayanya masuk laporan dan stok bertambah untuk barang yang cocok dengan katalog"+(tanpaStok?" — "+tanpaStok+" baris tidak cocok dengan stok sehingga hanya tercatat sebagai biaya":"")+".","Periksa riwayat pembelian di kartu Gudang & Persediaan.");
+  return true;
+}
+function g5AiBatalkan(cid){
+  for(var i=0;i<g5AiDraf.length;i++){
+    if(g5AiDraf[i].cid===cid){ g5AiDraf[i].status="dibatalkan"; try{ g5RenderAi(); }catch(e){} return true; }
+  }
+  return false;
+}
+function g5RenderAi(){
+  var daftar=gid("g5AiDaftar");
+  if(daftar){
+    if(!g5AiDraf.length){ daftar.innerHTML="<p class='note'>Belum ada draf — baca foto invoice di atas, atau isi draf secara manual.</p>"; }
+    else{
+      daftar.innerHTML=g5AiDraf.slice().reverse().map(function(d){
+        var isi=(d.items||[]).map(function(it){ return esc(it.nama)+" × "+it.qty+" @ "+fmtFull(it.harga); }).join(", ");
+        var aksi="";
+        if(d.status==="draf"){
+          aksi="<div class='actions' style='margin-top:8px'><button class='btn' type='button' data-g5aikonfirmasi='"+esc(d.cid)+"'>Konfirmasi sebagai pembelian</button><button class='btn ghost' type='button' data-g5aibatal='"+esc(d.cid)+"'>Batalkan draf</button></div>";
+        }
+        return "<div class='card' style='margin-top:8px'><p><b>Draf "+esc(d.tgl)+"</b> — "+esc(d.supplier)+" · "+fmtFull(d.total)+" · "+esc(d.status)+(d.nomorPembelian?" ("+esc(d.nomorPembelian)+")":"")+(d.foto?" · ada foto":"")+"</p>"
+          +"<p class='note' style='margin-top:4px'>"+isi+"</p>"+aksi+"</div>";
+      }).join("");
+      daftar.querySelectorAll("[data-g5aikonfirmasi]").forEach(function(b){ b.addEventListener("click",function(){ g5AiKonfirmasi(b.getAttribute("data-g5aikonfirmasi")); }); });
+      daftar.querySelectorAll("[data-g5aibatal]").forEach(function(b){ b.addEventListener("click",function(){ g5AiBatalkan(b.getAttribute("data-g5aibatal")); }); });
+    }
+  }
+}
+
+/* ---------- render gabungan + seam uji ---------- */
+function g5RenderSemua(){
+  try{ g5RenderMemberBox(); }catch(e){}
+  try{ g5RenderKanalBox(); }catch(e){}
+  try{ g5RenderLoyalitas(); }catch(e){}
+  try{ g5RenderAbsensi(); }catch(e){}
+  try{ g5RenderJadwal(); }catch(e){}
+  try{ g5RenderKomisi(); }catch(e){}
+  try{ g5RenderKanal(); }catch(e){}
+  try{ g5RenderBackoffice(); }catch(e){}
+  try{ g5RenderGaji(); }catch(e){}
+  try{ g5RenderPpn(); }catch(e){}
+  try{ g5RenderAi(); }catch(e){}
+}
+window.__g5={
+  pengaturan:g5Pengaturan,
+  hitungMember:g5HitungMember, hitungPpn:g5HitungPpn, tingkatUntuk:g5TingkatUntuk,
+  memberTerpilih:g5MemberTerpilih, ringkasanMember:g5RingkasanMember,
+  setelahPenjualan:g5SetelahPenjualan, setelahPelunasan:g5SetelahPelunasan, setelahBatal:g5SetelahBatal,
+  top100:g5Top100, loyalitasSimpan:g5LoyalitasSimpan,
+  absensiCatat:g5AbsensiCatat, jadwalTambah:g5JadwalTambah, jadwalHapus:g5JadwalHapus,
+  jadwalUntuk:g5JadwalUntuk, hariAlpha:g5HariAlpha,
+  komisiProdukTambah:g5KomisiProdukTambah, komisiProdukHapus:g5KomisiProdukHapus,
+  hitungKomisiItem:g5HitungKomisiItem, rekapKomisi:g5RekapKomisi,
+  kanalTarifSimpan:g5KanalTarifSimpan, kanalImporTeks:g5KanalImporTeks, laporanKanal:g5LaporanKanal,
+  boBuat:g5BoBuat, boLanjut:g5BoLanjut, boSetujui:g5BoSetujui, boTerbitkanInvoice:g5BoTerbitkanInvoice,
+  boBayar:g5BoBayar, boBatal:g5BoBatal, boBarisTambah:g5BoBarisTambah,
+  gajiHitung:g5GajiHitung, gajiJalankan:g5GajiJalankan, gajiBarisTambah:g5GajiBarisTambah, gajiSlipTeks:g5GajiSlipTeks,
+  ppnSimpan:g5PpnSimpan, laporanPpn:g5LaporanPpn,
+  aiParseTeks:g5AiParseTeks, aiBacaFoto:g5AiBacaFoto, aiMintaAi:g5AiMintaAi,
+  aiSimpanDraf:g5AiSimpanDraf, aiKonfirmasi:g5AiKonfirmasi, aiBatalkan:g5AiBatalkan, aiBarisTambah:g5AiBarisTambah,
+  kanalTerpilih:g5KanalTerpilih, renderSemua:g5RenderSemua,
+  setDataUji:function(o){
+    if(o.g5Pengaturan){ g5Pengaturan.poinPerRp=+o.g5Pengaturan.poinPerRp||10000; g5Pengaturan.poinNilaiRp=+o.g5Pengaturan.poinNilaiRp||100; g5Pengaturan.poinMinTukar=+o.g5Pengaturan.poinMinTukar||100; if(Array.isArray(o.g5Pengaturan.tier)) g5Pengaturan.tier=JSON.parse(JSON.stringify(o.g5Pengaturan.tier)); if(o.g5Pengaturan.ppnAktif!==undefined) g5Pengaturan.ppnAktif=!!o.g5Pengaturan.ppnAktif; if(o.g5Pengaturan.ppnTarif!=null) g5Pengaturan.ppnTarif=+o.g5Pengaturan.ppnTarif||11; if(o.g5Pengaturan.kanalTarif) g5Pengaturan.kanalTarif=Object.assign({}, o.g5Pengaturan.kanalTarif); }
+    if(o.g5KomisiProduk){ g5KomisiProduk.splice(0,g5KomisiProduk.length); (o.g5KomisiProduk||[]).forEach(function(x){ g5KomisiProduk.push(Object.assign({}, x)); }); }
+    if(o.g5Komisi){ g5Komisi.splice(0,g5Komisi.length); (o.g5Komisi||[]).forEach(function(x){ g5Komisi.push(Object.assign({}, x)); }); }
+    if(o.g5Absensi){ g5Absensi.splice(0,g5Absensi.length); (o.g5Absensi||[]).forEach(function(x){ g5Absensi.push(Object.assign({}, x)); }); }
+    if(o.g5Jadwal){ g5Jadwal.splice(0,g5Jadwal.length); (o.g5Jadwal||[]).forEach(function(x){ g5Jadwal.push(Object.assign({}, x)); }); }
+    if(o.g5KanalImpor){ g5KanalImpor.splice(0,g5KanalImpor.length); (o.g5KanalImpor||[]).forEach(function(x){ g5KanalImpor.push(Object.assign({}, x)); }); }
+    if(o.g5Backoffice){ g5Backoffice.splice(0,g5Backoffice.length); (o.g5Backoffice||[]).forEach(function(x){ g5Backoffice.push(JSON.parse(JSON.stringify(x))); }); }
+    if(o.g5Gaji){ g5Gaji.splice(0,g5Gaji.length); (o.g5Gaji||[]).forEach(function(x){ g5Gaji.push(JSON.parse(JSON.stringify(x))); }); }
+    if(o.g5AiDraf){ g5AiDraf.splice(0,g5AiDraf.length); (o.g5AiDraf||[]).forEach(function(x){ g5AiDraf.push(JSON.parse(JSON.stringify(x))); }); }
+    g5PoinTukar=0; g5CashbackPakai=0;
+    try{ g5RenderSemua(); }catch(e){}
+  },
+  ambilState:function(){
+    return {pengaturan:g5Pengaturan, komisiProduk:g5KomisiProduk, komisi:g5Komisi,
+      absensi:g5Absensi, jadwal:g5Jadwal, kanalImpor:g5KanalImpor, backoffice:g5Backoffice,
+      gaji:g5Gaji, aiDraf:g5AiDraf};
+  }
+};
+/* ---------- penyambung tombol Gelombang 5 ---------- */
+(function(){
+  function klik(id, fn){ var b=$(id); if(b) b.addEventListener("click", fn); }
+  function pasangSemua(){
+    /* Tombol Simpan aturan loyalitas TIDAK dipasang di sini — tombol itu
+       dibuat ulang oleh g5RenderLoyalitas() dan dipasang di sana. */
+    klik("g5BtnAbsMasuk", function(){ g5AbsensiDariForm("masuk"); });
+    klik("g5BtnAbsPulang", function(){ g5AbsensiDariForm("pulang"); });
+    klik("g5BtnJadwalTambah", g5JadwalTambah);
+    klik("g5BtnKomSimpan", g5KomisiProdukTambah);
+    klik("g5BtnKanalTarif", g5KanalTarifSimpan);
+    klik("g5BtnKanalImpor", function(){ var f=(gid("g5KanalFile")||{}).files; if(f && f[0]) g5KanalImporDariBerkas(f[0]); else popupRamah("Berkas belum dipilih","Pilih berkas laporan kanal (CSV atau Excel) dulu.","Pilih berkasnya, lalu tekan Impor laporan kanal."); });
+    klik("g5BtnBoBaris", g5BoBarisTambah);
+    klik("g5BtnBoBuat", function(){ g5BoBuat(String((gid("g5BoJenis")||{}).value||"quotation")); });
+    klik("g5BtnGajiBaris", g5GajiBarisTambah);
+    klik("g5BtnGajiJalankan", g5GajiJalankan);
+    klik("g5BtnPpnSimpan", g5PpnSimpan);
+    klik("g5BtnAiBaca", g5AiBacaFoto);
+    klik("g5BtnAiMinta", g5AiMintaAi);
+    klik("g5BtnAiBaris", function(){ g5AiBarisTambah(); });
+    klik("g5BtnAiSimpan", g5AiSimpanDraf);
+    var mp=gid("g5MemberPilih");
+    if(mp) mp.addEventListener("change", function(){ g5PilihMemberDariKeranjang(); });
+    var ap=gid("g5AbsPegawai");
+    if(ap) ap.addEventListener("change", function(){
+      var v=String(ap.value||"");
+      if(v && v!=="__manual__"){
+        var tim=g5DaftarTim();
+        for(var i=0;i<tim.length;i++){ if(tim[i].email===v){ var n=gid("g5AbsNama"); if(n) n.value=tim[i].nama; var e=gid("g5AbsEmail"); if(e) e.value=tim[i].email; break; } }
+      }
+    });
+    var jp=gid("g5JadwalEmail");
+    if(jp) jp.addEventListener("change", function(){
+      var v=String(jp.value||"");
+      if(!v) return;
+      var tim=g5DaftarTim();
+      for(var i=0;i<tim.length;i++){ if(tim[i].email===v){ var n=gid("g5JadwalNama"); if(n) n.value=tim[i].nama; break; } }
+    });
+    var af=gid("g5AbsFoto");
+    if(af) af.addEventListener("change", function(){ g5AbsFotoDipilih(); });
+  }
+  function initG5(){
+    try{ pasangSemua(); }catch(e){}
+    try{ g5RenderSemua(); }catch(e){}
+    try{ if(!document.querySelectorAll("[data-g5boitem]").length) g5BoBarisTambah(); }catch(e){}
+    try{ if(!document.querySelectorAll("[data-g5gajibaris]").length) g5GajiBarisTambah(); }catch(e){}
+    try{ if(!document.querySelectorAll("[data-g5aibaris]").length) g5AiBarisTambah(); }catch(e){}
+  }
+  /* gid() didefinisikan di blok skrip lain yang jalan sesudah blok ini
+     (pola yang sama dengan Gelombang 4) — semua penyambungan tombol dan
+     render awal menunggu DOMContentLoaded. */
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", initG5);
+  else initG5();
+})();
+function g5AbsensiDariForm(jenis){
+  var email=String((gid("g5AbsEmail")||{}).value||"").trim();
+  var nama=String((gid("g5AbsNama")||{}).value||"").trim();
+  var inp=gid("g5AbsFoto");
+  var f=inp && inp.files && inp.files[0];
+  if(!f){ g5AbsensiCatat(email, nama, jenis, ""); return; }
+  g5KompresFoto(f).then(function(foto){
+    g5AbsensiCatat(email, nama, jenis, foto||"");
+    if(inp) inp.value="";
+  });
+}
+function g5AbsFotoDipilih(){
+  var inp=gid("g5AbsFoto");
+  var f=inp && inp.files && inp.files[0];
+  var prev=gid("g5AbsPratinjau");
+  if(!f || !prev) return;
+  g5KompresFoto(f).then(function(foto){
+    if(foto){ prev.src=foto; prev.style.display="block"; }
+  });
+}
 /* ---------- penyambung tombol Gelombang 4 ---------- */
 (function(){
   function klik(id, fn){ var b=$(id); if(b) b.addEventListener("click", fn); }
@@ -11599,9 +13242,9 @@ window.__g4={
             sopSteps:Array.prototype.map.call(document.querySelectorAll(".sop-step"),function(t){return t.value;}),
             sops:sopDaftarTersimpan(),
             struktur:strukturBersihDaftar(strukturList),
-            txs:txs.map(function(t){ if(!t.cid) t.cid=uuid(); return {cid:t.cid,tgl:t.tgl,ket:t.ket,jenis:t.jenis,kat:t.kat,jumlah:t.jumlah,batal:!!t.batal,pelunasan:!!t.pelunasan,hpp:!!t.hpp,retur:!!t.retur,utangSupplier:!!t.utangSupplier,pelunasanUtang:!!t.pelunasanUtang,pembelianCid:t.pembelianCid||null,posCid:t.posCid||null}; }),
+            txs:txs.map(function(t){ if(!t.cid) t.cid=uuid(); return {cid:t.cid,tgl:t.tgl,ket:t.ket,jenis:t.jenis,kat:t.kat,jumlah:t.jumlah,batal:!!t.batal,pelunasan:!!t.pelunasan,hpp:!!t.hpp,retur:!!t.retur,utangSupplier:!!t.utangSupplier,pelunasanUtang:!!t.pelunasanUtang,pembelianCid:t.pembelianCid||null,gaji:!!t.gaji,invoiceCid:t.invoiceCid||null,posCid:t.posCid||null}; }),
             stocks:stocks.map(function(s){ if(!s.cid) s.cid=uuid(); return {cid:s.cid,nama:s.nama,qty:s.qty,beli:s.beli,jual:s.jual,kat:s.kat||"Lainnya",grosir:+s.grosir||0,minGrosir:+s.minGrosir||10,kode:s.kode||"",varian:Array.isArray(s.varian)?s.varian:[],favorit:!!s.favorit,tanpaStok:!!s.tanpaStok,bahan:!!s.bahan,lapisan:Array.isArray(s.lapisan)?s.lapisan.map(function(l){ return {cid:l.cid||null,harga:+l.harga||0,sisa:+l.sisa||0,tgl:l.tgl||"",sumber:l.sumber||"awal",sudahBiaya:!!l.sudahBiaya}; }):[]}; }),
-            pis:pis.map(function(p){ if(!p.cid) p.cid=uuid(); return {cid:p.cid,nama:p.nama,jumlah:p.jumlah,tempo:p.tempo,batal:!!p.batal,posCid:p.posCid||null}; }),
+            pis:pis.map(function(p){ if(!p.cid) p.cid=uuid(); return {cid:p.cid,nama:p.nama,jumlah:p.jumlah,tempo:p.tempo,batal:!!p.batal,posCid:p.posCid||null,invoiceCid:p.invoiceCid||null}; }),
             utangs:utangs.map(function(u){ if(!u.cid) u.cid=uuid(); return {cid:u.cid,ket:u.ket,jumlah:u.jumlah,tempo:u.tempo,supplier:!!u.supplier,pembelianCid:u.pembelianCid||null}; }),
             proaktif:{ last_seen: proaktifState.last_seen||null, lastConsCheck: proaktifState.lastConsCheck||null },
             qris_image: window.__qrisImage || null,
@@ -11629,7 +13272,18 @@ window.__g4={
             g4Resep: (typeof g4Resep!=="undefined"?g4Resep:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
             g4Opname: (typeof g4Opname!=="undefined"?g4Opname:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
             g4StokRusak: (typeof g4StokRusak!=="undefined"?g4StokRusak:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
-            g4Pengaturan: (typeof g4Pengaturan!=="undefined"?{metode:g4Pengaturan.metode||"rata-rata", nomorPembelianTerakhir:+g4Pengaturan.nomorPembelianTerakhir||0}:{metode:"rata-rata", nomorPembelianTerakhir:0})
+            g4Pengaturan: (typeof g4Pengaturan!=="undefined"?{metode:g4Pengaturan.metode||"rata-rata", nomorPembelianTerakhir:+g4Pengaturan.nomorPembelianTerakhir||0}:{metode:"rata-rata", nomorPembelianTerakhir:0}),
+            /* Gelombang 5: loyalitas, karyawan, keuangan lanjutan — dipulihkan
+               applySnapshot dan digabung gabungkanSnapshot (per cid). */
+            g5Pengaturan: (typeof g5Pengaturan!=="undefined"?JSON.parse(JSON.stringify(g5Pengaturan)):{poinPerRp:10000, poinNilaiRp:100, poinMinTukar:100, tier:[], ppnAktif:false, ppnTarif:11, kanalTarif:{}, gajiHariKerja:26}),
+            g5KomisiProduk: (typeof g5KomisiProduk!=="undefined"?g5KomisiProduk:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g5Komisi: (typeof g5Komisi!=="undefined"?g5Komisi:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g5Absensi: (typeof g5Absensi!=="undefined"?g5Absensi:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g5Jadwal: (typeof g5Jadwal!=="undefined"?g5Jadwal:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g5KanalImpor: (typeof g5KanalImpor!=="undefined"?g5KanalImpor:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g5Backoffice: (typeof g5Backoffice!=="undefined"?g5Backoffice:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g5Gaji: (typeof g5Gaji!=="undefined"?g5Gaji:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g5AiDraf: (typeof g5AiDraf!=="undefined"?g5AiDraf:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; })
           };
         }
         window.__collectSnapshot=collectSnapshot;
@@ -11736,7 +13390,16 @@ window.__g4={
             g4Resep: gabungBaris(c.g4Resep, t.g4Resep),
             g4Opname: gabungBaris(c.g4Opname, t.g4Opname),
             g4StokRusak: gabungBaris(c.g4StokRusak, t.g4StokRusak),
-            g4Pengaturan: c.g4Pengaturan||t.g4Pengaturan||null
+            g4Pengaturan: c.g4Pengaturan||t.g4Pengaturan||null,
+            g5Pengaturan: c.g5Pengaturan||t.g5Pengaturan||null,
+            g5KomisiProduk: gabungBaris(c.g5KomisiProduk, t.g5KomisiProduk),
+            g5Komisi: gabungBaris(c.g5Komisi, t.g5Komisi),
+            g5Absensi: gabungBaris(c.g5Absensi, t.g5Absensi),
+            g5Jadwal: gabungBaris(c.g5Jadwal, t.g5Jadwal),
+            g5KanalImpor: gabungBaris(c.g5KanalImpor, t.g5KanalImpor),
+            g5Backoffice: gabungBaris(c.g5Backoffice, t.g5Backoffice),
+            g5Gaji: gabungBaris(c.g5Gaji, t.g5Gaji),
+            g5AiDraf: gabungBaris(c.g5AiDraf, t.g5AiDraf)
           };
         }
         /* ---------- P0-3: lindungi isian yang sudah diubah pengguna ----------
@@ -11836,9 +13499,9 @@ window.__g4={
              daftar tetap kosong dan peran bawaan yang berlaku. */
           if(Array.isArray(snap.struktur)){ strukturList=strukturBersihDaftar(snap.struktur); }
           renderStruktur(); renderTimPeran();
-          txs.splice(0,txs.length); (snap.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||uuid(), tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, utangSupplier:!!t.utangSupplier, pelunasanUtang:!!t.pelunasanUtang, pembelianCid:t.pembelianCid||null, posCid:t.posCid||null}); });
+          txs.splice(0,txs.length); (snap.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||uuid(), tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, utangSupplier:!!t.utangSupplier, pelunasanUtang:!!t.pelunasanUtang, pembelianCid:t.pembelianCid||null, gaji:!!t.gaji, invoiceCid:t.invoiceCid||null, posCid:t.posCid||null}); });
           stocks.splice(0,stocks.length); (snap.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||uuid(), nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0, kat:s.kat||"Lainnya", grosir:+s.grosir||0, minGrosir:+s.minGrosir||10, kode:s.kode||"", varian:Array.isArray(s.varian)?s.varian:[], favorit:!!s.favorit, tanpaStok:!!s.tanpaStok, bahan:!!s.bahan, lapisan:Array.isArray(s.lapisan)?s.lapisan.map(function(l){ return {cid:l.cid||uuid(), harga:+l.harga||0, sisa:+l.sisa||0, tgl:l.tgl||"", sumber:l.sumber||"awal", sudahBiaya:!!l.sudahBiaya}; }):[]}); });
-          pis.splice(0,pis.length); (snap.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||uuid(), nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—", batal:!!p.batal, posCid:p.posCid||null}); });
+          pis.splice(0,pis.length); (snap.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||uuid(), nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—", batal:!!p.batal, posCid:p.posCid||null, invoiceCid:p.invoiceCid||null}); });
           utangs.splice(0,utangs.length); (snap.utangs||[]).forEach(function(u){ utangs.push({cid:u.cid||uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—", supplier:!!u.supplier, pembelianCid:u.pembelianCid||null}); });
           /* POS Fase 1 (Gelombang 2): pulihkan shift/penjualan/
              permintaan pembatalan/pengaturan bila snapshot memilikinya. */
@@ -11860,8 +13523,20 @@ window.__g4={
           if(Array.isArray(snap.g4Opname) && typeof g4Opname!=="undefined"){ g4Opname.splice(0,g4Opname.length); snap.g4Opname.forEach(function(x){ g4Opname.push(JSON.parse(JSON.stringify(x))); }); }
           if(Array.isArray(snap.g4StokRusak) && typeof g4StokRusak!=="undefined"){ g4StokRusak.splice(0,g4StokRusak.length); snap.g4StokRusak.forEach(function(x){ g4StokRusak.push(Object.assign({}, x)); }); }
           if(snap.g4Pengaturan && typeof g4Pengaturan!=="undefined"){ g4Pengaturan.metode=snap.g4Pengaturan.metode||"rata-rata"; g4Pengaturan.nomorPembelianTerakhir=+snap.g4Pengaturan.nomorPembelianTerakhir||0; }
+          /* Gelombang 5: pulihkan loyalitas/karyawan/keuangan lanjutan
+             bila snapshot memilikinya. */
+          if(Array.isArray(snap.g5KomisiProduk) && typeof g5KomisiProduk!=="undefined"){ g5KomisiProduk.splice(0,g5KomisiProduk.length); snap.g5KomisiProduk.forEach(function(x){ g5KomisiProduk.push(Object.assign({}, x)); }); }
+          if(Array.isArray(snap.g5Komisi) && typeof g5Komisi!=="undefined"){ g5Komisi.splice(0,g5Komisi.length); snap.g5Komisi.forEach(function(x){ g5Komisi.push(Object.assign({}, x)); }); }
+          if(Array.isArray(snap.g5Absensi) && typeof g5Absensi!=="undefined"){ g5Absensi.splice(0,g5Absensi.length); snap.g5Absensi.forEach(function(x){ g5Absensi.push(Object.assign({}, x)); }); }
+          if(Array.isArray(snap.g5Jadwal) && typeof g5Jadwal!=="undefined"){ g5Jadwal.splice(0,g5Jadwal.length); snap.g5Jadwal.forEach(function(x){ g5Jadwal.push(Object.assign({}, x)); }); }
+          if(Array.isArray(snap.g5KanalImpor) && typeof g5KanalImpor!=="undefined"){ g5KanalImpor.splice(0,g5KanalImpor.length); snap.g5KanalImpor.forEach(function(x){ g5KanalImpor.push(Object.assign({}, x)); }); }
+          if(Array.isArray(snap.g5Backoffice) && typeof g5Backoffice!=="undefined"){ g5Backoffice.splice(0,g5Backoffice.length); snap.g5Backoffice.forEach(function(x){ g5Backoffice.push(JSON.parse(JSON.stringify(x))); }); }
+          if(Array.isArray(snap.g5Gaji) && typeof g5Gaji!=="undefined"){ g5Gaji.splice(0,g5Gaji.length); snap.g5Gaji.forEach(function(x){ g5Gaji.push(JSON.parse(JSON.stringify(x))); }); }
+          if(Array.isArray(snap.g5AiDraf) && typeof g5AiDraf!=="undefined"){ g5AiDraf.splice(0,g5AiDraf.length); snap.g5AiDraf.forEach(function(x){ g5AiDraf.push(JSON.parse(JSON.stringify(x))); }); }
+          if(snap.g5Pengaturan && typeof g5Pengaturan!=="undefined"){ var gp=snap.g5Pengaturan; g5Pengaturan.poinPerRp=+gp.poinPerRp||10000; g5Pengaturan.poinNilaiRp=+gp.poinNilaiRp||100; g5Pengaturan.poinMinTukar=+gp.poinMinTukar||100; if(Array.isArray(gp.tier) && gp.tier.length) g5Pengaturan.tier=JSON.parse(JSON.stringify(gp.tier)); g5Pengaturan.ppnAktif=!!gp.ppnAktif; g5Pengaturan.ppnTarif=+gp.ppnTarif||11; if(gp.kanalTarif) g5Pengaturan.kanalTarif=Object.assign({}, gp.kanalTarif); if(gp.gajiHariKerja) g5Pengaturan.gajiHariKerja=+gp.gajiHariKerja||26; }
           try{ if(typeof g4PerbaikiTandaTx==="function") g4PerbaikiTandaTx(); }catch(e){}
           try{ if(typeof g4RenderSemua==="function") g4RenderSemua(); }catch(e){}
+          try{ if(typeof g5RenderSemua==="function") g5RenderSemua(); }catch(e){}
           window.__qrisImage = snap.qris_image || null;
           if(snap.ai_pakai && snap.ai_pakai.bulan){ window.__aiPakai={bulan:String(snap.ai_pakai.bulan), jumlah:(+snap.ai_pakai.jumlah||0)}; }
           /* Data pemakaian AI baru tiba (lokal/cloud) — segarkan baris
@@ -12034,7 +13709,17 @@ window.__g4={
               g4Resep: snap.g4Resep||null,
               g4Opname: snap.g4Opname||null,
               g4StokRusak: snap.g4StokRusak||null,
-              g4Pengaturan: snap.g4Pengaturan||null};
+              g4Pengaturan: snap.g4Pengaturan||null,
+              /* Gelombang 5: loyalitas, karyawan, keuangan lanjutan. */
+              g5Pengaturan: snap.g5Pengaturan||null,
+              g5KomisiProduk: snap.g5KomisiProduk||null,
+              g5Komisi: snap.g5Komisi||null,
+              g5Absensi: snap.g5Absensi||null,
+              g5Jadwal: snap.g5Jadwal||null,
+              g5KanalImpor: snap.g5KanalImpor||null,
+              g5Backoffice: snap.g5Backoffice||null,
+              g5Gaji: snap.g5Gaji||null,
+              g5AiDraf: snap.g5AiDraf||null};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
@@ -12344,7 +14029,17 @@ window.__g4={
                 g4Resep:core.g4Resep||null,
                 g4Opname:core.g4Opname||null,
                 g4StokRusak:core.g4StokRusak||null,
-                g4Pengaturan:core.g4Pengaturan||null
+                g4Pengaturan:core.g4Pengaturan||null,
+                /* Gelombang 5: loyalitas, karyawan, keuangan lanjutan. */
+                g5Pengaturan:core.g5Pengaturan||null,
+                g5KomisiProduk:core.g5KomisiProduk||null,
+                g5Komisi:core.g5Komisi||null,
+                g5Absensi:core.g5Absensi||null,
+                g5Jadwal:core.g5Jadwal||null,
+                g5KanalImpor:core.g5KanalImpor||null,
+                g5Backoffice:core.g5Backoffice||null,
+                g5Gaji:core.g5Gaji||null,
+                g5AiDraf:core.g5AiDraf||null
               };
               var hasCloud = cloudAdaIsi(snap);
               cloudChecked=true; cloudHasData=!!hasCloud;
