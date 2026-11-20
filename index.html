@@ -1923,6 +1923,7 @@
               <label class="f"><span>Harga beli / unit (Rp)</span><input type="text" inputmode="numeric" id="stBeli" placeholder="contoh: 68000" min="0" /></label>
               <label class="f"><span>Harga jual / unit (Rp)</span><input type="text" inputmode="numeric" id="stJual" placeholder="contoh: 78000" min="0" /></label>
             </div>
+            <p class="note" style="margin-top:8px"><label><input type="checkbox" id="stBahan" /> Bahan baku — barang ini dipakai sebagai bahan di resep (contoh: Beras, Telur).</label></p>
             <div class="actions"><button class="btn" id="btnStock" type="button">Tambah stok</button></div>
             <div class="actions" style="margin-top:10px"><button class="btn ghost" id="btnImporContoh" type="button">Unduh contoh impor (.xlsx)</button><button class="btn ghost" id="btnImporStok" type="button">Impor dari Excel/CSV</button></div>
             <input type="file" id="fileImporStok" accept=".xlsx,.xls,.csv" style="display:none" />
@@ -1932,6 +1933,54 @@
             <table class="mini-table" id="stockTable" style="display:none"><thead><tr><th>Barang</th><th>Stok</th><th>Nilai stok</th><th></th></tr></thead><tbody id="stockBody"></tbody></table>
             <p class="note" style="margin-top:8px">Total nilai stok (harga beli): <b id="stockTotal">Rp 0</b></p>
           </div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Gudang &amp; persediaan (Gelombang 4)</h3>
+          <p class="note" style="margin:6px 0 0">Opname dulu, baru resep, baru pembelian — urutannya disengaja, karena tanpa hitungan fisik yang dipercaya, resep otomatis dan pembelian hanya mempercepat angka yang salah.</p>
+          <h3 style="font-size:.98rem;margin-top:14px">Metode persediaan</h3>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+            <label class="f"><span>Metode hitung HPP</span><select id="g4Metode"><option value="rata-rata">Rata-rata (bawaan)</option><option value="fifo">FIFO — yang dibeli dulu, dijual dulu</option><option value="lifo">LIFO — yang dibeli terakhir, dijual dulu</option></select></label>
+          </div>
+          <p class="note">Metode berlaku untuk penjualan berikutnya saja — HPP penjualan lama tidak ditulis ulang. Rata-rata memakai harga rata-rata tertimbang dari lapisan pembelian yang masih ada.</p>
+          <h3 style="font-size:.98rem;margin-top:14px">Opname stok</h3>
+          <p class="note" style="margin:6px 0 0">Hitung fisik di gudang, lalu isi kolom Fisik. Baris yang kosong dilewati. Selisih tercatat sebagai koreksi dan tidak bisa dihapus; opname tidak memakan kuota transaksi.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+            <label class="f"><span>Petugas opname</span><input type="text" id="g4OpPetugas" placeholder="contoh: Pemilik usaha" /></label>
+            <label class="f"><span>Catatan opname (opsional)</span><input type="text" id="g4OpCatatan" placeholder="contoh: Opname akhir bulan" /></label>
+          </div>
+          <table class="mini-table" style="margin-top:10px"><thead><tr><th>Barang</th><th>Sistem</th><th>Fisik</th><th>Rusak</th><th>Alasan</th></tr></thead><tbody id="g4OpnameBody"></tbody></table>
+          <div class="actions"><button class="btn" id="g4BtnOpnameSimpan" type="button">Simpan opname</button></div>
+          <div id="g4OpnameRiwayat" style="margin-top:10px"></div>
+          <h3 style="font-size:.98rem;margin-top:14px">Bahan baku &amp; resep</h3>
+          <p class="note" style="margin:6px 0 0">Tandai barang sebagai bahan baku di formulir stok di atas (atau di Kelola katalog kasir), lalu buat resep per produk/menu. Bahan berkurang otomatis setiap kali produk terjual; bila bahan kurang, penjualan ditolak dan kasir diberi tahu bahan apa yang kurang.</p>
+          <div class="form-grid" style="margin-top:8px">
+            <label class="f"><span>Produk / menu</span><select id="g4ResepProduk"><option value="">— Pilih produk/menu —</option></select></label>
+          </div>
+          <div id="g4ResepBaris"></div>
+          <div class="actions" style="margin-top:8px"><button class="btn ghost" id="g4BtnResepBaris" type="button">Tambah baris bahan</button><button class="btn" id="g4BtnResepSimpan" type="button">Simpan resep</button></div>
+          <div id="g4ResepDaftar" style="margin-top:10px"></div>
+          <h3 style="font-size:.98rem;margin-top:14px">Supplier</h3>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+            <label class="f"><span>Nama supplier</span><input type="text" id="g4SupNama" placeholder="contoh: Toko Makmur" /></label>
+            <label class="f"><span>Kontak (telepon / WA)</span><input type="text" id="g4SupKontak" placeholder="contoh: 081234567890" /></label>
+            <label class="f"><span>Catatan (opsional)</span><input type="text" id="g4SupCatatan" placeholder="contoh: Antar tiap Selasa" /></label>
+          </div>
+          <div class="actions"><button class="btn" id="g4BtnSupTambah" type="button">Tambah supplier</button></div>
+          <div id="g4SupDaftar" style="margin-top:10px"></div>
+          <h3 style="font-size:.98rem;margin-top:14px">Pembelian dari supplier</h3>
+          <p class="note" style="margin:6px 0 0">Pembelian menambah stok dan dicatat sebagai transaksi keluar (biaya) sehingga laba berubah. Pembelian utang masuk daftar utang usaha. Pembelian tunai maupun utang tetap memakai kuota transaksi seperti biasa.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+            <label class="f"><span>Supplier</span><select id="g4PbSupplier"><option value="">— Pilih supplier —</option></select></label>
+            <label class="f"><span>Tanggal pembelian</span><input type="text" id="g4PbTgl" placeholder="contoh: 2026-11-20" /></label>
+            <label class="f"><span>Cara bayar</span><select id="g4PbCara"><option value="tunai">Tunai</option><option value="utang">Utang</option></select></label>
+            <label class="f"><span>Jatuh tempo (bila utang)</span><input type="text" id="g4PbTempo" placeholder="contoh: 2026-12-20" /></label>
+          </div>
+          <div id="g4PbBaris"></div>
+          <div class="actions" style="margin-top:8px"><button class="btn ghost" id="g4BtnPbBaris" type="button">Tambah baris barang</button><button class="btn" id="g4BtnPbSimpan" type="button">Simpan pembelian</button></div>
+          <div id="g4PbRiwayat" style="margin-top:10px"></div>
+          <h3 style="font-size:.98rem;margin-top:14px">Stok rusak</h3>
+          <p class="note" style="margin:6px 0 0">Barang rusak dari retur dan opname tercatat di sini — tidak kembali ke stok jual dan tidak dihitung sebagai stok tersedia. Total stok rusak: <b id="g4RusakTotal">0</b></p>
+          <div id="g4RusakDaftar" style="margin-top:10px"></div>
         </div>
       </section>
 
@@ -1965,6 +2014,13 @@
           <div id="utEmpty" class="empty-note">Belum ada utang tercatat di daftar. Bila usaha Anda memang tanpa utang, biarkan kosong — laporan akan memakai kolom Total Utang di Data Usaha.</div>
           <table class="mini-table" id="utTable" style="display:none"><thead><tr><th>Keterangan</th><th>Jatuh tempo</th><th>Jumlah</th><th></th></tr></thead><tbody id="utBody"></tbody></table>
           <p class="note" style="margin-top:8px">Total utang dari daftar: <b id="utTotal">Rp 0</b></p>
+          <h3 style="font-size:.98rem;margin-top:14px">Lunasi utang supplier</h3>
+          <p class="note" style="margin:6px 0 0">Pelunasan mengurangi utang dan tercatat sebagai transaksi keluar — biayanya tidak dihitung dua kali, karena biaya pembelian sudah tercatat saat pembelian.</p>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+            <label class="f"><span>Utang supplier</span><select id="g4LunasiPilih"><option value="">— Pilih utang supplier —</option></select></label>
+            <label class="f"><span>Jumlah dibayar (Rp)</span><input type="text" inputmode="numeric" id="g4LunasiJumlah" placeholder="contoh: 500000" /></label>
+          </div>
+          <div class="actions"><button class="btn" id="g4BtnLunasi" type="button">Lunasi</button></div>
         </div>
       </section>
 
@@ -4146,7 +4202,9 @@
         /* POS Fase 1: baris batal dan baris HPP sistem bukan transaksi
            penjualan — tidak memakan kuota. Gelombang 3: baris retur
            juga bukan penjualan baru — tidak memakan kuota. */
-        txs.forEach(function(t){ if(t.batal || t.hpp || t.retur) return; if(bulanDariTgl(t.tgl, bln)===bln) n++; });
+        /* Gelombang 4: pelunasan utang supplier bukan transaksi baru
+           (biaya sudah tercatat saat pembelian) — tidak memakan kuota. */
+        txs.forEach(function(t){ if(t.batal || t.hpp || t.retur || t.pelunasanUtang) return; if(bulanDariTgl(t.tgl, bln)===bln) n++; });
         return n;
       }
       window.__hitungTxBulanIni=hitungTxBulanIni;
@@ -4214,7 +4272,7 @@
         /* POS Fase 1: baris batal tidak masuk total; pelunasan piutang
            bukan pemasukan baru (kasnya sudah dihitung saat penjualan lahir)
            dan baris batal ditandai BATAL tapi tetap terbaca. */
-        $("txBody").innerHTML=txs.map(function(t){ if(!t.batal){ if(t.jenis==="masuk"){ if(!t.pelunasan) inn+=t.jumlah; } else out+=t.jumlah; } return "<tr><td>"+esc(t.tgl)+"</td><td>"+esc(t.ket)+(t.batal?" <span class=\"label-contoh\" style=\"margin-top:0\">BATAL</span>":"")+(contohTx?" <span class=\"label-contoh\" style=\"margin-top:0\">Contoh</span>":"")+"</td><td>"+esc(t.kat)+"</td><td>"+(t.jenis==="keluar"?"−":"")+fmtFull(t.jumlah)+"</td><td><button type='button' data-del='"+t.id+"' style='min-height:36px'>Hapus</button></td></tr>"; }).join("");
+        $("txBody").innerHTML=txs.map(function(t){ if(!t.batal){ if(t.jenis==="masuk"){ if(!t.pelunasan) inn+=t.jumlah; } else if(!t.utangSupplier) out+=t.jumlah; } /* Gelombang 4: pembelian utang belum mengeluarkan kas */ return "<tr><td>"+esc(t.tgl)+"</td><td>"+esc(t.ket)+(t.batal?" <span class=\"label-contoh\" style=\"margin-top:0\">BATAL</span>":"")+(contohTx?" <span class=\"label-contoh\" style=\"margin-top:0\">Contoh</span>":"")+"</td><td>"+esc(t.kat)+"</td><td>"+(t.jenis==="keluar"?"−":"")+fmtFull(t.jumlah)+"</td><td><button type='button' data-del='"+t.id+"' style='min-height:36px'>Hapus</button></td></tr>"; }).join("");
         $("txIn").textContent=fmtFull(inn); $("txOut").textContent=fmtFull(out); $("txSaldo").textContent=fmtFull(inn-out);
         document.querySelectorAll("[data-del]").forEach(function(b){ b.addEventListener("click",function(){ hapusTransaksiDenganKonfirmasi(+b.dataset.del); }); });
         renderReports();
@@ -5117,8 +5175,8 @@
 
       /* --- Stok & Piutang --- */
       const stocks=[]; let stSeq=0;
-      function renderStock(){ const has=stocks.length>0; $("stockEmpty").style.display=has?"none":"block"; $("stockTable").style.display=has?"table":"none"; let tot=0; $("stockBody").innerHTML=stocks.map(function(s){ tot+=s.qty*s.beli; return "<tr><td>"+esc(s.nama)+"</td><td>"+s.qty+"</td><td>"+fmtFull(s.qty*s.beli)+"</td><td><button type='button' data-sdel='"+s.id+"' style='min-height:36px'>Hapus</button></td></tr>"; }).join(""); $("stockTotal").textContent=fmtFull(tot); document.querySelectorAll("[data-sdel]").forEach(function(b){ b.addEventListener("click",function(){ hapusStokDenganKonfirmasi(+b.dataset.sdel); }); }); renderReports(); }
-      $("btnStock").addEventListener("click",async function(){ if(!$("stNama").value){popupRamah("Isian belum lengkap","Isi nama barang dulu — tulis nama barang yang mau dicatat stoknya.","Setelah terisi, tekan tombol tambah stok.");return;} if(!(await cekBatasTambah("stok", stocks.length))) return; stocks.push({id:++stSeq,nama:$("stNama").value,qty:num("stQty"),beli:num("stBeli"),jual:num("stJual")}); $("stNama").value=""; renderStock(); });
+      function renderStock(){ const has=stocks.length>0; $("stockEmpty").style.display=has?"none":"block"; $("stockTable").style.display=has?"table":"none"; let tot=0; $("stockBody").innerHTML=stocks.map(function(s){ tot+=s.qty*s.beli; return "<tr><td>"+esc(s.nama)+(s.bahan?" <span class=\"label-contoh\" style=\"margin-top:0\">Bahan</span>":"")+"</td><td>"+s.qty+"</td><td>"+fmtFull(s.qty*s.beli)+"</td><td><button type='button' data-sdel='"+s.id+"' style='min-height:36px'>Hapus</button></td></tr>"; }).join(""); $("stockTotal").textContent=fmtFull(tot); document.querySelectorAll("[data-sdel]").forEach(function(b){ b.addEventListener("click",function(){ hapusStokDenganKonfirmasi(+b.dataset.sdel); }); }); renderReports(); }
+      $("btnStock").addEventListener("click",async function(){ if(!$("stNama").value){popupRamah("Isian belum lengkap","Isi nama barang dulu — tulis nama barang yang mau dicatat stoknya.","Setelah terisi, tekan tombol tambah stok.");return;} if(!(await cekBatasTambah("stok", stocks.length))) return; stocks.push({id:++stSeq,nama:$("stNama").value,qty:num("stQty"),beli:num("stBeli"),jual:num("stJual"),bahan:!!(($("stBahan")||{}).checked)}); $("stNama").value=""; var _sb=$("stBahan"); if(_sb) _sb.checked=false; renderStock(); });
       const pis=[]; let piSeq=0;
       function renderPi(){ const has=pis.length>0; $("piEmpty").style.display=has?"none":"block"; $("piTable").style.display=has?"table":"none";         /* POS Fase 1: piutang batal tidak masuk total; piutang dari
            penjualan kasir mendapat tombol Lunasi yang membuka kartu
@@ -5130,7 +5188,7 @@
       /* agregat transaksi: dipakai Laba Rugi, Posisi Keuangan, Arus Kas, BEP & forecast */
       /* POS Fase 1: baris batal tidak masuk agregat; pelunasan piutang
          bukan pemasukan baru (kasnya sudah dihitung saat penjualan lahir). */
-      function txAgg(){ let inn=0,out=0,hppTx=0,opexTx=0; txs.forEach(function(t){ if(t.batal) return; if(t.jenis==="masuk"){ if(!t.pelunasan) inn+=t.jumlah; } else { out+=t.jumlah; if(t.kat==="Bahan baku"||t.kat==="Kemasan") hppTx+=t.jumlah; else opexTx+=t.jumlah; } }); return {inn:inn,out:out,hppTx:hppTx,opexTx:opexTx,net:inn-out}; }
+      function txAgg(){ let inn=0,out=0,hppTx=0,opexTx=0; txs.forEach(function(t){ if(t.batal) return; if(t.jenis==="masuk"){ if(!t.pelunasan) inn+=t.jumlah; } else { /* Gelombang 4: pembelian utang masuk biaya tapi bukan kas keluar; pelunasan utang masuk kas keluar tapi bukan biaya. */ if(!t.utangSupplier) out+=t.jumlah; if(!t.pelunasanUtang){ if(t.kat==="Bahan baku"||t.kat==="Kemasan") hppTx+=t.jumlah; else opexTx+=t.jumlah; } } }); return {inn:inn,out:out,hppTx:hppTx,opexTx:opexTx,net:inn-out}; }
       /* ---------- P1-7: agregat transaksi BULAN BERJALAN + pendapatan bulanan ----------
          txAgg() di atas menjumlah SEMUA transaksi tanpa jendela waktu —
          itu cakupan agg.inn yang sebenarnya (bukan bulan berjalan, bukan
@@ -5147,7 +5205,7 @@
         var d=new Date(); var bln=d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2);
         var inn=0,out=0,hppTx=0,opexTx=0;
         function blnDariTgl(teks){ var s2=String(teks||"").trim(); var m=s2.match(/^(\d{4})[-/.](\d{1,2})/); if(m) return m[1]+"-"+("0"+m[2]).slice(-2); var m2=s2.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/); if(m2) return m2[3]+"-"+("0"+m2[2]).slice(-2); return bln; }
-        txs.forEach(function(t){ if(blnDariTgl(t.tgl)!==bln) return; if(t.batal) return; if(t.jenis==="masuk"){ if(!t.pelunasan) inn+=t.jumlah; } else { out+=t.jumlah; if(t.kat==="Bahan baku"||t.kat==="Kemasan") hppTx+=t.jumlah; else opexTx+=t.jumlah; } });
+        txs.forEach(function(t){ if(blnDariTgl(t.tgl)!==bln) return; if(t.batal) return; if(t.jenis==="masuk"){ if(!t.pelunasan) inn+=t.jumlah; } else { if(!t.utangSupplier) out+=t.jumlah; if(!t.pelunasanUtang){ if(t.kat==="Bahan baku"||t.kat==="Kemasan") hppTx+=t.jumlah; else opexTx+=t.jumlah; } } });
         return {inn:inn,out:out,hppTx:hppTx,opexTx:opexTx,net:inn-out};
       }
       function pendapatanBulanan(){
@@ -7048,8 +7106,8 @@
         imporDariArray:imporDariArray, contohImpor:contohImporAOA, parseCsv:parseCsvTeks,
         ringkasanHarian:ringkasanHarian, kirimRingkasanHarian:kirimRingkasanHarian,
         setDataUji:function(o){
-          if(o.txs){ txs.splice(0,txs.length); (o.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||null, tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, posCid:t.posCid||null}); }); }
-          if(o.stocks){ stocks.splice(0,stocks.length); (o.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||null, nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0, kat:s.kat||"Lainnya", grosir:+s.grosir||0, minGrosir:+s.minGrosir||10, kode:s.kode||"", varian:Array.isArray(s.varian)?s.varian:[], favorit:!!s.favorit, tanpaStok:!!s.tanpaStok}); }); }
+          if(o.txs){ txs.splice(0,txs.length); (o.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||null, tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, utangSupplier:!!t.utangSupplier, pelunasanUtang:!!t.pelunasanUtang, pembelianCid:t.pembelianCid||null, posCid:t.posCid||null}); }); }
+          if(o.stocks){ stocks.splice(0,stocks.length); (o.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||null, nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0, kat:s.kat||"Lainnya", grosir:+s.grosir||0, minGrosir:+s.minGrosir||10, kode:s.kode||"", varian:Array.isArray(s.varian)?s.varian:[], favorit:!!s.favorit, tanpaStok:!!s.tanpaStok, bahan:!!s.bahan, lapisan:Array.isArray(s.lapisan)?s.lapisan.map(function(l){ return {cid:l.cid||null, harga:+l.harga||0, sisa:+l.sisa||0, tgl:l.tgl||"", sumber:l.sumber||"awal", sudahBiaya:!!l.sudahBiaya}; }):[]}); }); }
           if(o.pis){ pis.splice(0,pis.length); (o.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||null, nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—", batal:!!p.batal, posCid:p.posCid||null}); }); }
           if(o.utangs){ try{ if(typeof window.__tambahUtangUji==="function") window.__tambahUtangUji(o.utangs); }catch(e){} }
           try{ renderTx(); }catch(e){}
@@ -7527,6 +7585,14 @@
           var jmlPiAktif=0; (pis||[]).forEach(function(p){ if(!p.batal) jmlPiAktif++; });
           if(!(await cekBatasTambah("piutang", jmlPiAktif))) return false;
         }
+        /* Gelombang 4: bahan resep + komponen paket harus cukup — bila
+           kurang, penjualan ditolak sebelum transaksi apa pun tercatat. */
+        var g4Kurang=g4CekBahanKeranjang();
+        if(g4Kurang.length){
+          var g4Pesan=g4Kurang.map(function(k){ return "\u201c"+k.nama+"\u201d ("+k.jenis+") perlu "+g4FmtQty(k.perlu)+", tersedia "+g4FmtQty(k.ada); }).join("; ");
+          popupRamah("Bahan tidak cukup untuk penjualan ini","Bahan berikut kurang: "+g4Pesan+".","Tambah stok bahan dulu lewat Pembelian, atau kurangi jumlah di keranjang.");
+          return false;
+        }
         var saleCid=posUuid();
         var nomor="POS-"+String((+posPengaturan.nomorTerakhir||0)+1).padStart(4,"0");
         var ket="Penjualan "+nomor+" — "+(namaPelanggan?namaPelanggan:"tunai")+" ("+cara+")";
@@ -7540,18 +7606,27 @@
         for(var ti=txs.length-1;ti>=0;ti--){ if(txs[ti].ket===ket){ txBaru=txs[ti]; break; } }
         if(txBaru) txBaru.posCid=saleCid;
         var hppTotal=0;
-        posKeranjang.forEach(function(it){ hppTotal+=it.qty*(+it.hpp||0); });
+        var g4Jejak=[]; /* [{stok, dipakai}] untuk putar balik bila gagal */
+        var g4BahanPakai=[]; /* [{stok, dipakai}] bahan resep */
+        var g4PerItem={}; /* kunci keranjang -> {jejak, bahan} (bisa diserialkan) */
         var txHpp=null;
         try{
+          /* Gelombang 4: HPP dihitung dari lapisan pembelian sesuai
+             metode persediaan; hanya porsi yang biayanya belum pernah
+             dicatat (stok lama / opname) yang ditulis sebagai baris HPP —
+             barang dari pembelian Gelombang 4 sudah dicatat biayanya
+             saat pembelian, jadi tidak dihitung dua kali. */
+          posKeranjang.forEach(function(it){
+            var r=g4KonsumsiUntukItem(it);
+            hppTotal+=r.hppBelumBiaya;
+            g4PerItem[it.key]={jejak:r.jejak.map(function(j){ return {stokId:j.stokId, stokCid:j.stokCid, totalQty:j.totalQty, dipakai:j.dipakai}; }), bahan:r.bahan.map(function(b){ return {bahanId:b.bahanId, bahanCid:b.bahanCid, nama:b.nama, totalQty:b.totalQty, dipakai:b.dipakai}; })};
+            r.jejak.forEach(function(j){ g4Jejak.push(j); });
+            r.bahan.forEach(function(b){ g4BahanPakai.push(b); });
+          });
           if(hppTotal>0){
             txHpp={id:++txSeq, tgl:tglIsoHariIni(), ket:"HPP penjualan "+nomor, jenis:"keluar", kat:"Bahan baku", jumlah:Math.round(hppTotal), hpp:true, posCid:saleCid};
             txs.push(txHpp);
           }
-          posKeranjang.forEach(function(it){
-            if(it.paket && Array.isArray(it.komponen)){ try{ posPaketKurangiStok(it, it.qty); }catch(e){} return; }
-            if(it.tanpaStok || it.stokId==null) return;
-            for(var si=0;si<stocks.length;si++){ if(stocks[si].id===it.stokId){ stocks[si].qty=Math.max(0, (+stocks[si].qty||0)-it.qty); break; } }
-          });
           var piBaru=null;
           if(sisa>0){
             piBaru={id:++piSeq, nama:namaPelanggan, jumlah:Math.round(sisa), tempo:tempoPelanggan||"—", posCid:saleCid};
@@ -7559,7 +7634,7 @@
           }
           var items=posKeranjang.map(function(it){
             var sub=it.qty*it.harga; var diskonItem=Math.round(sub*(+it.diskon||0)/100);
-            return {key:it.key||null, stokCid:it.stokCid, stokId:it.stokId, nama:it.nama, varian:it.varian||"", qty:it.qty, harga:it.harga, hpp:it.hpp, diskon:it.diskon||0, subtotal:sub-diskonItem, bebas:!!it.bebas, tanpaStok:!!it.tanpaStok, paket:!!it.paket, paketCid:it.paketCid||null, komponen:it.komponen||null, grosirManual:!!it.grosirManual};
+            return {key:it.key||null, stokCid:it.stokCid, stokId:it.stokId, nama:it.nama, varian:it.varian||"", qty:it.qty, harga:it.harga, hpp:it.hpp, diskon:it.diskon||0, subtotal:sub-diskonItem, bebas:!!it.bebas, tanpaStok:!!it.tanpaStok, paket:!!it.paket, paketCid:it.paketCid||null, komponen:it.komponen||null, grosirManual:!!it.grosirManual, lapisanTerpakai:(g4PerItem[it.key]?g4PerItem[it.key].jejak:[]), bahanTerpakai:(g4PerItem[it.key]?g4PerItem[it.key].bahan:[])};
           });
           var luring=false;
           try{ luring=typeof navigator!=="undefined" && !navigator.onLine; }catch(e){ luring=false; }
@@ -7602,6 +7677,8 @@
         }catch(e){
           /* Putar balik: hapus transaksi yang sudah tercatat bila
              langkah berikutnya gagal — penjualan tidak boleh setengah jadi. */
+          try{ g4Jejak.forEach(function(j){ j.stok.qty=(+j.stok.qty||0)+(+j.totalQty||0); g4KembalikanLapisan(j.stok, j.dipakai); }); }catch(e3){}
+          try{ g4BahanPakai.forEach(function(b){ b.stok.qty=(+b.stok.qty||0)+(+b.totalQty||0); g4KembalikanLapisan(b.stok, b.dipakai); }); }catch(e3){}
           try{
             if(txBaru){ var ix=txs.indexOf(txBaru); if(ix>=0) txs.splice(ix,1); }
             if(txHpp){ var jx=txs.indexOf(txHpp); if(jx>=0) txs.splice(jx,1); }
@@ -7763,6 +7840,9 @@
           }
           if(s) s.qty=(+s.qty||0)+(+it.qty||0);
         });
+        /* Gelombang 4: kembalikan lapisan pembelian + bahan resep yang
+           dipakai penjualan ini, supaya stok kembali utuh. */
+        (p.items||[]).forEach(function(it){ try{ g4KembalikanUntukItem(it); }catch(e){} });
         txs.forEach(function(t){ if(t.posCid===p.cid) t.batal=true; });
         pis.forEach(function(pi){ if(pi.posCid===p.cid) pi.batal=true; });
         p.status="batal"; p.alasanBatal=alasan; p.disetujuiOleh=penyetuju||"";
@@ -8017,7 +8097,7 @@
             +"<label class='f'><span>Min. jumlah grosir</span><input type='number' data-posmingrosir='"+s.id+"' value='"+(+s.minGrosir||10)+"' min='1' /></label>"
             +"<label class='f'><span>Kode batang (opsional)</span><input type='text' data-poskode='"+s.id+"' value='"+esc(s.kode||"")+"' placeholder='contoh: 8991234567890' /></label>"
             +"</div>"
-            +"<p class='note' style='margin-top:8px'><label><input type='checkbox' data-posfavorit='"+s.id+"' "+(s.favorit?"checked":"")+"> Favorit di kasir</label> &nbsp; <label><input type='checkbox' data-postanpastok='"+s.id+"' "+(s.tanpaStok?"checked":"")+"> Jasa / tanpa stok</label></p>"
+            +"<p class='note' style='margin-top:8px'><label><input type='checkbox' data-posfavorit='"+s.id+"' "+(s.favorit?"checked":"")+"> Favorit di kasir</label> &nbsp; <label><input type='checkbox' data-postanpastok='"+s.id+"' "+(s.tanpaStok?"checked":"")+"> Jasa / tanpa stok</label> &nbsp; <label><input type='checkbox' data-posbahan='"+s.id+"' "+(s.bahan?"checked":"")+"> Bahan baku</label></p>"
             +"<p class='note' style='margin-top:6px'>Varian: "+varian+"</p>"
             +"<div class='form-grid' style='margin-top:8px'>"
             +"<label class='f'><span>Nama varian baru</span><input type='text' data-posvarnama='"+s.id+"' placeholder='contoh: Besar' /></label>"
@@ -8042,6 +8122,8 @@
           if(kd) s.kode=String(kd.value||"").trim();
           if(fv) s.favorit=!!fv.checked;
           if(ts) s.tanpaStok=!!ts.checked;
+          var bh=document.querySelector("[data-posbahan='"+id+"']");
+          if(bh) s.bahan=!!bh.checked;
           try{ renderStock(); }catch(e){}
           try{ audit("Katalog kasir diperbarui untuk "+s.nama+"."); }catch(e){}
           try{ toast("Katalog "+s.nama+" disimpan"); }catch(e){}
@@ -8967,7 +9049,24 @@
             } else if(!asal.tanpaStok && asal.stokId!=null){
               for(var si=0;si<stocks.length;si++){ if(stocks[si].id===asal.stokId){ stocks[si].qty=(+stocks[si].qty||0)+ri.qty; break; } }
             }
+            /* Gelombang 4: kembalikan lapisan + bahan sebanding jumlah yang diretur. */
+            try{ g4KembalikanReturItem(asal, ri.qty); }catch(e){}
           });
+        }
+        /* Gelombang 4: barang rusak dicatat di stok rusak — tidak kembali
+           ke stok jual. */
+        if(k.kondisi==="rusak"){
+          (k.items||[]).forEach(function(ri){
+            var asal2=null;
+            (p.items||[]).forEach(function(it){
+              var kunci2=it.key||("s"+it.stokId+"|"+(it.varian||""));
+              if(it.paket) kunci2="p"+it.paketCid;
+              if(kunci2===ri.key) asal2=it;
+            });
+            if(!asal2) return;
+            g4StokRusak.push({cid:posUuid(), tgl:tglIsoHariIni(), stokCid:asal2.stokCid||null, stokId:asal2.stokId!=null?asal2.stokId:null, nama:asal2.nama, jumlah:+ri.qty||0, alasan:k.alasan||"Retur rusak", sumber:"retur", nomor:k.nomor});
+          });
+          try{ g4RenderRusak(); }catch(e){}
         }
         /* Uang: kembali tunai dari yang sudah dibayar dulu; selebihnya
            mengurangi piutang bila penjualan itu belum lunas. */
@@ -9182,6 +9281,742 @@
             splitBagian:posSplitBagian, pelangganTerpilihCid:posPelangganTerpilihCid, returPengganti:posReturPengganti};
         }
       };
+/* ================= GUDANG & PERSEDIAAN (Gelombang 4) =================
+   Stok tingkat lanjut di dalam aplikasi yang sama — bukan modul terpisah.
+   Urutan mengikat: opname dulu, baru resep, baru pembelian/supplier,
+   metode persediaan terakhir.
+   - Opname formal: hitung fisik lawan stok sistem per produk; selisih
+     tercatat sebagai koreksi beralasan (tanggal, petugas, catatan);
+     riwayat tidak pernah dihapus; opname tidak memakan kuota transaksi.
+   - Resep (BOM): per produk/menu, daftar bahan baku (item stok yang
+     ditandai sebagai bahan) + jumlah per porsi; bahan berkurang otomatis
+     saat penjualan; bila bahan tidak cukup, penjualan ditolak dengan
+     popup ramah yang menyebut bahan yang kurang; bahan kembali saat
+     penjualan dibatalkan atau diretur kondisi baik.
+   - Supplier & pembelian: daftar supplier; pembelian menambah stok +
+     lapisan pembelian; pembelian tunai/utang dicatat sebagai transaksi
+     keluar (biaya) sehingga laba berubah; nomor pembelian berurutan.
+     Pembelian utang masuk daftar utang usaha yang sudah ada.
+   - Utang supplier: pelunasan mengurangi utang dan dicatat sebagai
+     transaksi keluar tanpa menggandakan biaya (tanda pelunasanUtang:
+     masuk kas keluar, tidak masuk HPP/biaya; pembelian utang bertanda
+     utangSupplier: masuk HPP/biaya, tidak masuk kas keluar).
+   - Metode persediaan: rata-rata (bawaan) / FIFO / LIFO per usaha.
+     HPP penjualan dihitung dari lapisan pembelian (tiap pembelian
+     menyimpan harga beli + sisa jumlah lapisannya). Ganti metode hanya
+     berlaku untuk penjualan berikutnya, tidak menulis ulang HPP lama.
+     Stok lama tanpa lapisan memakai harga beli terakhir sebagai lapis
+     awal (sumber "awal", biaya belum dicatat) — tercatat di laporan.
+   - Stok rusak: retur kondisi rusak dan opname rusak tercatat di daftar
+     stok rusak (jumlah + alasan + tanggal); stok jual tidak bertambah.
+   Akuntansi biaya (satu kali, tidak ganda): pembelian Gelombang 4
+   mencatat biayanya saat pembelian (lapisan sudahBiaya=true), jadi
+   penjualan barang itu TIDAK menulis baris HPP lagi. Stok lama/opname
+   (sudahBiaya=false) tetap menulis baris HPP saat terjual. */
+var g4Supplier=[];
+var g4Pembelian=[];
+var g4Resep=[];
+var g4Opname=[];
+var g4StokRusak=[];
+var g4Pengaturan={metode:"rata-rata", nomorPembelianTerakhir:0};
+
+/* ---------- util ---------- */
+function g4FmtQty(n){
+  var v=Math.round((+n||0)*100)/100;
+  if(v===0) return "0";
+  var s=String(v);
+  if(s.indexOf(".")>=0) s=s.replace(/0+$/,"").replace(/\.$/,"");
+  return s;
+}
+function g4CariStok(stokId, stokCid){
+  if(stokId!=null){
+    for(var i=0;i<stocks.length;i++){ if(stocks[i].id===stokId) return stocks[i]; }
+  }
+  if(stokCid){
+    for(var j=0;j<stocks.length;j++){ if(stocks[j].cid && stocks[j].cid===stokCid) return stocks[j]; }
+  }
+  return null;
+}
+
+/* ---------- lapisan pembelian ---------- */
+function g4PastikanLapisan(s){
+  if(!s) return s;
+  if(!Array.isArray(s.lapisan)) s.lapisan=[];
+  var qty=+s.qty||0;
+  var total=0;
+  s.lapisan.forEach(function(l){ total+=+l.sisa||0; });
+  if(qty<=0){ s.lapisan=[]; return s; }
+  if(total<qty){
+    /* Stok lama (atau selisih) tanpa lapisan: lapis awal dari harga
+       beli terakhir; biayanya belum pernah dicatat. */
+    s.lapisan.push({cid:posUuid(), harga:+s.beli||0, sisa:qty-total, tgl:tglIsoHariIni(), sumber:"awal", sudahBiaya:false});
+  } else if(total>qty){
+    var lebih=total-qty;
+    for(var i=s.lapisan.length-1;i>=0 && lebih>0;i--){
+      var potong=Math.min(+s.lapisan[i].sisa||0, lebih);
+      s.lapisan[i].sisa=(+s.lapisan[i].sisa||0)-potong;
+      lebih-=potong;
+    }
+  }
+  return s;
+}
+function g4NilaiLapisan(s){
+  var v=0,q=0;
+  (s.lapisan||[]).forEach(function(l){ v+=(+l.harga||0)*(+l.sisa||0); q+=+l.sisa||0; });
+  return {nilai:v, qty:q};
+}
+function g4KonsumsiLapisan(s, qty){
+  /* Memakai lapisan sesuai metode; mengembalikan HPP total + porsi yang
+     biayanya belum dicatat + jejak pemakaian per lapisan (untuk kembali). */
+  g4PastikanLapisan(s);
+  var metode=(g4Pengaturan.metode||"rata-rata");
+  var sisa=+qty||0, hpp=0, hppBelum=0, dipakai=[];
+  var lap=s.lapisan||[];
+  function catat(l, ambil, hargaSatuan){
+    var biaya=hargaSatuan*ambil;
+    hpp+=biaya;
+    if(!l.sudahBiaya) hppBelum+=biaya;
+    dipakai.push({lapisanCid:l.cid, qty:ambil, harga:hargaSatuan, sudahBiaya:!!l.sudahBiaya});
+  }
+  if(metode==="rata-rata"){
+    var nv=g4NilaiLapisan(s);
+    var unit=nv.qty>0? nv.nilai/nv.qty : (+s.beli||0);
+    for(var i=0;i<lap.length && sisa>0;i++){
+      var ambil=Math.min(+lap[i].sisa||0, sisa);
+      if(ambil<=0) continue;
+      lap[i].sisa=(+lap[i].sisa||0)-ambil;
+      catat(lap[i], ambil, unit);
+      sisa-=ambil;
+    }
+  } else {
+    var urutan=metode==="lifo"? lap.slice().reverse() : lap;
+    for(var j=0;j<urutan.length && sisa>0;j++){
+      var l=urutan[j];
+      var ambil2=Math.min(+l.sisa||0, sisa);
+      if(ambil2<=0) continue;
+      l.sisa=(+l.sisa||0)-ambil2;
+      catat(l, ambil2, +l.harga||0);
+      sisa-=ambil2;
+    }
+  }
+  if(sisa>0){
+    /* Lapisan kurang dari stok (seharusnya tidak terjadi bila semua
+       pergerakan lewat fungsi ini) — sisa dihargai harga beli terakhir,
+       biaya belum dicatat. */
+    var b3=(+s.beli||0)*sisa;
+    hpp+=b3; hppBelum+=b3;
+    dipakai.push({lapisanCid:null, qty:sisa, harga:+s.beli||0, sudahBiaya:false});
+    sisa=0;
+  }
+  return {hpp:Math.round(hpp), hppBelumBiaya:Math.round(hppBelum), dipakai:dipakai};
+}
+function g4KembalikanLapisan(s, dipakai){
+  if(!s || !Array.isArray(dipakai)) return;
+  if(!Array.isArray(s.lapisan)) s.lapisan=[];
+  dipakai.forEach(function(d){
+    if(!d || !(+d.qty>0)) return;
+    var l=null;
+    if(d.lapisanCid){ for(var i=0;i<s.lapisan.length;i++){ if(s.lapisan[i].cid===d.lapisanCid){ l=s.lapisan[i]; break; } } }
+    if(l) l.sisa=(+l.sisa||0)+(+d.qty||0);
+    else s.lapisan.push({cid:posUuid(), harga:+d.harga||0, sisa:+d.qty||0, tgl:tglIsoHariIni(), sumber:"kembali", sudahBiaya:!!d.sudahBiaya});
+  });
+}
+function g4KembalikanSebagian(s, dipakai, qty){
+  /* Kembalikan `qty` unit dari jejak pemakaian (urut pemakaian) —
+     dipakai untuk retur sebagian. Mengembalikan jumlah yang benar-benar
+     dikembalikan. */
+  var sisa=+qty||0, kembali=[];
+  (dipakai||[]).forEach(function(d){
+    if(sisa<=0) return;
+    var ambil=Math.min(+d.qty||0, sisa);
+    if(ambil>0){ kembali.push({lapisanCid:d.lapisanCid, qty:ambil, harga:d.harga, sudahBiaya:d.sudahBiaya}); sisa-=ambil; }
+  });
+  g4KembalikanLapisan(s, kembali);
+  return (+qty||0)-sisa;
+}
+function g4KurangiLapisanOpname(s, kurang){
+  /* Susut opname mengurangi lapisan dari yang paling lama dibeli. */
+  g4PastikanLapisan(s);
+  var sisa=+kurang||0;
+  for(var i=0;i<(s.lapisan||[]).length && sisa>0;i++){
+    var ambil=Math.min(+s.lapisan[i].sisa||0, sisa);
+    s.lapisan[i].sisa=(+s.lapisan[i].sisa||0)-ambil;
+    sisa-=ambil;
+  }
+}
+
+/* ---------- resep ---------- */
+function g4ResepUntuk(stokId, stokCid){
+  for(var i=0;i<g4Resep.length;i++){
+    var r=g4Resep[i];
+    if((stokId!=null && r.stokId===stokId) || (stokCid && r.stokCid===stokCid)) return r;
+  }
+  return null;
+}
+function g4CekBahanKeranjang(){
+  /* Agregat kebutuhan bahan resep + komponen paket di seluruh keranjang;
+     mengembalikan daftar yang kurang: [{nama, perlu, ada, jenis}]. */
+  var perlu={};
+  function tambah(key, nama, jumlah, bahanId, bahanCid, jenis){
+    if(!(jumlah>0)) return;
+    if(!perlu[key]) perlu[key]={nama:nama, perlu:0, bahanId:bahanId, bahanCid:bahanCid, jenis:jenis};
+    perlu[key].perlu+=jumlah;
+  }
+  (posKeranjang||[]).forEach(function(it){
+    if(it.paket && Array.isArray(it.komponen)){
+      (it.komponen||[]).forEach(function(k){
+        tambah("p"+k.stokId, k.nama, (+k.qty||0)*(+it.qty||0), k.stokId, k.stokCid||null, "komponen paket");
+      });
+      return;
+    }
+    if(it.bebas || it.tanpaStok || it.stokId==null) return;
+    var r=g4ResepUntuk(it.stokId, it.stokCid);
+    if(!r) return;
+    (r.komponen||[]).forEach(function(k){
+      tambah("b"+(k.bahanCid||("id"+k.bahanId)), k.nama, (+k.qty||0)*(+it.qty||0), k.bahanId, k.bahanCid, "bahan");
+    });
+  });
+  var kurang=[];
+  Object.keys(perlu).forEach(function(key){
+    var p=perlu[key];
+    var s=g4CariStok(p.bahanId, p.bahanCid);
+    var ada=s? (+s.qty||0):0;
+    if(ada < p.perlu - 0.000001) kurang.push({nama:p.nama, perlu:p.perlu, ada:ada, jenis:p.jenis});
+  });
+  return kurang;
+}
+
+/* ---------- konsumsi saat penjualan (dipakai posSelesaikan) ---------- */
+function g4KonsumsiUntukItem(it){
+  /* Mengurangi stok + lapisan untuk satu baris keranjang (produk, paket,
+     dan bahan resepnya). Mengembalikan HPP porsi belum-biaya + jejak
+     pemakaian (untuk kembali saat batal/retur). */
+  var hasil={hppBelumBiaya:0, jejak:[], bahan:[]};
+  if(!it) return hasil;
+  if(it.paket && Array.isArray(it.komponen)){
+    try{ posPaketKurangiStok(it, it.qty); }catch(e){}
+    (it.komponen||[]).forEach(function(k){
+      var s=g4CariStok(k.stokId, k.stokCid||null);
+      if(!s) return;
+      var total=(+k.qty||0)*(+it.qty||0);
+      var r=g4KonsumsiLapisan(s, total);
+      hasil.hppBelumBiaya+=r.hppBelumBiaya;
+      hasil.jejak.push({stok:s, stokId:s.id, stokCid:s.cid||null, totalQty:total, dipakai:r.dipakai});
+    });
+    return hasil;
+  }
+  if(it.tanpaStok || it.stokId==null) return hasil;
+  var s1=g4CariStok(it.stokId, it.stokCid);
+  if(!s1) return hasil;
+  var r1=g4KonsumsiLapisan(s1, +it.qty||0);
+  hasil.hppBelumBiaya+=r1.hppBelumBiaya;
+  hasil.jejak.push({stok:s1, stokId:s1.id, stokCid:s1.cid||null, totalQty:+it.qty||0, dipakai:r1.dipakai});
+  s1.qty=Math.max(0, (+s1.qty||0)-(+it.qty||0));
+  var rcp=g4ResepUntuk(it.stokId, it.stokCid);
+  if(rcp){
+    (rcp.komponen||[]).forEach(function(k){
+      var sb=g4CariStok(k.bahanId, k.bahanCid);
+      if(!sb) return;
+      var butuh=(+k.qty||0)*(+it.qty||0);
+      var rb=g4KonsumsiLapisan(sb, butuh);
+      hasil.hppBelumBiaya+=rb.hppBelumBiaya;
+      hasil.bahan.push({stok:sb, bahanId:k.bahanId, bahanCid:k.bahanCid, nama:k.nama, totalQty:butuh, dipakai:rb.dipakai});
+      sb.qty=Math.max(0, (+sb.qty||0)-butuh);
+    });
+  }
+  return hasil;
+}
+function g4KembalikanUntukItem(itemJual){
+  /* Void: kembalikan lapisan + bahan penjualan ini secara utuh. */
+  (itemJual.lapisanTerpakai||[]).forEach(function(rec){
+    var s=g4CariStok(rec.stokId, rec.stokCid);
+    if(s) g4KembalikanLapisan(s, rec.dipakai);
+  });
+  (itemJual.bahanTerpakai||[]).forEach(function(rec){
+    var sb=g4CariStok(rec.bahanId, rec.bahanCid);
+    if(!sb) return;
+    sb.qty=(+sb.qty||0)+(+rec.totalQty||0);
+    g4KembalikanLapisan(sb, rec.dipakai);
+  });
+}
+function g4KembalikanReturItem(itemJual, qtyRetur){
+  /* Retur sebagian (kondisi baik): kembalikan lapisan + bahan sebanding
+     jumlah yang diretur. */
+  var n=+qtyRetur||0;
+  if(n<=0) return;
+  (itemJual.lapisanTerpakai||[]).forEach(function(rec){
+    var s=g4CariStok(rec.stokId, rec.stokCid);
+    if(!s) return;
+    var perUnit=(+itemJual.qty||0)>0 ? (+rec.totalQty||0)/(+itemJual.qty||0) : 0;
+    g4KembalikanSebagian(s, rec.dipakai, perUnit*n);
+  });
+  (itemJual.bahanTerpakai||[]).forEach(function(rec){
+    var sb=g4CariStok(rec.bahanId, rec.bahanCid);
+    if(!sb) return;
+    var perUnit2=(+itemJual.qty||0)>0 ? (+rec.totalQty||0)/(+itemJual.qty||0) : 0;
+    var kembaliQty=perUnit2*n;
+    sb.qty=(+sb.qty||0)+kembaliQty;
+    g4KembalikanSebagian(sb, rec.dipakai, kembaliQty);
+  });
+}
+
+/* ---------- opname ---------- */
+function g4RenderOpname(){
+  var body=gid("g4OpnameBody");
+  if(body){
+    if(!(stocks||[]).length){ body.innerHTML="<tr><td colspan='5'>Belum ada stok — tambahkan stok dulu di atas.</td></tr>"; }
+    else{
+      body.innerHTML=(stocks||[]).map(function(s){
+        return "<tr><td>"+esc(s.nama)+(s.bahan?" <span class='label-contoh' style='margin-top:0'>Bahan</span>":"")+"</td>"
+          +"<td>"+g4FmtQty(+s.qty||0)+"</td>"
+          +"<td><input type='number' id='g4OpFisik-"+s.id+"' min='0' step='any' placeholder='contoh: "+g4FmtQty(+s.qty||0)+"' style='max-width:90px' /></td>"
+          +"<td><input type='number' id='g4OpRusak-"+s.id+"' min='0' step='any' placeholder='0' style='max-width:70px' /></td>"
+          +"<td><input type='text' id='g4OpAlasan-"+s.id+"' placeholder='contoh: tumpah' style='max-width:140px' /></td></tr>";
+      }).join("");
+    }
+  }
+  var riw=gid("g4OpnameRiwayat");
+  if(riw){
+    if(!g4Opname.length){ riw.innerHTML="<p class='note'>Belum ada opname tersimpan.</p>"; }
+    else{
+      riw.innerHTML=g4Opname.slice().reverse().map(function(o){
+        var baris=(o.baris||[]).map(function(b){
+          return "<tr><td>"+esc(b.nama)+"</td><td>"+g4FmtQty(b.sistem)+"</td><td>"+g4FmtQty(b.fisik)+"</td><td>"+(b.selisih>0?"+":"")+g4FmtQty(b.selisih)+"</td><td>"+g4FmtQty(+b.rusak||0)+"</td><td>"+esc(b.alasan||"—")+"</td></tr>";
+        }).join("");
+        return "<div style='margin-top:10px'><p><b>Opname "+esc(o.tgl||"")+"</b> — "+esc(o.petugas||"")+(o.catatan?" · "+esc(o.catatan):"")+"</p>"
+          +"<table class='mini-table'><thead><tr><th>Barang</th><th>Sistem</th><th>Fisik</th><th>Selisih</th><th>Rusak</th><th>Alasan</th></tr></thead><tbody>"+baris+"</tbody></table></div>";
+      }).join("");
+    }
+  }
+}
+function g4SimpanOpname(){
+  var petugas=String((gid("g4OpPetugas")||{}).value||"").trim()||"Pemilik usaha";
+  var catatan=String((gid("g4OpCatatan")||{}).value||"").trim();
+  var tgl=tglIsoHariIni();
+  var baris=[], berubah=0;
+  (stocks||[]).forEach(function(s){
+    var inpF=gid("g4OpFisik-"+s.id);
+    if(!inpF) return;
+    var fisikS=String(inpF.value||"").trim();
+    if(fisikS==="") return;
+    var fisik=Math.max(0, posAngka(fisikS));
+    var inpR=gid("g4OpRusak-"+s.id);
+    var rusak=Math.max(0, posAngka(inpR?inpR.value:""));
+    var inpA=gid("g4OpAlasan-"+s.id);
+    var alasan=String(inpA?inpA.value||"":"").trim();
+    var sistem=+s.qty||0;
+    if(fisik===sistem && rusak<=0) return;
+    if(fisik<sistem) g4KurangiLapisanOpname(s, sistem-fisik);
+    if(fisik>sistem){
+      if(!Array.isArray(s.lapisan)) s.lapisan=[];
+      s.lapisan.push({cid:posUuid(), harga:+s.beli||0, sisa:fisik-sistem, tgl:tgl, sumber:"opname", sudahBiaya:false});
+    }
+    s.qty=fisik;
+    if(rusak>0){
+      g4StokRusak.push({cid:posUuid(), tgl:tgl, stokCid:s.cid||null, stokId:s.id, nama:s.nama, jumlah:rusak, alasan:alasan||"Opname — barang rusak", sumber:"opname", nomor:"OP-"+String(g4Opname.length+1).padStart(4,"0")});
+    }
+    baris.push({stokCid:s.cid||null, stokId:s.id, nama:s.nama, sistem:sistem, fisik:fisik, selisih:fisik-sistem, rusak:rusak, alasan:alasan});
+    berubah++;
+  });
+  if(!baris.length){
+    popupRamah("Belum ada yang dihitung","Isi jumlah fisik di baris yang mau diopname — baris yang kosong dilewati.","Isi jumlah fisiknya, lalu tekan Simpan opname.");
+    return false;
+  }
+  g4Opname.push({cid:posUuid(), waktu:posWaktuSekarang(), tgl:tgl, petugas:petugas, catatan:catatan, baris:baris});
+  try{ renderStock(); }catch(e){}
+  try{ g4RenderOpname(); }catch(e){}
+  try{ g4RenderRusak(); }catch(e){}
+  try{ renderReports(); }catch(e){}
+  try{ audit("Opname disimpan oleh "+petugas+" — "+berubah+" barang berubah."); }catch(e){}
+  popupRamah("Opname tersimpan", berubah+" barang berubah stoknya — selisih tercatat di riwayat opname dan tidak bisa dihapus.", "Periksa riwayat opname di bawah untuk melihat rinciannya.");
+  return true;
+}
+
+/* ---------- supplier ---------- */
+function g4RenderSupplier(){
+  var daftar=gid("g4SupDaftar");
+  if(daftar){
+    if(!g4Supplier.length){ daftar.innerHTML="<p class='note'>Belum ada supplier — tambahkan lewat formulir di atas.</p>"; }
+    else{
+      daftar.innerHTML=g4Supplier.map(function(s){
+        return "<p style='margin-top:6px'><b>"+esc(s.nama)+"</b>"+(s.kontak?" — "+esc(s.kontak):"")+(s.catatan?" · "+esc(s.catatan):"")+" <button type='button' data-g4suphapus='"+esc(s.cid)+"' style='min-height:36px'>Hapus</button></p>";
+      }).join("");
+      daftar.querySelectorAll("[data-g4suphapus]").forEach(function(b){ b.addEventListener("click",function(){ g4SupplierHapus(b.getAttribute("data-g4suphapus")); }); });
+    }
+  }
+  var sel=gid("g4PbSupplier");
+  if(sel){
+    var lama=sel.value;
+    sel.innerHTML="<option value=''>— Pilih supplier —</option>"+g4Supplier.map(function(s){ return "<option value='"+esc(s.cid)+"'>"+esc(s.nama)+"</option>"; }).join("");
+    if(lama){ try{ sel.value=lama; }catch(e){} }
+  }
+}
+function g4SupplierTambah(){
+  var nama=String((gid("g4SupNama")||{}).value||"").trim();
+  var kontak=String((gid("g4SupKontak")||{}).value||"").trim();
+  var catatan=String((gid("g4SupCatatan")||{}).value||"").trim();
+  if(!nama){ popupRamah("Nama supplier belum diisi","Isi nama supplier dulu — nama dipakai di riwayat pembelian.","Isi namanya, lalu tekan Tambah supplier."); return false; }
+  var ada=g4Supplier.some(function(s){ return String(s.nama||"").toLowerCase()===nama.toLowerCase(); });
+  if(ada){ popupRamah("Supplier ini sudah ada","Supplier dengan nama yang sama sudah tercatat — pakai yang sudah ada.","Pilih supplier yang sudah ada di daftar pembelian."); return false; }
+  g4Supplier.push({cid:posUuid(), nama:nama, kontak:kontak, catatan:catatan});
+  var n=gid("g4SupNama"); if(n) n.value="";
+  var k=gid("g4SupKontak"); if(k) k.value="";
+  var c=gid("g4SupCatatan"); if(c) c.value="";
+  try{ g4RenderSupplier(); }catch(e){}
+  try{ audit("Supplier "+nama+" ditambahkan."); }catch(e){}
+  return true;
+}
+function g4SupplierHapus(cid){
+  var s=null;
+  for(var i=0;i<g4Supplier.length;i++){ if(g4Supplier[i].cid===cid){ s=g4Supplier[i]; break; } }
+  if(!s) return false;
+  var dipakai=g4Pembelian.some(function(p){ return p.supplierCid===cid; });
+  if(dipakai){ popupRamah("Supplier ini sudah dipakai","Supplier "+s.nama+" sudah dipakai di riwayat pembelian — riwayat tidak boleh kehilangan suppliernya.","Biarkan supplier ini, atau buat supplier baru untuk pembelian berikutnya."); return false; }
+  var idx=g4Supplier.indexOf(s);
+  var salinan=Object.assign({}, s);
+  konfirmasiHapus("Hapus supplier ini?", "\""+s.nama+"\" akan dihapus dari daftar supplier.", "Hapus supplier",
+    function(){ var j=g4Supplier.indexOf(s); if(j>=0) g4Supplier.splice(j,1); g4RenderSupplier(); },
+    "Supplier dihapus — ketuk Urungkan bila salah hapus.",
+    function(){ g4Supplier.splice(Math.min(idx, g4Supplier.length), 0, salinan); g4RenderSupplier(); });
+  return true;
+}
+
+/* ---------- pembelian ---------- */
+function g4PembelianBarisTambah(){
+  var wadah=gid("g4PbBaris"); if(!wadah) return;
+  var div=document.createElement("div");
+  div.setAttribute("data-g4pbitem","");
+  div.className="form-grid";
+  div.style.marginTop="8px";
+  var opsi="<option value=''>— Pilih barang —</option>"+(stocks||[]).map(function(s){ return "<option value='"+s.id+"'>"+esc(s.nama)+" (stok "+g4FmtQty(+s.qty||0)+")</option>"; }).join("");
+  div.innerHTML="<label class='f'><span>Barang</span><select data-g4pbstok>"+opsi+"</select></label>"
+    +"<label class='f'><span>Jumlah beli</span><input type='number' data-g4pbqty min='0' step='any' placeholder='contoh: 10' /></label>"
+    +"<label class='f'><span>Harga beli / unit (Rp)</span><input type='text' inputmode='numeric' data-g4pbharga placeholder='contoh: 9000' /></label>"
+    +"<label class='f'><span>&nbsp;</span><button type='button' class='btn ghost' data-g4pbhapus>Hapus baris</button></label>";
+  div.querySelector("[data-g4pbhapus]").addEventListener("click",function(){ div.remove(); });
+  wadah.appendChild(div);
+}
+function g4RenderPembelian(){
+  var riw=gid("g4PbRiwayat");
+  if(riw){
+    if(!g4Pembelian.length){ riw.innerHTML="<p class='note'>Belum ada pembelian tersimpan.</p>"; }
+    else{
+      riw.innerHTML=g4Pembelian.slice().reverse().map(function(p){
+        var isi=(p.items||[]).map(function(it){ return esc(it.nama)+" × "+g4FmtQty(it.qty)+" @ "+fmtFull(it.harga); }).join(", ");
+        return "<p style='margin-top:6px'><b>"+esc(p.nomor)+"</b> — "+esc(p.tgl)+" · "+esc(p.supplierNama)+" · "+esc(p.cara==="utang"?"Utang":"Tunai")+" · "+fmtFull(p.total)+" · "+esc(p.status==="lunas"?"Lunas":"Masih utang")+"<br><span class='note'>"+isi+"</span></p>";
+      }).join("");
+    }
+  }
+  var sel=gid("g4PbSupplier");
+  if(sel && !sel.options.length) g4RenderSupplier();
+  try{ g4RenderLunasiPilih(); }catch(e){}
+}
+async function g4PembelianSimpan(){
+  var supCid=String((gid("g4PbSupplier")||{}).value||"");
+  var sup=null;
+  for(var i=0;i<g4Supplier.length;i++){ if(g4Supplier[i].cid===supCid){ sup=g4Supplier[i]; break; } }
+  if(!sup){ popupRamah("Supplier belum dipilih","Pilih supplier dulu — pembelian dicatat atas nama supplier.","Pilih suppliernya, atau tambahkan supplier baru di atas."); return false; }
+  var cara=String((gid("g4PbCara")||{}).value||"tunai");
+  if(cara!=="tunai" && cara!=="utang") cara="tunai";
+  var tgl=String((gid("g4PbTgl")||{}).value||"").trim()||tglIsoHariIni();
+  var tempo=String((gid("g4PbTempo")||{}).value||"").trim()||"—";
+  var items=[];
+  document.querySelectorAll("[data-g4pbitem]").forEach(function(row){
+    var sel=row.querySelector("[data-g4pbstok]");
+    var qtyEl=row.querySelector("[data-g4pbqty]");
+    var hrgEl=row.querySelector("[data-g4pbharga]");
+    if(!sel || !sel.value) return;
+    var stokId=+sel.value;
+    var s=g4CariStok(stokId, null);
+    if(!s) return;
+    var qty=posAngka(qtyEl?qtyEl.value:"");
+    var harga=Math.max(0, Math.round(posAngka(hrgEl?hrgEl.value:"")));
+    if(!(qty>0)) return;
+    items.push({stokCid:s.cid||null, stokId:s.id, nama:s.nama, qty:qty, harga:harga});
+  });
+  if(!items.length){ popupRamah("Belum ada barang dibeli","Isi setidaknya satu baris pembelian — pilih barang, jumlah, dan harga belinya.","Lengkapi satu baris, lalu tekan Simpan pembelian."); return false; }
+  var total=0;
+  items.forEach(function(it){ total+= (+it.qty||0)*(+it.harga||0); });
+  if(!(total>0)){ popupRamah("Total pembelian harus lebih dari Rp 0","Harga beli semua barang masih Rp 0 — isi harga belinya.","Isi harga beli per unit, lalu tekan Simpan pembelian."); return false; }
+  var nomor="PB-"+String((+g4Pengaturan.nomorPembelianTerakhir||0)+1).padStart(4,"0");
+  var ket="Pembelian "+nomor+" — "+sup.nama;
+  var ok=false;
+  try{ ok=await tambahTransaksi(ket, Math.round(total), "keluar", "Bahan baku", tgl, "Simpan pembelian."); }catch(e){ ok=false; }
+  if(!ok) return false;
+  var txBaru=null;
+  for(var ti=txs.length-1;ti>=0;ti--){ if(txs[ti].ket===ket){ txBaru=txs[ti]; break; } }
+  var pbCid=posUuid();
+  if(txBaru){ txBaru.pembelianCid=pbCid; if(cara==="utang") txBaru.utangSupplier=true; }
+  var utangCid=null;
+  if(cara==="utang" && window.__tambahUtangSatu){
+    utangCid=posUuid();
+    window.__tambahUtangSatu({cid:utangCid, ket:"Utang supplier "+sup.nama+" — Pembelian "+nomor, jumlah:Math.round(total), tempo:tempo, supplier:true, pembelianCid:pbCid});
+  }
+  items.forEach(function(it){
+    var s=g4CariStok(it.stokId, it.stokCid);
+    if(!s) return;
+    s.qty=(+s.qty||0)+(+it.qty||0);
+    if(!Array.isArray(s.lapisan)) s.lapisan=[];
+    s.lapisan.push({cid:posUuid(), harga:+it.harga||0, sisa:+it.qty||0, tgl:tgl, sumber:"pembelian", sudahBiaya:true});
+  });
+  g4Pembelian.push({cid:pbCid, nomor:nomor, tgl:tgl, supplierCid:sup.cid, supplierNama:sup.nama, cara:cara, items:items, total:Math.round(total), txId:txBaru?txBaru.id:null, utangCid:utangCid, status:cara==="utang"?"utang":"lunas"});
+  g4Pengaturan.nomorPembelianTerakhir=(+g4Pengaturan.nomorPembelianTerakhir||0)+1;
+  var wadah=gid("g4PbBaris"); if(wadah) wadah.innerHTML="";
+  g4PembelianBarisTambah();
+  try{ renderStock(); }catch(e){}
+  try{ renderTx(); }catch(e){}
+  try{ renderReports(); }catch(e){}
+  try{ g4RenderPembelian(); }catch(e){}
+  try{ audit("Pembelian "+nomor+" dari "+sup.nama+" — "+fmtFull(total)+" ("+cara+")."); }catch(e){}
+  popupRamah("Pembelian tersimpan","Pembelian "+nomor+" sudah tercatat — stok bertambah dan biayanya masuk laporan."+(cara==="utang"?" Utangnya tercatat di daftar utang usaha.":""), "Periksa riwayat pembelian di bawah.");
+  return true;
+}
+
+/* ---------- pelunasan utang supplier ---------- */
+function g4RenderLunasiPilih(){
+  var sel=gid("g4LunasiPilih");
+  if(!sel) return;
+  var lama=sel.value;
+  var daftar=(window.__daftarUtangSupplier?window.__daftarUtangSupplier():[]);
+  sel.innerHTML="<option value=''>— Pilih utang supplier —</option>"+daftar.map(function(u){ return "<option value='"+esc(u.cid)+"'>"+esc(u.ket)+" — "+fmtFull(+u.jumlah||0)+"</option>"; }).join("");
+  if(lama){ try{ sel.value=lama; }catch(e){} }
+}
+function g4LunasiUtangSupplier(){
+  var cid=String((gid("g4LunasiPilih")||{}).value||"");
+  var jumlah=Math.round(posAngka((gid("g4LunasiJumlah")||{}).value));
+  var daftarUtang=(window.__daftarUtangSupplier?window.__daftarUtangSupplier():[]);
+  var u=null;
+  for(var i=0;i<daftarUtang.length;i++){ if(daftarUtang[i].cid===cid){ u=daftarUtang[i]; break; } }
+  if(!u){ popupRamah("Utang belum dipilih","Pilih utang supplier yang mau dilunasi.","Pilih dari daftar, lalu tekan Lunasi."); return false; }
+  if(!(jumlah>0)){ popupRamah("Jumlah pelunasan belum diisi","Isi jumlah yang dibayar — harus lebih dari Rp 0.","Isi jumlahnya, lalu tekan Lunasi."); return false; }
+  if(jumlah>+u.jumlah){ popupRamah("Jumlah melebihi utang","Utang ini tersisa "+fmtFull(+u.jumlah)+" — jumlah yang dibayar tidak boleh lebih.","Kurangi jumlahnya, lalu tekan Lunasi."); return false; }
+  var hasilLunas=(window.__lunasiUtang?window.__lunasiUtang(cid,jumlah):null);
+  if(!hasilLunas){ popupRamah("Utang belum dipilih","Pilih utang supplier yang mau dilunasi.","Pilih dari daftar, lalu tekan Lunasi."); return false; }
+  var ket="Pelunasan utang supplier — "+(u.ket||"");
+  txs.push({id:++txSeq, cid:posUuid(), tgl:tglIsoHariIni(), ket:ket, jenis:"keluar", kat:"Pelunasan utang", jumlah:jumlah, pelunasanUtang:true, pembelianCid:u.pembelianCid||null});
+  var lunasPenuh=hasilLunas.sisa<=0;
+  if(u.pembelianCid){
+    for(var j=0;j<g4Pembelian.length;j++){
+      if(g4Pembelian[j].cid===u.pembelianCid){
+        if(lunasPenuh) g4Pembelian[j].status="lunas";
+        break;
+      }
+    }
+  }
+  var inp=gid("g4LunasiJumlah"); if(inp) inp.value="";
+  try{ renderTx(); }catch(e){}
+  try{ renderUtang(); }catch(e){}
+  try{ renderReports(); }catch(e){}
+  try{ g4RenderPembelian(); }catch(e){}
+  try{ audit("Pelunasan utang supplier "+fmtFull(jumlah)+(lunasPenuh?" — lunas.":".")); }catch(e){}
+  popupRamah("Pelunasan tercatat","Dibayar "+fmtFull(jumlah)+(lunasPenuh?" — utang ini lunas.":" — sisa utang "+fmtFull(+u.jumlah||0)+".")+" Biayanya tidak dihitung dua kali.", "Periksa daftar utang dan laporan untuk melihat perubahannya.");
+  return true;
+}
+
+/* ---------- perbaikan tanda transaksi sesudah muat cloud ---------- */
+function g4PerbaikiTandaTx(){
+  /* Muat cloud dari tabel terpisah menghilangkan tanda (hanya kolom
+     dasar yang tersimpan) — pulihkan dari nomor pembelian di keterangan. */
+  (g4Pembelian||[]).forEach(function(pb){
+    (txs||[]).forEach(function(t){
+      if(!t.ket) return;
+      if(String(t.ket).indexOf("Pembelian "+pb.nomor)===0 && t.jenis==="keluar" && t.kat==="Bahan baku"){
+        t.pembelianCid=pb.cid;
+        if(pb.cara==="utang") t.utangSupplier=true;
+      }
+      if(String(t.ket).indexOf("Pelunasan utang supplier")===0 && String(t.ket).indexOf("Pembelian "+pb.nomor)>=0){
+        t.pelunasanUtang=true;
+        t.pembelianCid=pb.cid;
+      }
+    });
+  });
+}
+
+/* ---------- bahan & resep ---------- */
+function g4RenderResep(){
+  var sel=gid("g4ResepProduk");
+  if(sel){
+    var lama=sel.value;
+    var produk=(stocks||[]).filter(function(s){ return !s.tanpaStok; });
+    sel.innerHTML="<option value=''>— Pilih produk/menu —</option>"+produk.map(function(s){ return "<option value='"+s.id+"'>"+esc(s.nama)+"</option>"; }).join("");
+    if(lama){ try{ sel.value=lama; }catch(e){} }
+  }
+  var daftar=gid("g4ResepDaftar");
+  if(daftar){
+    if(!g4Resep.length){ daftar.innerHTML="<p class='note'>Belum ada resep — buat lewat formulir di atas.</p>"; }
+    else{
+      daftar.innerHTML=g4Resep.map(function(r){
+        var isi=(r.komponen||[]).map(function(k){ return esc(k.nama)+" × "+g4FmtQty(k.qty); }).join(", ");
+        return "<p style='margin-top:6px'><b>"+esc(r.nama)+"</b> — "+isi+" <button type='button' data-g4resephapus='"+esc(r.cid)+"' style='min-height:36px'>Hapus</button></p>";
+      }).join("");
+      daftar.querySelectorAll("[data-g4resephapus]").forEach(function(b){ b.addEventListener("click",function(){ g4ResepHapus(b.getAttribute("data-g4resephapus")); }); });
+    }
+  }
+}
+function g4ResepBarisTambah(){
+  var wadah=gid("g4ResepBaris"); if(!wadah) return;
+  var bahan=(stocks||[]).filter(function(s){ return !!s.bahan; });
+  var div=document.createElement("div");
+  div.setAttribute("data-g4resepbaris","");
+  div.className="form-grid";
+  div.style.marginTop="8px";
+  var opsi="<option value=''>— Pilih bahan —</option>"+bahan.map(function(s){ return "<option value='"+s.id+"'>"+esc(s.nama)+" (stok "+g4FmtQty(+s.qty||0)+")</option>"; }).join("");
+  div.innerHTML="<label class='f'><span>Bahan baku</span><select data-g4resepbahan>"+opsi+"</select></label>"
+    +"<label class='f'><span>Jumlah per porsi</span><input type='number' data-g4resepqty min='0' step='any' placeholder='contoh: 0.2' /></label>"
+    +"<label class='f'><span>&nbsp;</span><button type='button' class='btn ghost' data-g4resephapusbaris>Hapus baris</button></label>";
+  div.querySelector("[data-g4resephapusbaris]").addEventListener("click",function(){ div.remove(); });
+  wadah.appendChild(div);
+}
+function g4ResepSimpan(){
+  var produkId=+(gid("g4ResepProduk")||{}).value||0;
+  var s=g4CariStok(produkId||null, null);
+  if(!s){ popupRamah("Produk belum dipilih","Pilih produk atau menu yang resepnya mau dibuat.","Pilih produknya, lalu isi bahan-bahannya."); return false; }
+  var komponen=[];
+  var namaBahan={};
+  document.querySelectorAll("[data-g4resepbaris]").forEach(function(row){
+    var sel=row.querySelector("[data-g4resepbahan]");
+    var qtyEl=row.querySelector("[data-g4resepqty]");
+    if(!sel || !sel.value) return;
+    var b=g4CariStok(+sel.value, null);
+    if(!b) return;
+    var qty=posAngka(qtyEl?qtyEl.value:"");
+    if(!(qty>0)) return;
+    if(namaBahan[b.id]) return;
+    namaBahan[b.id]=true;
+    komponen.push({bahanCid:b.cid||null, bahanId:b.id, nama:b.nama, qty:qty});
+  });
+  if(!komponen.length){ popupRamah("Bahan resep belum diisi","Isi setidaknya satu bahan dengan jumlah per porsi yang lebih dari 0.","Tambah satu baris bahan, lalu tekan Simpan resep."); return false; }
+  var lama=g4ResepUntuk(s.id, s.cid);
+  if(lama){
+    lama.komponen=komponen;
+  } else {
+    g4Resep.push({cid:posUuid(), stokCid:s.cid||null, stokId:s.id, nama:s.nama, komponen:komponen});
+  }
+  var wadah=gid("g4ResepBaris"); if(wadah) wadah.innerHTML="";
+  g4ResepBarisTambah();
+  try{ g4RenderResep(); }catch(e){}
+  try{ audit("Resep "+s.nama+" disimpan ("+komponen.length+" bahan)."); }catch(e){}
+  popupRamah("Resep tersimpan","Resep "+s.nama+" sudah tersimpan — bahan berkurang otomatis setiap kali produk ini terjual.","Coba jual 1 produk ini di kasir untuk melihat bahan berkurang.");
+  return true;
+}
+function g4ResepHapus(cid){
+  var r=null;
+  for(var i=0;i<g4Resep.length;i++){ if(g4Resep[i].cid===cid){ r=g4Resep[i]; break; } }
+  if(!r) return false;
+  var idx=g4Resep.indexOf(r);
+  var salinan=JSON.parse(JSON.stringify(r));
+  konfirmasiHapus("Hapus resep ini?", "Resep "+r.nama+" akan dihapus — penjualan berikutnya tidak lagi mengurangi bahan.", "Hapus resep",
+    function(){ var j=g4Resep.indexOf(r); if(j>=0) g4Resep.splice(j,1); g4RenderResep(); },
+    "Resep dihapus — ketuk Urungkan bila salah hapus.",
+    function(){ g4Resep.splice(Math.min(idx, g4Resep.length), 0, salinan); g4RenderResep(); });
+  return true;
+}
+
+/* ---------- stok rusak ---------- */
+function g4RenderRusak(){
+  var daftar=gid("g4RusakDaftar");
+  var total=gid("g4RusakTotal");
+  var jumlah=0;
+  (g4StokRusak||[]).forEach(function(r){ jumlah+=+r.jumlah||0; });
+  if(total) total.textContent=String(g4FmtQty(jumlah));
+  if(daftar){
+    if(!g4StokRusak.length){ daftar.innerHTML="<p class='note'>Belum ada stok rusak tercatat.</p>"; }
+    else{
+      daftar.innerHTML=g4StokRusak.slice().reverse().map(function(r){
+        return "<p style='margin-top:6px'><b>"+esc(r.nama)+"</b> — "+g4FmtQty(r.jumlah)+" · "+esc(r.tgl||"")+" · "+esc(r.sumber==="retur"?"Retur":"Opname")+(r.nomor?" "+esc(r.nomor):"")+" · "+esc(r.alasan||"—")+"</p>";
+      }).join("");
+    }
+  }
+}
+
+/* ---------- metode persediaan ---------- */
+function g4SetMetode(nilai){
+  if(["rata-rata","fifo","lifo"].indexOf(nilai)<0){ popupRamah("Metode tidak dikenal","Pilih metode persediaan: rata-rata, FIFO, atau LIFO.","Pilih salah satu, lalu coba lagi."); return false; }
+  g4Pengaturan.metode=nilai;
+  var sel=gid("g4Metode"); if(sel) sel.value=nilai;
+  try{ var snap=collectSnapshot(); saveData(snap, JSON.stringify(snap)); }catch(e){}
+  try{ audit("Metode persediaan diubah ke "+nilai+" — berlaku untuk penjualan berikutnya."); }catch(e){}
+  return true;
+}
+function g4RenderMetode(){
+  var sel=gid("g4Metode");
+  if(sel) sel.value=g4Pengaturan.metode||"rata-rata";
+}
+
+/* ---------- render gabungan + seam uji ---------- */
+function g4RenderSemua(){
+  try{ g4RenderOpname(); }catch(e){}
+  try{ g4RenderSupplier(); }catch(e){}
+  try{ g4RenderPembelian(); }catch(e){}
+  try{ g4RenderResep(); }catch(e){}
+  try{ g4RenderRusak(); }catch(e){}
+  try{ g4RenderMetode(); }catch(e){}
+  try{ g4SegarkanOpsiBaris(); }catch(e){}
+}
+function g4SegarkanOpsiBaris(){
+  /* Opsi select di baris pembelian/resep dibuat saat baris dibuat; bila
+     data stok belum dimuat saat itu, opsinya basi. Segarkan tanpa
+     menghapus isian pengguna (nilai terpilih dipertahankan bila masih ada). */
+  document.querySelectorAll("[data-g4pbitem] [data-g4pbstok]").forEach(function(sel){
+    var lama=sel.value; sel.innerHTML=g4StokPilihan();
+    if(lama){ try{ sel.value=lama; }catch(e){} }
+  });
+  document.querySelectorAll("[data-g4resepbaris] [data-g4resepbahan]").forEach(function(sel){
+    var lama=sel.value; sel.innerHTML=g4BahanPilihan();
+    if(lama){ try{ sel.value=lama; }catch(e){} }
+  });
+}
+window.__g4={
+  pastikanLapisan:g4PastikanLapisan, nilaiLapisan:g4NilaiLapisan,
+  konsumsiLapisan:g4KonsumsiLapisan, kembalikanLapisan:g4KembalikanLapisan,
+  kembalikanSebagian:g4KembalikanSebagian, kurangiLapisanOpname:g4KurangiLapisanOpname,
+  cariStok:g4CariStok, fmtQty:g4FmtQty,
+  resepUntuk:g4ResepUntuk, cekBahan:g4CekBahanKeranjang,
+  konsumsiUntukItem:g4KonsumsiUntukItem, kembalikanUntukItem:g4KembalikanUntukItem,
+  kembalikanReturItem:g4KembalikanReturItem,
+  opnameSimpan:g4SimpanOpname, supplierTambah:g4SupplierTambah, supplierHapus:g4SupplierHapus,
+  pembelianSimpan:g4PembelianSimpan, pembelianBarisTambah:g4PembelianBarisTambah,
+  lunasiUtangSupplier:g4LunasiUtangSupplier,
+  resepSimpan:g4ResepSimpan, resepHapus:g4ResepHapus, resepBarisTambah:g4ResepBarisTambah,
+  setMetode:g4SetMetode, perbaikiTandaTx:g4PerbaikiTandaTx,
+  renderSemua:g4RenderSemua,
+  setDataUji:function(o){
+    if(o.g4Supplier){ g4Supplier.splice(0,g4Supplier.length); (o.g4Supplier||[]).forEach(function(x){ g4Supplier.push(Object.assign({}, x)); }); }
+    if(o.g4Pembelian){ g4Pembelian.splice(0,g4Pembelian.length); (o.g4Pembelian||[]).forEach(function(x){ g4Pembelian.push(Object.assign({}, x)); }); }
+    if(o.g4Resep){ g4Resep.splice(0,g4Resep.length); (o.g4Resep||[]).forEach(function(x){ g4Resep.push(JSON.parse(JSON.stringify(x))); }); }
+    if(o.g4Opname){ g4Opname.splice(0,g4Opname.length); (o.g4Opname||[]).forEach(function(x){ g4Opname.push(JSON.parse(JSON.stringify(x))); }); }
+    if(o.g4StokRusak){ g4StokRusak.splice(0,g4StokRusak.length); (o.g4StokRusak||[]).forEach(function(x){ g4StokRusak.push(Object.assign({}, x)); }); }
+    if(o.g4Pengaturan){ g4Pengaturan.metode=o.g4Pengaturan.metode||"rata-rata"; g4Pengaturan.nomorPembelianTerakhir=+o.g4Pengaturan.nomorPembelianTerakhir||0; }
+    try{ g4RenderSemua(); }catch(e){}
+    try{ renderStock(); }catch(e){}
+  },
+  ambilState:function(){
+    return {supplier:g4Supplier, pembelian:g4Pembelian, resep:g4Resep, opname:g4Opname,
+      stokRusak:g4StokRusak, pengaturan:g4Pengaturan};
+  }
+};
+/* ---------- penyambung tombol Gelombang 4 ---------- */
+(function(){
+  function klik(id, fn){ var b=$(id); if(b) b.addEventListener("click", fn); }
+  klik("g4BtnOpnameSimpan", g4SimpanOpname);
+  klik("g4BtnSupTambah", g4SupplierTambah);
+  klik("g4BtnPbBaris", g4PembelianBarisTambah);
+  klik("g4BtnPbSimpan", g4PembelianSimpan);
+  klik("g4BtnLunasi", g4LunasiUtangSupplier);
+  klik("g4BtnResepBaris", g4ResepBarisTambah);
+  klik("g4BtnResepSimpan", g4ResepSimpan);
+  var md=document.getElementById("g4Metode");
+  if(md) md.addEventListener("change", function(){ g4SetMetode(md.value); });
+  function initG4(){
+    try{ g4RenderSemua(); }catch(e){}
+    try{ if(!document.querySelectorAll("[data-g4pbitem]").length) g4PembelianBarisTambah(); }catch(e){}
+    try{ if(!document.querySelectorAll("[data-g4resepbaris]").length) g4ResepBarisTambah(); }catch(e){}
+  }
+  /* gid() didefinisikan di blok skrip lain yang jalan sesudah blok ini,
+     jadi render awal harus menunggu DOMContentLoaded. */
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", initG4);
+  else initG4();
+})();
       /* ---------- penyambung tombol Gelombang 3 ---------- */
       (function(){
         function klik(id, fn){ var b=$(id); if(b) b.addEventListener("click", fn); }
@@ -10683,7 +11518,10 @@
         /* ---------- daftar utang (modul baru) ---------- */
         window.__utangTotal = function(){ return utangs.reduce(function(a,u){ return a+(+u.jumlah||0); },0); };
         window.__daftarUtang = function(){ return utangs.map(function(u){ return {ket:u.ket, jumlah:u.jumlah, tempo:u.tempo}; }); };
-        window.__tambahUtangUji = function(daftar){ utangs.splice(0,utangs.length); (daftar||[]).forEach(function(u){ utangs.push({cid:uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—"}); }); renderUtang(); };
+        window.__tambahUtangUji = function(daftar){ utangs.splice(0,utangs.length); (daftar||[]).forEach(function(u){ utangs.push({cid:u.cid||uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—", supplier:!!u.supplier, pembelianCid:u.pembelianCid||null}); }); renderUtang(); };
+      window.__tambahUtangSatu = function(u){ var rec={cid:u.cid||uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—", supplier:!!u.supplier, pembelianCid:u.pembelianCid||null}; utangs.push(rec); renderUtang(); return rec; };
+      window.__daftarUtangSupplier = function(){ return utangs.filter(function(u){ return u.supplier; }).map(function(u){ return {cid:u.cid, ket:u.ket, jumlah:u.jumlah, tempo:u.tempo, pembelianCid:u.pembelianCid||null}; }); };
+      window.__lunasiUtang = function(cid, jumlah){ var u=null; for(var i=0;i<utangs.length;i++){ if(utangs[i].cid===cid){ u=utangs[i]; break; } } if(!u) return null; u.jumlah=Math.round((+u.jumlah||0)-jumlah); var sisa=u.jumlah; var pbCid=u.pembelianCid||null; if(u.jumlah<=0){ var ix=utangs.indexOf(u); if(ix>=0) utangs.splice(ix,1); sisa=0; } renderUtang(); return {sisa:sisa, pembelianCid:pbCid}; };
         function renderUtang(){
           var has=utangs.length>0;
           gid("utEmpty").style.display=has?"none":"block"; gid("utTable").style.display=has?"table":"none";
@@ -10701,6 +11539,7 @@
           if(has) gid("inUtang").value=window.__utangTotal();
           try{ if(window.__formatTampilanRupiah) window.__formatTampilanRupiah(); }catch(e){}
           if(typeof recalc==="function") recalc();
+          try{ if(typeof g4RenderLunasiPilih==="function") g4RenderLunasiPilih(); }catch(e){}
         }
         gid("btnUtang").addEventListener("click",async function(){
           if(!gid("utNama").value || num("utJumlah")<=0){ if(window.tampilPopupRamah) window.tampilPopupRamah("Isian belum lengkap","Isi keterangan dan jumlah utang dulu — jumlahnya harus lebih dari Rp 0.","Lengkapi kolomnya, lalu tekan tombol tambah utang."); else toast("Isi keterangan dan jumlah utang dulu"); return; }
@@ -10760,10 +11599,10 @@
             sopSteps:Array.prototype.map.call(document.querySelectorAll(".sop-step"),function(t){return t.value;}),
             sops:sopDaftarTersimpan(),
             struktur:strukturBersihDaftar(strukturList),
-            txs:txs.map(function(t){ if(!t.cid) t.cid=uuid(); return {cid:t.cid,tgl:t.tgl,ket:t.ket,jenis:t.jenis,kat:t.kat,jumlah:t.jumlah,batal:!!t.batal,pelunasan:!!t.pelunasan,hpp:!!t.hpp,retur:!!t.retur,posCid:t.posCid||null}; }),
-            stocks:stocks.map(function(s){ if(!s.cid) s.cid=uuid(); return {cid:s.cid,nama:s.nama,qty:s.qty,beli:s.beli,jual:s.jual,kat:s.kat||"Lainnya",grosir:+s.grosir||0,minGrosir:+s.minGrosir||10,kode:s.kode||"",varian:Array.isArray(s.varian)?s.varian:[],favorit:!!s.favorit,tanpaStok:!!s.tanpaStok}; }),
+            txs:txs.map(function(t){ if(!t.cid) t.cid=uuid(); return {cid:t.cid,tgl:t.tgl,ket:t.ket,jenis:t.jenis,kat:t.kat,jumlah:t.jumlah,batal:!!t.batal,pelunasan:!!t.pelunasan,hpp:!!t.hpp,retur:!!t.retur,utangSupplier:!!t.utangSupplier,pelunasanUtang:!!t.pelunasanUtang,pembelianCid:t.pembelianCid||null,posCid:t.posCid||null}; }),
+            stocks:stocks.map(function(s){ if(!s.cid) s.cid=uuid(); return {cid:s.cid,nama:s.nama,qty:s.qty,beli:s.beli,jual:s.jual,kat:s.kat||"Lainnya",grosir:+s.grosir||0,minGrosir:+s.minGrosir||10,kode:s.kode||"",varian:Array.isArray(s.varian)?s.varian:[],favorit:!!s.favorit,tanpaStok:!!s.tanpaStok,bahan:!!s.bahan,lapisan:Array.isArray(s.lapisan)?s.lapisan.map(function(l){ return {cid:l.cid||null,harga:+l.harga||0,sisa:+l.sisa||0,tgl:l.tgl||"",sumber:l.sumber||"awal",sudahBiaya:!!l.sudahBiaya}; }):[]}; }),
             pis:pis.map(function(p){ if(!p.cid) p.cid=uuid(); return {cid:p.cid,nama:p.nama,jumlah:p.jumlah,tempo:p.tempo,batal:!!p.batal,posCid:p.posCid||null}; }),
-            utangs:utangs.map(function(u){ if(!u.cid) u.cid=uuid(); return {cid:u.cid,ket:u.ket,jumlah:u.jumlah,tempo:u.tempo}; }),
+            utangs:utangs.map(function(u){ if(!u.cid) u.cid=uuid(); return {cid:u.cid,ket:u.ket,jumlah:u.jumlah,tempo:u.tempo,supplier:!!u.supplier,pembelianCid:u.pembelianCid||null}; }),
             proaktif:{ last_seen: proaktifState.last_seen||null, lastConsCheck: proaktifState.lastConsCheck||null },
             qris_image: window.__qrisImage || null,
             ai_pakai: window.__aiPakai || {bulan:bulanSekarang(), jumlah:0},
@@ -10781,7 +11620,16 @@
             posPelanggan: (typeof posPelanggan!=="undefined"?posPelanggan:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
             posTahan: (typeof posTahan!=="undefined"?posTahan:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
             posPaket: (typeof posPaket!=="undefined"?posPaket:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
-            posVoucher: (typeof posVoucher!=="undefined"?posVoucher:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; })
+            posVoucher: (typeof posVoucher!=="undefined"?posVoucher:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            /* Gelombang 4: supplier, pembelian, resep, opname, stok rusak,
+               pengaturan persediaan — dipulihkan applySnapshot dan
+               digabung gabungkanSnapshot (per cid). */
+            g4Supplier: (typeof g4Supplier!=="undefined"?g4Supplier:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g4Pembelian: (typeof g4Pembelian!=="undefined"?g4Pembelian:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g4Resep: (typeof g4Resep!=="undefined"?g4Resep:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g4Opname: (typeof g4Opname!=="undefined"?g4Opname:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g4StokRusak: (typeof g4StokRusak!=="undefined"?g4StokRusak:[]).map(function(x){ if(!x.cid) x.cid=uuid(); return x; }),
+            g4Pengaturan: (typeof g4Pengaturan!=="undefined"?{metode:g4Pengaturan.metode||"rata-rata", nomorPembelianTerakhir:+g4Pengaturan.nomorPembelianTerakhir||0}:{metode:"rata-rata", nomorPembelianTerakhir:0})
           };
         }
         window.__collectSnapshot=collectSnapshot;
@@ -10882,7 +11730,13 @@
             posPelanggan: gabungBaris(c.posPelanggan, t.posPelanggan),
             posTahan: gabungBaris(c.posTahan, t.posTahan),
             posPaket: gabungBaris(c.posPaket, t.posPaket),
-            posVoucher: gabungBaris(c.posVoucher, t.posVoucher)
+            posVoucher: gabungBaris(c.posVoucher, t.posVoucher),
+            g4Supplier: gabungBaris(c.g4Supplier, t.g4Supplier),
+            g4Pembelian: gabungBaris(c.g4Pembelian, t.g4Pembelian),
+            g4Resep: gabungBaris(c.g4Resep, t.g4Resep),
+            g4Opname: gabungBaris(c.g4Opname, t.g4Opname),
+            g4StokRusak: gabungBaris(c.g4StokRusak, t.g4StokRusak),
+            g4Pengaturan: c.g4Pengaturan||t.g4Pengaturan||null
           };
         }
         /* ---------- P0-3: lindungi isian yang sudah diubah pengguna ----------
@@ -10982,10 +11836,10 @@
              daftar tetap kosong dan peran bawaan yang berlaku. */
           if(Array.isArray(snap.struktur)){ strukturList=strukturBersihDaftar(snap.struktur); }
           renderStruktur(); renderTimPeran();
-          txs.splice(0,txs.length); (snap.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||uuid(), tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, posCid:t.posCid||null}); });
-          stocks.splice(0,stocks.length); (snap.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||uuid(), nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0, kat:s.kat||"Lainnya", grosir:+s.grosir||0, minGrosir:+s.minGrosir||10, kode:s.kode||"", varian:Array.isArray(s.varian)?s.varian:[], favorit:!!s.favorit, tanpaStok:!!s.tanpaStok}); });
+          txs.splice(0,txs.length); (snap.txs||[]).forEach(function(t){ txs.push({id:++txSeq, cid:t.cid||uuid(), tgl:t.tgl||"", ket:t.ket||"", jenis:t.jenis||"masuk", kat:t.kat||"Lainnya", jumlah:+t.jumlah||0, batal:!!t.batal, pelunasan:!!t.pelunasan, hpp:!!t.hpp, retur:!!t.retur, utangSupplier:!!t.utangSupplier, pelunasanUtang:!!t.pelunasanUtang, pembelianCid:t.pembelianCid||null, posCid:t.posCid||null}); });
+          stocks.splice(0,stocks.length); (snap.stocks||[]).forEach(function(s){ stocks.push({id:++stSeq, cid:s.cid||uuid(), nama:s.nama||"", qty:+s.qty||0, beli:+s.beli||0, jual:+s.jual||0, kat:s.kat||"Lainnya", grosir:+s.grosir||0, minGrosir:+s.minGrosir||10, kode:s.kode||"", varian:Array.isArray(s.varian)?s.varian:[], favorit:!!s.favorit, tanpaStok:!!s.tanpaStok, bahan:!!s.bahan, lapisan:Array.isArray(s.lapisan)?s.lapisan.map(function(l){ return {cid:l.cid||uuid(), harga:+l.harga||0, sisa:+l.sisa||0, tgl:l.tgl||"", sumber:l.sumber||"awal", sudahBiaya:!!l.sudahBiaya}; }):[]}); });
           pis.splice(0,pis.length); (snap.pis||[]).forEach(function(p){ pis.push({id:++piSeq, cid:p.cid||uuid(), nama:p.nama||"", jumlah:+p.jumlah||0, tempo:p.tempo||"—", batal:!!p.batal, posCid:p.posCid||null}); });
-          utangs.splice(0,utangs.length); (snap.utangs||[]).forEach(function(u){ utangs.push({cid:u.cid||uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—"}); });
+          utangs.splice(0,utangs.length); (snap.utangs||[]).forEach(function(u){ utangs.push({cid:u.cid||uuid(), ket:u.ket||"", jumlah:+u.jumlah||0, tempo:u.tempo||"—", supplier:!!u.supplier, pembelianCid:u.pembelianCid||null}); });
           /* POS Fase 1 (Gelombang 2): pulihkan shift/penjualan/
              permintaan pembatalan/pengaturan bila snapshot memilikinya. */
           if(Array.isArray(snap.posShift) && typeof posShift!=="undefined"){ posShift.splice(0,posShift.length); snap.posShift.forEach(function(s){ posShift.push(Object.assign({}, s)); }); }
@@ -10998,6 +11852,16 @@
           if(Array.isArray(snap.posTahan) && typeof posTahan!=="undefined"){ posTahan.splice(0,posTahan.length); snap.posTahan.forEach(function(x){ posTahan.push(Object.assign({}, x)); }); }
           if(Array.isArray(snap.posPaket) && typeof posPaket!=="undefined"){ posPaket.splice(0,posPaket.length); snap.posPaket.forEach(function(x){ posPaket.push(Object.assign({}, x)); }); }
           if(Array.isArray(snap.posVoucher) && typeof posVoucher!=="undefined"){ posVoucher.splice(0,posVoucher.length); snap.posVoucher.forEach(function(x){ posVoucher.push(Object.assign({}, x)); }); }
+          /* Gelombang 4: pulihkan supplier/pembelian/resep/opname/stok
+             rusak/pengaturan bila snapshot memilikinya. */
+          if(Array.isArray(snap.g4Supplier) && typeof g4Supplier!=="undefined"){ g4Supplier.splice(0,g4Supplier.length); snap.g4Supplier.forEach(function(x){ g4Supplier.push(Object.assign({}, x)); }); }
+          if(Array.isArray(snap.g4Pembelian) && typeof g4Pembelian!=="undefined"){ g4Pembelian.splice(0,g4Pembelian.length); snap.g4Pembelian.forEach(function(x){ g4Pembelian.push(Object.assign({}, x)); }); }
+          if(Array.isArray(snap.g4Resep) && typeof g4Resep!=="undefined"){ g4Resep.splice(0,g4Resep.length); snap.g4Resep.forEach(function(x){ g4Resep.push(JSON.parse(JSON.stringify(x))); }); }
+          if(Array.isArray(snap.g4Opname) && typeof g4Opname!=="undefined"){ g4Opname.splice(0,g4Opname.length); snap.g4Opname.forEach(function(x){ g4Opname.push(JSON.parse(JSON.stringify(x))); }); }
+          if(Array.isArray(snap.g4StokRusak) && typeof g4StokRusak!=="undefined"){ g4StokRusak.splice(0,g4StokRusak.length); snap.g4StokRusak.forEach(function(x){ g4StokRusak.push(Object.assign({}, x)); }); }
+          if(snap.g4Pengaturan && typeof g4Pengaturan!=="undefined"){ g4Pengaturan.metode=snap.g4Pengaturan.metode||"rata-rata"; g4Pengaturan.nomorPembelianTerakhir=+snap.g4Pengaturan.nomorPembelianTerakhir||0; }
+          try{ if(typeof g4PerbaikiTandaTx==="function") g4PerbaikiTandaTx(); }catch(e){}
+          try{ if(typeof g4RenderSemua==="function") g4RenderSemua(); }catch(e){}
           window.__qrisImage = snap.qris_image || null;
           if(snap.ai_pakai && snap.ai_pakai.bulan){ window.__aiPakai={bulan:String(snap.ai_pakai.bulan), jumlah:(+snap.ai_pakai.jumlah||0)}; }
           /* Data pemakaian AI baru tiba (lokal/cloud) — segarkan baris
@@ -11162,7 +12026,15 @@
               posPelanggan: snap.posPelanggan||null,
               posTahan: snap.posTahan||null,
               posPaket: snap.posPaket||null,
-              posVoucher: snap.posVoucher||null};
+              posVoucher: snap.posVoucher||null,
+              /* Gelombang 4: supplier, pembelian, resep, opname, stok rusak,
+                 pengaturan persediaan dari snapshot. */
+              g4Supplier: snap.g4Supplier||null,
+              g4Pembelian: snap.g4Pembelian||null,
+              g4Resep: snap.g4Resep||null,
+              g4Opname: snap.g4Opname||null,
+              g4StokRusak: snap.g4StokRusak||null,
+              g4Pengaturan: snap.g4Pengaturan||null};
             var up=await sb.from("umkm_data").upsert({user_id:uid, data:core, updated_at:new Date().toISOString()});
             if(up.error) throw up.error;
             await syncTable("transactions", snap.txs.map(function(t){ return {id:t.cid, user_id:uid, tanggal:t.tgl, jenis:t.jenis, keterangan:t.ket, kategori:t.kat, jumlah:t.jumlah}; }));
@@ -11464,7 +12336,15 @@
                 txs:(res[1].data||[]).map(function(r){ return {cid:r.id, tgl:r.tanggal||"", ket:r.keterangan||"", jenis:r.jenis, kat:r.kategori||"Lainnya", jumlah:+r.jumlah||0}; }),
                 stocks:(res[2].data||[]).map(function(r){ return {cid:r.id, nama:r.nama||"", qty:+r.qty||0, beli:+r.harga_beli||0, jual:+r.harga_jual||0}; }),
                 pis:(res[3].data||[]).map(function(r){ return {cid:r.id, nama:r.keterangan||"", jumlah:+r.jumlah||0, tempo:r.jatuh_tempo||"—"}; }),
-                utangs:(res[4].data||[]).map(function(r){ return {cid:r.id, ket:r.keterangan||"", jumlah:+r.jumlah||0, tempo:r.jatuh_tempo||"—"}; })
+                utangs:(res[4].data||[]).map(function(r){ return {cid:r.id, ket:r.keterangan||"", jumlah:+r.jumlah||0, tempo:r.jatuh_tempo||"—"}; }),
+                /* Gelombang 4: data gudang dari umkm_data.data (core) —
+                   tabel terpisah tidak menyimpan kunci ini. */
+                g4Supplier:core.g4Supplier||null,
+                g4Pembelian:core.g4Pembelian||null,
+                g4Resep:core.g4Resep||null,
+                g4Opname:core.g4Opname||null,
+                g4StokRusak:core.g4StokRusak||null,
+                g4Pengaturan:core.g4Pengaturan||null
               };
               var hasCloud = cloudAdaIsi(snap);
               cloudChecked=true; cloudHasData=!!hasCloud;
@@ -11519,7 +12399,7 @@
             } else if(cloudChecked && !cloudCoreData){
               migrateSnapshot=null;
               try{ localStorage.removeItem("umkm-introspeksi-pending-migration"); }catch(e){}
-              var hasMig = (pendingMig.inputs && Object.keys(pendingMig.inputs).some(function(k){ if(k==="inTergantung" && String(pendingMig.inputs[k]).trim()==="0") return false; if(k==="inKalibrasi") return false; return !!pendingMig.inputs[k]; })) || (pendingMig.txs&&pendingMig.txs.length) || (pendingMig.stocks&&pendingMig.stocks.length) || (pendingMig.pis&&pendingMig.pis.length) || (pendingMig.utangs&&pendingMig.utangs.length) || pendingMig.lokasi || pendingMig.qris_image;
+              var hasMig = (pendingMig.inputs && Object.keys(pendingMig.inputs).some(function(k){ if(k==="inTergantung" && String(pendingMig.inputs[k]).trim()==="0") return false; if(k==="inKalibrasi") return false; return !!pendingMig.inputs[k]; })) || (pendingMig.txs&&pendingMig.txs.length) || (pendingMig.stocks&&pendingMig.stocks.length) || (pendingMig.pis&&pendingMig.pis.length) || (pendingMig.utangs&&pendingMig.utangs.length) || (pendingMig.g4Supplier&&pendingMig.g4Supplier.length) || (pendingMig.g4Pembelian&&pendingMig.g4Pembelian.length) || (pendingMig.g4Resep&&pendingMig.g4Resep.length) || pendingMig.lokasi || pendingMig.qris_image;
               if(hasMig){
                 var gab=gabungkanSnapshot(cloudSnapForMig||{inputs:{},answers:{}}, pendingMig);
                 if(snapshotNyata(gab)) tandaiSudahMengisi();
